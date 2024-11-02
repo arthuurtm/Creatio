@@ -1,13 +1,6 @@
 <template>
   <div id="app">
-    <Navigator 
-      :profilePicture="userProfilePicture" 
-      :name="userName" 
-      :email="userEmail"
-      @navigate="handleNavigation"
-      @logout="handleLogout"
-    />
-    <!-- <router-view /> -->
+    <router-view />
   </div>
 </template>
 
@@ -42,5 +35,5 @@ export default {
 <style>
     @import url('/src/assets/css/core/variables.css');
     @import url('/src/assets/css/core/buttons.css');
-    @import url('/src/assets/css/core/overlay.css');
+    @import url('/src/assets/css/modules/overlay.css');
 </style>

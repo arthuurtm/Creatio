@@ -82,10 +82,10 @@
                 const menu = document.getElementById("p1s");
                 if (menu.classList.contains('p1s-minimized')) {
                     menu.classList.remove('p1s-minimized');
-                    menu.classList.add('p1s-active'); // Adiciona a classe para maximizar
+                    menu.classList.add('p1s-active');
                 } else {
                     menu.classList.remove('p1s-active');
-                    menu.classList.add('p1s-minimized'); // Adiciona a classe para minimizar
+                    menu.classList.add('p1s-minimized');
                 }
             }
         }
@@ -93,6 +93,6 @@
 </script>
   
 <style scoped>
-    @import "/src/assets/css/core/navigator.css";
+    @import "/src/assets/css/modules/navigator.css";
 </style>
   
