@@ -23,8 +23,13 @@ const router = createRouter({
 // Middleware de autenticação
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !isAuthenticated()) {
-    next({ name: 'Login' });
+    // Se a rota requer autenticação e o usuário não está autenticado
+    next({
+      path: '/login',
+      query: { redirect: to.fullPath }, // Armazena a URL original para redirecionamento após login
+    });
   } else {
+    // Se não for necessário redirecionar, segue para a rota desejada
     next();
   }
 });

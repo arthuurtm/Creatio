@@ -17,7 +17,7 @@
       <div class="ext-loginOp-sep">
         <p>OU</p>
       </div>
-      <div id="googleButton"></div>
+      <div id="googleButton">LOGIN COM O GOOGLE</div>
     </form>
   </div>
 </template>
