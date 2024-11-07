@@ -75,12 +75,25 @@ export default {
       isInIframe: window !== window.top
     };
   },
+  created() {
+    this.setWelcomeMessage();
+  },
   computed: {
     gamesDir() {
       return './path/to/games/directory'; // Defina o diretório correto dos jogos
     }
   },
   methods: {
+    setWelcomeMessage() {
+      const currentHour = new Date().getHours(); // Pega a hora atual
+      if (currentHour >= 5 && currentHour < 12) {
+        this.welmsg = "Bom dia";
+      } else if (currentHour >= 12 && currentHour < 18) {
+        this.welmsg = "Boa tarde";
+      } else {
+        this.welmsg = "Boa noite";
+      }
+    },
     goBack() {
       // Lógica para voltar
     },
@@ -132,6 +145,7 @@ export default {
     }
   },
   mounted() {
+
     this.welcomeMessage = this.userId ? `${sessionStorage.getItem('welMsg')}, ${sessionStorage.getItem('username')}!` : `${sessionStorage.getItem('welMsg')}!`;
     
     if (this.isInIframe) {
@@ -150,5 +164,18 @@ export default {
 </script>
 
 <style scoped>
-  @import url('/src/assets/css/modules/homePage.css');
+  @import url('/src/assets/css/modules/gamesPage.css');
+</style>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 </style>

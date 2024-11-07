@@ -33,7 +33,8 @@ export default {
 </script>
 
 <style>
-    @import url('/src/assets/css/core/variables.css');
-    @import url('/src/assets/css/core/buttons.css');
-    @import url('/src/assets/css/modules/overlay.css');
+  @import url('/src/assets/css/core/variables.css');
+  @import url('/src/assets/css/core/buttons.css');
+  @import url('/src/assets/css/modules/overlay.css');
+  @import url('/src/assets/css/modules/toggleTheme.css');
 </style>
