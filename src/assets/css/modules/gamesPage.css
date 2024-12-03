@@ -17,7 +17,6 @@ body {
     color: var(--text);
     background-color: var(--bg);
     display: flex;
-    min-height: 100vh;
     scrollbar-width: thin; /* Pode ser "auto", "thin" ou "none" */
     scrollbar-color: var(--bg) var(--bg); /* Cor da parte arrastável e do trilho */
 }
@@ -27,10 +26,12 @@ main {
     position: relative;
     grid-template-columns: 1fr;
     width: 100%;
-    max-width: 2000px;
+    height: 100%;
+    max-width: 200%;
     box-sizing: border-box;
     justify-content: center;
     align-items: center;
+    padding-left: 60px;
 }
 
 #top-options {
@@ -38,9 +39,8 @@ main {
     margin-bottom: 80px;
 }
 
-main h1 {
-    margin-left: 30px;
-    
+.homeTitle {
+    margin-left: 50px;
 }
 
 /* Grade de jogos */
@@ -144,12 +144,9 @@ main h1 {
     position: absolute;
 }
 
-.btn#back-button p {
-    margin-left: 5px;
-}
-
 /* Estilo geral para botões */
 .btn {
+    all: unset;
     display: flex;
     padding: 10px;
     border: none;
@@ -160,6 +157,10 @@ main h1 {
     font-weight: 600;
     justify-content: center;
     align-items: center;
+}
+
+.btn#back-button p {
+    margin-left: 5px;
 }
 
 /* Efeito ao passar o mouse sobre o botão */
@@ -232,8 +233,7 @@ main h1 {
 @media (max-width: 600px) {
 
     main {
-        padding: 5px;
-        margin-left: 0;
+        padding-left: 0;
     }
 
     #back-button {

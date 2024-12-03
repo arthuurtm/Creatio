@@ -13,7 +13,7 @@
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s;
     z-index: 9999;
-    backdrop-filter: blur(10px); /* Mantém o desfoque */
+    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
@@ -28,7 +28,7 @@
     color: var(--text);
     opacity: 0;
     transform: translateY(-100px); /* Início acima do centro */
-    animation: moveToCenter 1s ease forwards; /* Aplica a animação */
+    animation: moveToCenter 0.8s ease forwards; /* Aplica a animação */
 }
 
 .modal-buttons {
@@ -51,6 +51,17 @@
         opacity: 1;
     }
 }
+
+@keyframes appear {
+    from {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
 
 /* Quando o modal estiver ativo */
 .overlay.active {

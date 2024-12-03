@@ -10,119 +10,83 @@
     background-color: var(--bg);
 }
 
-
-/* Animações para o PC */
-.p1s.pc {
-    height: 100%;
-    width: 240px;
-    transition: width 0.5s ease, transform 0.5s ease;
+#hide-p1s {
+    position: absolute;
+    top: 0;
+    left: 5px;
+    cursor: pointer;
+    z-index: 3;
+    font-size: 25px;
+    background: unset;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    transition: transform 0.3s ease;
 }
 
-.p1s.pc.minimized {
+#hide-p1s:hover {
+    transform: scale(1.2); /* Botão cresce ao passar o mouse */
+}
+
+.p1s {
+    position: fixed;
+    height: 100%;
+    width: 240px; /* Largura padrão quando expandido */
+    transition: width 0.5s ease, transform 0.5s ease;
+    overflow: hidden;
+    z-index: 2;
+    left: 0;
+    backdrop-filter: blur(10px);
+    border-right: 1px solid var(--border);
+}
+
+.p1s.minimized {
     width: 60px;
 }
 
-.p1s.pc .center ul li a p {
+.p1s.minimized .center ul li a p {
+    opacity: 0;
+    transform: translateX(-20px); /* Texto desliza para fora */
+    pointer-events: none; /* Previne interações */
+}
+
+.p1s .center ul li a p {
     opacity: 1;
     transition: opacity 0.3s ease, transform 0.3s ease;
     transform: translateX(0);
 }
 
-.p1s.pc.minimized .center ul li a p {
-    opacity: 0;
-    transform: translateX(-20px);
-    pointer-events: none;
-}
-
-.p1s.pc .center ul li a span {
+.p1s .center ul li a span {
+    font-size: 24px;
     transition: transform 0.3s ease;
 }
 
-.p1s.pc.minimized .center ul li a span {
-    transform: scale(1.2);
-    margin-top: 20px;
-    margin-bottom: 20px;
+.p1s.minimized .center ul li a span {
+    transform: scale(1.2); /* Aumenta o ícone ao recolher */
 }
 
-.p1s.pc .center ul {
-    transition: opacity 0.5s ease-in-out;
-}
-
-.p1s.pc .user-info img {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.p1s.pc.active {
+.p1s.active {
     animation: bounce 0.6s ease;
 }
 
-
-/* CSS CONVENCIONAL */
-.p1s {
-    position: fixed;
-    height: 100%;
-    width: auto;
-    z-index: 2;
-    left: 0;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-sizing: border-box;
-    overflow: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: var(--bg) var(--bg);
-    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    border-right: 1px solid var(--border);
-}
-
-#hide-p1s {
-    position: absolute;
-    top: 26px;
-    left: 10px;
-    transform: translateY(-50%);
-    font-size: 25px;
-    background-color: transparent;
-    cursor: pointer;
-    border-radius: 30px;
-    color: var(--text);
-    border: none;
-    z-index: 3;
-    justify-content: center;
-    align-items: center;
-}
-
-.p1s.minimized {
-    width: 40px;
-}
-
-.p1s.pc.minimized p {
-    display: none; /* Ajusta o tamanho dos ícones */
-    transition: font-size 0.3s ease; /* Suaviza a redução */
-}
-
-.p1s.active .center ul li a p {
-    display: unset;
-}
-
-.p1s.active .center ul li,
 .p1s.active .user-info,
 .p1s.active header {
     opacity: 1;
     transform: translateY(0);
-    cursor: pointer;
 }
 
 .p1s .center {
     margin-top: 100px;
 }
 
-.p1s.p1s.minimized .center {
-    margin-top: 0;
-}
-
 .p1s .center ul {
     list-style: none;
     margin: 0;
-    transition: 0.5s ease;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.p1s.minimized .center ul {
+    opacity: 0; /* Esconde lista no estado minimizado */
 }
 
 .p1s .center ul li {
@@ -134,10 +98,6 @@
     transform: scale(1.1);
 }
 
-.p1s .center ul li a span {
-    font-size: 24px;
-}
-
 .p1s .center ul li a {
     text-decoration: none;
 }
@@ -147,19 +107,19 @@
     margin-top: 20px;
 }
 
-.p1s.pc.p1s.minimized .user-info {
-    margin-top: 100px;
-    margin-bottom: 20px;
-}
-
-.p1s.pc.p1s.minimized .user-info img {
-    width: 40px;
-    height: 40px;
+.p1s .user-info img {
+    width: 24px;
+    height: 24px;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    transition: width 0.3s ease;
     margin-top: 10px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.p1s.minimized .user-info img {
+    transform: scale(0.8); /* Reduz a imagem no estado minimizado */
+    opacity: 0.8;
 }
 
 .p1s .menu ul li a p,
@@ -202,6 +162,7 @@
 
 .menu-options {
     display: flex;
+    justify-content: center;
     align-items: center;
 }
 
@@ -235,8 +196,15 @@
     color: var(--mh-options-hover);
 }
 
-/* CSS PARA DISPOSITIVOS MÓVEIS */
 @media (max-width: 600px) {
+
+    * {
+        transition: unset !important;
+    }
+    
+    .p1s {
+        transition: transform 0.5s ease !important;
+    }    
 
     #hide-p1s {
         display: none;
@@ -257,7 +225,12 @@
         z-index: 1000;
         display: flex;
         flex-direction: column;
-        padding: 10px;
+        padding: 0;
+    }
+
+    .p1s.active,
+    .p1s.minimized {
+        transition: transform 1s ease;
     }
 
         /* Área invisível de arraste */
@@ -307,6 +280,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-bottom: 15px;
+        transform: unset;
+        transition: unset;
     }
 
     .p1s .user-info img {
@@ -335,10 +311,6 @@
         font-size: 12px;
     }
 
-    .menu-options {
-        justify-content: center;
-    }
-
     /* Estilizando o restante das opções do menu */
     .menu-options ul {
         list-style: none;
@@ -354,6 +326,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: unset;
+        transform: unset;
     }
 
     .menu-options a {
@@ -372,6 +346,11 @@
 
     .menu-options a span #ul1-li4 {
         margin-top: 16px;
+    }
+
+    .p1s.minimized .user-info img {
+        transform: unset;
+        transition: unset;
     }
 
     /* Ajustando a altura do container para dispositivos móveis */

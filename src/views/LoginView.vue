@@ -1,24 +1,26 @@
 <template>
-  <div class="page" :class="{ dark: isDarkMode }">
-    <form @submit.prevent="handleLogin" class="formLogin">
-      <img src="/img/logoMini.png" alt="Logo do Sysroot" id="logosysroot" />
-      <h1 class="roboto-bold">Acesse sua conta</h1>
-      <div style="display: flex; flex-direction: column;">
-        <label for="email">E-mail</label>
-        <input type="email" v-model="email" placeholder="Digite seu e-mail" autofocus />
-        <label for="password">Senha</label>
-        <div style="display: flex; flex-direction: column;">
-          <input type="password" v-model="password" placeholder="Digite sua senha" style="margin-bottom: 10px;" />
-          <a href="./fn/reset-password-request.php">Esqueci minha senha</a>
+  <div class="page">
+    <div class="formLogin">
+      <form @submit.prevent="handleLogin">
+        <img src="/img/logoMini.png" alt="Logo do Sysroot" id="logosysroot" />
+        <h1 class="roboto-bold">Acesse sua conta</h1>
+        <div class="sepElements">
+          <label for="email">E-mail</label>
+          <input type="email" v-model="email" placeholder="Digite seu e-mail" autofocus />
+          <label for="password">Senha</label>
+          <div class="sepElements">
+            <input type="password" v-model="password" placeholder="Digite sua senha" style="margin-bottom: 10px;" />
+            <a href="/password/request-reset">Esqueci minha senha</a>
+          </div>
+          <div id="error-message" v-if="errorMessage" style="margin-bottom: 15px;">⛔ {{ errorMessage }}</div>
         </div>
-        <div id="error-message" v-if="errorMessage" style="margin-bottom: 15px;">⛔ {{ errorMessage }}</div>
-      </div>
-      <button class="btn" type="submit">Entrar</button>
-      <div class="ext-loginOp-sep">
-        <p>OU</p>
-      </div>
-      <div id="googleButton">LOGIN COM O GOOGLE</div>
-    </form>
+        <button class="btn" type="submit">Entrar</button>
+        <div class="ext-loginOp-sep">
+          <p>OU</p>
+        </div>
+        <div id="googleButton">LOGIN COM O GOOGLE</div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -62,7 +64,7 @@ export default {
         const email = decodedToken.email;
 
         // Verificar se o email existe no banco de dados
-        const res = await fetch('http://localhost:3000/check-user', {
+        const res = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'check-user'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),
@@ -75,7 +77,7 @@ export default {
         if (data.exists) {
           // Email existe - salvar token e redirecionar
           localStorage.setItem('authToken', response.credential);
-          this.$router.push({ name: 'Home' });
+          this.$router.push({ name: 'Games' });
         } else {
           // Email não existe
           this.errorMessage = "Conta Google não vinculada a nenhum usuário.";
@@ -87,7 +89,7 @@ export default {
 
     async handleLogin() {
       try {
-        const response = await fetch('http://localhost:3000/login', {
+        const response = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'login'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -107,7 +109,7 @@ export default {
         localStorage.setItem('sessionId', data.sessionId);
 
         // Redireciona para a página inicial
-        this.$router.push({ name: 'Home' });
+        this.$router.push({ name: 'Games' });
       } catch (error) {
         this.errorMessage = error.message;
       }
@@ -122,17 +124,4 @@ export default {
 
 <style scoped>
 @import url('/src/assets/css/modules/loginForm.css');
-</style>
-
-<style>
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 </style>

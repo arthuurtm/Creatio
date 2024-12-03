@@ -14,7 +14,7 @@
     --destructive-button-hover: #a23333;
     --bg2: #dbdbdb;
     --game-text-container-bg: #f8f8f8;
-    --menu-hamburguer: #fff; /* Antes #f0f0f0 */
+    --menu: #fafafa; /* Antes #f0f0f0 */
     --mh-user-email: #535353;
     --mh-options: #000000;
     --mh-options-hover: #393939;
@@ -37,7 +37,7 @@
     --destructive-button-hover: #bb0b0b;
     --bg2: #262626;
     --game-text-container-bg: #111111;
-    --menu-hamburguer: #000; /* Antes, 060606 */
+    --menu: #0c0c0c; /* Antes, 060606 */
     --mh-user-email: #b0b0b0;
     --mh-options: #dcdcdc;
     --mh-options-hover: #646464;

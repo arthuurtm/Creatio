@@ -85,6 +85,11 @@
     color: #bb0b0b;
 }
 
+.sepElements {
+    display: flex; 
+    flex-direction: column;
+}
+
 .show {
     display: block;
 }

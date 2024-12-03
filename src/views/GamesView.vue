@@ -1,20 +1,20 @@
 <template>
+  <MainNavigator 
+    v-if="isLoggedIn"
+    @openModal="OpenModal"
+  />
+  <!-- <button 
+      id="profile-button" 
+      class="profile-button" 
+      @click="toggleMenu"
+  >
+      <img 
+          :src="profilePicture" 
+          alt="Foto de perfil" 
+          class="profile-picture-button"
+      />
+  </button> -->
   <main>
-    <div id="top-options">
-      <div class="btn" id="back" v-if="!isInIframe">
-        <form @submit.prevent="goBack">
-          <button id="back-button" class="btn" type="submit" name="action" value="voltar">
-            <span class="material-symbols-outlined">{{ userId ? 'house' : 'passkey' }}</span>
-          </button>
-        </form>
-      </div>
-      <div class="toggle-dark">
-        <label class="switch">
-          <input type="checkbox" id="toggle-dark" v-model="darkMode" @change="toggleTheme" />
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
     <div class="homeTitle">
       <h1>{{ welcomeMessage }}</h1>
     </div>
@@ -23,12 +23,12 @@
         <h3>Jogos disponíveis</h3>
       </div>
       <div id="content">
-        <button id="scroll-left" class="btn scroll" @click="scrollLeft">
+        <button id="scroll-left" class="gamePage btn scroll" @click="scrollLeft">
           <span class="material-symbols-outlined">arrow_back_ios</span>
         </button>
         <div class="window" id="window1" ref="gdWindow">
           <div v-if="games.length > 0">
-            <div v-for="game in games" :key="game.version" class="container gameCard">
+            <div v-for="game in games" :key="game.id" class="container gameCard">
               <div class="title">
                 <p>{{ game.title }}</p>
               </div>
@@ -38,7 +38,7 @@
               <div class="uiOptions">
                 <div id="play">
                   <form @submit.prevent="playGame(game.version)">
-                    <button id="play-button" class="btn" type="submit">
+                    <button id="play-button" class="gamePage btn" type="submit">
                       <span class="material-symbols-outlined">play_arrow</span>
                     </button>
                   </form>
@@ -47,10 +47,10 @@
             </div>
           </div>
           <div v-else>
-            O diretório de jogos não existe.
+            Nada a mostrar.
           </div>
         </div>
-        <button id="scroll-right" class="btn scroll" @click="scrollRight">
+        <button id="scroll-right" class="gamePage btn scroll" @click="scrollRight">
           <span class="material-symbols-outlined">arrow_forward_ios</span>
         </button>
       </div>
@@ -64,6 +64,11 @@
 </template>
 
 <script>
+import axios from 'axios';
+import Header from '@/components/Header.vue';
+import MainNavigator from '@/components/MainNavigator.vue';
+import { isAuthenticated } from '@/utils/auth';
+
 export default {
   data() {
     return {
@@ -72,34 +77,35 @@ export default {
       welcomeMessage: '',
       darkMode: false,
       currentGameVersion: '',
-      isInIframe: window !== window.top
+      isInIframe: window !== window.top,
+      isLoggedIn: false,
+      profilePicture: '/src/assets/img/default/user-data/profile.png',
     };
+  },
+  components: {
+    Header,
+    MainNavigator
   },
   created() {
     this.setWelcomeMessage();
-  },
-  computed: {
-    gamesDir() {
-      return './path/to/games/directory'; // Defina o diretório correto dos jogos
-    }
+    this.checkAuthentication();
   },
   methods: {
     setWelcomeMessage() {
       const currentHour = new Date().getHours(); // Pega a hora atual
       if (currentHour >= 5 && currentHour < 12) {
-        this.welmsg = "Bom dia";
+        this.welcomeMessage = "Bom dia";
       } else if (currentHour >= 12 && currentHour < 18) {
-        this.welmsg = "Boa tarde";
+        this.welcomeMessage = "Boa tarde";
       } else {
-        this.welmsg = "Boa noite";
+        this.welcomeMessage = "Boa noite";
       }
     },
     goBack() {
       // Lógica para voltar
     },
-    toggleTheme() {
-      const theme = this.darkMode ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', theme);
+    checkAuthentication() {
+      this.isLoggedIn = isAuthenticated();
     },
     scrollLeft() {
       this.$refs.gdWindow.scrollBy({
@@ -120,13 +126,13 @@ export default {
       // Lógica para jogar o jogo, como enviar uma solicitação para iniciar o jogo
     },
     loadGames() {
-      // Carregar jogos a partir do diretório especificado
-      fetch(this.gamesDir)
-        .then(response => response.json()) // Supondo que o servidor retorna um JSON
-        .then(data => {
-          this.games = data; // Ajuste de acordo com o formato de resposta
+      axios.get(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'encontrar-jogos')) // Ajuste a URL conforme necessário
+        .then(response => {
+          this.games = response.data; // Supondo que a resposta seja uma lista de jogos
         })
-        .catch(error => console.error('Erro ao carregar jogos:', error));
+        .catch(error => {
+          console.error('Erro ao carregar jogos:', error);
+        });
     },
     handleMessage(event) {
       if (event.data.theme) {
@@ -142,11 +148,10 @@ export default {
         .catch((error) => {
           console.log('Reprodução automática bloqueada:', error);
         });
-    }
+    },
   },
   mounted() {
-
-    this.welcomeMessage = this.userId ? `${sessionStorage.getItem('welMsg')}, ${sessionStorage.getItem('username')}!` : `${sessionStorage.getItem('welMsg')}!`;
+    this.welcomeMessage = this.userId ? `${sessionStorage.getItem('welMsg') || 'Bem-vindo'}, ${sessionStorage.getItem('username') || 'Usuário'}!` : `${sessionStorage.getItem('welMsg') || 'Bem-vindo'}!`;
     
     if (this.isInIframe) {
       console.log("Esta página está dentro de um iframe.");
@@ -168,14 +173,12 @@ export default {
 </style>
 
 <style>
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+  }
 </style>
