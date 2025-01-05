@@ -11,52 +11,6 @@
 }
 
 
-/* Animações para o PC */
-.p1s.pc {
-    height: 100%;
-    width: 240px;
-    transition: width 0.5s ease, transform 0.5s ease;
-}
-
-.p1s.pc.minimized {
-    width: 60px;
-}
-
-.p1s.pc .center ul li a p {
-    opacity: 1;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    transform: translateX(0);
-}
-
-.p1s.pc.minimized .center ul li a p {
-    opacity: 0;
-    transform: translateX(-20px);
-    pointer-events: none;
-}
-
-.p1s.pc .center ul li a span {
-    transition: transform 0.3s ease;
-}
-
-.p1s.pc.minimized .center ul li a span {
-    transform: scale(1.2);
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-.p1s.pc .center ul {
-    transition: opacity 0.5s ease-in-out;
-}
-
-.p1s.pc .user-info img {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.p1s.pc.active {
-    animation: bounce 0.6s ease;
-}
-
-
 /* CSS CONVENCIONAL */
 .p1s {
     position: fixed;
@@ -94,11 +48,6 @@
     width: 40px;
 }
 
-.p1s.pc.minimized p {
-    display: none; /* Ajusta o tamanho dos ícones */
-    transition: font-size 0.3s ease; /* Suaviza a redução */
-}
-
 .p1s.active .center ul li a p {
     display: unset;
 }
@@ -111,60 +60,45 @@
     cursor: pointer;
 }
 
-.p1s .center {
+.center {
     margin-top: 100px;
 }
 
-.p1s.p1s.minimized .center {
+.p1s.minimized .center {
     margin-top: 0;
 }
 
-.p1s .center ul {
+.center ul {
     list-style: none;
     margin: 0;
     transition: 0.5s ease;
 }
 
-.p1s .center ul li {
+.center ul li {
     padding: 5px 15px;
     transition: transform 0.3s ease;
 }
 
-.p1s .center ul li:hover {
+.center ul li:hover {
     transform: scale(1.1);
 }
 
-.p1s .center ul li a span {
+.center ul li a span {
     font-size: 24px;
 }
 
-.p1s .center ul li a {
+.center ul li a {
     text-decoration: none;
 }
 
-.p1s .user-info {
+.user-info {
     height: 40px;
     margin-top: 20px;
 }
 
-.p1s.pc.p1s.minimized .user-info {
-    margin-top: 100px;
-    margin-bottom: 20px;
-}
-
-.p1s.pc.p1s.minimized .user-info img {
-    width: 40px;
-    height: 40px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: width 0.3s ease;
-    margin-top: 10px;
-}
-
-.p1s .menu ul li a p,
-.p1s .user-info p,
-.p1s header {
+.menu ul li a p,
+.user-info p,
+header {
     /* display: none; */
     transition: width 0.5s ease;
 }
@@ -184,7 +118,7 @@
     padding: 20px;
 }
 
-.p1s .user-info img.profile-picture {
+.user-info img.profile-picture {
     width: 60px; /* Aumente o tamanho da imagem */
     height: 60px; /* Garantir que a imagem tenha altura proporcional */
     border-radius: 50%;
@@ -235,161 +169,308 @@
     color: var(--mh-options-hover);
 }
 
-/* CSS PARA DISPOSITIVOS MÓVEIS */
-@media (max-width: 600px) {
 
-    #hide-p1s {
-        display: none;
-    }
-
-    .p1s {
-        position: fixed;
-        width: 100%;
-        bottom: 30px;
-        left: 0;
-        right: 0;
-        background-color: var(--menu);
-        border-top-left-radius: 20px;
-        border-top-right-radius: 20px;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        padding: 10px;
-    }
-
-        /* Área invisível de arraste */
-    .invisible-drag-camp {
-        position: absolute;
-        width: 100%;               /* Largura da área de arraste */
-        height: 100px;               /* Altura da área de arraste */
-        top: 0;                     /* Posicionamento relativo ao contêiner */
-        left: 50%;
-        transform: translateX(-50%); /* Centraliza horizontalmente */
-        background-color: transparent; /* Invisível sem esconder o conteúdo */
-        pointer-events: auto;       /* Permite capturar eventos de toque */
-        z-index: 3;                 /* Abaixo do botão, mas acima do menu */
-    }
-
-    /* Botão visual de enfeite */
-    .drag-handle {
-        width: 100px;                 /* Tamanho do botão */
-        height: 10px;                 /* Altura do botão */
-        background-color: var(--text); /* Cor do fundo do botão */
-        border-radius: 5px;
-        margin: 0 auto;
-        cursor: grab;
-        position: relative;
-        top: 0;
-        left: 0;
-        transform: translateY(10px); /* Ajusta o posicionamento vertical */
-        z-index: 4;                  /* Aparece acima da área invisível */
-    } 
-
-    .p1s .center {
-        margin-top: 0;
-    }
-
-    .p1s.minimized {
-        width: auto;
-    }
-
-    .center {
-        display: flex;
-        flex-direction: column;
-        padding: 20px;
-    }
-
-    /* Ajustando a disposição da imagem, nome e e-mail */
-    .p1s .user-info {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .p1s .user-info img {
-        position: unset;
-    }
-
-    /* Estilizando a imagem para que não fique pequena */
-    .p1s .user-info img.profile-picture {
-        width: 60px; /* Aumente o tamanho da imagem */
-        height: 60px; /* Garantir que a imagem tenha altura proporcional */
-        border-radius: 50%;
-    }
-
-    .p1s .user-info .user-name,
-    .p1s .user-info .user-email {
-        font-size: 14px;
-        color: var(--text);
-        margin: 0;
-    }
-
-    .p1s .user-info .user-name {
-        font-weight: bold;
-    }
-
-    .p1s .user-info .user-email {
-        font-size: 12px;
-    }
-
-    .menu-options {
-        justify-content: center;
-    }
-
-    /* Estilizando o restante das opções do menu */
-    .menu-options ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        width: 80%;
-    }
-
-    .menu-options li {
-        margin: 10px 5px;
-        background-color: var(--form-bg-sub);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .menu-options a {
-        display: flex;
-        color: var(--text);
-        text-decoration: none;
-    }
-
-    .menu-options a span #ul1-li3 {
-        margin-top: 15px;
-    }
-
-    .menu-options a span #ul1-li3 {
-        margin-top: 14px;
-    }
-
-    .menu-options a span #ul1-li4 {
-        margin-top: 16px;
-    }
-
-    /* Ajustando a altura do container para dispositivos móveis */
-    @media (max-width: 768px) {
-        .p1s {
-            height: auto; /* Ajuste o tamanho conforme necessário */
-        }
-    }
+/* Tela de PC/Laptop */
+.app.pc .p1s {
+    height: 100%;
+    width: 240px;
+    transition: width 0.5s ease, transform 0.5s ease;
 }
 
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
+.app.pc .p1s.minimized {
+    width: 60px;
+}
+
+.app.pc .p1s .center ul li a p {
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateX(0);
+}
+
+.app.pc .p1s.minimized p {
+    display: none;
+    transition: font-size 0.3s ease;
+}
+
+.app.pc .p1s.minimized .center ul li a p {
+    opacity: 0;
+    transform: translateX(-20px);
+    pointer-events: none;
+}
+
+.app.pc .p1s .center ul li a span {
+    transition: transform 0.3s ease;
+}
+
+.app.pc .p1s.minimized .center ul li a span {
+    transform: scale(1.2);
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.app.pc .p1s.minimized.hidden {
+    transform: translateX(-100%);
+}
+
+.app.pc .p1s.active.hidden {
+    transform: translateX(0%);
+}
+
+.app.pc .p1s .center ul {
+    transition: opacity 0.5s ease-in-out;
+}
+
+.app.pc .p1s .user-info img {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.app.pc .p1s.minimized .user-info {
+    margin-top: 100px;
+    margin-bottom: 20px;
+}
+
+.app.pc .p1s.minimized .user-info img {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+    margin-top: 10px;
+}
+
+
+/* Tela de Tablet/TV */
+.app.full .p1s * {
+    margin: 0;
+    padding: 0;
+}
+
+.app.full .p1s {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: width 0.5s ease, transform 0.5s ease;
+}
+
+.app.full .p1s.minimized {
+    transform: translateX(-100%);
+}
+
+.app.full .p1s .center ul {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+}
+
+.app.full .p1s .center ul li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    width: 100px;
+    padding: 30px;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.app.full .p1s .center ul li a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+}
+
+.app.full .p1s .center ul li a span {
+    font-size: 40px;
+    margin: 0;
+    transition: transform 0.3s ease;
+}
+
+.app.full .p1s .center ul li a p {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    font-size: 15px;
+    /* font-weight: bold; */
+    margin-top: 10px;
+    line-height: 1.2;
+}
+
+.app.full .p1s .center ul li a:hover p,
+.app.full .p1s .center ul li.selected a p {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+.app.full .p1s .center ul li:hover {
+    transform: scale(1.1);
+}
+
+.app.full .p1s .center ul li.selected {
+    transform: scale(1.1);
+}
+
+.app.full .p1s .user-info {
+    position: absolute;
+    top: 10px;
+    margin: 0;
+    padding: 0;
+}
+
+.app.full .p1s .user-info img {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.app.full .p1s.active {
+    transform: translateX(0);
+}
+
+
+/* Tela de Smartphone */
+.app.mobile .p1s #hide-p1s {
+    display: none;
+}
+
+.app.mobile .p1s {
+    position: fixed;
+    width: 100%;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    background-color: var(--menu);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.app.mobile .p1s .invisible-drag-camp {
+    position: absolute;
+    width: 100%;
+    height: 100px;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: transparent;
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.app.mobile .p1s .drag-handle {
+    width: 100px;
+    height: 10px;
+    background-color: var(--text);
+    border-radius: 5px;
+    margin: 0 auto;
+    cursor: grab;
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: translateY(10px);
+    z-index: 4;
+} 
+
+.app.mobile .p1s .center {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    margin-top: 0;
+}
+
+.app.mobile .p1s.minimized {
+    width: auto;
+}
+
+
+.app.mobile .p1s .user-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.app.mobile .p1s .user-info img {
+    position: unset;
+}
+
+.app.mobile .p1s .user-info img.profile-picture {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.app.mobile .p1s .user-info .user-name,
+.app.mobile .p1s .user-info .user-email {
+    font-size: 14px;
+    color: var(--text);
+    margin: 0;
+}
+
+.app.mobile .p1s .user-info .user-name {
+    font-weight: bold;
+}
+
+.app.mobile .p1s .user-info .user-email {
+    font-size: 12px;
+}
+
+.app.mobile .p1s .menu-options {
+    justify-content: center;
+}
+
+.app.mobile .p1s .menu-options ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 80%;
+}
+
+.app.mobile .p1s .menu-options li {
+    margin: 10px 5px;
+    background-color: var(--form-bg-sub);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.app.mobile .p1s .menu-options a {
+    display: flex;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.app.mobile .p1s .menu-options a span #ul1-li3 {
+    margin-top: 15px;
+}
+
+.app.mobile .p1s .menu-options a span #ul1-li3 {
+    margin-top: 14px;
+}
+
+.app.mobile .p1s .menu-options a span #ul1-li4 {
+    margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+    .p1s {
+        height: auto;
     }
-    40% {
-        transform: translateY(-10px);
-    }
-    60% {
-        transform: translateY(-5px);
+    #hide-p1s {
+        display: none;
     }
 }

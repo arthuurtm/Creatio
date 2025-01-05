@@ -17,6 +17,7 @@
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.2",
     "mariadb": "^3.4.0",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.16",
     "pinia": "^2.2.4",
     "sequelize": "^6.37.5",

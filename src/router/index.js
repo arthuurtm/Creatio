@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Login from '@/views/LoginView.vue';
-import Games from '@/views/GamesView.vue';
-import GameRun from '@/views/RunView.vue';
-import ResetReq from '@/views/ResetPassdRequest.vue';
-import ResetPassd from '@/views/ResetPassd.vue';
+import Login from '@/views/Login.vue';
+import Home from '@/views/Home.vue';
+import ResetPassword from '@/views/ResetPassword.vue';
+import Signup from '@/views/Signup.vue';
+import Teste from '@/views/pages/Teste.vue';
 import { isAuthenticated } from '@/utils/auth';
 
 const routes = [
@@ -15,27 +15,26 @@ const routes = [
   },
   { 
     path: '/',
-    name: 'Games',
-    component: Games,
+    name: 'Home',
+    component: Home,
     meta: { requiresAuth: false },
-  },
-  {
-    path: '/run/:id',
-    name: 'GameRun',
-    component: GameRun,
-    meta: { requiresAuth: true },
-    props: true, // Passa o parâmetro como prop para o componente
   },
   { 
     path: '/password/reset', 
     name: 'Reset Password', 
-    component: ResetPassd,
+    component: ResetPassword,
     meta: { requiresAuth: false },
   },
   { 
-    path: '/password/request-reset', 
-    name: 'Request Reset Password', 
-    component: ResetReq,
+    path: '/signup', 
+    name: 'Signup', 
+    component: Signup,
+    meta: { requiresAuth: false },
+  },
+  { 
+    path: '/teste', 
+    name: 'Teste', 
+    component: Teste,
     meta: { requiresAuth: false },
   },
 ];
@@ -46,18 +45,20 @@ const router = createRouter({
 });
 
 // Middleware de autenticação para redirecionar usuários
-router.beforeEach((to, from, next) => {
-  const isLoggedIn = isAuthenticated();
+router.beforeEach(async (to, from, next) => {
+  const isLoggedIn = await isAuthenticated();
 
   if (to.meta.requiresAuth && !isLoggedIn) {
+    // Redireciona para a página de login com a rota atual como parâmetro
     next({ path: '/login', query: { redirect: to.fullPath } });
-  
   } else if (to.path === '/login' && isLoggedIn) {
+    // Se o usuário já está autenticado, redireciona para a página inicial
     next({ path: '/' });
-  
   } else {
+    // Permite navegação
     next();
   }
 });
+
 
 export default router;

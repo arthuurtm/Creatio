@@ -8,10 +8,10 @@ export function hrefTo(url) {
     window.location.href = url;
 };
 
-export function emitOpenModal(title, message, action) {
-    this.$emit('openModal', {
-        title: `${title}`,
-        message: `${message}`,
-        action: `${action}`
-    });
-}
+export function openOverlayModal(modalData) {
+    if (overlayInstance) {
+      overlayInstance.openModal(modalData);
+    } else {
+      console.error('Overlay component is not registered.');
+    }
+};

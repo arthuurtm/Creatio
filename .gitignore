@@ -14,6 +14,8 @@ dist-ssr
 coverage
 *.local
 *.env
+/api/__pycache__/
+/api/auth/
 
 /cypress/videos/
 /cypress/screenshots/
@@ -27,5 +29,8 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+*.venv
 
 *.tsbuildinfo
+/HTML5Application/nbproject/private/
+/nbproject/private/

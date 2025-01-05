@@ -8,8 +8,10 @@
     --border: #efeded;
     --input-bg: #e9ecef;
     --input-text: #737c85;
-    --button: #205edc;
-    --button-hover: #2466ea;
+    --default-button: #7e7e7e;
+    --default-button-hover: #757575;
+    --confirm-button: #205edc;
+    --confirm-button-hover: #2466ea;
     --destructive-button: #bb2a2a;
     --destructive-button-hover: #a23333;
     --bg2: #dbdbdb;
@@ -31,8 +33,8 @@
     --border: #181818;
     --input-bg: #2e2e2e;
     --input-text: #e0e0e0;
-    --button: #105faa;
-    --button-hover: #136dc2;
+    --confirm-button: #105faa;
+    --confirm-button-hover: #136dc2;
     --destructive-button: #a20202;
     --destructive-button-hover: #bb0b0b;
     --bg2: #262626;
@@ -50,7 +52,7 @@
 /* Tela de Login Clara */
 :root {
     --form-bg:#ffffff;
-    --form-forgot-link: #a20202;
+    --form-critial-link: #a20202;
     --form-normal-link: #0066ff;
     --form-normal-link-hover: #0066ff;
     --form-bg_f: #f7f7f7;
@@ -62,7 +64,7 @@
 /* Tela de Login Escura */
 :root[data-theme='dark'] {
     --form-bg:#080808;
-    --form-forgot-link: #bb0b0b;
+    --form-critical-link: #bb0b0b;
     --form-normal-link: #0f67ec;
     --form-normal-link-hover: #0066ff;
     --form-bg_f: #151414;
@@ -95,4 +97,32 @@
 .noto-color-emoji-regular {
     font-family: "Noto Color Emoji", sans-serif;
     font-weight: 400;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+}
+  
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 6px solid var(--input-bg);
+    border-top: 6px solid var(--input-text);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+  
+@keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
 }

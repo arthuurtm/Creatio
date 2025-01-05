@@ -1,9 +1,9 @@
 <template>
     <button id="hide-p1s" @click="toggleMenu">☰</button>
     <div 
-        class="p1s" 
-        :class="[isMenuActive ? 'active' : 'minimized', isPcScreen ? 'pc' : '']" 
-        id="p1s" 
+        class="p1s"
+        :class="isMenuActive ? 'active' : 'minimized'"
+        id="p1s"
         ref="menu"
     >
         <div class="invisible-drag-camp" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
@@ -19,53 +19,36 @@
         <div class="center">
             <nav class="menu-options">
                 <ul>
-                    <!-- <li v-for="(item, index) in menuItems" :key="index">
+                    <li @click="navigateTo('Discovery', { title: 'Discovery', typeView: 'full' })" >
                         <a 
-                            v-if="!item.isConfirm"
-                            class="menu-link"
-                            @click="navigateTo(item.route)"
+                        class="menu-link" 
+                        data-section="jogos"
                         >
-                            <span class="material-symbols-outlined">{{ item.icon }}</span>
-                            <p>{{ item.label }}</p>
-                        </a>
-
-                        <a 
-                            v-else
-                            class="menu-link"
-                            @click="item.func"
-                            :data-title="item.label"
-                            :data-message="item.message"
-                            :data-action="item.route"
-                        >
-                            <span class="material-symbols-outlined">{{ item.icon }}</span>
-                            <p>{{ item.label }}</p>
-                        </a>
-                    </li> -->
-                    <li>
-                        <a class="menu-link" @click="navigateTo('jogos')" data-section="jogos">
                             <span class="material-symbols-outlined">sports_esports</span>
                             <p>Jogos</p>
                         </a>
                     </li>
-                    <li>
-                        <a class="menu-link" @click="navigateTo('personagens')" data-section="personagens">
+                    <li @click="navigateTo('Avatar', { title: 'Avatar', typeView: 'popup' })" >
+                        <a 
+                        class="menu-link" 
+                        data-section="personagens"
+                        >
                             <span class="material-symbols-outlined">person</span>
                             <p>Personagens</p>
                         </a>
                     </li>
-                    <li>
-                        <a class="menu-link" @click="navigateTo('configuracoes')" data-section="configuracoes">
+                    <li @click="navigateTo('Settings', { title: 'Settings', typeView: 'popup' })" >
+                        <a 
+                        class="menu-link" 
+                        data-section="configuracoes"
+                        >
                             <span class="material-symbols-outlined">settings</span>
                             <p>Configurações</p>
                         </a>
                     </li>
-                    <li>
+                    <li @click="handleLogout">
                         <a 
                             id="logoutMenuButton" 
-                            @click="handleLogout"
-                            data-title="Sair" 
-                            data-message="Você deseja sair da sua conta?" 
-                            data-action="logout"
                         >
                             <span class="material-symbols-outlined">logout</span>
                             <p>Sair</p>
@@ -80,65 +63,17 @@
 <script>
 export default {
     name: 'Navigator',
-    props: {
-        profilePicture: {
-            type: String,
-            required: true
-        },
-        name: {
-            type: String,
-            required: true
-        },
-        email: {
-            type: String,
-            required: true
-        }
-    },
     data() {
         return {
             startY: 0,
             currentY: 0,
             isDragging: false,
             isMenuActive: false,
-            isPcScreen: window.innerWidth > 900, // Estado inicial baseado na largura da tela
-            halfScreenY: window.innerHeight / 2, // Meta da tela em Y
+            typeScreen: 'pc',
+            halfScreenY: window.innerHeight / 2,
             profilePicture: '/src/assets/img/default/user-data/profile.png',
-            name: 'Joãozinho gatinho',
-            email: 'homemmaislindo@gmail.com',
-            // menuItems: [
-            //     { 
-            //         label: "Jogos", 
-            //         icon: "sports_esports", 
-            //         route: "jogos", 
-            //         isConfirm: false 
-            //     },
-            //     { 
-            //         label: "Criar", 
-            //         icon: "add_circle", 
-            //         route: "criar", 
-            //         isConfirm: false 
-            //     },
-            //     { 
-            //         label: "Personagens", 
-            //         icon: "person", 
-            //         route: "personagens", 
-            //         isConfirm: false 
-            //     },
-            //     { 
-            //         label: "Configurações", 
-            //         icon: "settings", 
-            //         route: "configuracoes", 
-            //         isConfirm: false 
-            //     },
-            //     { 
-            //         label: "Sair", 
-            //         icon: "logout", 
-            //         route: "logout", 
-            //         isConfirm: false, 
-            //         message: "Você deseja sair da sua conta?", 
-            //         func: "handleLogout()",
-            //     }
-            // ]
+            name: 'Teste',
+            email: 'teste@teste.com',
         };
     },
     methods: {
@@ -147,8 +82,9 @@ export default {
                 this[item.func]();  // Chama a função associada dinamicamente
             }
         },
-        navigateTo(section) {
-            this.$emit("navigate", section);
+        navigateTo(page, params) {
+            console.log("(navigateTo) > ", page, params);
+            this.$emit("navigateTo", { page, ...params }); // Emite o evento com os parâmetros adicionais
         },
         handleLogout() {
             this.$emit('openOverlayModal', {
@@ -218,15 +154,6 @@ export default {
                 this.$refs.menu.style.transform = 'translateY(10%)';
             }
         },
-        handleResize() {
-            this.isPcScreen = window.innerWidth > 900;
-        },
-    },
-    mounted() {
-        window.addEventListener('resize', this.handleResize);
-    },
-    beforeDestroy() {
-        window.removeEventListener('resize', this.handleResize);
     },
 };
 </script>
