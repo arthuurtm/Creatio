@@ -180,7 +180,8 @@ export default {
             informationMessage: '',
             buttons: {
                 0: [
-                    { text: 'Confirmar', class: 'btn confirm', type: 'submit', action: 'back' }
+                    { text: 'Sair', class: 'btn cancel', type: 'submit', action: 'back' },
+                    { text: 'Tentar Novamente', class: 'btn confirm', type: 'submit', action: 'forward' }
                 ],
                 1: [
                     { text: 'Cancelar', class: 'btn destructive', type: 'button', action: 'back' },
@@ -211,7 +212,7 @@ export default {
     },
     methods: {
         step0() {
-
+            window.location.reload();
         },
         step1() { 
             this.chgStep();
@@ -221,22 +222,28 @@ export default {
             if (!this.sentCode) {
                 this.isLoading = true;
                 try {
-                    const res = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'signup-generate-code'), {
+                    const res = await fetch(this.$globalFunc.getApiUrl('database', 'signup-generate-code'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: this.email }),
                     });
                     if (res.ok) {
                         this.sentCode = true;
+                        this.chgStep();
+                    } else {
+                        const errorData = await res.json();
+                        this.errorMessage = `${errorData.message}`;
                     }
                 } catch (error) {
                     console.error("Erro:", error);
-                    this.errorMessage = "Erro ao gerar um código.";
+                    this.informationMessage = "Erro interno. Tente novamente mais tarde.";
+                    this.chgStep(0);
                 } finally {
                     this.isLoading = false;
                 }
+            } else {
+                this.chgStep();
             }
-            this.chgStep();
         },
         step3() {
             this.chgStep();
@@ -250,7 +257,7 @@ export default {
                 }
                 
                 this.isLoading = true;
-                const response = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'signup'), {
+                const response = await fetch(this.$globalFunc.getApiUrl('database', 'signup'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -265,31 +272,25 @@ export default {
 
                 if (response.ok) {
                     this.informationMessage = "Conta criada com sucesso! Agora, faça login.";
-                    this.currentStep = 0;
+                    this.buttons[0] = [
+                        { text: 'Ok', class: 'btn confirm', type: 'submit', action: 'forward' }
+                    ];
+                    this.chgStep(0);
                 } else {
                     const errorData = await response.json();
                     if (errorData.errCode === 'invalidCode') {
-                        this.currentStep = 2;
-                        await this.$nextTick();
-                        alert("Código de verificação inválido.");
+                        this.chgStep(3)
                     } else if (errorData.errCode === 'invalidBirthdate') {
-                        this.currentStep = 1;
-                        await this.$nextTick();
-                        alert("Data de nascimento inválida.");
+                        this.chgStep(2)
+                    } else if (errorData.errCode === 'usernameExists') {
+                        this.chgStep(1)
                     }
                     this.errorMessage = `${errorData.message}`;
                 }
             } catch (error) {
                 console.error("Erro:", error);
-                if (response.errCode === 'invalidCode') {
-                    this.currentStep = 2;
-                    await this.$nextTick();
-                    this.errorMessage = "Código de verificação inválido.";
-                } else if (response.errCode === 'invalidBirthdate') {
-                    this.currentStep = 1;
-                    await this.$nextTick();
-                    this.errorMessage = "Data de nascimento inválida.";
-                }
+                this.informationMessage = "Erro interno. Tente novamente mais tarde.";
+                this.chgStep(0);
             } finally {
                 this.isLoading = false;
             }
@@ -321,8 +322,13 @@ export default {
                 console.warn(`Método ${stepMethod} não existe.`);
             }
         },
-        chgStep() {
-            this.goingForward && this.currentStep < 4 ? this.currentStep++ : this.currentStep--;
+        chgStep(value = null) {
+            if (value === null) {
+                this.goingForward && this.currentStep < 4 ? this.currentStep++ : this.currentStep--;
+            } else {
+                this.currentStep = value;
+            }
+            this.$nextTick();
         },
     },
 }

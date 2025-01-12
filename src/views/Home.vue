@@ -1,11 +1,12 @@
 <template>
-    <MainNavigator 
-        @navigateTo="handleNavigate"
-        @openOverlayModal="OpenModal"
-    />
-    <main>
-        <component v-if="currentPage" :is="currentPage"></component>
-    </main>
+    <div class="grid-container">
+        <MainNavigator 
+            @navigateTo="handleNavigate"
+        />
+        <main>
+            <component v-if="currentPage" :is="currentPage"></component>
+        </main>
+    </div>
 </template>
 
 <script>
@@ -15,7 +16,7 @@ import Pages from '@/views/pages';
 export default {
     data() {
         return {
-            currentPage: "Background",
+            currentPage: "Discovery",
         };
     },
     components: {
@@ -26,31 +27,20 @@ export default {
             console.log("(handleNavigate) > ", page);
             this.currentPage = Pages[page] || null;
         },
-        OpenModal(modalData) {
-            this.$emit('openOverlayModal', modalData);
-        },
     },
 };
 </script>
 
 <style>
-    main {
-        position: relative;
-        grid-template-columns: 1fr;
+    .grid-container {
+        display: grid;
+        grid-template-columns: auto auto; /* 'auto' adapta ao tamanho do p1s */
+        grid-template-rows: 1fr; /* Uma única linha */
+        height: 100%; /* Ocupa toda a altura da viewport */
         width: 100%;
-        height: 100%;
-        max-width: 200%;
-        box-sizing: border-box;
-        justify-content: center;
-        align-items: center;
     }
-    video {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vw; /* Largura igual ao viewport */
-        height: 100vh; /* Altura igual ao viewport */
-        object-fit: cover; /* Ajusta a proporção do vídeo preenchendo a tela */
-        z-index: -1; /* Coloca o vídeo atrás de outros elementos */
+
+    .grid-container:has(.p1s.hidden) {
+
     }
 </style>

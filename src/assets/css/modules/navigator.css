@@ -13,11 +13,8 @@
 
 /* CSS CONVENCIONAL */
 .p1s {
-    position: fixed;
-    height: 100%;
-    width: auto;
     z-index: 2;
-    left: 0;
+    align-self: flex-start;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-sizing: border-box;
@@ -28,10 +25,15 @@
     border-right: 1px solid var(--border);
 }
 
-#hide-p1s {
+.p1s-content {
+    height: 100%;
+    width: auto;
+}
+
+.hide-p1s {
     position: absolute;
     top: 26px;
-    left: 10px;
+    left: 16px;
     transform: translateY(-50%);
     font-size: 25px;
     background-color: transparent;
@@ -43,6 +45,25 @@
     justify-content: center;
     align-items: center;
 }
+
+.focus-p1s {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--overlay-bg);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease, visibility 0s 0.3s;
+}
+
+.focus-p1s.active {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.3s ease, visibility 0s;
+}
+
 
 .p1s.minimized {
     width: 40px;
@@ -171,6 +192,11 @@ header {
 
 
 /* Tela de PC/Laptop */
+.app.pc .p1s {
+    display: grid !important;
+    grid-column: 1;
+}
+
 .app.pc .p1s {
     height: 100%;
     width: 240px;
@@ -337,7 +363,7 @@ header {
 
 
 /* Tela de Smartphone */
-.app.mobile .p1s #hide-p1s {
+.app.mobile .hide-p1s {
     display: none;
 }
 
@@ -348,9 +374,9 @@ header {
     left: 0;
     right: 0;
     background-color: var(--menu);
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    /* border-top-left-radius: 20px;
+    border-top-right-radius: 20px; */
+    /* box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); */
     transform: translateY(100%);
     transition: transform 0.3s ease;
     z-index: 1000;
@@ -395,7 +421,6 @@ header {
 .app.mobile .p1s.minimized {
     width: auto;
 }
-
 
 .app.mobile .p1s .user-info {
     display: flex;
@@ -470,7 +495,7 @@ header {
     .p1s {
         height: auto;
     }
-    #hide-p1s {
+    .hide-p1s {
         display: none;
     }
 }

@@ -1,41 +1,51 @@
-import { getCompleteUrl } from './globalFunc';
+import { getApiUrl } from './globalFunc';
+import { useUserStore } from '@/stores/userData';
 
 export async function isAuthenticated() {
-  const token = localStorage.getItem('authToken');
-
-  if (!token) {
-    console.warn('Token não encontrado. Usuário não está autenticado.');
-    return false;
-  }
-
   try {
-    // Envia o token para validação na API
-    const response = await fetch(getCompleteUrl(window.location.host, 3000, 'validate-user-session'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        sessionId: token,
-      }),
+
+    const res = await fetch(getApiUrl('database', 'validate-user-session'), {
+      credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' },
     });
 
-    const data = await response.json();
+    const data = await res.json();
 
-    if (response.ok) {
+    if (res.ok) {
       console.log('Sessão válida:', data);
+      handleUserData();
       return true;
     } else {
       console.warn('Sessão inválida:', data.message);
-      logout();
+      // logout();
       return false;
     }
+
   } catch (error) {
     console.error('Erro ao validar a sessão:', error);
     return false;
   }
 }
+
+async function handleUserData() {
+  const res = await fetch(getApiUrl('database', 'check-user'), {
+    credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await res.json();
+  if (data) {
+    useUserStore().setUserData({ 
+      id: data.id,
+      name: data.nickname,
+      username: data.username,
+      email: data.email,
+      profilePicture: null 
+    });
+  }
+}
   
-export function logout() {
-  localStorage.removeItem('authToken');
+export async function logout() {
+  await fetch(getApiUrl('database', '/logout'), { method: 'POST' });
+  const userStore = useUserStore();
+  userStore.clearUserData();
 }
 
 export function setAuthToken(token) {

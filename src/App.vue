@@ -1,41 +1,28 @@
 <template>
-  <div 
-    id="app"
-    class="app"
-    :class="[this.typeScreen]" 
-  >
-    <Overlay 
-      ref="overlayRef" 
-    />
-    <div class="toggle-dark">
-      <label class="switch">
-        <input
-          type="checkbox"
-          id="toggle-dark"
-          v-model="isDarkMode"
-          @change="toggleTheme"
-        />
-        <span class="slider"></span>
-      </label>
-    </div>
-    <router-view 
-      @openOverlayModal="handleOverlayModal"
-    />
+  <div class="toggle-dark">
+    <label class="switch">
+      <input
+        type="checkbox"
+        id="toggle-dark"
+        v-model="isDarkMode"
+        @change="toggleTheme"
+      />
+      <span class="slider"></span>
+    </label>
   </div>
+  <router-view 
+  />
 </template>
 
 <script>
-import Overlay from "@/components/ActionOverlay.vue";
-
 export default {
   name: "App",
-
   data() {
     return {
       isDarkMode: false,
+      typeScreen: 'pc',
     };
   },
-
   methods: {
     toggleTheme() {
       // Aplica o tema com base no estado reativo
@@ -43,11 +30,6 @@ export default {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("data-theme", theme);
       document.cookie = `data-theme=${theme}; path=/`;
-    },
-
-    handleOverlayModal(modalData) {
-      console.log(`App.vue > handleOverlayModal() > ${modalData}`);
-      this.$refs.overlayRef.openModal(modalData);
     },
 
     detectInitialTheme() {
@@ -80,33 +62,24 @@ export default {
       const height = window.innerHeight;
 
       if (width < 768) {
-          this.typeScreen = 'mobile'; // Interface para dispositivos móveis
-      } else if ((width >= 768 && width <= 1024) || height >= 900) {
-          this.typeScreen = 'full'; // Interface unificada para tablet e TV
+          this.typeScreen = 'mobile';
+      // } else if ((width >= 768 && width <= 1024) || height >= 900) {
+      //     this.typeScreen = 'full';
       } else {
-          this.typeScreen = 'pc'; // Interface para desktop
+          this.typeScreen = 'pc';
       }
     },
   },
-
   mounted() {
     this.detectInitialTheme();
     this.watchSystemTheme();
     this.handleResize();
     window.addEventListener('resize', this.handleResize);
   },
-
-  beforeDestroy() {
-    window.removeEventListener('resize', this.handleResize);
-  },
-
   beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize);
     const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     darkModeMediaQuery.removeEventListener("change", this._darkModeListener);
-  },
-
-  components: {
-    Overlay,
   },
 };
 </script>
@@ -130,9 +103,10 @@ export default {
     justify-content: center;
     align-items: center;
   }
-  #app {
-    flex: 1;
+  .app {
     display: flex;
+    flex: 1;
+    position: relative;
     flex-direction: column;
     width: 100vw;
     height: 100vh;

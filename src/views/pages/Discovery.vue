@@ -2,21 +2,25 @@
   <div class="main-grid">
     <div class="games-grid">
       <div id="title">
-        <h3>Jogos disponíveis</h3>
+        <b><h3 class="gradient upper" id="main">Jogos disponíveis</h3></b>
       </div>
       <div id="content">
         <button id="scroll-left" class="gamePage btn scroll" @click="scrollLeft">
           <span class="material-symbols-outlined">arrow_back_ios</span>
         </button>
+
         <div class="window" id="window1" ref="gdWindow">
-          <div v-if="games.length > 0">
+          <div v-if="games.length > 0" class="window">
+
             <div v-for="game in games" :key="game.id" class="container gameCard">
               <div class="title">
                 <p>{{ game.title }}</p>
               </div>
+
               <div class="banner">
                 <img id="banner" :src="`./public/${game.version}/settings/banner.png`" alt="Banner do jogo" />
               </div>
+              
               <div class="uiOptions">
                 <div id="play">
                   <form @submit.prevent="playGame(game.version)">
@@ -27,6 +31,7 @@
                 </div>
               </div>
             </div>
+
           </div>
           <div v-else>
             Nada a mostrar.
@@ -68,7 +73,7 @@ export default {
       this.currentGameVersion = gameVersion;
     },
     loadGames() {
-      const url = this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'encontrar-jogos');
+      const url = this.$globalFunc.getApiUrl('database', 'encontrar-jogos');
       
       fetch(url)
         .then(response => {

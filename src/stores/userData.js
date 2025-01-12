@@ -10,7 +10,6 @@ export const useUserStore = defineStore('user', {
     additionalData: {},
   }),
   actions: {
-
     setUserData(userData) {
       this.id = userData.id;
       this.name = userData.name;
@@ -18,7 +17,6 @@ export const useUserStore = defineStore('user', {
       this.profilePicture = userData.profilePicture;
       this.additionalData = userData.additionalData || {};
     },
-
     clearUserData() {
       this.id = '';
       this.name = '';
@@ -26,5 +24,14 @@ export const useUserStore = defineStore('user', {
       this.profilePicture = '';
       this.additionalData = {};
     },
+  },
+  persist: {
+    enabled: true, // Habilita a persistência para este store
+    strategies: [
+      {
+        key: 'user', // Nome da chave no storage
+        storage: localStorage, // Armazena no localStorage
+      },
+    ],
   },
 });

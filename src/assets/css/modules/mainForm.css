@@ -141,7 +141,7 @@
     right: 0;
     display: flex;
     justify-content: flex-end;
-    margin-top: 15px;
+    margin-top: 20px;
     gap: 10px
 }
 
@@ -212,14 +212,18 @@ hr {
     }
 
     .mform {
-        width: 600px;
-        border-radius: 0px;
+        border-radius: 0;
         box-shadow: none;
-        flex-direction: column;
-        padding: none;
+        padding: 0;
         min-width: 30vh;
         border: none;
-        width: none;
+        width: unset;
+        height: none;
+    }
+
+    .sepButtons {
+        justify-content: center;
+        align-items: center;
     }
 
 }
@@ -228,11 +232,12 @@ hr {
     
     .mform {
         grid-template-rows: auto auto; /* Cada linha ajustará a altura automaticamente */
-        grid-template-columns: none; /* Remove as colunas */
+        grid-template-columns: none;
         border-radius: unset;
         padding: 35px;
-        gap: 15px; /* Espaçamento entre os elementos */
+        gap: 0; /* Espaçamento entre os elementos */
         width: auto;
+        height: auto;
     }
     
     .mform .left {
@@ -248,6 +253,14 @@ hr {
 
     .mform .left h1 {
         text-align: center;
+    }
+
+    .formStep {
+        height: unset;
+    }
+
+    .sepButtons {
+        position: unset;
     }
 
     #logo {

@@ -2,34 +2,39 @@
 .btn {
     display: inline-block;
     width: auto;
-    padding: 10px 20px; /* 10px para cima/baixo e 20px para os lados */
+    padding: 10px 20px;
     border-radius: 30px;
     cursor: pointer;
     font-size: 15px;
     font-weight: 600;
     transition: all linear 160ms;
     margin: 5px;
-    color: #fff;
-    background-color: var(--default-button);
+    color: var(--text);
+    background-color: transparent;
     text-align: center;
-    border: 1px solid transparent;
+    border: 1px solid var(--default-button);
 }
 
 
 .btn:hover {
-    transform: scale(1.05);
+    filter: brightness(110%);
 }
 
-.btn.destructive, .btn.cancel {
-    background-color: var(--destructive-button);
-    /* border: 3px dotted black; */
+.btn.destructive {
+    border: 2px dotted var(--destructive-button);
+}
+
+.btn.cancel {
+    border: 1px solid var(--destructive-button);
 }
 
 .btn.destructive:hover, .btn.cancel:hover {
-    background-color: var(--destructive-button-hover);
+    border: 1px solid var(--destructive-button-hover);
 }
 
 .btn.confirm {
+    color: #fff;
+    border: 1px solid var(--confirm-button);
     background-color: var(--confirm-button);
 }
 
@@ -45,21 +50,6 @@
 
 .modal-buttons .btn {
     width: 100%;
-}
-
-#customBtn {
-    display: inline-block;
-    background: transparent ;
-    color: var(--text);
-    border-radius: 20px;
-    border: thin solid var(--border);
-    white-space: nowrap;
-    text-align: center;
-}
-
-#customBtn:hover {
-    cursor: pointer;
-    background-color: #f7f7f7;
 }
 
 #create-avatar-button {
@@ -167,4 +157,32 @@
 
 .input.star .star.hover {
     color: #FFD700;
+}
+
+
+/* Elementos de texto, títulos e relacionados */
+.gradient {
+    background: linear-gradient(to right, #075504, #0e880a); /* Gradiente */
+    -webkit-mask-image: linear-gradient(black, black); /* Cria uma máscara no texto */
+    -webkit-mask-clip: text; /* Aplica a máscara ao texto */
+    mask-image: linear-gradient(black, black); /* Compatível com navegadores modernos */
+    mask-clip: text;
+    color: transparent; /* Faz o fundo aparecer através do texto */
+}
+
+@-moz-document url-prefix() {
+    .gradient {
+        background-clip: text;
+    }
+}
+
+/* Variante para texto em maiúsculas */
+.gradient.upper {
+    text-transform: uppercase;
+    font-size: 20px;
+}
+
+
+.gradient#main {
+    -webkit-background: linear-gradient(#075504, #0e880a);
 }

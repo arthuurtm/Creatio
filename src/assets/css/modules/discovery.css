@@ -10,10 +10,18 @@
     background-color: var(--bg);
 }
 
+main {
+    display: grid;
+    grid-column: 2;
+    width: 100%;
+    height: 100%;
+}
+
 /* Estilo principal */
 .main-grid {
+    display: grid;
+    padding: 15px;
     position: relative;
-    grid-template-columns: 1fr;
     box-sizing: border-box;
     justify-content: center;
     align-items: center;
@@ -24,20 +32,12 @@
     margin-bottom: 80px;
 }
 
-.homeTitle {
-    margin-left: 50px;
-}
-
 /* Grade de jogos */
 .games-grid {
     display: flex;
     flex-direction: column;
     overflow: hidden;
     margin-top: 10px;
-}
-
-.games-grid #title {
-    margin-left: 60px;
 }
 
 .games-grid #content {

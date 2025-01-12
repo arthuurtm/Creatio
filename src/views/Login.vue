@@ -63,11 +63,9 @@ export default {
       email: "",
       password: "",
       errorMessage: "",
-      isDarkMode: false,
     };
   },
   mounted() {
-    this.isDarkMode = JSON.parse(localStorage.getItem("isDarkMode")) || false;
 
     google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GCLIENT_LOGIN_ID,
@@ -97,7 +95,8 @@ export default {
 
         const decodedToken = jwt_decode(response.credential);
         const gEmail = decodedToken.email;
-        const res = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'login'), {
+        const res = await fetch(this.$globalFunc.getApiUrl('database', 'login'), {
+          credentials: 'include',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -108,8 +107,6 @@ export default {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Erro desconhecido');
-
-        sessionStorage.setItem('authToken', data.sessionId);
         this.handleUserData(gEmail);
         this.$router.push({ name: 'Home' });
 
@@ -121,7 +118,8 @@ export default {
 
     async handleLogin() {
       try {
-        const res = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'login'), {
+        const res = await fetch(this.$globalFunc.getApiUrl('database', 'login'), {
+          credentials: 'include',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -133,8 +131,6 @@ export default {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Erro desconhecido');
-
-        sessionStorage.setItem('authToken', data.sessionId);
         this.handleUserData(this.email);
         this.$router.push({ name: 'Home' });
 
@@ -145,7 +141,7 @@ export default {
     },
 
     async handleUserData(email) {
-      const res = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'check-user'), {
+      const res = await fetch(this.$globalFunc.getApiUrl('database', 'check-user'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

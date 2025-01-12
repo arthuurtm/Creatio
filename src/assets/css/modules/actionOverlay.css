@@ -9,9 +9,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s;
+    opacity: 1;
+    animation: fadeIn 0.3s ease forwards;
     z-index: 9999;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -63,7 +62,13 @@
       transform: scale(1);
       opacity: 1;
     }
-  }
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
 
 /* Quando o modal estiver ativo */
 .overlay.active {

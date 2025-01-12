@@ -16,6 +16,7 @@ coverage
 *.env
 /api/__pycache__/
 /api/auth/
+/api/certificate
 
 /cypress/videos/
 /cypress/screenshots/

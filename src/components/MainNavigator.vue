@@ -1,24 +1,35 @@
 <template>
-    <button id="hide-p1s" @click="toggleMenu">☰</button>
+    <div 
+        class="focus-p1s"
+        :class="isFocusElement && 'active'"
+    ></div>
+    <div class="hide-p1s" @click="toggleMenu">☰</div>
     <div 
         class="p1s"
         :class="isMenuActive ? 'active' : 'minimized'"
         id="p1s"
         ref="menu"
     >
+    <div class="p1s-content">
         <div class="invisible-drag-camp" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
             <div class="drag-handle" @click="onClickHandle"></div>
         </div>
         <div class="user-info">
             <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
             <div class="mobile-adaptive-usrInfo">
-                <p class="user-name">{{ name }}</p>
-                <p class="user-email">{{ email }}</p>
+                <p class="user-name">{{ userStore.name }}</p>
+                <p class="user-email">{{ userStore.email }}</p>
             </div>
         </div>
         <div class="center">
             <nav class="menu-options">
                 <ul>
+                    <li v-if="!isAuthenticated">
+                        <a href="/login">
+                            <span class="material-symbols-outlined">login</span>
+                            <p>Entrar</p>
+                        </a>
+                    </li>
                     <li @click="navigateTo('Discovery', { title: 'Discovery', typeView: 'full' })" >
                         <a 
                         class="menu-link" 
@@ -28,7 +39,7 @@
                             <p>Jogos</p>
                         </a>
                     </li>
-                    <li @click="navigateTo('Avatar', { title: 'Avatar', typeView: 'popup' })" >
+                    <li v-if="isAuthenticated" @click="navigateTo('Avatar', { title: 'Avatar', typeView: 'popup' })" >
                         <a 
                         class="menu-link" 
                         data-section="personagens"
@@ -46,7 +57,7 @@
                             <p>Configurações</p>
                         </a>
                     </li>
-                    <li @click="handleLogout">
+                    <li v-if="isAuthenticated" @click="handleLogout">
                         <a 
                             id="logoutMenuButton" 
                         >
@@ -58,23 +69,45 @@
             </nav>
         </div>
     </div>
+    </div>
 </template>
   
 <script>
+import { useUserStore } from '@/stores/userData';
+import { isAuthenticated, logout } from '@/utils/auth';
 export default {
     name: 'Navigator',
+    setup() {
+        const userStore = useUserStore();
+        return {
+            userStore,
+        };
+    },
     data() {
         return {
             startY: 0,
             currentY: 0,
             isDragging: false,
             isMenuActive: false,
-            typeScreen: 'pc',
+            isFocusElement: false,
+            isAuthenticated: false,
             halfScreenY: window.innerHeight / 2,
             profilePicture: '/src/assets/img/default/user-data/profile.png',
-            name: 'Teste',
-            email: 'teste@teste.com',
         };
+    },
+    async mounted() {
+        this.isAuthenticated = await isAuthenticated();
+    },
+    watch: {
+        isMenuActive(value) {
+            if (value) {
+                console.log('Informação: elemento focado.')
+                this.isFocusElement = true;
+            } else {
+                console.log('Informação: elemento desfocado.')
+                this.isFocusElement = false;
+            }
+        }
     },
     methods: {
         handleAction(item) {
@@ -87,10 +120,21 @@ export default {
             this.$emit("navigateTo", { page, ...params }); // Emite o evento com os parâmetros adicionais
         },
         handleLogout() {
-            this.$emit('openOverlayModal', {
-                message: 'Você deseja sair da sua conta?',
+            this.$overlay.show({
                 title: 'Sair',
-                action: 'logout'
+                message: 'Você quer mesmo sair?',
+                btn1: {
+                text: 'Não',
+                class: 'btn',
+                },
+                btn2: {
+                text: 'Sim',
+                class: 'btn confirm',
+                action: () => {
+                    logout();
+                    window.location.reload();
+                },
+                },
             });
         },
         toggleMenu() {

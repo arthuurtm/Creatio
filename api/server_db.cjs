@@ -1,18 +1,31 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
 const { Sequelize, DataTypes } = require('sequelize');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
-const { ErrorCodes } = require('vue');
+const cookieParser = require('cookie-parser');
+const fs = require('fs');
+const https = require('https');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 require('dotenv').config();
 
+const httpOptions = {
+  key: fs.readFileSync('./certificate/auto/key.pem'),
+  cert: fs.readFileSync('./certificate/auto/cert.pem')
+}
+
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',
+    'https://02a5-138-0-83-231.ngrok-free.app'
+  ],
+  credentials: true
+};
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
 const sequelize = new Sequelize(process.env.DATABASE, process.env.DB_USER, process.env.DB_PASSWORD, {
   host: 'localhost',
@@ -76,6 +89,7 @@ async function createSession(user) {
     createdAt: new Date(),
     userId: user.id,
   });
+  console.warn('SessionID: ', sessionId);
   return sessionId;
 }
 
@@ -87,13 +101,18 @@ app.post('/login', async (req, res) => {
   if (!user) return res.status(400).json({ message: 'Usuário não encontrado' });
 
   if (type === 'default') {
-
     try {
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
       if (!isPasswordValid) return res.status(400).json({ message: 'Senha incorreta' });
-      
-      const sessionId = createSession(user);
-      res.status(200).json({ sessionId: sessionId });
+
+      const sessionId = await createSession(user);
+      res.status(200)
+        .cookie('sessionId', sessionId, {
+          httpOnly: true,
+          // secure: process.env.NODE_ENV === 'production', // Apenas em HTTPS
+          sameSite: 'Strict',
+        })
+        .json({ message: 'Sessão criada com sucesso' });
 
     } catch (error) {
       console.error('Erro ao fazer login:', error);
@@ -101,27 +120,54 @@ app.post('/login', async (req, res) => {
     }
 
   } else if (type === 'google') {
-  
     try {
-      const sessionId = createSession(user);
-      res.status(200).json({ sessionId: sessionId });
-      
+      const sessionId = await createSession(user);
+      res.status(200)
+        .cookie('sessionId', sessionId, {
+          httpOnly: true,
+          // secure: process.env.NODE_ENV === 'production',
+          sameSite: 'Strict',
+        })
+        .json({ message: 'Sessão criada com sucesso' });
+
     } catch (error) {
       console.error('Erro ao fazer login:', error);
       res.status(500).json({ message: 'Erro interno do servidor.' });
     }
-
   }
 });
 
 
+app.post('/logout', (req, res) => {
+  res.clearCookie('sessionId', { path: '/' });
+  res.status(200).json({ message: 'Usuário deslogado com sucesso' });
+});
+
+
 app.post('/check-user', async (req, res) => {
-  const { email } = req.body;
+  const email = req.body?.email;
+  const sessionId = req.cookies?.sessionId;
+
+  if (!email && !sessionId) {
+    return res.status(400).json({ message: 'É necessário fornecer um email ou sessionId' });
+  }
 
   try {
-    const user = await User.findOne({ where: { email } });
+    let user;
+
+    if (sessionId) {
+      token = await Session.findOne({ where: { sessionId } });
+      if (token) {
+        let sessionToken = token.sessionToken
+        user = await User.findOne({ where: {sessionToken} })
+      }
+
+    } else if (email) {
+      user = await User.findOne({ where: { email } });
+    }
+
     if (!user) {
-      return res.status(400).json({ message: 'Usuário não encontrado' });
+      return res.status(404).json({ message: 'Usuário não encontrado' });
     }
 
     const userData = {
@@ -141,29 +187,27 @@ app.post('/check-user', async (req, res) => {
 
 
 app.post('/validate-user-session', async (req, res) => {
-  const { sessionId } = req.body;
-
-  if (!sessionId) {
-    return res.status(400).json({ message: 'SessionId é obrigatório.' });
-  }
 
   try {
-    // Buscar a sessão no banco
-    const session = await Session.findOne({where: { sessionId }, include: User});
 
-    if (!session) {
+    const sessionId = req.cookies?.sessionId;
+    if (!sessionId) {
+      return res.status(400).json({ message: 'SessionId é obrigatório.' });
+    }
+
+    let step1 = await Session.findOne({where: { sessionId }});
+    if (!step1) {
       return res.status(400).json({ message: 'Sessão não encontrada.' });
     }
+    let session = step1.sessionToken;
 
-    const user = session.User;
-
-    // Verifica se o token da sessão é igual ao token atual do usuário
-    if (session.sessionToken !== user.sessionToken) {
-      return res.status(401).json({ message: 'Sessão inválida (senha alterada ou revogada).' });
+    let step2 = await User.findOne({ where: { sessionToken: session } });
+    if (!step2) {
+      return res.status(400).json({ message: 'Sessão inválida.'});
     }
 
-    // Sessão válida
-    res.status(200).json({ message: 'Sessão válida.', userId: user.id, username: user.username });
+    res.status(200).json({ message: 'Sessão válida.'});
+
   } catch (error) {
     console.error('Erro ao validar a sessão:', error);
     res.status(500).json({ message: 'Erro interno do servidor.' });
@@ -177,6 +221,11 @@ app.post('/signup-generate-code', async (req, res) => {
   try {
     const verificationCode = generateRandomNumbers();
     const expiresAt = new Date(Date.now() + 3600000); // 1 hora de validade
+    const user = await User.findOne({ where: { email } });
+
+    if (user) {
+      return res.status(400).json({ message: 'Este e-mail já foi usado.', errCode: 'emailInUse' });
+    }
 
     // Cria o código de verificação no banco de dados
     await EmailCodeVerify.create({ email, type: 2, token: verificationCode, expiresAt });
@@ -198,7 +247,7 @@ app.post('/signup-generate-code', async (req, res) => {
     if (!sendEmailResponse.ok) {
       const errorData = await sendEmailResponse.json();
       console.error('Erro ao enviar e-mail:', errorData.message);
-      return res.status(500).json({ message: 'Erro ao enviar e-mail.', errCode: 'emailSendError' });
+      return res.status(400).json({ message: 'Erro ao enviar e-mail.', errCode: 'emailSendError' });
     }
 
     res.status(200).json({ message: 'E-mail enviado com sucesso.', verificationCode });
@@ -215,6 +264,7 @@ app.post('/signup', async (req, res) => {
   const currentDate = new Date();
   const birthDateObj = new Date(birthdate);
   const verifyEntry = await EmailCodeVerify.findOne({ where: { email, type: 2, token:verificationCode } });
+  const usernameExists = await User.findOne({ where: { username } });
 
   if (!verifyEntry) {
     return res.status(400).json({ message: 'Código inválido', errCode: 'invalidCode' });
@@ -228,6 +278,10 @@ app.post('/signup', async (req, res) => {
     return res.status(400).json({ message: 'A data de nascimento não pode ser no futuro', errCode: 'invalidDatebirth' });
   } else {
     console.log('Data de nascimento válida. ---');
+  }
+
+  if (usernameExists) {
+    return res.status(400).json({ message: 'Nome de usuário já existe', errCode: 'usernameExists' });
   }
  
   try {
@@ -405,4 +459,8 @@ app.listen(port, () => {
   console.log('.::: DATABASE BACKEND :::.');
   console.log(`Servidor rodando na porta ${port}\n`)
 });
+// https.createServer(httpOptions, app).listen(port, () => {
+//   console.log('.::: DATABASE BACKEND :::.');
+//   console.log(`Servidor rodando na porta ${port}\n`)
+// });
 
