@@ -1,9 +1,5 @@
 <template>
-    <div 
-        class="focus-p1s"
-        :class="isFocusElement && 'active'"
-    ></div>
-    <div class="hide-p1s" @click="toggleMenu">☰</div>
+    <div class="hide-p1s" @click="updateMenuState(true)">☰</div>
     <div 
         class="p1s"
         :class="isMenuActive ? 'active' : 'minimized'"
@@ -11,23 +7,29 @@
         ref="menu"
     >
     <div class="p1s-content">
-        <div class="invisible-drag-camp" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
-            <div class="drag-handle" @click="onClickHandle"></div>
-        </div>
-        <div class="user-info">
+        <div class="user-info" v-if="isAuthenticated">
             <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
             <div class="mobile-adaptive-usrInfo">
                 <p class="user-name">{{ userStore.name }}</p>
                 <p class="user-email">{{ userStore.email }}</p>
             </div>
         </div>
+        <div class="invisible-drag-camp" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
+            <div class="drag-handle" @click="updateMenuState()" @touchstart.stop></div>
+        </div>
         <div class="center">
             <nav class="menu-options">
                 <ul>
                     <li v-if="!isAuthenticated">
-                        <a href="/login">
-                            <span class="material-symbols-outlined">login</span>
+                        <a @click="this.$router.push({name: 'Login'})">
+                            <span class="material-symbols-outlined notranslate">login</span>
                             <p>Entrar</p>
+                        </a>
+                    </li>
+                    <li v-if="isAuthenticated">
+                        <a @click="this.$router.push({name: 'Create'})">
+                            <span class="material-symbols-outlined notranslate">add_circle</span>
+                            <p>Criar</p>
                         </a>
                     </li>
                     <li @click="navigateTo('Discovery', { title: 'Discovery', typeView: 'full' })" >
@@ -35,7 +37,7 @@
                         class="menu-link" 
                         data-section="jogos"
                         >
-                            <span class="material-symbols-outlined">sports_esports</span>
+                            <span class="material-symbols-outlined notranslate">sports_esports</span>
                             <p>Jogos</p>
                         </a>
                     </li>
@@ -44,7 +46,7 @@
                         class="menu-link" 
                         data-section="personagens"
                         >
-                            <span class="material-symbols-outlined">person</span>
+                            <span class="material-symbols-outlined notranslate">person</span>
                             <p>Personagens</p>
                         </a>
                     </li>
@@ -53,7 +55,7 @@
                         class="menu-link" 
                         data-section="configuracoes"
                         >
-                            <span class="material-symbols-outlined">settings</span>
+                            <span class="material-symbols-outlined notranslate">settings</span>
                             <p>Configurações</p>
                         </a>
                     </li>
@@ -61,7 +63,7 @@
                         <a 
                             id="logoutMenuButton" 
                         >
-                            <span class="material-symbols-outlined">logout</span>
+                            <span class="material-symbols-outlined notranslate">logout</span>
                             <p>Sair</p>
                         </a>
                     </li>
@@ -77,6 +79,7 @@ import { useUserStore } from '@/stores/userData';
 import { isAuthenticated, logout } from '@/utils/auth';
 export default {
     name: 'Navigator',
+    emits: ['navigateTo', 'focus'],
     setup() {
         const userStore = useUserStore();
         return {
@@ -89,35 +92,30 @@ export default {
             currentY: 0,
             isDragging: false,
             isMenuActive: false,
-            isFocusElement: false,
             isAuthenticated: false,
-            halfScreenY: window.innerHeight / 2,
-            profilePicture: '/src/assets/img/default/user-data/profile.png',
+            profilePicture: '/src/assets/images/default/user-data/profile.png',
         };
     },
     async mounted() {
         this.isAuthenticated = await isAuthenticated();
-    },
-    watch: {
-        isMenuActive(value) {
-            if (value) {
-                console.log('Informação: elemento focado.')
-                this.isFocusElement = true;
-            } else {
-                console.log('Informação: elemento desfocado.')
-                this.isFocusElement = false;
-            }
-        }
+        this.updateMenuState(true); // Ativa o menu automaticamente
     },
     methods: {
+        handleIsMobile() {
+            const app = document.getElementById("app");
+            const isMobile = app && app.classList.contains('mobile');
+            console.log('handleIsMobile() > ', isMobile);
+            return isMobile;
+        },
         handleAction(item) {
             if (item.func && typeof this[item.func] === "function") {
                 this[item.func]();  // Chama a função associada dinamicamente
             }
         },
-        navigateTo(page, params) {
+        navigateTo(page, params = {}) {
             console.log("(navigateTo) > ", page, params);
-            this.$emit("navigateTo", { page, ...params }); // Emite o evento com os parâmetros adicionais
+            this.$emit("navigateTo", { page, params }); // Emite o evento com os parâmetros adicionais
+            this.updateMenuState(this.handleIsMobile());
         },
         handleLogout() {
             this.$overlay.show({
@@ -137,26 +135,20 @@ export default {
                 },
             });
         },
-        toggleMenu() {
-            //Função para esconder/mostrar o menu
-            const menu = document.getElementById("p1s");
-            if (menu.classList.contains('minimized')) {
-                menu.classList.remove('minimized');
-                menu.classList.add('active');
-            } else {
-                menu.classList.remove('active');
-                menu.classList.add('minimized');
-            }
-        },
         onTouchStart(event) {
+            console.log('onTouchStart');
             this.startY = event.touches[0].clientY;
             this.isDragging = true;
         },
         onTouchMove(event) {
+            event.stopPropagation();
+            event.preventDefault();
             if (!this.isDragging) return;
 
             this.currentY = event.touches[0].clientY;
             const translateY = this.currentY - this.startY;
+
+            // Aplica a transformação temporária enquanto o usuário arrasta
             this.$refs.menu.style.transform = `translateY(${translateY}px)`;
         },
         onTouchEnd() {
@@ -165,39 +157,42 @@ export default {
 
             const deltaY = this.currentY - this.startY;
 
-            // Defina um valor mínimo de arrasto para ativar a mudança (e.g., 50px)
+            // Defina o valor mínimo para considerar como mudança de estado
             const activationThreshold = 50;
 
             if (deltaY < -activationThreshold) {
-                // Arrastou para cima o suficiente
-                this.$refs.menu.style.transform = 'translateY(10%)';
+                // Arrastou para cima
                 this.isMenuActive = true;
+                this.focus(true);
             } else if (deltaY > activationThreshold) {
-                // Arrastou para baixo o suficiente
-                this.$refs.menu.style.transform = 'translateY(100%)';
+                // Arrastou para baixo
                 this.isMenuActive = false;
-            } else {
-                // Caso o movimento seja pequeno, mantém o estado atual
+                this.focus(false);
+            }
+
+            this.$refs.menu.style.transform = '';
+        },
+        updateMenuState(force) {
+            force = !!force;
+            const value = this.handleIsMobile();
+            if (value || force) {
                 if (this.isMenuActive) {
-                    this.$refs.menu.style.transform = 'translateY(10%)';
+                    this.isMenuActive = false;
+                    value && this.focus(false);
                 } else {
-                    this.$refs.menu.style.transform = 'translateY(100%)';
+                    this.isMenuActive = true;
+                    value && this.focus(true);
                 }
             }
+            console.log('updateMenuState() > ', 
+                'isMenuActive: ', this.isMenuActive, 
+                ', isMobile: ', value,
+                ', force: ', force
+            );
         },
-        onClickHandle() {
-            const menu = document.getElementById("p1s");
-            console.log(`OnClickHandle() > Clique no botão do menu detectado. ${menu.classList.contains('minimized')}`)
-            if (menu.classList.contains('minimized')) {
-                console.log('Entrou no if');
-                this.isMenuActive = false;
-                this.$refs.menu.style.transform = 'translateY(100%)';
-            } else {
-                console.log('Entrou no else');
-                this.isMenuActive = true;
-                this.$refs.menu.style.transform = 'translateY(10%)';
-            }
-        },
+        focus(value) {
+            this.$emit('focus', value);
+        }
     },
 };
 </script>

@@ -1,12 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { isAuthenticated } from '@/utils/auth';
 import Login from '@/views/Login.vue';
 import Home from '@/views/Home.vue';
 import ResetPassword from '@/views/ResetPassword.vue';
 import Signup from '@/views/Signup.vue';
-import Teste from '@/views/pages/Teste.vue';
-import { isAuthenticated } from '@/utils/auth';
+import NotFound from '@/views/errors/NotFound.vue';
+import Create from '@/views/Create.vue';
+import About from '@/views/About.vue';
 
 const routes = [
+  { 
+    // 404
+    path: '/:pathMatch(.*)*',
+    name: 'Not_Found',
+    component: NotFound 
+  },
   { 
     path: '/login', 
     name: 'Login', 
@@ -14,16 +22,15 @@ const routes = [
     meta: { requiresAuth: false },
   },
   { 
-    path: '/',
+    path: '/home',
     name: 'Home',
     component: Home,
     meta: { requiresAuth: false },
   },
   { 
     path: '/password/reset', 
-    name: 'Reset Password', 
+    name: 'Password_Reset', 
     component: ResetPassword,
-    meta: { requiresAuth: false },
   },
   { 
     path: '/signup', 
@@ -31,11 +38,17 @@ const routes = [
     component: Signup,
     meta: { requiresAuth: false },
   },
-  { 
-    path: '/teste', 
-    name: 'Teste', 
-    component: Teste,
-    meta: { requiresAuth: false },
+  {
+    path: '/create/:id?',
+    name: 'Create',
+    component: Create,
+    meta: {requiresAuth: true },
+    props: true
+  },
+  {
+    path: '/',
+    name: 'About',
+    component: About,
   },
 ];
 
@@ -51,9 +64,11 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth && !isLoggedIn) {
     // Redireciona para a página de login com a rota atual como parâmetro
     next({ path: '/login', query: { redirect: to.fullPath } });
+
   } else if (to.path === '/login' && isLoggedIn) {
     // Se o usuário já está autenticado, redireciona para a página inicial
-    next({ path: '/' });
+    next({ path: '/home' });
+
   } else {
     // Permite navegação
     next();

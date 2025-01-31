@@ -1,7 +1,36 @@
-import { getApiUrl } from './globalFunc';
+import { getApiUrl } from './functions';
 import { useUserStore } from '@/stores/userData';
 
-export async function isAuthenticated() {
+async function handleUserData() {
+  try {
+
+    const res = await fetch(getApiUrl('database', 'check-user'), {
+      credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' },
+    });
+  
+    const data = await res.json();
+
+    if (data) {
+      useUserStore().setUserData({ 
+        id: data.id,
+        name: data.nickname,
+        username: data.username,
+        email: data.email,
+        profilePicture: null 
+      });
+      return true;
+    } else {
+      console.error(`Erro ao recuperar dados: ${data.message}`);
+      return false
+    }
+
+  } catch (error) {
+    console.error(`Erro ao recuperar dados: ${error}`);
+    return false;
+  }
+}
+
+async function handleAuthentication() {
   try {
 
     const res = await fetch(getApiUrl('database', 'validate-user-session'), {
@@ -16,7 +45,7 @@ export async function isAuthenticated() {
       return true;
     } else {
       console.warn('Sessão inválida:', data.message);
-      // logout();
+      logout();
       return false;
     }
 
@@ -26,28 +55,12 @@ export async function isAuthenticated() {
   }
 }
 
-async function handleUserData() {
-  const res = await fetch(getApiUrl('database', 'check-user'), {
-    credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' },
-  });
-  const data = await res.json();
-  if (data) {
-    useUserStore().setUserData({ 
-      id: data.id,
-      name: data.nickname,
-      username: data.username,
-      email: data.email,
-      profilePicture: null 
-    });
-  }
+export async function isAuthenticated() {
+  return handleAuthentication();
 }
   
 export async function logout() {
-  await fetch(getApiUrl('database', '/logout'), { method: 'POST' });
+  await fetch(getApiUrl('database', 'logout'), { method: 'POST' });
   const userStore = useUserStore();
   userStore.clearUserData();
-}
-
-export function setAuthToken(token) {
-  localStorage.setItem('authToken', token);
 }

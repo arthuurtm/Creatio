@@ -1,4 +1,7 @@
 <template>
+  <div id="error-message" v-if="errorMessage" class="error-message">
+  ✖ {{ errorMessage }}
+  </div>
   <div class="mform">
     <div class="left">
       <img src="/img/logoMini.png" alt="Logo do Sysroot" id="logo" />
@@ -28,19 +31,17 @@
                   required
                 />
                 <a 
-                  href="/password/reset" 
-                  class="form-link critical"> 
+                  @click="redirect('Password_Reset')"
+                  class="form-link critical"
+                > 
                   Esqueci minha senha
                 </a>
               </div>
               <a 
-                href="/signup" 
+              @click="redirect('Signup')" 
                 class="form-link normal"> 
                 Criar conta
               </a>
-              <div id="error-message" v-if="errorMessage" class="error-message">
-                ⛔ {{ errorMessage }}
-              </div>
             </div>
             <div class="sepButtons">
               <div id="googleButton" style="display:flex; justify-content: center; align-items: center;"></div>
@@ -56,16 +57,22 @@
 
 
 <script>
-import { useUserStore } from '@/stores/userData';
 export default {
   data() {
     return {
       email: "",
       password: "",
       errorMessage: "",
+      redirectUrl: "About",
     };
   },
   mounted() {
+
+    if (this.$route.query && this.$route.query.redirect) {
+      this.redirectUrl = this.$route.query.redirect;
+    } else {
+      console.log('Parâmetro redirect não encontrado na query string.');
+    }
 
     google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GCLIENT_LOGIN_ID,
@@ -94,21 +101,20 @@ export default {
       try {
 
         const decodedToken = jwt_decode(response.credential);
-        const gEmail = decodedToken.email;
+        const gToken = decodedToken.sub;
         const res = await fetch(this.$globalFunc.getApiUrl('database', 'login'), {
           credentials: 'include',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             type:'google', 
-            email: gEmail,
+            gToken: gToken,
           }),
         });
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Erro desconhecido');
-        this.handleUserData(gEmail);
-        this.$router.push({ name: 'Home' });
+        this.redirect(this.redirectUrl);
 
       } catch (error) {
         console.error("Erro: ", error.message)
@@ -131,8 +137,7 @@ export default {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Erro desconhecido');
-        this.handleUserData(this.email);
-        this.$router.push({ name: 'Home' });
+        this.redirect(this.redirectUrl);
 
       } catch (error) {
         console.error("Erro: ", error.message)
@@ -140,21 +145,11 @@ export default {
       }
     },
 
-    async handleUserData(email) {
-      const res = await fetch(this.$globalFunc.getApiUrl('database', 'check-user'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (data) {
-        useUserStore().setUserData({ 
-          id: data.id,
-          name: data.nickname,
-          username: data.username,
-          email: data.email,
-          profilePicture: null 
-        });
+    redirect(link, params = {}) {
+      if (params) {
+        this.$router.push({name: link, params: params});
+      } else {
+        this.$router.push({name: link});
       }
     },
   },

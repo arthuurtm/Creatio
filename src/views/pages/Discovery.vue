@@ -1,48 +1,46 @@
 <template>
-  <div class="main-grid">
     <div class="games-grid">
-      <div id="title">
-        <b><h3 class="gradient upper" id="main">Jogos disponíveis</h3></b>
-      </div>
-      <div id="content">
-        <button id="scroll-left" class="gamePage btn scroll" @click="scrollLeft">
-          <span class="material-symbols-outlined">arrow_back_ios</span>
-        </button>
-
-        <div class="window" id="window1" ref="gdWindow">
-          <div v-if="games.length > 0" class="window">
-
-            <div v-for="game in games" :key="game.id" class="container gameCard">
-              <div class="title">
-                <p>{{ game.title }}</p>
-              </div>
-
-              <div class="banner">
-                <img id="banner" :src="`./public/${game.version}/settings/banner.png`" alt="Banner do jogo" />
-              </div>
-              
-              <div class="uiOptions">
-                <div id="play">
-                  <form @submit.prevent="playGame(game.version)">
-                    <button id="play-button" class="gamePage btn" type="submit">
-                      <span class="material-symbols-outlined">play_arrow</span>
-                    </button>
-                  </form>
-                </div>
-              </div>
+        <div class="discovery" id="d 1" ref="d_1_scroll">
+            <div class="title">
+                <b>
+                    <h3 class="gradient upper" id="main">Jogos disponíveis</h3>
+                </b>
             </div>
+            <div class="content">
+                <button class="btn symbolic scroll" id="scroll-left" @click="scrollLeft">
+                    <span class="material-symbols-outlined">arrow_back_ios</span>
+                </button>
+                <div v-if="games.length > 0" class="window">
 
-          </div>
-          <div v-else>
-            Nada a mostrar.
-          </div>
+                    <div v-for="game in games" :key="game.id" class="container gameCard">
+                    <div class="title">
+                        <p>{{ game.title }}</p>
+                    </div>
+
+                    <div class="banner">
+                        <img id="banner" :src="`./public/${game.version}/settings/banner.png`" alt="Banner do jogo" />
+                    </div>
+                    
+                    <div class="uiOptions">
+                        <div id="play">
+                        <form @submit.prevent="playGame(game.version)">
+                            <button id="play-button" class="btn symbolic" type="submit">
+                            <span class="material-symbols-outlined">play_arrow</span>
+                            </button>
+                        </form>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <div v-else>
+                    Nada a mostrar.
+                </div>
+                <button class="btn symbolic scroll" id="scroll-right" @click="scrollRight">
+                    <span class="material-symbols-outlined">arrow_forward_ios</span>
+                </button>
+            </div>
         </div>
-        <button id="scroll-right" class="gamePage btn scroll" @click="scrollRight">
-          <span class="material-symbols-outlined">arrow_forward_ios</span>
-        </button>
-      </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -70,7 +68,7 @@ export default {
       });
     },
     playGame(gameVersion) {
-      this.currentGameVersion = gameVersion;
+      this.$globalFunc.hrefTo(`/run/${gameVersion}`);
     },
     loadGames() {
       const url = this.$globalFunc.getApiUrl('database', 'encontrar-jogos');

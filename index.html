@@ -6,12 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <title>Vite App</title>
+    <title>Sysroot</title>
   </head>
   <body>
     <div id="app" class="app"></div>
     <script type="module" src="/src/main.js"></script>
     <script src="https://accounts.google.com/gsi/client"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script>
+      google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GCLIENT_LOGIN_ID,
+        callback: this.handleGoogleLogin,
+        context: "signin",
+        ux_mode: "popup",
+        auto_prompt: false
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById("googleButton"),
+        {
+          size: "large",
+          type: "icon",
+          shape: "pill",
+          text: "continue_with",
+          logo_alignment: "left",
+        }
+      );
+    </script>
   </body>
 </html>

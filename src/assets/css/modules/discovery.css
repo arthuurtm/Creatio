@@ -1,47 +1,25 @@
 ::-webkit-scrollbar {
-    background-color: var(--bg);
+    background-color: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: var(--bg);
+    background-color: transparent;
 }
 
 ::-webkit-scrollbar-track {
-    background-color: var(--bg);
+    background-color: transparent;
 }
 
-main {
-    display: grid;
-    grid-column: 2;
-    width: 100%;
-    height: 100%;
-}
-
-/* Estilo principal */
-.main-grid {
-    display: grid;
-    padding: 15px;
-    position: relative;
-    box-sizing: border-box;
-    justify-content: center;
-    align-items: center;
-}
-
-#top-options {
-    position: inherit;
-    margin-bottom: 80px;
-}
-
-/* Grade de jogos */
 .games-grid {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    margin-top: 10px;
+    padding: 15px;
 }
 
-.games-grid #content {
+.discovery .content {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     justify-items: center;
@@ -51,17 +29,13 @@ main {
 .window {
     display: flex;
     align-items: center;
-    width: 100%; /* Ajusta a largura para dar espaço aos botões */
+    width: 100%;
     padding: 20px;
     box-sizing: border-box;
-    overflow-x:scroll; /* Permite rolagem horizontal */
-    scroll-behavior: smooth; /* Adiciona um efeito suave à rolagem */
+    overflow-x:scroll;
+    scroll-behavior: smooth;
     white-space: nowrap;
     animation: slideIn 1s ease-out forwards;
-}
-
-.window::-webkit-scrollbar {
-    display: none; /* Oculta a barra de rolagem */
 }
 
 .container.gameCard {
@@ -76,8 +50,6 @@ main {
     min-width: 200px;
     height: 340px;
     transition: transform 1s;
-    /* animation: slideIn 1s ease-out forwards;
-    animation-delay: 1s;  */
 }
 
 .container.gameCard .uiOptions {
@@ -99,7 +71,7 @@ main {
     left: 6px;
     padding: 10px;
     color: white;
-    font-weight: bold; /* Negrito */
+    font-weight: bold;
     opacity: 0;
     animation: fadeIn 1s forwards;
     font-size: 20px;
@@ -118,140 +90,28 @@ main {
     width: 100%;
     height: 100%;
     background: linear-gradient(to bottom right, #12121260, transparent);
-    pointer-events: none; /* Para garantir que não interfira com o botão ou qualquer outra interação */
+    pointer-events: none;
 }
 
 .container.gameCard:hover {
     transform: scale(1.05);
 }
 
-#back {
-    position: absolute;
+.app.mobile .btn.scroll {
+    display: none;
 }
 
-/* Estilo geral para botões */
-.btn {
-    all: unset;
-    display: flex;
-    padding: 10px;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    font-weight: 600;
-    justify-content: center;
-    align-items: center;
-}
-
-.btn#back-button p {
-    margin-left: 5px;
-}
-
-/* Efeito ao passar o mouse sobre o botão */
-.btn:hover {
-    transform: scale(1.05);
-}
-
-/* Estilo para o botão de voltar */
-.btn #back-button {
-    background-color: var(--scroll-button); /* Cor do botão */
-    color: var(--text); /* Cor do texto do botão */
-    top: 10px;
-    left:20px;
-}
-
-.btn.scroll {
-    background-color: var(--scroll-button); /* Cor do botão */
-    color: var(--text); /* Cor do texto do botão */
-    border: none; /* Remove a borda padrão */
-    padding: 10px; /* Adiciona preenchimento ao botão */
-    cursor: pointer; /* Indica que o botão é clicável */
-    border-radius: 50px;
-    margin: 20px;
-}
-
-.scroll-button:hover {
-    background-color: var(--scroll-button-hover); /* Efeito de hover */
-}
-
-/* Animação de flutuação */
-.floating {
-    animation: floating 3s infinite ease-in-out;
-}
-
-/* Estilo para o botão de iniciar jogo */
 #play-button {
-    background-color: lawngreen;
+    background-color: var(--discovery-play-button);
     z-index: 1;
-}
-
-#play-button:hover {
-    background-color: greenyellow;
 }
 
 @keyframes fadeIn {
     to { opacity: 1; }
 }
 
-/* Animação de flutuação */
-@keyframes floating {
-    50% {
-        transform: translateY(15px);
-    }
-    100% {
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideIn {
-    0% {
-        transform: translateX(100%); /* Começa fora da tela à direita */
-        opacity: 0;
-    }
-    100% {
-        transform: translateX(0); /* Fica na posição original */
-        opacity: 1;
-    }
-}
-
 @media (max-width: 600px) {
-
-    main {
-        padding-left: 0;
-    }
-
-    #back-button {
-        position: absolute;
-        top: 5px;
-        left: 5px;
-    }
-
-    .btn {
-        font-size: 12px;
-        padding: 8px;
-    }
-
-    #play-button {
-        font-size: 16px;
-    }
-
     .window {
         padding: 0;
-    }
-
-    #games-grid {
-        width: 100%;
-        padding: 0;
-    }
-    
-    .btn.scroll {
-        background-color: transparent; /* Cor do botão */
-        color: var(--text); /* Cor do texto do botão */
-        border: none; /* Remove a borda padrão */
-        padding: 0; /* Adiciona preenchimento ao botão */
-        cursor: pointer; /* Indica que o botão é clicável */
-        border-radius: 0;
-        margin: 2px;
     }
 }

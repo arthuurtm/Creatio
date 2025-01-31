@@ -1,0 +1,191 @@
+.tableSettings {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 50px auto;
+    border-radius: 12px;
+    background-color: var(--bg);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* border: 1px solid var(--border); */
+    color: var(--text);
+    width: auto;
+    max-width: 90%;
+    height: auto;
+}
+
+.titleBar {
+    display: grid;
+    grid-row: 1;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding: 15px;
+}
+
+.tOptions {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.tOptions p {
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text);
+}
+
+.tOptions .closeTab {
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text);
+    cursor: pointer;
+    background-color: var(--bg2);
+    border-radius: 15px;
+}
+
+.tOptions .closeTab:hover {
+    /* color: var(--primary); */
+}
+
+.content {
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: 0.5fr 2fr;
+}
+
+.nav {
+    grid-column: 1;
+    padding: 15px 20px;
+}
+
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav a {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.nav a p {
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.nav a:hover {
+    color: var(--mh-options-hover);
+}
+
+.nav a span {
+    margin-top: 3px;
+    font-size: 24px;
+}
+
+.navPage {
+    grid-column: 2;
+    height: auto;
+    padding: 15px;
+    color: var(--text);
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    /* border-left: 1px solid var(--border); */
+}
+
+form, .pageContainer, .pageContainer .ul {
+    width: 100%;
+    height: auto;
+}
+
+.pageContainer {
+    display: none;
+}
+
+.pageContainer.active {
+    display: block;
+}
+
+/* Estilização de li */
+li {
+    display: block;
+    width: 100%;
+}
+
+li:last-child {
+    border-bottom: none; 
+}
+
+.nav a {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.nav a:hover {
+    background-color: var(--bg-hover);
+}
+
+.navPage ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+img.profile-picture {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.app.mobile .tableSettings {
+    position: fixed;
+    width: 100%;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    max-width: unset;
+    border-radius: 0;
+}
+
+.app.mobile .content {
+    grid-template-rows: 1fr 60px;
+    grid-template-columns: 1fr;
+    margin-bottom: 10px;
+}
+
+.app.mobile .navPage {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.app.mobile .nav {
+    border-right: none;
+    border-top: 1px solid var(--border);
+    grid-column: 1;
+    grid-row: 2;
+    padding: 0;
+}
+
+.app.mobile ul {
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+}
+
+.app.mobile a {
+    padding: 0;
+}
+

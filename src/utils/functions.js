@@ -50,3 +50,58 @@ export function openOverlayModal(modalData) {
         console.error('Overlay component is not registered.');
     }
 };
+
+export function appTheme(toggle = false) {
+    // Obter tema salvo no localStorage
+    const savedTheme = localStorage.getItem("data-theme");
+    console.log('data-theme', localStorage.getItem("data-theme"));
+    let currentTheme;
+  
+    if (savedTheme) {
+      // Respeita o tema salvo
+      currentTheme = savedTheme;
+    } else {
+      // Usa a preferência do sistema
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      currentTheme = prefersDark ? "dark" : "light";
+      // Salva o tema inicial no localStorage
+      localStorage.setItem("data-theme", currentTheme);
+    }
+  
+    // Alternar o tema se toggle for verdadeiro
+    if (toggle) {
+        console.log('toggle theme: ', currentTheme);
+        currentTheme = currentTheme === "dark" ? "light" : "dark";
+        localStorage.setItem("data-theme", currentTheme);
+    }
+  
+    // Aplicar o tema atual
+    document.documentElement.setAttribute("data-theme", currentTheme);
+  
+    return currentTheme; // Retorna o tema atual aplicado
+}
+
+export function updateAppClass(appElement) {
+    const isMobile = window.innerWidth <= 768;
+  
+    // Remove ambas as classes antes de aplicar a nova
+    appElement.classList.remove('mobile', 'pc');
+  
+    if (isMobile) {
+      appElement.classList.add('mobile');
+    } else {
+      appElement.classList.add('pc');
+    }
+}
+  
+export function observeResize(appElement) {
+    // Atualiza a classe inicial
+    updateAppClass(appElement);
+  
+    // Observa mudanças no tamanho da janela
+    window.addEventListener('resize', () => updateAppClass(appElement));
+}
+  
+  
+  
+  

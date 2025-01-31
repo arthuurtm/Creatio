@@ -38,7 +38,8 @@ const User = sequelize.define('User', {
   username: { type: DataTypes.STRING, unique: true, allowNull: false },
   nickname: { type: DataTypes.STRING, allowNull: true },
   passwordHash: { type: DataTypes.STRING, allowNull: false },
-  sessionToken: { type: DataTypes.STRING, allowNull: false }, // Novo campo para o token de sessão
+  sessionToken: { type: DataTypes.STRING, allowNull: false },
+  gToken: { type: DataTypes.STRING, unique: true },
 });
 
 const Session = sequelize.define('Session', {
@@ -95,12 +96,11 @@ async function createSession(user) {
 
 
 app.post('/login', async (req, res) => {
-  const { type, email, password } = req.body;
-
-  const user = await User.findOne({ where: { email } });
-  if (!user) return res.status(400).json({ message: 'Usuário não encontrado' });
+  const { type, email, password, gToken } = req.body;
 
   if (type === 'default') {
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(400).json({ message: 'Usuário não encontrado' });
     try {
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
       if (!isPasswordValid) return res.status(400).json({ message: 'Senha incorreta' });
@@ -120,6 +120,8 @@ app.post('/login', async (req, res) => {
     }
 
   } else if (type === 'google') {
+    const user = await User.findOne({ where: { gToken } });
+    if (!user) return res.status(400).json({ message: 'Conta Google não vinculada a nenhuma conta.' });
     try {
       const sessionId = await createSession(user);
       res.status(200)

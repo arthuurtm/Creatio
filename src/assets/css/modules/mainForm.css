@@ -41,7 +41,18 @@
     height: 320px;
     border: 2px solid var(--border);
     background-color: transparent;
+    transition : border 300ms ease-out;
     /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
+}
+
+.error-message {
+    background-color: var(--form-err);
+    border: 1px solid var(--form-err-border);
+    color: #fff;
+    padding: 5px;
+    position: absolute;
+    top: 10px;
+    border-radius: 5px;
 }
 
 .mform .left {
@@ -95,7 +106,7 @@
 }
 
 .mform .form-link.critical:hover {
-    color: var(--form-critial-link);
+    color: var(--form-critical-link);
 }
 
 .mform .form-link.normal {

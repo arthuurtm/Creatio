@@ -1,4 +1,7 @@
 <template>
+    <div id="error-message" v-if="errorMessage" class="error-message">
+    ✖ {{ errorMessage }}
+    </div>
     <div class="mform">
         <div v-if="isLoading" class="loading-overlay">
             <div class="spinner"></div>
@@ -34,9 +37,6 @@
                                     placeholder="Seu nome de usuário"
                                     required
                                 />
-                                <div id="error-message" v-if="errorMessage" class="error-message">
-                                    ⛔ {{ errorMessage }}
-                                </div>
                             </div>
                         </div>
                         </div>
@@ -67,9 +67,6 @@
                                     placeholder="Sua data de nascimento"
                                     required
                                 />
-                                <div id="error-message" v-if="errorMessage" class="error-message">
-                                    ⛔ {{ errorMessage }}
-                                </div>
                             </div>
                         </div>
                         </div>
@@ -91,9 +88,6 @@
                                     autofocus
                                     required
                                 />
-                                <div id="error-message" v-if="errorMessage" class="error-message">
-                                    ⛔ {{ errorMessage }}
-                                </div>
                             </div>
                         </div>
                         </div>
@@ -124,9 +118,6 @@
                                     placeholder="Confirme sua senha"
                                     required
                                 />
-                                <div id="error-message" v-if="errorMessage" class="error-message">
-                                    ⛔ {{ errorMessage }}
-                                </div>
                             </div>
                         </div>
                         </div>
@@ -273,7 +264,7 @@ export default {
                 if (response.ok) {
                     this.informationMessage = "Conta criada com sucesso! Agora, faça login.";
                     this.buttons[0] = [
-                        { text: 'Ok', class: 'btn confirm', type: 'submit', action: 'forward' }
+                        { text: 'Ok', class: 'btn confirm', type: '', action: 'back' }
                     ];
                     this.chgStep(0);
                 } else {
@@ -296,7 +287,7 @@ export default {
             }
         },
         back() {
-            this.$router.push('/login');
+            this.$router.push({name: 'Login'});
         },
         lback() {
             this.errorMessage = "";

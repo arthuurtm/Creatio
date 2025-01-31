@@ -1,15 +1,15 @@
 <template>
+	<div id="error-message" v-if="errorMessage" class="error-message">
+    ✖ {{ errorMessage }}
+    </div>
     <div class="mform">
-
 		<div v-if="isLoading" class="loading-overlay">
 			<div class="spinner"></div>
 		</div>
-
 		<div class="left">
 			<img src="/img/logoMini.png" alt="Logo do Sysroot" id="logo" />
 			<h1>Redefinir a Senha</h1>
 		</div>
-      
 		<div class="right">
 			<form class="formContainer" @submit.prevent="handleStep">
 				<div class="centered">
@@ -28,9 +28,6 @@
 								placeholder="Seu e-mail" 
 								required 
 							/>
-							<div id="error-message" v-if="errorMessage" style="margin-bottom: 15px;">
-								⛔ {{ errorMessage }}
-							</div>
 						</div>
 					</div>
 					</transition>
@@ -49,9 +46,6 @@
 									placeholder="Código recebido no e-mail" 
 									required 
 								/>
-								<div id="error-message" v-if="errorMessage" style="margin-bottom: 15px;">
-									⛔ {{ errorMessage }}
-								</div>
 							</div>
 						</div>
 					</transition>
@@ -79,9 +73,6 @@
 									placeholder="Confirme sua nova senha" 
 									required 
 								/>
-								<div id="error-message" v-if="errorMessage" style="margin-bottom: 15px;">
-									⛔ {{ errorMessage }}
-								</div>
 							</div>
 						</div>
 					</transition>
@@ -262,7 +253,7 @@ export default {
 			}
 		},
 		back() {
-			this.$router.push('/login');
+			this.$router.push({name: 'Login'});
 		},
         lback() {
             this.errorMessage = "";
