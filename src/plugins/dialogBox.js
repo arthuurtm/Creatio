@@ -1,11 +1,11 @@
 // plugins/overlay.js
 import { createApp } from 'vue';
-import ActionOverlay from '@/components/ActionOverlay.vue';
+import DialogBox from '@/components/DialogBox.vue';
 
 export default {
   install(app) {
-    // Cria uma instância do componente ActionOverlay
-    const overlayInstance = createApp(ActionOverlay).mount(document.createElement('div'));
+    // Cria uma instância do componente DialogBox
+    const overlayInstance = createApp(DialogBox).mount(document.createElement('div'));
 
     // Aguarda o DOM estar carregado para adicionar ao documento
     document.addEventListener('DOMContentLoaded', () => {
@@ -14,7 +14,7 @@ export default {
     });
 
     // Configura propriedades globais para controle do overlay
-    app.config.globalProperties.$overlay = {
+    app.config.globalProperties.$dialogBox = {
       show(params) {
         overlayInstance.show(params);
       },

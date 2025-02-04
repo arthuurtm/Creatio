@@ -1,8 +1,26 @@
+.settingsBox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--overlay-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    animation: fadeIn 0.3s ease both;
+    z-index: 5;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
 .tableSettings {
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: 50px auto;
     border-radius: 12px;
+    z-index: 6;
     background-color: var(--bg);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     /* border: 1px solid var(--border); */
@@ -10,6 +28,7 @@
     width: auto;
     max-width: 90%;
     height: auto;
+    animation: moveToCenter 0.6s ease forwards;
 }
 
 .titleBar {

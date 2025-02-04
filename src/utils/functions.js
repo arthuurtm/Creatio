@@ -56,6 +56,7 @@ export function appTheme(toggle = false) {
     const savedTheme = localStorage.getItem("data-theme");
     console.log('data-theme', localStorage.getItem("data-theme"));
     let currentTheme;
+    let isDark;
   
     if (savedTheme) {
       // Respeita o tema salvo
@@ -74,11 +75,16 @@ export function appTheme(toggle = false) {
         currentTheme = currentTheme === "dark" ? "light" : "dark";
         localStorage.setItem("data-theme", currentTheme);
     }
+
+    currentTheme === 'dark' ? isDark = true : isDark = false; 
   
     // Aplicar o tema atual
     document.documentElement.setAttribute("data-theme", currentTheme);
   
-    return currentTheme; // Retorna o tema atual aplicado
+    return {
+        'currentTheme': currentTheme,
+        'isDark': isDark
+    }; // Retorna o tema atual aplicado
 }
 
 export function updateAppClass(appElement) {

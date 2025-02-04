@@ -46,14 +46,21 @@
 }
 
 .error-message {
-    background-color: var(--form-err);
     border: 1px solid var(--form-err-border);
-    color: #fff;
+    color: var(--form-err);
     padding: 5px;
     position: absolute;
     top: 10px;
     border-radius: 5px;
+    width: 0; /* Adicione esta linha */
+    transition: width 0.25s ease, max-width 0.25s ease;
+    animation: moveToBottom 0.25s ease;
 }
+
+.error-message.show {
+    width: auto; /* A largura final desejada */
+}
+
 
 .mform .left {
     grid-column: 1;
@@ -277,5 +284,14 @@ hr {
     #logo {
         justify-self: center;
     }
+}
 
+@keyframes moveToBottom {
+    from {
+        transform: translateY(-100%);
+    } 
+    
+    to {
+        transform: translateY(0);
+    }
 }

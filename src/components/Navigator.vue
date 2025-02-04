@@ -20,19 +20,19 @@
         <div class="center">
             <nav class="menu-options">
                 <ul>
-                    <li v-if="!isAuthenticated">
-                        <a @click="this.$router.push({name: 'Login'})">
+                    <li v-if="!isAuthenticated" @click="navigateTo('Login')">
+                        <a>
                             <span class="material-symbols-outlined notranslate">login</span>
                             <p>Entrar</p>
                         </a>
                     </li>
-                    <li v-if="isAuthenticated">
-                        <a @click="this.$router.push({name: 'Create'})">
+                    <li v-if="isAuthenticated" @click="navigateTo('Create')">
+                        <a>
                             <span class="material-symbols-outlined notranslate">add_circle</span>
                             <p>Criar</p>
                         </a>
                     </li>
-                    <li @click="navigateTo('Discovery', { title: 'Discovery', typeView: 'full' })" >
+                    <li @click="navigateTo('Games')" >
                         <a 
                         class="menu-link" 
                         data-section="jogos"
@@ -41,7 +41,7 @@
                             <p>Jogos</p>
                         </a>
                     </li>
-                    <li v-if="isAuthenticated" @click="navigateTo('Avatar', { title: 'Avatar', typeView: 'popup' })" >
+                    <li v-if="isAuthenticated" @click="navigateTo('Avatar')" >
                         <a 
                         class="menu-link" 
                         data-section="personagens"
@@ -50,7 +50,7 @@
                             <p>Personagens</p>
                         </a>
                     </li>
-                    <li @click="navigateTo('Settings', { title: 'Settings', typeView: 'popup' })" >
+                    <li @click="handleSettigsBox" >
                         <a 
                         class="menu-link" 
                         data-section="configuracoes"
@@ -79,13 +79,13 @@ import { useUserStore } from '@/stores/userData';
 import { isAuthenticated, logout } from '@/utils/auth';
 export default {
     name: 'Navigator',
-    emits: ['navigateTo', 'focus'],
     setup() {
         const userStore = useUserStore();
         return {
             userStore,
         };
     },
+
     data() {
         return {
             startY: 0,
@@ -96,29 +96,35 @@ export default {
             profilePicture: '/src/assets/images/default/user-data/profile.png',
         };
     },
+
     async mounted() {
         this.isAuthenticated = await isAuthenticated();
-        this.updateMenuState(true); // Ativa o menu automaticamente
+        this.updateMenuState(true);
     },
+
     methods: {
+
         handleIsMobile() {
             const app = document.getElementById("app");
             const isMobile = app && app.classList.contains('mobile');
             console.log('handleIsMobile() > ', isMobile);
             return isMobile;
         },
+
         handleAction(item) {
             if (item.func && typeof this[item.func] === "function") {
                 this[item.func]();  // Chama a função associada dinamicamente
             }
         },
-        navigateTo(page, params = {}) {
-            console.log("(navigateTo) > ", page, params);
-            this.$emit("navigateTo", { page, params }); // Emite o evento com os parâmetros adicionais
-            this.updateMenuState(this.handleIsMobile());
+
+        navigateTo(page) {
+            console.log(`navigateTo() > page: ${page}`);
+            this.$router.push({ name: page })
+            this.updateMenuState();
         },
+
         handleLogout() {
-            this.$overlay.show({
+            this.$dialogBox.show({
                 title: 'Sair',
                 message: 'Você quer mesmo sair?',
                 btn1: {
@@ -135,11 +141,17 @@ export default {
                 },
             });
         },
+
+        handleSettigsBox() {
+            this.$settingsBox.show();
+        },
+
         onTouchStart(event) {
             console.log('onTouchStart');
             this.startY = event.touches[0].clientY;
             this.isDragging = true;
         },
+
         onTouchMove(event) {
             event.stopPropagation();
             event.preventDefault();
@@ -151,6 +163,7 @@ export default {
             // Aplica a transformação temporária enquanto o usuário arrasta
             this.$refs.menu.style.transform = `translateY(${translateY}px)`;
         },
+
         onTouchEnd() {
             if (!this.isDragging) return;
             this.isDragging = false;
@@ -172,6 +185,7 @@ export default {
 
             this.$refs.menu.style.transform = '';
         },
+
         updateMenuState(force) {
             force = !!force;
             const value = this.handleIsMobile();
@@ -190,6 +204,7 @@ export default {
                 ', force: ', force
             );
         },
+
         focus(value) {
             this.$emit('focus', value);
         }

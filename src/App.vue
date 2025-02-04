@@ -1,9 +1,7 @@
 <template>
-  <!-- <v-app>
-    <v-main class="app"> -->
-      <router-view/>
-    <!-- </v-main>
-  </v-app> -->
+  <!-- <transition name="fade" mode="out-in"> -->
+    <router-view/>
+  <!-- </transition> -->
 </template>
 
 <script>

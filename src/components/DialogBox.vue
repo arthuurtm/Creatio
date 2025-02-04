@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isVisible"
-    class="overlay"
+    class="dialogBox"
     :class="overlayClass"
     @click="handleOverlayClick"
   >
@@ -65,5 +65,5 @@ export default {
 </script>
 
 <style scoped>
-  @import url('/src/assets/css/modules/actionOverlay.css');
+  @import url('/src/assets/css/modules/dialogBox.css');
 </style>

@@ -1,54 +1,96 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { isAuthenticated } from '@/utils/auth';
+
+// *root
+import FormLayout from '@/layouts/FormLayout.vue';
+import MainLayout from '@/layouts/MainLayout.vue';
+import NotFound from '@/views/NotFound.vue';
+
+// /accounts
 import Login from '@/views/Login.vue';
-import Home from '@/views/Home.vue';
 import ResetPassword from '@/views/ResetPassword.vue';
 import Signup from '@/views/Signup.vue';
-import NotFound from '@/views/errors/NotFound.vue';
+
+// /
 import Create from '@/views/Create.vue';
 import About from '@/views/About.vue';
+import Games from '@/views/Games.vue';
+import Home from '@/views/Home.vue';
+
 
 const routes = [
+  
   { 
-    // 404
     path: '/:pathMatch(.*)*',
     name: 'Not_Found',
     component: NotFound 
   },
-  { 
-    path: '/login', 
-    name: 'Login', 
-    component: Login,
-    meta: { requiresAuth: false },
-  },
-  { 
-    path: '/home',
-    name: 'Home',
-    component: Home,
-    meta: { requiresAuth: false },
-  },
-  { 
-    path: '/password/reset', 
-    name: 'Password_Reset', 
-    component: ResetPassword,
-  },
-  { 
-    path: '/signup', 
-    name: 'Signup', 
-    component: Signup,
-    meta: { requiresAuth: false },
-  },
-  {
-    path: '/create/:id?',
-    name: 'Create',
-    component: Create,
-    meta: {requiresAuth: true },
-    props: true
-  },
+
   {
     path: '/',
-    name: 'About',
-    component: About,
+    component: MainLayout,
+    children: [
+      {
+        path: '',
+        name: 'About',
+        component: About,
+        meta: { requiresAuth:false }
+      },
+
+      {
+        path: 'games',
+        name: 'Games',
+        component: Games,
+      },
+
+      {
+        path: 'home',
+        name: 'Home',
+        redirect: 'games'
+        // name: 'Home',
+        // component: Games, //temporário
+      },
+
+      {
+        path: 'create/:id?',
+        name: 'Create',
+        component: Create,
+        meta: {requiresAuth: true },
+        props: true
+      },
+    ]
+  },
+
+  {
+    path: '/accounts',
+    component: FormLayout,
+    children: [
+      {
+        path: '',
+        name: 'ROOT_Accounts',
+        redirect: {name: 'Login'}
+      },
+
+      {
+        path: 'signup',
+        name: 'Signup',
+        component: Signup,
+        meta: { requiresAuth: false }
+      },
+    
+      { 
+        path: 'login', 
+        name: 'Login', 
+        component: Login,
+        meta: { requiresAuth: false },
+      },
+    
+      { 
+        path: 'password/reset', 
+        name: 'Password_Reset', 
+        component: ResetPassword,
+      },
+    ]
   },
 ];
 
@@ -62,18 +104,19 @@ router.beforeEach(async (to, from, next) => {
   const isLoggedIn = await isAuthenticated();
 
   if (to.meta.requiresAuth && !isLoggedIn) {
-    // Redireciona para a página de login com a rota atual como parâmetro
-    next({ path: '/login', query: { redirect: to.fullPath } });
+    console.log('Vue Router > situation: 1');
+    next({ name: 'Login', query: { redirect: to.fullPath } });
 
-  } else if (to.path === '/login' && isLoggedIn) {
-    // Se o usuário já está autenticado, redireciona para a página inicial
-    next({ path: '/home' });
-
+  } else if (to.name === 'Login' && isLoggedIn) {
+    console.log('Vue Router > situation: 2');
+    next({ name: 'Home' });
+    
   } else {
-    // Permite navegação
+    console.log('Vue Router > situation: 3');
     next();
-  }
-});
 
+  }
+
+});
 
 export default router;

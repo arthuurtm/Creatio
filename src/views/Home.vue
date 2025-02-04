@@ -10,7 +10,7 @@
             @focus="handleFocusElement"
         />
 
-        <div class="game-selector">
+        <div class="view-app">
         <!-- <transition name="fade"> -->
             <component 
                 v-if="currentPage" 
@@ -39,7 +39,7 @@
 
 <script>
 import Navigator from '@/components/Navigator.vue';
-import Pages from '@/views/pages';
+// import Pages from '@/components/pages';
 
 export default {
     data() {
@@ -107,7 +107,7 @@ export default {
         width: 100%;
         position: relative;
     }
-    .app.pc .game-selector {
+    .app.pc .view-app {
         display: grid;
         grid-column: 2;
         width: 100%;

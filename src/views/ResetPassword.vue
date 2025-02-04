@@ -1,7 +1,9 @@
 <template>
-	<div id="error-message" v-if="errorMessage" class="error-message">
-    ✖ {{ errorMessage }}
-    </div>
+	<transition name="errAnim">
+		<div v-if="errorMessage" id="error-message" class="error-message" :class="errorMessage && 'show'">
+		✖ {{ errorMessage }}
+		</div>
+	</transition>
     <div class="mform">
 		<div v-if="isLoading" class="loading-overlay">
 			<div class="spinner"></div>

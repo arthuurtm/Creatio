@@ -1,5 +1,5 @@
 /* Estilo do overlay (sobreposição escurecida) */
-.overlay {
+.dialogBox {
     position: fixed;
     top: 0;
     left: 0;
@@ -27,7 +27,7 @@
     color: var(--text);
     opacity: 0;
     transform: translateY(-100px);
-    animation: appear 0.6s ease forwards;
+    animation: moveToCenter 0.6s ease forwards;
 }
 
 .modal-buttons {
@@ -41,34 +41,11 @@
     margin: 5px;
 }
 
-/* Animação da janela modal */
-@keyframes moveToCenter {
-    from {
-        transform: translateY(-100px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
+/* Animação da janela modal 
 
-@keyframes appear {
-    from {
-      transform: scale(0.5);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-}
+   *** EM /src/assets/css/core/anim.css ***
 
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}
+*/
 
 /* Quando o modal estiver ativo */
 .overlay.active {
