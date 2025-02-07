@@ -1,21 +1,3 @@
-/* Estilo do overlay (sobreposição escurecida) */
-.dialogBox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: var(--overlay-bg);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 1;
-    animation: fadeIn 0.3s ease both;
-    z-index: 9999;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
 /* Estilo da janela modal */
 .modal {
     background: var(--bg);

@@ -17,9 +17,24 @@
     </div>
 </template>
 
+<!-- <script setup>
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const showNavigator = ref(true);
+
+watch(
+  () => route.meta,
+  (newMeta) => {
+    showNavigator.value = newMeta?.showNavigator ?? false;
+  },
+  { immediate: true }
+);
+</script> -->
+
 <script>
 import Navigator from '@/components/Navigator.vue';
-
 export default {
     data() {
         return {

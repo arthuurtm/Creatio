@@ -65,7 +65,7 @@ export default {
       email: "",
       password: "",
       errorMessage: "",
-      redirectUrl: "About",
+      redirectUrl: "Home",
     };
   },
   mounted() {

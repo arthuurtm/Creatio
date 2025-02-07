@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isVisible"
-    class="dialogBox"
+    class="focusDialogElement"
     :class="overlayClass"
     @click="handleOverlayClick"
   >

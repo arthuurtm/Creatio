@@ -27,16 +27,17 @@ const routes = [
   },
 
   {
+    path: '',
+    name: 'About',
+    component: About,
+    meta: { requiresAuth:false, showNavigator:false },
+    props: true
+  },
+
+  {
     path: '/',
     component: MainLayout,
     children: [
-      {
-        path: '',
-        name: 'About',
-        component: About,
-        meta: { requiresAuth:false }
-      },
-
       {
         path: 'games',
         name: 'Games',
@@ -46,7 +47,7 @@ const routes = [
       {
         path: 'home',
         name: 'Home',
-        redirect: 'games'
+        redirect: {name: 'Games'}
         // name: 'Home',
         // component: Games, //temporário
       },

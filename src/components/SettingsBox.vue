@@ -1,7 +1,7 @@
 <template>
     <div 
         v-if="isVisible"
-        class="settingsBox"
+        class="focusDialogElement"
     >
         <div class="tableSettings">
             <div class="titleBar">
