@@ -1,76 +1,64 @@
 <template>
-    <div class="hide-p1s" @click="updateMenuState(true)"><!--☰-->{{ this.navigatorIcon }}</div>
-    <div 
-        class="p1s"
-        :class="[isMenuActive ? 'active' : 'minimized', hidden ? 'hidden' : '']"
-        id="p1s"
-        ref="menu"
-    >
-    <div class="p1s-content">
-        <div class="user-info" v-if="isAuthenticated">
-            <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
-            <div class="mobile-adaptive-usrInfo">
-                <p class="user-name">{{ userStore.name }}</p>
-                <p class="user-email">{{ userStore.email }}</p>
+    <div class="container">
+
+        <div class="hide-p1s" @click="updateMenuState(true)">
+            <span class="material-symbols-outlined notranslate">{{ this.navigatorIcon }}</span>
+        </div>
+
+        <div 
+            class="p1s"
+            :class="[isMenuActive ? 'active' : 'minimized', hidden ? 'hidden' : '']"
+            id="p1s"
+            ref="menu"
+        >
+
+        <div class="p1s-content">
+            <div class="invisible-drag-camp" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
+                <div class="drag-handle" @click="updateMenuState()" @touchstart.stop></div>
             </div>
-        </div>
-        <div class="invisible-drag-camp" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
-            <div class="drag-handle" @click="updateMenuState()" @touchstart.stop></div>
-        </div>
-        <div class="center">
-            <nav class="menu-options">
+
+            <div class="center">
                 <ul>
+                    <li v-if="isAuthenticated" class="user-info">
+                        <span>
+                            <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
+                        </span>
+                        <p class="user-name">{{ userStore.name }}</p>
+                    </li>
+
                     <li v-if="!isAuthenticated" @click="navigateTo('Login')">
-                        <a>
-                            <span class="material-symbols-outlined notranslate">login</span>
-                            <p>Entrar</p>
-                        </a>
+                        <span class="material-symbols-outlined notranslate">login</span>
+                        <p>Entrar</p>
                     </li>
+                    
                     <li v-if="isAuthenticated" @click="navigateTo('Create')">
-                        <a>
-                            <span class="material-symbols-outlined notranslate">add_circle</span>
-                            <p>Criar</p>
-                        </a>
+                        <span class="material-symbols-outlined">add_circle</span>
+                        <p>Criar</p>
                     </li>
+
                     <li @click="navigateTo('Games')" >
-                        <a 
-                        class="menu-link" 
-                        data-section="jogos"
-                        >
-                            <span class="material-symbols-outlined notranslate">sports_esports</span>
-                            <p>Jogos</p>
-                        </a>
+                        <span class="material-symbols-outlined notranslate">sports_esports</span>
+                        <p>Jogos</p>
                     </li>
-                    <li v-if="isAuthenticated" @click="navigateTo('Avatar')" >
-                        <a 
-                        class="menu-link" 
-                        data-section="personagens"
-                        >
-                            <span class="material-symbols-outlined notranslate">person</span>
-                            <p>Personagens</p>
-                        </a>
+
+                    <li v-if="isAuthenticated" @click="navigateTo('Avatar')">
+                        <span class="material-symbols-outlined notranslate">person</span>
+                        <p>Personagens</p>
                     </li>
+
                     <li @click="handleSettigsBox" >
-                        <a 
-                        class="menu-link" 
-                        data-section="configuracoes"
-                        >
-                            <span class="material-symbols-outlined notranslate">settings</span>
-                            <p>Configurações</p>
-                        </a>
+                        <span class="material-symbols-outlined notranslate">settings</span>
+                        <p>Configurações</p>
                     </li>
-                    <li v-if="isAuthenticated" @click="handleLogout">
-                        <a 
-                            id="logoutMenuButton" 
-                        >
-                            <span class="material-symbols-outlined notranslate">logout</span>
-                            <p>Sair</p>
-                        </a>
+
+                    <li v-if="isAuthenticated" @click="handleLogout" id="logoutMenuButton">
+                        <span class="material-symbols-outlined notranslate">logout</span>
+                        <p>Sair</p>
                     </li>
                 </ul>
-            </nav>
+            </div>
         </div>
-    </div>
+        </div>
     </div>
 </template>
   
@@ -94,7 +82,7 @@ export default {
             isMenuActive: false,
             isAuthenticated: false,
             profilePicture: '/src/assets/images/default/user-data/profile.png',
-            navigatorIcon: '>',
+            navigatorIcon: 'menu',
         };
     },
 
@@ -218,8 +206,8 @@ export default {
 
     watch: {
         isMenuActive(value) {
-            value ? this.navigatorIcon = '<' : this.navigatorIcon = '>';
-        },
+            value ? this.navigatorIcon = 'menu_open' : this.navigatorIcon = 'menu';
+        }
     }
 };
 </script>
