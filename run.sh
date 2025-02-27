@@ -1,5 +1,5 @@
-#!/bin/bash
-source ../.venv/bin/activate
+source api/.venv/bin/activate
+cd api
 
 # Função para verificar se um serviço está em execução
 check_service() {
