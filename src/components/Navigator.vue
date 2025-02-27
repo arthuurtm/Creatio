@@ -1,8 +1,8 @@
 <template>
-    <div class="hide-p1s" @click="updateMenuState(true)">☰</div>
+    <div class="hide-p1s" @click="updateMenuState(true)"><!--☰-->{{ this.navigatorIcon }}</div>
     <div 
         class="p1s"
-        :class="isMenuActive ? 'active' : 'minimized'"
+        :class="[isMenuActive ? 'active' : 'minimized', hidden ? 'hidden' : '']"
         id="p1s"
         ref="menu"
     >
@@ -94,12 +94,22 @@ export default {
             isMenuActive: false,
             isAuthenticated: false,
             profilePicture: '/src/assets/images/default/user-data/profile.png',
+            navigatorIcon: '>',
         };
     },
 
+    props: {
+        hidden: Boolean,
+    },
+
+    emits: [
+        'focus',
+        'navigateTo'
+    ],
+
     async mounted() {
         this.isAuthenticated = await isAuthenticated();
-        this.updateMenuState(true);
+        // this.updateMenuState(!(this.handleIsMobile()));
     },
 
     methods: {
@@ -109,12 +119,6 @@ export default {
             const isMobile = app && app.classList.contains('mobile');
             console.log('handleIsMobile() > ', isMobile);
             return isMobile;
-        },
-
-        handleAction(item) {
-            if (item.func && typeof this[item.func] === "function") {
-                this[item.func]();  // Chama a função associada dinamicamente
-            }
         },
 
         navigateTo(page) {
@@ -140,10 +144,12 @@ export default {
                 },
                 },
             });
+            this.updateMenuState();
         },
 
         handleSettigsBox() {
             this.$settingsBox.show();
+            this.updateMenuState();
         },
 
         onTouchStart(event) {
@@ -209,6 +215,12 @@ export default {
             this.$emit('focus', value);
         }
     },
+
+    watch: {
+        isMenuActive(value) {
+            value ? this.navigatorIcon = '<' : this.navigatorIcon = '>';
+        },
+    }
 };
 </script>
   

@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { isAuthenticated } from '@/utils/auth';
 
 // *root
-import FormLayout from '@/layouts/FormLayout.vue';
+import FormContainer from '@/layouts/FormContainer.vue';
 import MainLayout from '@/layouts/MainLayout.vue';
 import NotFound from '@/views/NotFound.vue';
 
@@ -15,24 +15,9 @@ import Signup from '@/views/Signup.vue';
 import Create from '@/views/Create.vue';
 import About from '@/views/About.vue';
 import Games from '@/views/Games.vue';
-import Home from '@/views/Home.vue';
 
 
 const routes = [
-  
-  { 
-    path: '/:pathMatch(.*)*',
-    name: 'Not_Found',
-    component: NotFound 
-  },
-
-  {
-    path: '',
-    name: 'About',
-    component: About,
-    meta: { requiresAuth:false, showNavigator:false },
-    props: true
-  },
 
   {
     path: '/',
@@ -48,7 +33,6 @@ const routes = [
         path: 'home',
         name: 'Home',
         redirect: {name: 'Games'}
-        // name: 'Home',
         // component: Games, //temporário
       },
 
@@ -56,7 +40,7 @@ const routes = [
         path: 'create/:id?',
         name: 'Create',
         component: Create,
-        meta: {requiresAuth: true },
+        meta: { requiresAuth: true, hiddenNavigator: true },
         props: true
       },
     ]
@@ -64,7 +48,7 @@ const routes = [
 
   {
     path: '/accounts',
-    component: FormLayout,
+    component: FormContainer,
     children: [
       {
         path: '',
@@ -93,6 +77,20 @@ const routes = [
       },
     ]
   },
+
+  { 
+    path: '/:pathMatch(.*)*',
+    name: 'Not_Found',
+    component: NotFound 
+  },
+
+  {
+    path: '',
+    name: 'About',
+    component: About,
+    meta: { requiresAuth:false, showNavigator:false },
+    props: true
+  },
 ];
 
 const router = createRouter({
@@ -100,7 +98,7 @@ const router = createRouter({
   routes,
 });
 
-// Middleware de autenticação para redirecionar usuários
+// Router Guard
 router.beforeEach(async (to, from, next) => {
   const isLoggedIn = await isAuthenticated();
 
@@ -108,7 +106,7 @@ router.beforeEach(async (to, from, next) => {
     console.log('Vue Router > situation: 1');
     next({ name: 'Login', query: { redirect: to.fullPath } });
 
-  } else if (to.name === 'Login' && isLoggedIn) {
+  } else if ((to.name === 'Login' || to.name === 'About') && isLoggedIn) {
     console.log('Vue Router > situation: 2');
     next({ name: 'Home' });
     

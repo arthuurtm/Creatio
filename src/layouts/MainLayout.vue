@@ -1,13 +1,13 @@
 <template>
-    <div class="grid-container">
-        <div 
-            class="focus-element"
-            :class="isFocusElement && 'active'"
-        ></div>
-
+    <div 
+        class="grid-container"
+        :class="isFocusElement && 'focus-element'"
+    >
+    
         <Navigator 
             @navigateTo="handleNavigate"
             @focus="handleFocusElement"
+            :hidden="computedHiddenNavigator"
         />
 
         <div class="view-app">
@@ -16,22 +16,6 @@
 
     </div>
 </template>
-
-<!-- <script setup>
-import { ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-
-const route = useRoute();
-const showNavigator = ref(true);
-
-watch(
-  () => route.meta,
-  (newMeta) => {
-    showNavigator.value = newMeta?.showNavigator ?? false;
-  },
-  { immediate: true }
-);
-</script> -->
 
 <script>
 import Navigator from '@/components/Navigator.vue';
@@ -43,14 +27,24 @@ export default {
         };
     },
 
+    props: {
+        hiddenNavigator: Boolean,
+    },
+
+    components: {
+        Navigator,
+    },
+
     watch: {
         focusElement(value) {
             value ? this.isFocusElement = true : this.isFocusElement = false;
         },
     },
 
-    components: {
-        Navigator,
+    computed: {
+        computedHiddenNavigator() {
+            return this.$route.meta.hiddenNavigator ?? this.hiddenNavigator;
+        }
     },
     
     methods: {

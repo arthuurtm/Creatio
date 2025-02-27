@@ -23,7 +23,7 @@
     scrollbar-color: var(--bg) var(--bg);
     transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     border-right: 1px solid var(--border);
-    /* background-color: var(--menu); */
+    /* background-color: var(--form-bg-sub); */
 }
 
 .p1s-content {
@@ -38,7 +38,6 @@
     transform: translateY(-50%);
     font-size: 25px;
     cursor: pointer;
-    border-radius: 30px;
     color: var(--text);
     border: none;
     z-index: 3;
@@ -178,7 +177,6 @@ header {
 .app.pc .p1s {
     display: grid !important;
     grid-column: 1;
-    border-radius: 15px;
     align-self: flex-start;
     height: 100%;
     width: 240px;
@@ -187,10 +185,6 @@ header {
 
 .app.pc .p1s.minimized {
     width: 60px;
-}
-
-.app.pc .p1s.active {
-    border-radius: 0px;
 }
 
 .app.pc .p1s .center ul li a p {

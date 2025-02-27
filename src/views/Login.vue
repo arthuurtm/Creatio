@@ -30,6 +30,7 @@
                   type="password"
                   v-model="password"
                   placeholder="Digite sua senha"
+                  autocomplete="on"
                   required
                 />
                 <a 
