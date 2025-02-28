@@ -5,6 +5,7 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     id: '',
     name: '',
+    username: '',
     email: '',
     profilePicture: '',
     additionalData: {},
@@ -13,6 +14,7 @@ export const useUserStore = defineStore('user', {
     setUserData(userData) {
       this.id = userData.id;
       this.name = userData.name;
+      this.username = userData.username;
       this.email = userData.email;
       this.profilePicture = userData.profilePicture;
       this.additionalData = userData.additionalData || {};
@@ -20,6 +22,7 @@ export const useUserStore = defineStore('user', {
     clearUserData() {
       this.id = '';
       this.name = '';
+      this.username = '';
       this.email = '';
       this.profilePicture = '';
       this.additionalData = {};

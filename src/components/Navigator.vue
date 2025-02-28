@@ -19,11 +19,15 @@
 
             <div class="center">
                 <ul>
-                    <li v-if="isAuthenticated" class="user-info">
+                    <li v-if="isAuthenticated" id="user-info">
                         <span>
                             <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
                         </span>
-                        <p class="user-name">{{ userStore.name }}</p>
+                        <div>
+                            <p class="nickname">{{ userStore.name }}</p>
+                            <!-- <p class="username">@{{ userStore.username }}</p> -->
+                        </div>
+                        
                     </li>
 
                     <li v-if="!isAuthenticated" @click="navigateTo('Login')">
@@ -97,7 +101,7 @@ export default {
 
     async mounted() {
         this.isAuthenticated = await isAuthenticated();
-        // this.updateMenuState(!(this.handleIsMobile()));
+        this.updateMenuState(!(this.handleIsMobile()));
     },
 
     methods: {

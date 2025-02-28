@@ -145,7 +145,7 @@
     transform: translateX(0%);
 }
 
-.app.pc .p1s .user-info img {
+.app.pc .p1s #user-info img {
     width: 28px;
     height: auto;
     border-radius: 50%;
@@ -318,29 +318,23 @@
     width: auto;
 }
 
-.app.mobile .p1s .user-info {
+.app.mobile .p1s #user-info {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.app.mobile .p1s .user-info img {
+.app.mobile .p1s #user-info img.profile-picture {
     position: unset;
-}
-
-.app.mobile .p1s .user-info img.profile-picture {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: auto;
     border-radius: 50%;
 }
 
-.app.mobile .p1s .user-info .user-name {
-    font-size: 14px;
+.app.mobile .p1s #user-info p {
+    font-size: 16px;
     color: var(--text);
     margin: 0;
-}
-
-.app.mobile .p1s .user-info .user-name {
     font-weight: bold;
 }
 
@@ -360,12 +354,12 @@
     justify-content: center;
 }
 
-.app.mobile .p1s .center ul li {
-    color: var(--text);
+.app.mobile .p1s .center ul li#user-info {
+    background-color: transparent;
 }
 
-.app.mobile .p1s .center ul li span {
-    margin-top: 12px;
+.app.mobile .p1s .center ul li {
+    color: var(--text);
 }
 
 @media (max-width: 768px) {
