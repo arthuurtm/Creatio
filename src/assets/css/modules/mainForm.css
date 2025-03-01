@@ -52,7 +52,6 @@
     position: absolute;
     top: 10px;
     border-radius: 5px;
-    width: 0; /* Adicione esta linha */
     transition: width 0.25s ease, max-width 0.25s ease;
     animation: moveToBottom 0.25s ease;
 }

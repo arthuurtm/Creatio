@@ -213,7 +213,7 @@ export default {
             if (!this.sentCode) {
                 this.isLoading = true;
                 try {
-                    const res = await fetch(this.$globalFunc.getApiUrl('database', 'signup-generate-code'), {
+                    const res = await fetch(this.$globalFunc.getApiUrl('database', 'setSignupCode'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: this.email }),
@@ -248,7 +248,7 @@ export default {
                 }
                 
                 this.isLoading = true;
-                const response = await fetch(this.$globalFunc.getApiUrl('database', 'signup'), {
+                const response = await fetch(this.$globalFunc.getApiUrl('database', 'setUser'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

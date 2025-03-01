@@ -148,7 +148,7 @@ export default {
 			this.errorMessage = "";
 			this.isLoading = true;
 			try {
-				const response1 = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'check-user'), {
+				const response1 = await fetch(this.$globalFunc.getApiUrl('database', 'getUserBasics'), {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email: this.email }),
@@ -159,7 +159,7 @@ export default {
 					this.userID = userData.id;
 					this.userName = userData.nickname;
 
-					const response2 = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'generate-reset-token'), {
+					const response2 = await fetch(this.$globalFunc.getApiUrl('database', 'setResetPassCode'), {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({ email: this.email, userId: this.userID, nickname: this.userName }),
@@ -186,7 +186,7 @@ export default {
 			this.errorMessage = "";
 			this.isLoading = true;
 			try {
-				const response = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'validate-reset-token'), {
+				const response = await fetch(this.$globalFunc.getApiUrl('database', 'getResetPassCode'), {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ 
@@ -217,7 +217,7 @@ export default {
 					return;
 				}
 
-				const response = await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3000, 'reset-password'), {
+				const response = await fetch(this.$globalFunc.getApiUrl('database', 'setUserPassword'), {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
@@ -228,7 +228,7 @@ export default {
 				});
 
 				if (response.ok) {
-					await fetch(this.$globalFunc.getCompleteUrl(window.location.host, 3001, 'send-email'), {
+					await fetch(this.$globalFunc.getApiUrl('email', 'send-email'), {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({

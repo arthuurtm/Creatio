@@ -11,16 +11,16 @@ const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fet
 require('dotenv').config();
 
 const httpOptions = {
-  key: fs.readFileSync('./certificate/auto/key.pem'),
-  cert: fs.readFileSync('./certificate/auto/cert.pem')
+	key: fs.readFileSync('./certificate/auto/key.pem'),
+	cert: fs.readFileSync('./certificate/auto/cert.pem')
 }
 
 const corsOptions = {
-  origin: [
-    'http://localhost:5173',
-    'https://02a5-138-0-83-231.ngrok-free.app'
-  ],
-  credentials: true
+	origin: [
+		'http://localhost:5173',
+		'https://02a5-138-0-83-231.ngrok-free.app'
+	],
+	credentials: true
 };
 const app = express();
 app.use(cors(corsOptions));
@@ -28,430 +28,466 @@ app.use(express.json());
 app.use(cookieParser());
 
 const sequelize = new Sequelize(process.env.DATABASE, process.env.DB_USER, process.env.DB_PASSWORD, {
-  host: 'localhost',
-  dialect: 'mariadb',
+	host: 'localhost',
+	dialect: 'mariadb',
 });
 
 const User = sequelize.define('User', {
-  email: { type: DataTypes.STRING, unique: true, allowNull: false },
-  birthdate: { type: DataTypes.DATEONLY, allowNull: false },
-  username: { type: DataTypes.STRING, unique: true, allowNull: false },
-  nickname: { type: DataTypes.STRING, allowNull: true },
-  passwordHash: { type: DataTypes.STRING, allowNull: false },
-  sessionToken: { type: DataTypes.STRING, allowNull: false },
-  gToken: { type: DataTypes.STRING, unique: true },
+	email: { type: DataTypes.STRING, unique: true, allowNull: false },
+	birthdate: { type: DataTypes.DATEONLY, allowNull: false },
+	username: { type: DataTypes.STRING, unique: true, allowNull: false },
+	nickname: { type: DataTypes.STRING, allowNull: true },
+	passwordHash: { type: DataTypes.STRING, allowNull: false },
+	sessionToken: { type: DataTypes.STRING, allowNull: false },
+	gToken: { type: DataTypes.STRING, unique: true, allowNull: true },
+	profilePic: { type: DataTypes.STRING, allowNull: true },
 });
-
+  
 const Session = sequelize.define('Session', {
-  sessionId: { type: DataTypes.STRING, allowNull: false },
-  sessionToken: { type: DataTypes.STRING, allowNull: false }, // Armazena o token do usuário no momento da criação
-  deviceInfo: { type: DataTypes.STRING },
-  ipAddress: { type: DataTypes.STRING },
-  createdAt: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
+	sessionId: { type: DataTypes.STRING, allowNull: false },
+	sessionToken: { type: DataTypes.STRING, allowNull: false },
+	deviceInfo: { type: DataTypes.STRING },
+	ipAddress: { type: DataTypes.STRING },
+	createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+	userId: { 
+	  type: DataTypes.INTEGER, 
+	  allowNull: false, 
+	  references: { model: 'Users', key: 'id' }, 
+	  onDelete: 'CASCADE' 
+	},
 });
-
+  
 const Game = sequelize.define('Game', {
-  title: { type: DataTypes.STRING, allowNull: false },
-  description: { type: DataTypes.STRING },
-  genre: { type: DataTypes.STRING },
-  releaseDate: { type: DataTypes.DATE, defaultValue: Sequelize.NOW }
+	title: { type: DataTypes.STRING, allowNull: false },
+	description: { type: DataTypes.STRING },
+	genre: { type: DataTypes.STRING },
+	releaseDate: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+	userId: { 
+	  type: DataTypes.INTEGER, 
+	  allowNull: false, 
+	  references: { model: 'Users', key: 'id' }, 
+	  onDelete: 'CASCADE' 
+	},
 });
-
+  
 const EmailCodeVerify = sequelize.define('EmailCodeVerify', {
-  email: { type: DataTypes.STRING, allowNull: false },
-  type: { type: DataTypes.INTEGER, allowNull: false },
-  token: { type: DataTypes.STRING, allowNull: false },
-  expiresAt: { type: DataTypes.DATE, allowNull: false },
+	userId: { 
+	  type: DataTypes.INTEGER, 
+	  allowNull: true, 
+	  references: { model: 'Users', key: 'id' }, 
+	  onDelete: 'CASCADE' 
+	},
+	type: { type: DataTypes.INTEGER, allowNull: false },
+	token: { type: DataTypes.STRING, allowNull: false },
+	expiresAt: { type: DataTypes.DATE, allowNull: false },
 });
+  
+User.hasMany(EmailCodeVerify, { foreignKey: 'userId' });
+EmailCodeVerify.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasMany(EmailCodeVerify);
-EmailCodeVerify.belongsTo(User);
+User.hasMany(Session, { foreignKey: 'userId' });
+Session.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasMany(Session);
-Session.belongsTo(User);
-User.hasMany(Game);
-Game.belongsTo(User);
-
+User.hasMany(Game, { foreignKey: 'userId' });
+Game.belongsTo(User, { foreignKey: 'userId' });
+  
 sequelize.sync();
 
-const generateRandomNumbers = () => {
+function generateRandomNumbers() {
   let numbers = '';
   for (let i = 0; i < 6; i++) {
-    numbers += crypto.randomInt(0, 10);
+	numbers += crypto.randomInt(0, 10);
   }
   return numbers;
 };
 
-async function createSession(user) {
+async function createUserSession(user) {
   const sessionId = uuidv4();
   await Session.create({
-    sessionId,
-    sessionToken: user.sessionToken,
-    createdAt: new Date(),
-    userId: user.id,
+	sessionId,
+	sessionToken: user.sessionToken,
+	createdAt: new Date(),
+	userId: user.id,
   });
   console.warn('SessionID: ', sessionId);
   return sessionId;
+};
+
+async function sendEmail(type, data = {}) {
+	try {
+		let bodyContent = {};
+
+		// Resetar senha da conta
+		if (type === 'resetPassSendCode') {
+
+			await EmailCodeVerify.create({ userId: data.userId, type: 1, token: data.verificationCode, expiresAt: data.expiresAt });
+			bodyContent = {
+				structure_name: "resetPassword",
+				variables: {
+					username: data.nickname,
+					to: data.email,
+					subject: "Seu código para redefinir a senha",
+					verificationCode: data.verificationCode
+				}
+			};
+
+		// Código de verificação do cadastro
+		} else if (type === 'signupSendCode') {
+
+			await EmailCodeVerify.create({ type: 2, token: data.verificationCode, expiresAt: data.expiresAt });
+			bodyContent = {
+				structure_name: "signupVerifyEmail",
+				variables: {
+					to: data.email,
+					subject: "Verifique seu e-mail",
+					verificationCode: data.verificationCode
+				}
+			};
+		};
+
+		const response = await fetch('http://localhost:3001/send-email', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(bodyContent),
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			console.error('Erro ao processar função sendMail: ', errorData.message);
+			return false;
+		} else {
+			return true;
+		};
+	} catch (error) {
+		console.error('Erro ao processar função sendEmail: ', error);
+		return false;
+	};
 }
 
+app.post('/getlogin', async (req, res) => {
+	const { type, email, password, gToken } = req.body;
 
-app.post('/login', async (req, res) => {
-  const { type, email, password, gToken } = req.body;
+	try {
+		let user = null;
 
-  if (type === 'default') {
-    const user = await User.findOne({ where: { email } });
-    if (!user) return res.status(400).json({ message: 'Usuário não encontrado' });
-    try {
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-      if (!isPasswordValid) return res.status(400).json({ message: 'Senha incorreta' });
+		if (type === 'default') {
+			user = await User.findOne({ where: { email } });
+			if (!user) return res.status(400).json({ message: 'Usuário não encontrado' });
 
-      const sessionId = await createSession(user);
-      res.status(200)
-        .cookie('sessionId', sessionId, {
-          httpOnly: true,
-          // secure: process.env.NODE_ENV === 'production', // Apenas em HTTPS
-          sameSite: 'Strict',
-        })
-        .json({ message: 'Sessão criada com sucesso' });
+			const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+			if (!isPasswordValid) return res.status(400).json({ message: 'Senha incorreta' });
 
-    } catch (error) {
-      console.error('Erro ao fazer login:', error);
-      res.status(500).json({ message: 'Erro interno do servidor.' });
-    }
+		} else if (type === 'google') {
+			user = await User.findOne({ where: { gToken } });
+			if (!user) return res.status(400).json({ message: 'Conta Google não vinculada a nenhuma conta.' });
 
-  } else if (type === 'google') {
-    const user = await User.findOne({ where: { gToken } });
-    if (!user) return res.status(400).json({ message: 'Conta Google não vinculada a nenhuma conta.' });
-    try {
-      const sessionId = await createSession(user);
-      res.status(200)
-        .cookie('sessionId', sessionId, {
-          httpOnly: true,
-          // secure: process.env.NODE_ENV === 'production',
-          sameSite: 'Strict',
-        })
-        .json({ message: 'Sessão criada com sucesso' });
+		} else {
+			return res.status(400).json({ message: 'Solicitação incorreta.' });
+		};
 
-    } catch (error) {
-      console.error('Erro ao fazer login:', error);
-      res.status(500).json({ message: 'Erro interno do servidor.' });
-    }
-  }
+		const sessionId = await createUserSession(user);
+
+		res.status(200)
+			.cookie('sessionId', sessionId, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'Strict',
+			})
+			.json({ message: 'Sessão criada com sucesso' });
+
+	} catch (error) {
+		console.error('Erro ao processar solicitação de getLogin:', error);
+		res.status(500).json({ message: 'Erro interno no servidor' });
+	};
 });
 
 
+// Logout
 app.post('/logout', (req, res) => {
-  res.clearCookie('sessionId', { path: '/' });
-  res.status(200).json({ message: 'Usuário deslogado com sucesso' });
+	res.clearCookie('sessionId', { path: '/' });
+	res.status(200).json({ message: 'Usuário deslogado com sucesso' });
 });
 
 
-app.post('/check-user', async (req, res) => {
-  const email = req.body?.email;
-  const sessionId = req.cookies?.sessionId;
+// Buscar dados básicos do usuário
+app.post('/getUserBasics', async (req, res) => {
+	const sessionId = req.cookies?.sessionId;
+	const { userId } = req.body;
 
-  if (!email && !sessionId) {
-    return res.status(400).json({ message: 'É necessário fornecer um email ou sessionId' });
-  }
+	if (!userId && !sessionId) {
+		return res.status(400).json({ message: 'Solicitação inválida: forneça um ID ou sessão do usuário.' });
+	};
 
-  try {
-    let user;
+	try {
+		let user = null;
 
-    if (sessionId) {
-      token = await Session.findOne({ where: { sessionId } });
-      if (token) {
-        let sessionToken = token.sessionToken
-        user = await User.findOne({ where: {sessionToken} })
-      }
+		if (sessionId) {
+			const session = await Session.findOne({
+				where: { sessionId },
+				include: [{ model: User }]
+			});
+			user = session ? session.User : null;
 
-    } else if (email) {
-      user = await User.findOne({ where: { email } });
-    }
+		} else if (userId) {
+			user = await User.findOne({ where: { id: userId } });
+		};
 
-    if (!user) {
-      return res.status(404).json({ message: 'Usuário não encontrado' });
-    }
+		if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
 
-    const userData = {
-      id: user.id,
-      username: user.username,
-      nickname: user.nickname,
-      email: user.email,
-      exists: true,
-    };
+		res.status(200).json({
+			id: user.id,
+			username: user.username,
+			nickname: user.nickname,
+			profilePic: user.profilePic,
+			exists: true,
+		});
 
-    res.status(200).json(userData);
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    res.status(500).json({ message: 'Erro interno do servidor' });
-  }
+	} catch (error) {
+		console.error('Erro ao processar getBasicUserData:', error);
+		res.status(500).json({ message: 'Erro interno no servidor' });
+	};
 });
 
 
-app.post('/validate-user-session', async (req, res) => {
+// Verificar se a sessão é válida
+app.post('/getUserSession', async (req, res) => {
+	try {
+		const sessionId = req.cookies?.sessionId;
+		if (!sessionId) return res.status(400).json({ message: 'SessionId é obrigatório.' });
 
-  try {
+		const session = await Session.findOne({
+			where: { sessionId },
+			include: [{ model: User }]
+		});
 
-    const sessionId = req.cookies?.sessionId;
-    if (!sessionId) {
-      return res.status(400).json({ message: 'SessionId é obrigatório.' });
-    }
+		if (!session || !session.User) {
+			return res.status(400).json({ message: 'Sessão inválida ou não encontrada.' });
+		};
 
-    let step1 = await Session.findOne({where: { sessionId }});
-    if (!step1) {
-      return res.status(400).json({ message: 'Sessão não encontrada.' });
-    }
-    let session = step1.sessionToken;
+		res.status(200).json({ message: 'Sessão válida.' });
 
-    let step2 = await User.findOne({ where: { sessionToken: session } });
-    if (!step2) {
-      return res.status(400).json({ message: 'Sessão inválida.'});
-    }
-
-    res.status(200).json({ message: 'Sessão válida.'});
-
-  } catch (error) {
-    console.error('Erro ao validar a sessão:', error);
-    res.status(500).json({ message: 'Erro interno do servidor.' });
-  }
+	} catch (error) {
+		console.error('Erro ao processar solcitação de getValidUserSession: ', error);
+		res.status(500).json({ message: 'Erro interno do servidor.' });
+	};
 });
 
 
-app.post('/signup-generate-code', async (req, res) => {
-  const { email } = req.body;
+// Gerar e enviar código de verificação no e-mail para criação da conta
+app.post('/setSignupCode', async (req, res) => {
+	const { email } = req.body;
 
-  try {
-    const verificationCode = generateRandomNumbers();
-    const expiresAt = new Date(Date.now() + 3600000); // 1 hora de validade
-    const user = await User.findOne({ where: { email } });
+	try {
+		// Verifica se já existe um usuário com o e-mail informado
+		const user = await User.findOne({ where: { email } });
+		if (user) {  // Se o usuário já existe, retorna o erro
+			return res.status(400).json({ message: 'Este e-mail já foi usado.', errCode: 'emailInUse' });
+		}
 
-    if (user) {
-      return res.status(400).json({ message: 'Este e-mail já foi usado.', errCode: 'emailInUse' });
-    }
+		// Caso o usuário não exista, continua o processo de envio do código
+		const data = {
+			email: email,
+			verificationCode: generateRandomNumbers(),
+			expiresAt: new Date(Date.now() + 3600000),  // A expiração do código
+		};
+		const emailSent = await sendEmail('signupSendCode', data);
 
-    // Cria o código de verificação no banco de dados
-    await EmailCodeVerify.create({ email, type: 2, token: verificationCode, expiresAt });
+		if (emailSent) {
+			return res.status(200).json({ message: 'E-mail enviado com sucesso.' });
+		} else {
+			return res.status(500).json({ message: 'Erro ao enviar e-mail.', errCode: 'emailSendError' });
+		};
 
-    // Envia o e-mail
-    const sendEmailResponse = await fetch('http://localhost:3001/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        structure_name: "signupVerifyEmail",
-        variables: {
-          to: email,
-          subject: "Verifique seu e-mail",
-          verificationCode: verificationCode
-        }
-      }),
-    });
-
-    if (!sendEmailResponse.ok) {
-      const errorData = await sendEmailResponse.json();
-      console.error('Erro ao enviar e-mail:', errorData.message);
-      return res.status(400).json({ message: 'Erro ao enviar e-mail.', errCode: 'emailSendError' });
-    }
-
-    res.status(200).json({ message: 'E-mail enviado com sucesso.', verificationCode });
-  } catch (error) {
-    console.error('Erro no endpoint /signup-generate-code:', error);
-    res.status(500).json({ message: 'Erro interno do servidor.', error: error.message });
-  }
+	} catch (error) {
+		console.error('Erro ao processar solicitação de setSignupCode:', error);
+		return res.status(500).json({ message: 'Erro interno do servidor.', error: error.message });
+	};
 });
 
 
-app.post('/signup', async (req, res) => {
-  const { nickname, username, email, birthdate, password, verificationCode} = req.body;
+// Cadastrar novo usuário no Banco de Dados
+app.post('/setUser', async (req, res) => {
+	try {
+		const { nickname, username, email, birthdate, password, verificationCode } = req.body;
 
-  const currentDate = new Date();
-  const birthDateObj = new Date(birthdate);
-  const verifyEntry = await EmailCodeVerify.findOne({ where: { email, type: 2, token:verificationCode } });
-  const usernameExists = await User.findOne({ where: { username } });
+		// Verifica se a data de nascimento é válida
+		const currentDate = new Date();
+		const birthDateObj = new Date(birthdate);
+		if (isNaN(birthDateObj.getTime()) > currentDate) {
+			return res.status(400).json({ message: 'A data de nascimento deve ser válida.', errCode: 'invalidDatebirth' });
+		};
 
-  if (!verifyEntry) {
-    return res.status(400).json({ message: 'Código inválido', errCode: 'invalidCode' });
-  } else if (new Date() > verifyEntry.expiresAt) {
-    return res.status(400).json({ message: 'Código expirado.', errCode: 'invalidCode' });
-  } else {
-    console.log('Código válido. ---');
-  }
-  
-  if (birthDateObj > currentDate) {
-    return res.status(400).json({ message: 'A data de nascimento não pode ser no futuro', errCode: 'invalidDatebirth' });
-  } else {
-    console.log('Data de nascimento válida. ---');
-  }
+		// Executa consultas para recuperar o código de verificação e o nome de usuário
+		const [verifyEntry, usernameExists] = await Promise.all([
+			EmailCodeVerify.findOne({ where: { type: 2, token: verificationCode } }),
+			User.findOne({ where: { username } })
+		]);
 
-  if (usernameExists) {
-    return res.status(400).json({ message: 'Nome de usuário já existe', errCode: 'usernameExists' });
-  }
- 
-  try {
-    const passwordHash = await bcrypt.hash(password, 10);
-    const sessionToken = crypto.randomBytes(32).toString('hex');
+		// Verifica código de verificação
+		if (!verifyEntry) {
+			return res.status(400).json({ message: 'Código de verificação inválido.', errCode: 'invalidCode' });
+		} else if (new Date() > verifyEntry.expiresAt) {
+			return res.status(400).json({ message: 'Código de verificação expirado.', errCode: 'invalidCode' });
+		};
 
-    const user = await User.create({
-      nickname,
-      username,
-      email,
-      birthdate,
-      passwordHash,
-      sessionToken
-    });
-    return res.status(201).json({ message: 'Usuário criado com sucesso', user });
+		// Verifica se o nome de usuário já está em uso
+		if (usernameExists) {
+			return res.status(400).json({ message: 'Nome de usuário já usado.', errCode: 'usernameExists' });
+		};
 
-  } catch (error) {
-    console.error('Erro ao criar usuário:', error);
-    return res.status(500).json({ error: 'Erro ao criar o usuário', errCode: 'internalError' });
-  }
+		// Gera o hash da senha e o token da sessão
+		const [passwordHash, sessionToken] = await Promise.all([
+			bcrypt.hash(password, 10),
+			uuidv4()
+		]);
+
+		// Cria o usuário no banco de dados
+		const user = await User.create({
+			nickname,
+			username,
+			email,
+			birthdate,
+			passwordHash,
+			sessionToken
+		});
+
+		// Retorna sucesso
+		return res.status(201).json({ message: 'Usuário criado com sucesso', user });
+
+	} catch (error) {
+		console.error('Erro ao processar solicitação de setUser:', error);
+		return res.status(500).json({ message: 'Erro ao criar o usuário', errCode: 'internalError' });
+	}
 });
 
 
-app.post('/list-user-sessions', async (req, res) => {
+// Lista todas as sessões de um usuário
+app.post('/getUserSessions', async (req, res) => {
   const { userId } = req.body;
 
   try {
-    const sessions = await Session.findAll({ where: { userId } });
+	const sessions = await Session.findAll({ where: { userId } });
 
-    if (!sessions.length) {
-      return res.status(404).json({ message: 'Nenhuma sessão encontrada.' });
-    }
+	if (!sessions.length) {
+	  return res.status(404).json({ message: 'Nenhuma sessão encontrada.' });
+	};
 
-    res.status(200).json(sessions);
+	res.status(200).json(sessions);
   } catch (error) {
-    console.error('Erro ao listar sessões:', error);
-    res.status(500).json({ message: 'Erro interno do servidor.' });
-  }
+	console.error('Erro ao listar sessões:', error);
+	res.status(500).json({ message: 'Erro interno do servidor.' });
+  };
 });
 
 
-app.post('/delete-session', async (req, res) => {
+// Deleta uma sessão específica, desconectando a mesma
+app.post('/deleteSession', async (req, res) => {
   const { sessionId } = req.body;
 
   try {
-    const session = await Session.findOne({ where: { sessionId } });
+	const session = await Session.findOne({ where: { sessionId } });
 
-    if (!session) {
-      return res.status(404).json({ message: 'Sessão não encontrada.' });
-    }
+	if (!session) {
+	  return res.status(404).json({ message: 'Sessão não encontrada.' });
+	}
 
-    await session.destroy();
-    res.status(200).json({ message: 'Sessão deletada com sucesso.' });
+	await session.destroy();
+	res.status(200).json({ message: 'Sessão deletada com sucesso.' });
   } catch (error) {
-    console.error('Erro ao deletar sessão:', error);
-    res.status(500).json({ message: 'Erro interno do servidor.' });
+	console.error('Erro ao deletar sessão:', error);
+	res.status(500).json({ message: 'Erro interno no servidor.' });
   }
 });
 
 
-app.get('/encontrar-jogos', async (req, res) => {
+// Retornar todos os jogos disponíveis no site
+app.get('/getGames', async (req, res) => {
   try {
-    // Buscar todos os jogos no banco
-    const games = await Game.findAll();  // Retorna todos os jogos cadastrados
+	const games = await Game.findAll();
+	if (games.length === 0) return res.status(404).json({ message: 'Nenhum jogo encontrado' });
+	res.status(200).json(games);
 
-    // Retorna os jogos encontrados
-    if (games.length === 0) {
-      return res.status(404).json({ message: 'Nenhum jogo encontrado' });
-    }
-
-    res.json(games);  // Retorna os jogos em formato JSON
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Erro ao encontrar jogos' });
+	console.error('Erro ao processar solicitação de getGames: ', error);
+	res.status(500).json({ message: 'Erro interno no servidor.' });
   }
 });
 
 
-app.post('/generate-reset-token', async (req, res) => {
-  const { email, userId, nickname } = req.body;
+// Gera um código de verificação e envia um e-mail para resetar a senha
+app.post('/setResetPassCode', async (req, res) => {
+  const { email } = req.body;
 
   try {
-    // Gera o token de redefinição
-    const resetToken = generateRandomNumbers();
-    const expiresAt = new Date(Date.now() + 3600000); // 1 hora de validade
 
-    // Salva o token no banco de dados (ou outro local)
-    await EmailCodeVerify.create({ email, type: 1, token: resetToken, expiresAt });
+	const user = await User.findOne({where: email});
+	const data = {
+		email: email,
+		userId: user.id,
+		nickname: user.nickname,
+		verificationCode: generateRandomNumbers(),
+		expiresAt: new Date(Date.now() + 3600000),
+	};
 
-    // Envia solicitação ao backend Python para disparar o e-mail
-    const sendEmailResponse = await fetch('http://localhost:3001/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        structure_name: "resetPassword",
-        variables: {
-          username: nickname,
-          to: email,
-          subject: "Seu código para redefinir a senha",
-          resetPasswordCode: resetToken
-        }
-      }),
-    });
-
-    // Verifica se o envio do e-mail foi bem-sucedido
-    if (!sendEmailResponse.ok) {
-      const errorData = await sendEmailResponse.json();
-      console.error('Erro ao enviar e-mail:', errorData.message);
-      res.status(500).json({ message: 'Erro ao enviar e-mail.' });
-      return;
-    }
-
-    // Retorna resposta de sucesso
-    res.status(200).json({ 
-      message: 'Código de redefinição gerado e e-mail enviado com sucesso.',
-    });
+	const emailSent = await sendEmail('signupSendCode', data);
+	if (emailSent) {
+		return res.status(200).json({ message: 'Código de redefinição gerado e e-mail enviado com sucesso.' });
+	} else {
+		return res.status(500).json({ message: 'Erro ao enviar e-mail.', errCode: 'emailSendError' });
+	};
 
   } catch (error) {
-    console.error('Erro ao processar solicitação:', error);
-    res.status(500).json({ message: 'Erro ao processar a solicitação.' });
+	console.error('Erro ao processar solicitação de setResetPassCode: ', error);
+	res.status(500).json({ message: 'Erro interno no servidor.' });
   }
 });
 
 
-app.post('/validate-reset-token', async (req, res) => {
-  const { email, resetToken } = req.body;
+// Recupera ao código e verifica se é válido
+app.post('/getResetPassCode', async (req, res) => {
+  const { userId, resetToken } = req.body;
 
   try {
-    const resetEntry = await EmailCodeVerify.findOne({ where: { email, type: 1, token: resetToken } });
+	const resetEntry = await EmailCodeVerify.findOne({ where: { userId, type: 1, token: resetToken } });
 
-    if (!resetEntry || new Date() > resetEntry.expiresAt) {
-      return res.status(400).json({ message: 'Código inválido ou expirado.' });
-    }
+	if (!resetEntry || new Date() > resetEntry.expiresAt) {
+	  return res.status(400).json({ message: 'Código inválido ou expirado.' });
+	}
 
-    res.status(200).json({ message: 'Código válido.' });
+	res.status(200).json({ message: 'Código válido.' });
   } catch (error) {
-    console.error('Erro ao validar código:', error);
-    res.status(500).json({ message: 'Erro ao validar o código.' });
+	console.error('Erro ao processar solicitação de getResetPassCode: ', error);
+	res.status(500).json({ message: 'Erro interno no servidor.' });
   }
 });
 
 
-app.post('/reset-password', async (req, res) => {
-  const { email, resetToken, newPassword } = req.body;
+// Define a nova senha do usuário
+app.post('/setUserPassword', async (req, res) => {
+  const { userId, resetToken, newPassword } = req.body;
 
   try {
-    const resetEntry = await EmailCodeVerify.findOne({ where: { email, type: 1, token: resetToken } });
+	const resetEntry = await EmailCodeVerify.findOne({ where: { userId, type: 1, token: resetToken } });
 
-    if (!resetEntry || new Date() > resetEntry.expiresAt) {
-      return res.status(400).json({ message: 'Código inválido ou expirado.' });
-    }
+	if (!resetEntry || new Date() > resetEntry.expiresAt) {
+	  return res.status(400).json({ message: 'Código inválido ou expirado.' });
+	}
 
-    // Atualizar a senha do usuário
-    const user = await User.findOne({ where: { email } });
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-    const sessionToken = crypto.randomBytes(32).toString('hex');
-    user.passwordHash = passwordHash;
-    user.sessionToken = sessionToken;
-    await user.save();
+	// Atualizar a senha do usuário
+	const user = await User.findOne({ where: { userId } });
+	const passwordHash = await bcrypt.hash(newPassword, 10);
+	const sessionToken = crypto.randomBytes(32).toString('hex');
+	user.passwordHash = passwordHash;
+	user.sessionToken = sessionToken;
+	await user.save();
 
-    // Excluir o token usado
-    await resetEntry.destroy();
+	// Excluir o token usado
+	await resetEntry.destroy();
 
-    res.status(200).json({ message: 'Senha redefinida com sucesso!' });
+	res.status(200).json({ message: 'Senha redefinida com sucesso!' });
   } catch (error) {
-    console.error('Erro ao redefinir a senha:', error);
-    res.status(500).json({ message: 'Erro ao redefinir a senha.' });
+	console.error('Erro ao processar solicitação de setUserPassword: ', error);
+	res.status(500).json({ message: 'Erro interno no servidor.' });
   }
 });
 

@@ -99,7 +99,7 @@ export default {
       this.$globalFunc.hrefTo(`/run/${gameVersion}`);
     },
     loadGames() {
-      const url = this.$globalFunc.getApiUrl('database', 'encontrar-jogos');
+      const url = this.$globalFunc.getApiUrl('database', 'getGames');
       
       fetch(url)
         .then(response => {

@@ -99,7 +99,6 @@ def gmail_send_message(admin_id, structure_name, variables):
 @app.route("/create-draft", methods=["POST, GET"])
 def create_draft():
     data = request.json
-    user_id = data.get("user_id")
     structure_name = data.get("structure_name")
     variables = data.get("variables")
     result = gmail_create_draft(admin_id, structure_name, variables)

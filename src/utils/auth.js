@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/userData';
 async function handleUserData() {
   try {
 
-    const res = await fetch(getApiUrl('database', 'check-user'), {
+    const res = await fetch(getApiUrl('database', 'getUserBasics'), {
       credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' },
     });
   
@@ -33,7 +33,7 @@ async function handleUserData() {
 async function handleAuthentication() {
   try {
 
-    const res = await fetch(getApiUrl('database', 'validate-user-session'), {
+    const res = await fetch(getApiUrl('database', 'getUserSession'), {
       credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' },
     });
 

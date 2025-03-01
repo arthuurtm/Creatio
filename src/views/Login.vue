@@ -105,7 +105,7 @@ export default {
 
         const decodedToken = jwt_decode(response.credential);
         const gToken = decodedToken.sub;
-        const res = await fetch(this.$globalFunc.getApiUrl('database', 'login'), {
+        const res = await fetch(this.$globalFunc.getApiUrl('database', 'getLogin'), {
           credentials: 'include',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -127,7 +127,7 @@ export default {
 
     async handleLogin() {
       try {
-        const res = await fetch(this.$globalFunc.getApiUrl('database', 'login'), {
+        const res = await fetch(this.$globalFunc.getApiUrl('database', 'getLogin'), {
           credentials: 'include',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
