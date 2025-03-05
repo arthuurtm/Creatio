@@ -9,7 +9,7 @@ from oauth2client.client import Credentials
 from f_getAutorization import get_stored_credentials, store_credentials, init_db
 from dotenv import load_dotenv
 init_db()
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 admin_id = os.getenv('EMAIL_ID')
 email_from = os.getenv('EMAIL_FROM')

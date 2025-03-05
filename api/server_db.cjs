@@ -5,12 +5,14 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const cookieParser = require('cookie-parser');
+const UAParser = require('ua-parser-js');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 const https = require('https');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' });
 
-const httpOptions = {
+const httpsOptions = {
 	key: fs.readFileSync('./certificate/auto/key.pem'),
 	cert: fs.readFileSync('./certificate/auto/cert.pem')
 }
@@ -18,7 +20,6 @@ const httpOptions = {
 const corsOptions = {
 	origin: [
 		'http://localhost:5173',
-		'https://02a5-138-0-83-231.ngrok-free.app'
 	],
 	credentials: true
 };
@@ -33,62 +34,66 @@ const sequelize = new Sequelize(process.env.DATABASE, process.env.DB_USER, proce
 });
 
 const User = sequelize.define('User', {
-	email: { type: DataTypes.STRING, unique: true, allowNull: false },
+	id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+	email: { type: DataTypes.STRING, unique: true, allowNull: false, collate: 'utf8mb4_unicode_ci' },
 	birthdate: { type: DataTypes.DATEONLY, allowNull: false },
 	username: { type: DataTypes.STRING, unique: true, allowNull: false },
 	nickname: { type: DataTypes.STRING, allowNull: true },
 	passwordHash: { type: DataTypes.STRING, allowNull: false },
-	sessionToken: { type: DataTypes.STRING, allowNull: false },
 	gToken: { type: DataTypes.STRING, unique: true, allowNull: true },
-	profilePic: { type: DataTypes.STRING, allowNull: true },
-});
-  
+	profilePic: { type: DataTypes.TEXT, allowNull: true }, // Para URLs longas
+}, { timestamps: true });
+
 const Session = sequelize.define('Session', {
-	sessionId: { type: DataTypes.STRING, allowNull: false },
-	sessionToken: { type: DataTypes.STRING, allowNull: false },
-	deviceInfo: { type: DataTypes.STRING },
-	ipAddress: { type: DataTypes.STRING },
-	createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+	id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+	accessToken: { type: DataTypes.STRING, allowNull: false },
+	refreshToken: { type: DataTypes.STRING, allowNull: false },
+	deviceOS: { type: DataTypes.STRING },
+	deviceNavigator: { type: DataTypes.STRING },
+	deviceGenerics: { type: DataTypes.JSON },
 	userId: { 
-	  type: DataTypes.INTEGER, 
-	  allowNull: false, 
-	  references: { model: 'Users', key: 'id' }, 
-	  onDelete: 'CASCADE' 
+		type: DataTypes.INTEGER, 
+		allowNull: false, 
+		references: { model: User, key: 'id' }, 
+		onDelete: 'CASCADE' 
 	},
-});
-  
+}, { timestamps: true });
+
 const Game = sequelize.define('Game', {
+	id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
 	title: { type: DataTypes.STRING, allowNull: false },
-	description: { type: DataTypes.STRING },
+	description: { type: DataTypes.TEXT },
 	genre: { type: DataTypes.STRING },
 	releaseDate: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
 	userId: { 
-	  type: DataTypes.INTEGER, 
-	  allowNull: false, 
-	  references: { model: 'Users', key: 'id' }, 
-	  onDelete: 'CASCADE' 
+		type: DataTypes.INTEGER, 
+		allowNull: false, 
+		references: { model: User, key: 'id' }, 
+		onDelete: 'CASCADE' 
 	},
-});
-  
+}, { timestamps: true });
+
 const EmailCodeVerify = sequelize.define('EmailCodeVerify', {
+	id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
 	userId: { 
-	  type: DataTypes.INTEGER, 
-	  allowNull: true, 
-	  references: { model: 'Users', key: 'id' }, 
-	  onDelete: 'CASCADE' 
+		type: DataTypes.INTEGER, 
+		allowNull: true, 
+		references: { model: User, key: 'id' }, 
+		onDelete: 'CASCADE' 
 	},
 	type: { type: DataTypes.INTEGER, allowNull: false },
 	token: { type: DataTypes.STRING, allowNull: false },
 	expiresAt: { type: DataTypes.DATE, allowNull: false },
-});
-  
-User.hasMany(EmailCodeVerify, { foreignKey: 'userId' });
+}, { timestamps: false });
+
+// Definição de Relacionamentos
+User.hasMany(EmailCodeVerify, { foreignKey: 'userId', onDelete: 'CASCADE' });
 EmailCodeVerify.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasMany(Session, { foreignKey: 'userId' });
+User.hasMany(Session, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Session.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasMany(Game, { foreignKey: 'userId' });
+User.hasMany(Game, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Game.belongsTo(User, { foreignKey: 'userId' });
   
 sequelize.sync();
@@ -99,18 +104,6 @@ function generateRandomNumbers() {
 	numbers += crypto.randomInt(0, 10);
   }
   return numbers;
-};
-
-async function createUserSession(user) {
-  const sessionId = uuidv4();
-  await Session.create({
-	sessionId,
-	sessionToken: user.sessionToken,
-	createdAt: new Date(),
-	userId: user.id,
-  });
-  console.warn('SessionID: ', sessionId);
-  return sessionId;
 };
 
 async function sendEmail(type, data = {}) {
@@ -164,8 +157,83 @@ async function sendEmail(type, data = {}) {
 	};
 }
 
-app.post('/getlogin', async (req, res) => {
+async function createUserSession(userId, deviceData) {
+	try {
+		const accessToken = jwt.sign(
+			{ userId },
+			process.env.ACCESS_SECRET,
+			{ expiresIn: '15m' } // Expira em 15 minutos
+		);
+
+		const refreshToken = jwt.sign(
+			{ userId },
+			process.env.REFRESH_SECRET,
+			{ expiresIn: '30d' } // Expira em 30 dias
+		);
+
+		await Session.create({
+			accessToken: accessToken,
+			refreshToken: refreshToken,
+			userId: userId,
+			createdAt: new Date()
+		});
+
+		if (deviceData) {
+			await Session.update(
+				{
+					deviceOS: deviceData.os.name,
+					deviceNavigator: deviceData.browser.name,
+					deviceGenerics: deviceData,
+				}, 
+				{ where: {accessToken} }
+			);
+		};
+
+		return { accessToken, refreshToken };
+	} catch(error) {
+		console.error('Erro ao processar função createUserSession: ', error);
+		return { accessToken: null, refreshToken: null }
+	}
+};
+
+async function updateUserSession(userId, oldRefreshToken) {
+	try {
+		const accessToken = jwt.sign(
+			{ userId },
+			process.env.ACCESS_SECRET,
+			{ expiresIn: '15m' } // Expira em 15 minutos
+		);
+
+		const refreshToken = jwt.sign(
+			{ userId },
+			process.env.REFRESH_SECRET,
+			{ expiresIn: '30d' } // Expira em 30 dias
+		);
+
+		await Session.update(
+			{
+				accessToken: accessToken,
+				refreshToken: refreshToken,
+				updatedAt: new Date()
+			}, 
+			{ where: {refreshToken: oldRefreshToken, userId} }
+		);
+
+		return { accessToken, refreshToken };
+	} catch(error) {
+		console.error('Erro ao processar função createUserSession: ', error);
+		return { accessToken: null, refreshToken: null }
+	}
+}
+
+
+// Efetua o login do usuário
+app.post('/getLogin', async (req, res) => {
 	const { type, email, password, gToken } = req.body;
+	const userAgent = req.headers['user-agent'];
+	const parser = new UAParser();
+    const device = parser.setUA(userAgent).getResult()
+    // const isMobile = req.headers['sec-ch-ua-mobile'] === '?1';
 
 	try {
 		let user = null;
@@ -185,15 +253,23 @@ app.post('/getlogin', async (req, res) => {
 			return res.status(400).json({ message: 'Solicitação incorreta.' });
 		};
 
-		const sessionId = await createUserSession(user);
+		const { accessToken, refreshToken } = await createUserSession(user.id, device);
 
-		res.status(200)
-			.cookie('sessionId', sessionId, {
-				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'Strict',
-			})
-			.json({ message: 'Sessão criada com sucesso' });
+		res.cookie('accessToken', accessToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'Strict',
+			maxAge: 15 * 60 * 1000 // 15 minutos
+		});
+
+		res.cookie('refreshToken', refreshToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'Strict',
+			maxAge: 30 * 24 * 60 * 60 * 1000 // 30 dias
+		});
+
+		res.status(200).json({message: 'Login bem-sucedido!'});
 
 	} catch (error) {
 		console.error('Erro ao processar solicitação de getLogin:', error);
@@ -202,28 +278,74 @@ app.post('/getlogin', async (req, res) => {
 });
 
 
+// Gerar novo accessToken
+app.post('/refreshToken', async (req, res) => {
+	const refreshToken = req.cookies?.refreshToken;
+	if (!refreshToken) return res.status(401).json({ message: 'Refresh token ausente' });
+  
+	try {
+	  // Busca do refresh token no banco
+	  const storedToken = await Session.findOne({ where: { refreshToken } });  // Corrigido aqui
+	  if (!storedToken) return res.status(404).json({ message: 'Refresh token não encontrado na base de dados' });
+  
+	  // Verificando e decodificando o refresh token
+	  jwt.verify(refreshToken, process.env.REFRESH_SECRET, async (err, decoded) => {
+		if (err) return res.status(403).json({ message: 'Refresh token inválido' });
+  
+		const { accessToken, refreshToken: newRefreshToken } = await updateUserSession(decoded.userId, refreshToken); // Garantir que a função seja assíncrona
+  
+		// Verificando se os tokens foram gerados corretamente
+		if (!accessToken || !newRefreshToken) {
+		  return res.status(500).json({ message: 'Erro ao gerar tokens' });
+		}
+  
+		// Enviar os novos tokens como cookies
+		res.cookie('accessToken', accessToken, {
+		  httpOnly: true,
+		  secure: process.env.NODE_ENV === 'production',
+		  sameSite: 'Strict',
+		  maxAge: 15 * 60 * 1000 // 15 minutos
+		});
+  
+		res.cookie('refreshToken', newRefreshToken, {
+		  httpOnly: true,
+		  secure: process.env.NODE_ENV === 'production',
+		  sameSite: 'Strict',
+		  maxAge: 30 * 24 * 60 * 60 * 1000 // 30 dias
+		});
+  
+		res.json({ message: 'Tokens renovados' });
+	  });
+	} catch (error) {
+	  console.log('Erro ao processar solicitação de refreshToken: ', error);
+	  res.status(500).json({ message: 'Erro interno no servidor' });
+	}
+  });  
+
+
 // Logout
 app.post('/logout', (req, res) => {
-	res.clearCookie('sessionId', { path: '/' });
+	res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
 	res.status(200).json({ message: 'Usuário deslogado com sucesso' });
 });
 
 
 // Buscar dados básicos do usuário
 app.post('/getUserBasics', async (req, res) => {
-	const sessionId = req.cookies?.sessionId;
+	const accessToken = req.cookies?.accessToken;
 	const { userId } = req.body;
 
-	if (!userId && !sessionId) {
+	if (!userId && !accessToken) {
 		return res.status(400).json({ message: 'Solicitação inválida: forneça um ID ou sessão do usuário.' });
 	};
 
 	try {
 		let user = null;
 
-		if (sessionId) {
+		if (accessToken) {
 			const session = await Session.findOne({
-				where: { sessionId },
+				where: { accessToken },
 				include: [{ model: User }]
 			});
 			user = session ? session.User : null;
@@ -239,6 +361,7 @@ app.post('/getUserBasics', async (req, res) => {
 			username: user.username,
 			nickname: user.nickname,
 			profilePic: user.profilePic,
+			gToken: user.gToken,
 			exists: true,
 		});
 
@@ -252,24 +375,31 @@ app.post('/getUserBasics', async (req, res) => {
 // Verificar se a sessão é válida
 app.post('/getUserSession', async (req, res) => {
 	try {
-		const sessionId = req.cookies?.sessionId;
-		if (!sessionId) return res.status(400).json({ message: 'SessionId é obrigatório.' });
+		const accessToken = req.cookies?.accessToken;
+		const refreshToken = req.cookies?.refreshToken;
 
-		const session = await Session.findOne({
-			where: { sessionId },
-			include: [{ model: User }]
-		});
+		if (!accessToken) {
+			return res.status(401).json({ message: 'Token de acesso não informado.' });
+		}
 
-		if (!session || !session.User) {
-			return res.status(400).json({ message: 'Sessão inválida ou não encontrada.' });
-		};
+		let decoded;
+		try {
+			decoded = jwt.verify(accessToken, process.env.ACCESS_SECRET);
+		} catch (err) {
+			return res.status(401).json({ message: 'Token inválido ou expirado.' });
+		}
 
-		res.status(200).json({ message: 'Sessão válida.' });
+		// Busca o usuário
+		console.log('userId: ', decoded.userId);
+		const user = await User.findByPk(decoded.userId);
+		if (!user) return res.status(401).json({ message: 'Usuário não encontrado.' });
+
+		res.status(200).json({ message: 'Sessão válida.'});
 
 	} catch (error) {
-		console.error('Erro ao processar solcitação de getValidUserSession: ', error);
+		console.error('Erro ao verificar sessão:', error);
 		res.status(500).json({ message: 'Erro interno do servidor.' });
-	};
+	}
 });
 
 
@@ -278,17 +408,16 @@ app.post('/setSignupCode', async (req, res) => {
 	const { email } = req.body;
 
 	try {
-		// Verifica se já existe um usuário com o e-mail informado
+
 		const user = await User.findOne({ where: { email } });
-		if (user) {  // Se o usuário já existe, retorna o erro
+		if (user) {
 			return res.status(400).json({ message: 'Este e-mail já foi usado.', errCode: 'emailInUse' });
 		}
 
-		// Caso o usuário não exista, continua o processo de envio do código
 		const data = {
 			email: email,
 			verificationCode: generateRandomNumbers(),
-			expiresAt: new Date(Date.now() + 3600000),  // A expiração do código
+			expiresAt: new Date(Date.now() + 3600000),
 		};
 		const emailSent = await sendEmail('signupSendCode', data);
 
@@ -310,38 +439,32 @@ app.post('/setUser', async (req, res) => {
 	try {
 		const { nickname, username, email, birthdate, password, verificationCode } = req.body;
 
-		// Verifica se a data de nascimento é válida
 		const currentDate = new Date();
 		const birthDateObj = new Date(birthdate);
 		if (isNaN(birthDateObj.getTime()) > currentDate) {
 			return res.status(400).json({ message: 'A data de nascimento deve ser válida.', errCode: 'invalidDatebirth' });
 		};
 
-		// Executa consultas para recuperar o código de verificação e o nome de usuário
 		const [verifyEntry, usernameExists] = await Promise.all([
 			EmailCodeVerify.findOne({ where: { type: 2, token: verificationCode } }),
 			User.findOne({ where: { username } })
 		]);
 
-		// Verifica código de verificação
 		if (!verifyEntry) {
 			return res.status(400).json({ message: 'Código de verificação inválido.', errCode: 'invalidCode' });
 		} else if (new Date() > verifyEntry.expiresAt) {
 			return res.status(400).json({ message: 'Código de verificação expirado.', errCode: 'invalidCode' });
 		};
 
-		// Verifica se o nome de usuário já está em uso
 		if (usernameExists) {
 			return res.status(400).json({ message: 'Nome de usuário já usado.', errCode: 'usernameExists' });
 		};
 
-		// Gera o hash da senha e o token da sessão
 		const [passwordHash, sessionToken] = await Promise.all([
 			bcrypt.hash(password, 10),
 			uuidv4()
 		]);
 
-		// Cria o usuário no banco de dados
 		const user = await User.create({
 			nickname,
 			username,
@@ -351,7 +474,6 @@ app.post('/setUser', async (req, res) => {
 			sessionToken
 		});
 
-		// Retorna sucesso
 		return res.status(201).json({ message: 'Usuário criado com sucesso', user });
 
 	} catch (error) {
@@ -362,7 +484,7 @@ app.post('/setUser', async (req, res) => {
 
 
 // Lista todas as sessões de um usuário
-app.post('/getUserSessions', async (req, res) => {
+app.post('/getAllUserSessions', async (req, res) => {
   const { userId } = req.body;
 
   try {
@@ -492,12 +614,55 @@ app.post('/setUserPassword', async (req, res) => {
 });
 
 
+// Autentica o usuário com a conta do Discord
+app.post("/setDiscord", async (req, res) => {
+    const { code } = req.body;
+
+	try {
+
+		const params = new URLSearchParams({
+			client_id: process.env.VITE_DISCORD_CLIENT_ID,
+			client_secret: process.env.VITE_DISCORD_CLIENT_SECRET,
+			grant_type: "authorization_code",
+			code,
+			redirect_uri: "http://localhost:5173/account/connect/discord",
+			scope: "identify email",
+		});
+
+    
+        const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params,
+        });
+
+        const tokenData = await tokenRes.json();
+		console.log(tokenData);
+        if (!tokenRes.ok) {
+            return res.status(400).json({ message: tokenData });
+        }
+
+        const userRes = await fetch("https://discord.com/api/users/@me", {
+            method: "GET",
+            headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+
+        const userData = await userRes.json();
+		console.log(userData);
+        res.json(userData);
+    } catch (error) {
+		console.error('Erro ao processar solicitação de setDiscord: ', error);
+        res.status(500).json({ message: "Erro ao autenticar com o Discord" });
+    }
+});
+
+
 const port = 3000;
 app.listen(port, () => {
   console.log('.::: DATABASE BACKEND :::.');
   console.log(`Servidor rodando na porta ${port}\n`)
 });
-// https.createServer(httpOptions, app).listen(port, () => {
+// https.createServer(httpsOptions, app).listen(port, () => {
 //   console.log('.::: DATABASE BACKEND :::.');
 //   console.log(`Servidor rodando na porta ${port}\n`)
 // });

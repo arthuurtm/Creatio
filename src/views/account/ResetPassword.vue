@@ -109,6 +109,7 @@
 
 <script>
 export default {
+	props:['email'],
 	data() {
 		return {
 			currentStep: 1,
