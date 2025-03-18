@@ -1,26 +1,24 @@
-// src/main.js
-import { createApp } from 'vue';
-import App from './App.vue';
-import router from './router/index';
-import pinia from './plugins/pinia';
-import dialogBox from './plugins/dialogBox';
-import * as globalFunc from './utils/functions';
-import settingsBox from './plugins/settingsBox';
+import './assets/css/main.css'
 
-// Cria o aplicativo Vue
-const app = createApp(App);
+import { createApp } from 'vue'
+
+import App from './App.vue'
+import router from './router'
+
+import pinia from './plugins/pinia'
+import * as globalFunc from './functions/functions'
+import userStorePlugin from './plugins/states'
+import dialogsComponents from '@/plugins/dialogs'
+
+const app = createApp(App)
 
 // Configura as funções globais
-app.config.globalProperties.$globalFunc = globalFunc;
-// Configura plugins
-app.use(router);
-app.use(pinia);
-app.use(dialogBox);
-app.use(settingsBox);
+app.config.globalProperties.$globalFunc = globalFunc
 
-// Observa mudanças no tamanho da janela e atualiza classes no elemento #app
-const appElement = document.getElementById('app');
-globalFunc.observeResize(appElement);
+// Carrega configurações globais
+app.use(router)
+app.use(pinia)
+app.use(userStorePlugin)
+app.use(dialogsComponents)
 
-// Monta o aplicativo
-app.mount('#app');
+app.mount('#app')

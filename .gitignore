@@ -13,10 +13,6 @@ dist
 dist-ssr
 coverage
 *.local
-*.env
-/api/__pycache__/
-/api/auth/
-/api/certificate
 
 /cypress/videos/
 /cypress/screenshots/
@@ -30,8 +26,10 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-*.venv
+
+# critical files and folders
+*.env
+/api/auth
 
 *.tsbuildinfo
-/HTML5Application/nbproject/private/
-/nbproject/private/
+*/__pycache__

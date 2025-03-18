@@ -1,0 +1,82 @@
+/* Estilos básicos para todos os inputs */
+
+.input {
+  padding: 15px;
+  border: solid 1px var(--border);
+  outline: none;
+  box-sizing: border-box;
+  background-color: transparent;
+  color: var(--input-text);
+  height: 45px;
+  font-size: 16px;
+  border-radius: 5px;
+  transition: border 300ms ease-out;
+}
+
+.input:focus {
+  border-color: #1778fb;
+  outline: none;
+}
+
+.input.select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%231778FB" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-color: transparent;
+}
+
+.input.select:focus {
+  border-color: #1778fb;
+}
+
+.input.select option {
+  color: #000;
+}
+
+.input.date {
+  color: #717171;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%231778FB" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+}
+
+.input.date:focus {
+  border-color: #1778fb;
+}
+
+.input.date::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  background: transparent;
+  padding-right: 10px;
+}
+
+.input.star {
+  display: flex;
+  flex-direction: column;
+}
+
+.input.star label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.input.star .stars {
+  display: flex;
+  gap: 8px;
+  font-size: 30px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.input.star .star.active {
+  color: #ffd700;
+  transition: color 0.2s ease;
+}
+
+.input.star .star.hover {
+  color: #ffd700;
+}

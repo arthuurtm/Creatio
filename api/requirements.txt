@@ -1,7 +1,0 @@
-flask
-flask_socketio
-flask_cors
-google-api-python-client
-oauth2client
-python-dotenv
-httplib2

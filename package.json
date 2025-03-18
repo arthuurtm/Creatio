@@ -1,36 +1,49 @@
 {
-  "name": "sysrootv2",
+  "name": "vue-project",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:unit": "vitest",
+    "lint": "eslint . --fix",
+    "format": "prettier --write src/"
   },
   "dependencies": {
-    "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "googleapis": "^144.0.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "fs": "^0.0.1-security",
+    "https": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "mariadb": "^3.4.0",
-    "node-fetch": "^3.3.2",
-    "pinia": "^2.2.4",
+    "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.2.0",
-    "sequelize": "^6.37.5",
+    "sequelize": "^6.37.6",
     "ua-parser-js": "^2.0.2",
-    "uuid": "^11.0.2",
-    "vue": "^3.5.12",
-    "vue-router": "^4.4.5"
+    "uuid": "^11.1.0",
+    "validator": "^13.12.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "^9.0.9",
-    "@vitejs/plugin-vue": "^5.1.4",
-    "@vitejs/plugin-vue-jsx": "^4.0.1",
-    "vite": "^5.4.10"
+    "@eslint/js": "^9.20.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-vue-jsx": "^4.1.1",
+    "@vitest/eslint-plugin": "1.1.31",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/test-utils": "^2.4.6",
+    "eslint": "^9.20.1",
+    "eslint-plugin-vue": "^9.32.0",
+    "jsdom": "^26.0.0",
+    "prettier": "^3.5.1",
+    "vite": "^6.1.0",
+    "vite-plugin-vue-devtools": "^7.7.2",
+    "vitest": "^3.0.5"
   }
 }

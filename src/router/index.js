@@ -1,121 +1,113 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import { isAuthenticated } from '@/utils/auth';
+import { createRouter, createWebHistory } from 'vue-router'
+import { useFormStore } from '@/stores/formStore'
+import { isAuthenticated } from '@/functions/auth'
 
-// *root
-import FormContainer from '@/layouts/FormContainer.vue';
-import MainLayout from '@/layouts/MainLayout.vue';
-import NotFound from '@/views/NotFound.vue';
+// Errors
+import ErrNotFound from '@/configs/errors/ErrNotFound.vue'
 
-// /accounts
-import Login from '@/views/Login.vue';
-import ResetPassword from '@/views/ResetPassword.vue';
-import Signup from '@/views/Signup.vue';
+// Forms page
+import Login from '@/configs/forms/FormLogin.vue'
+import Signup from '@/configs/forms/FormSignup.vue'
+import PasswordRescue from '@/configs/forms/FormPasswordRescue.vue'
 
-// /
-import Create from '@/views/Create.vue';
-import About from '@/views/About.vue';
-import Games from '@/views/Games.vue';
+// Main Pages
+import ViewAbout from '@/views/ViewAbout.vue'
+import ViewCreate from '@/views/ViewCreate.vue'
+import ViewGameRun from '@/views/ViewGameRun.vue'
+import ViewHome from '@/views/ViewHome.vue'
 
-
-const routes = [
-
-  {
-    path: '/',
-    component: MainLayout,
-    children: [
-      {
-        path: 'games',
-        name: 'Games',
-        component: Games,
-      },
-
-      {
-        path: 'home',
-        name: 'Home',
-        redirect: {name: 'Games'}
-        // component: Games, //temporário
-      },
-
-      {
-        path: 'create/:id?',
-        name: 'Create',
-        component: Create,
-        meta: { requiresAuth: true, hiddenNavigator: true },
-        props: true
-      },
-    ]
-  },
-
-  {
-    path: '/accounts',
-    component: FormContainer,
-    children: [
-      {
-        path: '',
-        name: 'ROOT_Accounts',
-        redirect: {name: 'Login'}
-      },
-
-      {
-        path: 'signup',
-        name: 'Signup',
-        component: Signup,
-        meta: { requiresAuth: false }
-      },
-    
-      { 
-        path: 'login', 
-        name: 'Login', 
-        component: Login,
-        meta: { requiresAuth: false },
-      },
-    
-      { 
-        path: 'password/reset', 
-        name: 'Password_Reset', 
-        component: ResetPassword,
-      },
-    ]
-  },
-
-  { 
-    path: '/:pathMatch(.*)*',
-    name: 'Not_Found',
-    component: NotFound 
-  },
-
-  {
-    path: '',
-    name: 'About',
-    component: About,
-    meta: { requiresAuth:false, showNavigator:false },
-    props: true
-  },
-];
+// Layouts
+import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
+import AppMain from '@/layouts/AppMain.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes,
-});
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'ErrNotFound',
+      component: ErrNotFound,
+    },
+
+    {
+      path: '/',
+      name: 'Main',
+      component: ViewAbout,
+    },
+
+    {
+      path: '/login',
+      redirect: { name: 'Login' },
+    },
+
+    {
+      path: '/app',
+      component: AppMain,
+      children: [
+        {
+          path: 'home',
+          name: 'Home',
+          component: ViewHome,
+        },
+
+        {
+          path: 'create/:id?',
+          name: 'Create',
+          component: ViewCreate,
+          meta: { requiresAuth: true, hiddenNavigator: true },
+          props: true,
+        },
+      ],
+    },
+
+    {
+      path: '/account',
+      children: [
+        {
+          path: 'login',
+          name: 'Login',
+          props: { configFile: 'login' },
+          meta: { requiresAuth: false },
+          component: Login,
+        },
+        {
+          path: 'signup',
+          name: 'Signup',
+          props: { configFile: 'signup' },
+          meta: { requiresAuth: false },
+          component: Signup,
+        },
+        {
+          path: 'password/rescue',
+          name: 'PasswordRescue',
+          props: { configFile: 'passwordRescue' },
+          component: PasswordRescue,
+        },
+      ],
+    },
+  ],
+})
 
 // Router Guard
 router.beforeEach(async (to, from, next) => {
-  const isLoggedIn = await isAuthenticated();
+  const isLoggedIn = await isAuthenticated()
+  console.log('Vue Router Guard() > isLoggedIn? ', isLoggedIn)
 
   if (to.meta.requiresAuth && !isLoggedIn) {
-    console.log('Vue Router > situation: 1');
-    next({ name: 'Login', query: { redirect: to.fullPath } });
-
-  } else if ((to.name === 'Login' || to.name === 'About') && isLoggedIn) {
-    console.log('Vue Router > situation: 2');
-    next({ name: 'Home' });
-    
+    console.log('Vue Router > situation: 1')
+    next({ name: 'Login', query: { redirect: to.name } })
+  } else if ((to.name === 'Login' || to.name === 'Main') && isLoggedIn) {
+    console.log('Vue Router > situation: 2')
+    next({ name: 'Home' })
   } else {
-    console.log('Vue Router > situation: 3');
-    next();
-
+    console.log('Vue Router > situation: 3')
+    next()
   }
+})
 
-});
+router.beforeEach((to, from, next) => {
+  useFormStore().resetCriticalValues()
+  next()
+})
 
-export default router;
+export default router

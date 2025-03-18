@@ -1,4 +1,3 @@
-source api/.venv/bin/activate
 cd api
 
 # Função para verificar se um serviço está em execução
@@ -44,6 +43,9 @@ for file in $(find . -maxdepth 1 -type f -name "*.cjs" | grep -v '/f_'); do
   node "$file" &
   pids+=($!)  # Armazenar o PID do processo em segundo plano
 done
+
+# Inicia o servidor de exibição do site
+npm run dev
 
 # Aguardar a execução de todos os processos em segundo plano
 echo "Serviços sendo executados em segundo plano. Ctrl + C para sair;"
