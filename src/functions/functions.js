@@ -22,6 +22,7 @@ export function hrefTo(url, args = {}) {
   window.location.href = finalUrl
 }
 
+
 export function appTheme(toggle = false) {
   // Obter tema salvo no localStorage
   const savedTheme = localStorage.getItem('data-theme')
@@ -57,3 +58,38 @@ export function appTheme(toggle = false) {
     isDark: isDark,
   }
 }
+
+async function request(endpoint = {}, method = 'GET', body = null) {
+
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  const config = {
+    method,
+    headers,
+  };
+
+  if (body) {
+    config.body = JSON.stringify(body);
+  }
+
+  try {
+    const response = await fetch(getApiUrl(endpoint.type, endpoint.route), config);
+
+    if (!response.ok) {
+      throw new Error('Erro ao realizar a requisição');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro na requisição:', error);
+    throw error;
+  }
+
+};
+
+export const get = (endpoint) => request(endpoint, 'GET');
+export const post = (endpoint, body) => request(endpoint, 'POST', body);
+export const put = (endpoint, body) => request(endpoint, 'PUT', body);
+export const del = (endpoint) => request(endpoint, 'DELETE');
