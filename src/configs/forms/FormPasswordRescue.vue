@@ -1,31 +1,25 @@
 <template>
-  <AppDynamicForm :config="formConfig" :errorMessage="errorMessage" :isLoading="isLoading" />
+  <AppDynamicForm
+    :config="formConfig"
+    :errorMessage="errorMessage"
+    :isLoading="isLoading"
+    :formFunctions="functions"
+  />
 </template>
 
 <script setup>
-import AppDynamicForm from '@/layouts/AppDynamicForm.vue';
-import { useFormStore } from '@/stores/formStore';
-import { computed, watch, ref } from 'vue';
+import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
+import { useFormStore } from '@/stores/formStore'
+import { computed, ref } from 'vue'
 import * as globalFunc from '@/functions/functions'
 
-const formStore = useFormStore();
-const formData = computed(() => formStore.formData);
-const executeFunc = computed(() => formStore.getRequestedFunction());
+const formStore = useFormStore()
+const formData = computed(() => formStore.formData)
 
-const errorMessage = ref("");
-const sentCode = ref(false);
-const isLoading = ref(false);
-let userData = ref({});
-
-// Watchers
-watch(executeFunc, (newFuncName) => {
-  if (typeof newFuncName === 'string' && typeof window[newFuncName] === 'function') {
-    window[newFuncName]();
-    formStore.clearRequestedFunction();
-  } else {
-    console.warn(`executeFunc "${newFuncName}" não é uma função válida.`);
-  }
-});
+const errorMessage = ref('')
+const sentCode = ref(false)
+const isLoading = ref(false)
+let userData = ref({})
 
 // Form configuration
 const formConfig = {
@@ -120,78 +114,78 @@ const formConfig = {
       ],
     },
   },
-};
-
-// Methods
-window.prepareVerifyCode = async () => {
-  errorMessage.value = '';
-  if (!sentCode.value) {
-    isLoading.value = true;
-
-    try {
-      const response1 = await fetch(globalFunc.getApiUrl('database', 'getUserBasics'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: formData.value.identification }),
-      });
-
-      if (response1.ok) {
-        userData.value = await response1.json();
-
-        const response2 = await fetch(globalFunc.getApiUrl('database', 'setResetPassCode'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: userData.value.id }),
-        });
-
-        if (!response2.ok) {
-          const errorData = await response2.json();
-          errorMessage.value = `${errorData.message}`;
-        } else {
-          sentCode.value = true;
-          formStore.setCurrentStep(formStore.getCurrentStep() + 1);
-        }
-      } else {
-        const errorData = await response1.json();
-        errorMessage.value = `${errorData.message}`;
-      }
-    } catch (error) {
-      console.error("Erro:", error);
-      errorMessage.value = "Ocorreu um erro interno";
-    } finally {
-      isLoading.value = false;
-    }
-  }
 }
 
-window.resetPassword = async () => {
-  errorMessage.value = '';
-  isLoading.value = true;
-  try {
-    if (formData.value.passwd1 !== formData.value.passwd2) {
-      errorMessage.value = "As senhas não coincidem.";
-      return;
-    }
+const functions = {
+  prepareVerifyCode: async () => {
+    errorMessage.value = ''
+    if (!sentCode.value) {
+      isLoading.value = true
 
-    const response = await fetch(globalFunc.getApiUrl('database', 'setUserPassword'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: userData.value.id,
-        resetToken: formData.value.verifyCode,
-        newPassword: formData.value.passwd1,
-      }),
-    });
+      try {
+        const res1 = await globalFunc.get({
+          type: 'database',
+          route: `getUserBasics?identification=${encodeURIComponent(formData.value.identification)}`,
+        })
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      errorMessage.value = `${errorData.message}`;
+        if (res1.ok) {
+          userData.value = res1
+
+          const res2 = await globalFunc.post(
+            {
+              type: 'database',
+              route: 'setResetPassCode',
+            },
+            {
+              userId: userData.value.id,
+            },
+          )
+
+          if (res2.ok) {
+            sentCode.value = true
+            formStore.setCurrentStep(formStore.getCurrentStep() + 1)
+          }
+        }
+      } catch (error) {
+        console.error('Erro:', error)
+        errorMessage.value = 'Ocorreu um erro interno'
+      } finally {
+        isLoading.value = false
+      }
     }
-  } catch (error) {
-    console.error("Erro:", error);
-    errorMessage.value = "Erro ao redefinir senha.";
-  } finally {
-    isLoading.value = false;
-  }
+  },
+
+  resetPassword: async () => {
+    errorMessage.value = ''
+    isLoading.value = true
+    try {
+      if (formData.value.passwd1 !== formData.value.passwd2) {
+        errorMessage.value = 'As senhas não coincidem.'
+        return
+      }
+
+      const response = await globalFunc.post(
+        {
+          type: 'database',
+          route: 'setUserPassword',
+        },
+        {
+          userId: userData.value.id,
+          resetToken: formData.value.verifyCode,
+          newPassword: formData.value.passwd1,
+        },
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        errorMessage.value = `${errorData.message}`
+      }
+    } catch (error) {
+      console.error('Erro:', error)
+      errorMessage.value = 'Erro ao redefinir senha.'
+    } finally {
+      isLoading.value = false
+    }
+  },
 }
 </script>

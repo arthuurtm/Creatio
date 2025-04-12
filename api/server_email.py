@@ -7,6 +7,7 @@ from email.message import EmailMessage
 from dotenv import load_dotenv
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+import webbrowser
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
@@ -115,3 +116,4 @@ if __name__ == "__main__":
     print('.::: MAIL SERVICE BACKEND :::.')
     print(f'Servidor rodando na porta {port}')
     app.run(port=port, debug=True)
+    webbrowser.open(f'https://localhost:{port}/authenticate')

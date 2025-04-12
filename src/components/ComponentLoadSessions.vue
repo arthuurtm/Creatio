@@ -17,7 +17,11 @@
             </div>
 
             <div class="banner">
-              <img id="banner" :src="`./public/${game.version}/settings/banner.png`" alt="Banner do jogo" />
+              <img
+                id="banner"
+                :src="`./public/${game.version}/settings/banner.png`"
+                alt="Banner do jogo"
+              />
             </div>
 
             <div class="uiOptions">
@@ -31,9 +35,7 @@
             </div>
           </div>
         </div>
-        <div v-else>
-          Nada a mostrar.
-        </div>
+        <div v-else>Nada a mostrar.</div>
         <button class="btn symbolic scroll" @click="scroll(index, 'right')">
           <span class="material-symbols-outlined">arrow_forward_ios</span>
         </button>
@@ -43,7 +45,6 @@
 </template>
 
 <script>
-
 export default {
   name: 'ViewGames',
 
@@ -52,60 +53,42 @@ export default {
       games: [],
       userId: sessionStorage.getItem('userId'),
       windows: Array(1).fill({}),
-    };
+    }
   },
   methods: {
     scroll(index, type) {
-      console.log(`scroll() > index: ${index}, type: ${type}`);
-      const windowRef = this.$refs[`windowRefs_${index}`];
+      console.log(`scroll() > index: ${index}, type: ${type}`)
+      const windowRef = this.$refs[`windowRefs_${index}`]
       switch (type) {
         case 'left':
           windowRef[index].scrollBy({
             top: 0,
             left: -200,
-            behavior: 'smooth'
-          });
-          break;
+            behavior: 'smooth',
+          })
+          break
 
         case 'right':
           windowRef[index].scrollBy({
             top: 0,
             left: 200,
-            behavior: 'smooth'
-          });
-          break;
+            behavior: 'smooth',
+          })
+          break
 
         default:
           console.error('scroll() > tipo de scroll desconhecido.')
       }
-
     },
     playGame(gameVersion) {
-      this.$globalFunc.hrefTo(`/run/${gameVersion}`);
+      this.$globalFunc.hrefTo(`/run/${gameVersion}`)
     },
     loadGames() {
-      const url = this.$globalFunc.getApiUrl('database', 'getGames');
-
-      fetch(url)
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(errorData => {
-              throw new Error(errorData.message || 'Erro desconhecido ao carregar os jogos');
-            });
-          }
-          return response.json(); // Se a resposta for bem-sucedida, retorna os dados
-        })
-        .then(data => {
-          this.games = data; // Armazena os dados no estado
-        })
-        .catch(error => {
-          console.error('Erro ao carregar os jogos:', error.message); // Captura erros de requisição ou outros
-          // Aqui você pode fazer algo adicional com o erro, como mostrar uma mensagem para o usuário
-        });
+      this.$globalFunc.get({ type: 'database', route: 'getGames' })
     },
   },
   mounted() {
-    this.loadGames(); // Carregar jogos ao iniciar o componente
+    this.loadGames() // Carregar jogos ao iniciar o componente
   },
 }
 </script>

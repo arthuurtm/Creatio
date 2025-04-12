@@ -1,21 +1,25 @@
 <template>
-  <AppDynamicForm :config="formConfig" :errorMessage="errorMessage" :isLoading="isLoading" />
+  <AppDynamicForm
+    :config="formConfig"
+    :errorMessage="errorMessage"
+    :isLoading="isLoading"
+    :formFunctions="functions"
+  />
 </template>
 
 <script setup>
-import AppDynamicForm from '@/layouts/AppDynamicForm.vue';
-import { useFormStore } from '@/stores/formStore';
-import { computed, watch, ref } from 'vue';
+import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
+import { useFormStore } from '@/stores/formStore'
+import { computed, watch, ref } from 'vue'
 import * as globalFunc from '@/functions/functions'
 
-const formStore = useFormStore();
-const formData = computed(() => formStore.formData);
-const nicknameValue = computed(() => formData.value.nickname);
-const executeFunc = computed(() => formStore.getRequestedFunction());
+const formStore = useFormStore()
+const formData = computed(() => formStore.formData)
+const nicknameValue = computed(() => formData.value.nickname)
 
-const errorMessage = ref('');
-const sentCode = ref(false);
-const isLoading = ref(false);
+const errorMessage = ref('')
+const sentCode = ref(false)
+const isLoading = ref(false)
 
 // Watchers
 watch(nicknameValue, (newNickname) => {
@@ -23,21 +27,12 @@ watch(nicknameValue, (newNickname) => {
     formStore.formData.username = newNickname
       .toLowerCase()
       .replace(/[^a-z0-9_.]/g, '')
-      .replace(/\s+/g, '');
+      .replace(/\s+/g, '')
   }
-});
-
-watch(executeFunc, (newFuncName) => {
-  if (typeof newFuncName === 'string' && typeof window[newFuncName] === 'function') {
-    window[newFuncName]();
-    formStore.clearRequestedFunction();
-  } else {
-    console.warn(`executeFunc "${newFuncName}" não é uma função válida.`);
-  }
-});
+})
 
 // Form configuration
-const formConfig = {
+const formConfig = ref({
   title: 'Crie sua conta',
   steps: {
     1: {
@@ -171,81 +166,84 @@ const formConfig = {
       ],
     },
   },
-};
+})
 
-// Methods
-window.prepareVerifyCode = async () => {
-  errorMessage.value = '';
-  if (!sentCode.value) {
-    isLoading.value = true;
+const functions = {
+  prepareVerifyCode: async () => {
+    errorMessage.value = ''
+    if (!sentCode.value) {
+      isLoading.value = true
 
+      try {
+        const res = await globalFunc.post(
+          {
+            type: 'database',
+            route: 'setSignupCode',
+          },
+          {
+            email: formData.value.email,
+          },
+        )
+
+        if (res.ok) {
+          sentCode.value = true
+          formStore.setCurrentStep(formStore.getCurrentStep() + 1)
+        } else {
+          const errorData = await res.json()
+          errorMessage.value = `${errorData.message}`
+        }
+      } catch (error) {
+        console.error('Erro:', error)
+        errorMessage.value = 'Erro interno. Tente novamente mais tarde.'
+      } finally {
+        isLoading.value = false
+      }
+    } else {
+      formStore.setCurrentStep(formStore.getCurrentStep() + 1)
+    }
+  },
+
+  signupUser: async () => {
+    errorMessage.value = ''
     try {
-      const res = await fetch(globalFunc.getApiUrl('database', 'setSignupCode'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.value.email }),
-      });
-
-      if (res.ok) {
-        sentCode.value = true;
-        formStore.setCurrentStep(formStore.getCurrentStep() + 1);
-      } else {
-        const errorData = await res.json();
-        errorMessage.value = `${errorData.message}`;
+      if (formData.value.passwd1 !== formData.value.passwd2) {
+        errorMessage.value = 'As senhas não coincidem.'
+        return
       }
 
+      isLoading.value = true
+      const response = await globalFunc.post(
+        {
+          type: 'database',
+          route: 'setUser',
+        },
+        {
+          nickname: formData.value.nickname,
+          username: formData.value.username,
+          email: formData.value.email,
+          birthdate: formData.value.birthdate,
+          password: formData.value.passwd1,
+          verificationCode: formData.value.verifyCode,
+        },
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        if (errorData.errCode === 'invalidCode') {
+          formStore.setCurrentStep(3)
+        } else if (errorData.errCode === 'invalidBirthdate') {
+          formStore.setCurrentStep(2)
+        } else if (errorData.errCode === 'usernameExists') {
+          formStore.setCurrentStep(1)
+        }
+        errorMessage.value = `${errorData.message}`
+      }
     } catch (error) {
-      console.error('Erro:', error);
-      errorMessage.value = 'Erro interno. Tente novamente mais tarde.';
-
+      console.error('Erro:', error)
+      errorMessage.value = 'Erro interno. Tente novamente mais tarde.'
     } finally {
-      isLoading.value = false;
+      isLoading.value = false
     }
-  } else {
-    formStore.setCurrentStep(formStore.getCurrentStep() + 1);
-  }
-}
-
-window.signupUser = async () => {
-  errorMessage.value = '';
-  try {
-    if (formData.value.passwd1 !== formData.value.passwd2) {
-      errorMessage.value = 'As senhas não coincidem.';
-      return;
-    }
-
-    isLoading.value = true;
-    const response = await fetch(globalFunc.getApiUrl('database', 'setUser'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nickname: formData.value.nickname,
-        username: formData.value.username,
-        email: formData.value.email,
-        birthdate: formData.value.birthdate,
-        password: formData.value.passwd1,
-        verificationCode: formData.value.verifyCode,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      if (errorData.errCode === 'invalidCode') {
-        formStore.setCurrentStep(3);
-      } else if (errorData.errCode === 'invalidBirthdate') {
-        formStore.setCurrentStep(2);
-      } else if (errorData.errCode === 'usernameExists') {
-        formStore.setCurrentStep(1);
-      }
-      errorMessage.value = `${errorData.message}`;
-    }
-
-  } catch (error) {
-    console.error('Erro:', error);
-    errorMessage.value = 'Erro interno. Tente novamente mais tarde.';
-
-  } finally {
-    isLoading.value = false;
-  }
+  },
 }
 </script>

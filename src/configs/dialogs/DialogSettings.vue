@@ -29,7 +29,7 @@
             <li>
               <p>Tema Escuro</p>
               <label class="switch">
-                <input type="checkbox" @change="toggleTheme" v-model="isDarkMode">
+                <input type="checkbox" @change="toggleTheme" v-model="isDarkMode" />
                 <span class="slider"></span>
               </label>
             </li>
@@ -47,23 +47,19 @@
             <li>
               <p>Conta Google</p>
               <a v-if="isGoogleConnected">
-                <p> {{ this.userData.email }} </p>
+                <p>{{ this.userData.email }}</p>
               </a>
               <a v-else class="btn symbolic">
-                <span class="material-symbols-outlined notranslate">
-                  arrow_outward
-                </span>
+                <span class="material-symbols-outlined notranslate"> arrow_outward </span>
               </a>
             </li>
             <li>
               <p>Conta Discord</p>
               <a v-if="isDiscordConnected">
-                <p> {{ this.userData.email }} </p>
+                <p>{{ this.userData.email }}</p>
               </a>
               <a v-else class="btn symbolic">
-                <span class="material-symbols-outlined notranslate">
-                  arrow_outward
-                </span>
+                <span class="material-symbols-outlined notranslate"> arrow_outward </span>
               </a>
             </li>
           </ul>
@@ -74,9 +70,7 @@
             <li>
               <p>Alterar senha</p>
               <a class="btn symbolic" @click="handleExtLink('PasswordRescue')">
-                <span class="material-symbols-outlined notranslate">
-                  arrow_outward
-                </span>
+                <span class="material-symbols-outlined notranslate"> arrow_outward </span>
               </a>
             </li>
           </ul>
@@ -87,29 +81,29 @@
 </template>
 
 <script>
-import { appTheme, getApiUrl } from '@/functions/functions';
-import { useAppDynamicDialog, useUserStore } from '@/stores/store';
-import { computed } from 'vue';
+import { appTheme, get } from '@/functions/functions'
+import { useAppDynamicDialog, useUserStore } from '@/stores/store'
+import { computed } from 'vue'
 export default {
   name: 'DialogSettings',
   inject: ['userStore'],
 
   setup() {
-    const settingsPanelStore = useAppDynamicDialog();
+    const settingsPanelStore = useAppDynamicDialog()
 
     // Propriedade computada para isVisible
-    const isVisible = computed(() => settingsPanelStore.isVisible);
+    const isVisible = computed(() => settingsPanelStore.isVisible)
 
-    const userStore = useUserStore();
-    const isAuth = computed(() => userStore.isAuth);
-    const profilePicture = computed(() => userStore.profilePicture);
+    const userStore = useUserStore()
+    const isAuth = computed(() => userStore.isAuth)
+    const profilePicture = computed(() => userStore.profilePicture)
 
     return {
       isAuth,
       isVisible, // Estado reativo
       close: settingsPanelStore.hide, // Ação para esconder o painel
       profilePicture,
-    };
+    }
   },
 
   data() {
@@ -123,49 +117,40 @@ export default {
     }
   },
   async mounted() {
-    this.actualPage = 1;
-    let theme = appTheme();
-    this.isDarkMode = theme.isDark == true ? true : false;
-    window.addEventListener('keydown', this.close);
+    this.actualPage = 1
+    let theme = appTheme()
+    this.isDarkMode = theme.isDark == true ? true : false
+    window.addEventListener('keydown', this.close)
 
-    const gToken = fetch(getApiUrl('database', 'getUserBasics'), {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const gToken = get({ type: 'database', route: 'getUserBasics' })
     if (gToken.ok) {
-      let data = gToken.json();
+      let data = gToken.json()
       if (data.gToken != '' || data.gToken != null) {
-        this.isGoogleConnected = true;
-        this.userData = data;
+        this.isGoogleConnected = true
+        this.userData = data
       }
     }
-
   },
 
   methods: {
-
     handleNavPage(value, name) {
-      this.actualPage = value;
-      this.selectedOption = name ?? null;
+      this.actualPage = value
+      this.selectedOption = name ?? null
     },
 
-    handleAction() {
-
-    },
+    handleAction() {},
 
     toggleTheme() {
-      console.log(appTheme(true));
+      console.log(appTheme(true))
     },
 
     handleExtLink(name, params) {
-      if (params) params = {};
-      this.$router.push(
-        {
-          name,
-          params
-        });
-      this.close();
+      if (params) params = {}
+      this.$router.push({
+        name,
+        params,
+      })
+      this.close()
     },
   },
 }

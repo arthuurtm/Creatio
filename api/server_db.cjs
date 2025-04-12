@@ -7,6 +7,7 @@ const crypto = require('crypto')
 const { v4: uuidv4 } = require('uuid')
 const cookieParser = require('cookie-parser')
 const UAParser = require('ua-parser-js')
+const rateLimit = require('express-rate-limit')
 const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const https = require('https')
@@ -53,7 +54,7 @@ const User = sequelize.define(
     nickname: { type: DataTypes.STRING, allowNull: true },
     passwordHash: { type: DataTypes.STRING, allowNull: false },
     gToken: { type: DataTypes.STRING, unique: true, allowNull: true },
-    profilePic: { type: DataTypes.TEXT, allowNull: true }, // Para URLs longas
+    profilePic: { type: DataTypes.TEXT, allowNull: true },
   },
   { timestamps: true },
 )
@@ -112,15 +113,85 @@ const EmailCodeVerify = sequelize.define(
   { timestamps: false },
 )
 
+const GameState = sequelize.define(
+  'GameState',
+  {
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    stateData: { type: DataTypes.JSON, allowNull: false },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: { model: User, key: 'id' },
+      onDelete: 'CASCADE',
+    },
+    gameId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: { model: Game, key: 'id' },
+      onDelete: 'CASCADE',
+    },
+    uniqueConstraint: {
+      type: DataTypes.STRING,
+      unique: 'user_game_unique', // Nome da restrição
+    },
+    saveVersion: { type: DataTypes.STRING, allowNull: true },
+  },
+  {
+    timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ['userId', 'gameId'], // Evita saves duplicados para o mesmo jogo+usuário
+        name: 'user_game_unique',
+      },
+    ],
+  },
+)
+
 // Definição de Relacionamentos
-User.hasMany(EmailCodeVerify, { foreignKey: 'userId', onDelete: 'CASCADE' })
-EmailCodeVerify.belongsTo(User, { foreignKey: 'userId' })
+User.hasMany(EmailCodeVerify, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE',
+})
+EmailCodeVerify.belongsTo(User, {
+  foreignKey: 'userId',
+})
 
-User.hasMany(Session, { foreignKey: 'userId', onDelete: 'CASCADE' })
-Session.belongsTo(User, { foreignKey: 'userId' })
+User.hasMany(Session, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE',
+})
+Session.belongsTo(User, {
+  foreignKey: 'userId',
+})
 
-User.hasMany(Game, { foreignKey: 'userId', onDelete: 'CASCADE' })
-Game.belongsTo(User, { foreignKey: 'userId' })
+User.hasMany(Game, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE',
+})
+Game.belongsTo(User, {
+  foreignKey: 'userId',
+})
+
+User.hasMany(GameState, {
+  foreignKey: 'userId',
+  as: 'gameStates',
+  onDelete: 'CASCADE',
+})
+GameState.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
+})
+
+Game.hasMany(GameState, {
+  foreignKey: 'gameId',
+  as: 'gameStates',
+  onDelete: 'CASCADE',
+})
+GameState.belongsTo(Game, {
+  foreignKey: 'gameId',
+  as: 'game',
+})
 
 sequelize.sync()
 
@@ -154,7 +225,7 @@ async function sendEmail(type, data = {}) {
         },
       }
 
-    // Código de verificação do cadastro
+      // Código de verificação do cadastro
     } else if (type === 'signupSendCode') {
       await EmailCodeVerify.create({
         type: 2,
@@ -170,7 +241,7 @@ async function sendEmail(type, data = {}) {
         },
       }
 
-    // E-mail de confirmação que a senha foi enviada
+      // E-mail de confirmação que a senha foi enviada
     } else if (type === 'resetedPassword') {
       bodyContent = {
         variables: {
@@ -274,6 +345,7 @@ function checkIfUserIsValid(input) {
   try {
     const isEmail = validator.isEmail(input)
     const query = isEmail ? { email: input } : { username: input }
+    console.log('checkIfUserIsValid.query = ', query)
     return query
   } catch (error) {
     console.error('Erro ao processar função checkIfUserIsValid: ', error)
@@ -281,9 +353,15 @@ function checkIfUserIsValid(input) {
   }
 }
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Muitas tentativas de login. Tente novamente mais tarde.',
+})
+
 // Efetua o login do usuário
-app.post('/getLogin', async (req, res) => {
-  const { type, email, password } = req.body
+app.post('/setLogin', async (req, res) => {
+  const { type, identification, password } = req.body
   const userAgent = req.headers['user-agent']
   const parser = new UAParser()
   const device = parser.setUA(userAgent).getResult()
@@ -293,15 +371,21 @@ app.post('/getLogin', async (req, res) => {
     let user = null
 
     if (type === 'default') {
-      user = await User.findOne({ where: { email } })
-      if (!user) return res.status(400).json({ message: 'Usuário não encontrado' })
+      user = await User.findOne({ where: checkIfUserIsValid(identification) })
+      if (!user) {
+        user = {
+          passwordHash: '$2b$10$N1qzj6.0JxD6XKpxS5TzUOfQgY9jNTGeQdIzA29YVqHjtvUO7F7Pq',
+        }
+      }
 
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
-      if (!isPasswordValid) return res.status(400).json({ message: 'Senha incorreta' })
+      if (!isPasswordValid) return res.status(400).json({ message: 'Usuário ou senha incorretos.' })
     } else if (type === 'google') {
-      user = await User.findOne({ where: { email } })
-      if (!user)
-        return res.status(400).json({ message: 'Conta Google não vinculada a nenhuma conta.' })
+      const decoded = jwt.verify(identification, 'GOOGLE_PUBLIC_KEY', {
+        algorithms: ['RS256'],
+      })
+      user = await User.findOne({ where: { email: decoded.email } })
+      if (!user) return res.status(400).json({ message: 'Usuário não encontrado.' })
     } else {
       return res.status(400).json({ message: 'Solicitação incorreta.' })
     }
@@ -378,24 +462,22 @@ app.post('/refreshToken', async (req, res) => {
 })
 
 // Logout
-app.post('/logout', (req, res) => {
+app.delete('/logout', (req, res) => {
   res.clearCookie('accessToken')
   res.clearCookie('refreshToken')
   res.status(200).json({ message: 'Usuário deslogado com sucesso' })
 })
 
 // Buscar dados básicos do usuário
-app.post('/getUserBasics', async (req, res) => {
-  const accessToken = req.cookies?.accessToken
-  const { userId, username } = req.body
-
-  if (!userId && !accessToken && !username) {
-    return res
-      .status(400)
-      .json({ message: 'Solicitação inválida: forneça um ID ou sessão/nome do usuário.' })
-  }
-
+app.get('/getUserBasics', async (req, res) => {
   try {
+    const { userId, identification } = req.query
+    const accessToken = req.cookies?.accessToken
+
+    if (!userId && !accessToken && !identification) {
+      return res.status(400).json({ message: 'Solicitação inválida.' })
+    }
+
     let user = null
 
     if (accessToken) {
@@ -406,8 +488,8 @@ app.post('/getUserBasics', async (req, res) => {
       user = session ? session.User : null
     } else if (userId) {
       user = await User.findOne({ where: { id: userId } })
-    } else if (username) {
-      user = await User.findOne({ where: { username: username } })
+    } else if (identification) {
+      user = await User.findOne({ where: checkIfUserIsValid(identification) })
     }
 
     if (!user) return res.status(404).json({ message: 'Usuário não encontrado' })
@@ -417,20 +499,18 @@ app.post('/getUserBasics', async (req, res) => {
       username: user.username,
       nickname: user.nickname,
       profilePic: user.profilePic,
-      // gToken: user.gToken,
       exists: true,
     })
   } catch (error) {
-    console.error('Erro ao processar getBasicUserData:', error)
+    console.error('Erro ao processar getUserBasics:', error)
     res.status(500).json({ message: 'Erro interno no servidor' })
   }
 })
 
 // Verificar se a sessão é válida
-app.post('/getUserSession', async (req, res) => {
+app.get('/getUserSession', async (req, res) => {
   try {
     const accessToken = req.cookies?.accessToken
-    const refreshToken = req.cookies?.refreshToken
 
     if (!accessToken) {
       return res.status(401).json({ message: 'Token de acesso não informado.' })
@@ -472,10 +552,10 @@ app.post('/setSignupCode', async (req, res) => {
     }
     const emailSent = await sendEmail('signupSendCode', data)
 
-    if (emailSent) {
-      return res.status(200).json({ message: 'E-mail enviado com sucesso.' })
-    } else {
-      return res.status(500).json({ message: 'Erro ao enviar e-mail.', errCode: 'emailSendError' })
+    if (!emailSent) {
+      return res
+        .status(500)
+        .json({ message: 'Ocorreu um erro interno no servidor', errCode: 'emailSendError' })
     }
   } catch (error) {
     console.error('Erro ao processar solicitação de setSignupCode:', error)
@@ -536,7 +616,7 @@ app.post('/setUser', async (req, res) => {
 })
 
 // Lista todas as sessões de um usuário
-app.post('/getAllUserSessions', async (req, res) => {
+app.get('/getAllUserSessions', async (req, res) => {
   const { userId } = req.body
 
   try {
@@ -554,7 +634,7 @@ app.post('/getAllUserSessions', async (req, res) => {
 })
 
 // Deleta uma sessão específica, desconectando a mesma
-app.post('/deleteSession', async (req, res) => {
+app.delete('/deleteSession', async (req, res) => {
   const { sessionId } = req.body
 
   try {

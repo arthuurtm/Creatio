@@ -1,80 +1,63 @@
-import { getApiUrl } from './functions'
+import { get, post, del } from './functions'
 import { useUserStore } from '@/stores/store'
 
 async function handleUserData() {
   try {
-    const res = await fetch(getApiUrl('database', 'getUserBasics'), {
-      credentials: 'include',
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
+    const res = await get({ type: 'database', route: 'getUserBasics' })
 
-    const data = await res.json()
-
-    if (data) {
+    if (res) {
       useUserStore().setUserData({
-        id: data.id,
-        name: data.nickname,
-        username: data.username,
-        email: data.email,
+        id: res.id,
+        name: res.nickname,
+        username: res.username,
+        email: res.email,
         profilePicture: null,
       })
       return true
-    } else {
-      console.error(`Erro ao recuperar dados: ${data.message}`)
-      return false
     }
+    throw new Error(res.message || 'Dados do usuário não encontrados')
   } catch (error) {
     console.error(`Erro ao recuperar dados: ${error}`)
+    useUserStore().clearUserData() // Garante o logout em caso de erro
     return false
   }
 }
 
 async function handleAuthentication() {
   try {
-    const res = await fetch(getApiUrl('database', 'getUserSession'), {
-      credentials: 'include',
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
+    const res = await get({ type: 'database', route: 'getUserSession' })
 
-    const data = await res.json()
-
-    if (res.ok) {
-      console.log('Sessão válida:', data)
-      handleUserData()
-      return true
-    } else {
-      console.warn('Sessão inválida:', data.message)
-      const result = await handleRefreshToken() // Corrigido aqui para declarar a variável
-      return result // Se for true, retorna true, caso contrário, retorna false
+    if (!res.ok) {
+      return await handleRefreshToken()
     }
+    const userDataLoaded = await handleUserData()
+
+    // Atualiza o estado de autenticação baseado no resultado
+    useUserStore().isAuth = userDataLoaded
+    return userDataLoaded
   } catch (error) {
     console.error('Erro ao validar a sessão:', error)
+    useUserStore().isAuth = false
     return false
   }
 }
 
 async function handleRefreshToken() {
   try {
-    const res = await fetch(getApiUrl('database', 'refreshToken'), {
-      credentials: 'include',
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
+    const res = await post({ type: 'database', route: 'refreshToken' })
 
-    const data = await res.json()
-
-    if (res.ok) {
-      console.log('Sessão recuperada: ', data.message)
-      return true
-    } else {
-      console.warn('Erro ao recuperar sessão: ', data.message)
-      logout()
+    if (!res.ok) {
+      await logout()
       return false
     }
+
+    const userDataLoaded = await handleUserData()
+
+    useUserStore().isAuth = userDataLoaded
+    return userDataLoaded
   } catch (error) {
-    console.error('Erro ao processar função handleRefreshToken: ', error)
+    console.error('Erro ao renovar token:', error)
+    await logout()
     return false
   }
 }
@@ -84,7 +67,6 @@ export async function isAuthenticated() {
 }
 
 export async function logout() {
-  await fetch(getApiUrl('database', 'logout'), { method: 'POST' })
-  const userStore = useUserStore()
-  userStore.clearUserData()
+  await del({ type: 'database', route: 'logout' })
+  useUserStore().clearUserData()
 }

@@ -1,14 +1,22 @@
 <template>
   <div class="container" :class="[isMenuActive && 'active']">
-
     <div class="hide-nav" @click="updateMenuState(true)">
       <span class="material-symbols-outlined notranslate">{{ navigatorIcon }}</span>
     </div>
 
-    <div class="nav" :class="[isMenuActive ? 'active' : 'minimized', hidden ? 'hidden' : '']" id="nav" ref="menu">
-
+    <div
+      class="nav"
+      :class="[isMenuActive ? 'active' : 'minimized', hidden ? 'hidden' : '']"
+      id="nav"
+      ref="menu"
+    >
       <div class="nav-content">
-        <div class="invisible-drag-camp" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
+        <div
+          class="invisible-drag-camp"
+          @touchstart="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+        >
           <div class="drag-handle" @click="updateMenuState()" @touchstart="onTouchStart"></div>
         </div>
 
@@ -21,7 +29,6 @@
               <div>
                 <p class="nickname">{{ userStore.name }}</p>
               </div>
-
             </li>
 
             <li v-if="!isAuthenticated" @click="navigateTo('Login')">
@@ -61,43 +68,43 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { logout } from '@/functions/auth';
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { logout } from '@/functions/auth'
 import { useAppDynamicDialog, useUserStore } from '@/stores/store'
 
 // Stores e Router
-const userStore = useUserStore();
-const dynamicDialog = useAppDynamicDialog();
-const router = useRouter();
+const userStore = useUserStore()
+const dynamicDialog = useAppDynamicDialog()
+const router = useRouter()
 
 // Props e Emits
-defineProps({ hidden: Boolean });
-const emit = defineEmits(['navigateTo']);
-let touchTimeout = null;
+defineProps({ hidden: Boolean })
+const emit = defineEmits(['navigateTo'])
+let touchTimeout = null
 
 // Estado reativo
-const isAuthenticated = computed(() => userStore.isAuth);
-const menuRef = ref(null);
-const startY = ref(0);
-const currentY = ref(0);
-const isDragging = ref(false);
-const isMenuActive = ref(false);
+const isAuthenticated = computed(() => userStore.isAuth)
+const menuRef = ref(null)
+const startY = ref(0)
+const currentY = ref(0)
+const isDragging = ref(false)
+const isMenuActive = ref(false)
 const profilePicture = computed(() => {
-  return userStore.profilePicture;
-});
-const navigatorIcon = ref('menu');
+  return userStore.profilePicture
+})
+const navigatorIcon = ref('menu')
 
-// 🏗 Funções
+// Funções
 const handleIsMobile = () => {
-  return window.matchMedia("(max-width: 768px)").matches;
-};
+  return window.matchMedia('(max-width: 768px)').matches
+}
 
 const navigateTo = (page) => {
-  console.log(`navigateTo() > page: ${page}`);
-  router.push({ name: page });
-  updateMenuState();
-};
+  console.log(`navigateTo() > page: ${page}`)
+  router.push({ name: page })
+  updateMenuState()
+}
 
 const handleLogout = () => {
   dynamicDialog.setDialog('DialogMessage', {
@@ -108,78 +115,78 @@ const handleLogout = () => {
       text: 'Sim',
       class: 'btn confirm',
       action: () => {
-        logout();
+        logout()
       },
     },
-  });
-  updateMenuState();
-};
+  })
+  updateMenuState()
+}
 
 const handleSettingsBox = () => {
-  dynamicDialog.setDialog('DialogSettings', { title: 'Configurações' });
-  updateMenuState();
-};
+  dynamicDialog.setDialog('DialogSettings', { title: 'Configurações' })
+  updateMenuState()
+}
 
-// 🖐 Eventos de Toque
+// Eventos de Toque
 const onTouchStart = (event) => {
-  startY.value = event.touches[0].clientY;
-  isDragging.value = false;
+  startY.value = event.touches[0].clientY
+  isDragging.value = false
   touchTimeout = setTimeout(() => {
-    isDragging.value = true;
-  }, 150);
-};
+    isDragging.value = true
+  }, 150)
+}
 
 const onTouchMove = (event) => {
-  event.stopPropagation();
-  event.preventDefault();
-  if (!isDragging.value) return;
+  event.stopPropagation()
+  event.preventDefault()
+  if (!isDragging.value) return
 
-  currentY.value = event.touches[0].clientY;
-  const translateY = currentY.value - startY.value;
+  currentY.value = event.touches[0].clientY
+  const translateY = currentY.value - startY.value
 
   if (menuRef.value) {
-    menuRef.value.style.transform = `translateY(${translateY}px)`;
+    menuRef.value.style.transform = `translateY(${translateY}px)`
   }
-};
+}
 
 const onTouchEnd = () => {
-  if (!isDragging.value) return;
-  isDragging.value = false;
-  clearTimeout(touchTimeout);
+  if (!isDragging.value) return
+  isDragging.value = false
+  clearTimeout(touchTimeout)
 
-  const deltaY = currentY.value - startY.value;
-  const activationThreshold = 50;
+  const deltaY = currentY.value - startY.value
+  const activationThreshold = 50
 
   if (deltaY < -activationThreshold) {
-    isMenuActive.value = true;
+    isMenuActive.value = true
   } else if (deltaY > activationThreshold) {
-    isMenuActive.value = false;
+    isMenuActive.value = false
   }
 
   if (menuRef.value) {
-    menuRef.value.style.transform = '';
+    menuRef.value.style.transform = ''
   }
-};
+}
 
-// 📌 Atualiza estado do menu
+// Atualiza estado do menu
 function updateMenuState(force = false) {
-  const isMobile = handleIsMobile();
+  const isMobile = handleIsMobile()
   if (isMobile || force) {
-    isMenuActive.value = !isMenuActive.value;
+    isMenuActive.value = !isMenuActive.value
   }
-};
+}
 
-// 🔎 Watchers
+// Watchers
 watch(isMenuActive, (value) => {
-  navigatorIcon.value = value ? 'menu_open' : 'menu';
-});
+  navigatorIcon.value = value ? 'menu_open' : 'menu'
+})
 
-// 🏁 Montagem do Componente
+// Montagem do Componente
 onMounted(() => {
-  updateMenuState(!handleIsMobile());
-});
+  updateMenuState(!handleIsMobile())
+})
 </script>
 
 <style scoped>
-@import "/src/assets/css/components/c-navigator.css";
+@import '/src/assets/css/components/c-navigator.css';
 </style>
