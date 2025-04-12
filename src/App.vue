@@ -6,14 +6,13 @@ import { useAppDynamicDialog } from '@/stores/store'
 import { appTheme } from '@/functions/functions'
 
 appTheme()
-const isVisible = computed(() => useAppDynamicDialog().isVisible);
-const component = computed(() => useAppDynamicDialog().component);
-const title = computed(() => useAppDynamicDialog().title);
+const component = computed(() => useAppDynamicDialog().component)
+const title = computed(() => useAppDynamicDialog().title)
 </script>
 
 <template>
   <RouterView />
-  <AppDynamicDialog v-if="isVisible" :component="component" :title="title" />
+  <AppDynamicDialog :component="component" :title="title" />
 </template>
 
 <style scoped></style>

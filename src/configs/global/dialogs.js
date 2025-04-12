@@ -18,7 +18,5 @@ export default {
 
       registeredComponents.push(componentName)
     }
-
-    console.log('Componentes Globais Registrados:', registeredComponents)
   },
 }

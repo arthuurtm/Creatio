@@ -10,7 +10,7 @@
   background-color: var(--overlay-bg);
   opacity: 1;
   /* animation: fadeInBlur 0.3s ease both; */
-  z-index: 4;
+  z-index: 5;
 }
 
 .dialog-main {
@@ -22,15 +22,13 @@
   background-color: var(--bg);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   color: var(--text);
-  min-height: 10vh;
-  max-height: 100vh;
   /* animation: moveToCenter 0.6s ease forwards; */
   transition:
     color 0.5s ease,
     background-color 0.5s ease,
     border-color 0.5s ease,
-    min-height 0.5s ease,
-    max-height 0.5s ease;
+    height 0.3s ease,
+    transform 0.3s ease;
 }
 
 .title-bar {
@@ -89,14 +87,22 @@
     border-radius: unset;
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
-    bottom: calc(30px + env(safe-area-inset-bottom, 100px));
+    /* transform: translateY(100%); */
+    bottom: calc(env(safe-area-inset-bottom, 100px));
     left: 0;
     right: 0;
     max-width: unset;
+    height: 0;
+    height: calc-size(auto);
+    interpolate-size: allow-keywords;
   }
 
   .dialog-shadow {
     transition: unset;
+  }
+
+  .dialog-main.active {
+    height: auto;
   }
 
   .title-bar {

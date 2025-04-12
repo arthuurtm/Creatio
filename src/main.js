@@ -8,7 +8,7 @@ import router from './router'
 import pinia from './plugins/pinia'
 import * as globalFunc from './functions/functions'
 import userStorePlugin from './plugins/states'
-import dialogsComponents from '@/plugins/dialogs'
+import dialogsComponents from '@/configs/global/dialogs'
 
 const app = createApp(App)
 

@@ -107,6 +107,8 @@ img.profile-picture {
     grid-template-rows: 1fr 60px;
     grid-template-columns: 1fr;
     margin-bottom: 10px;
+    height: auto;
+    interpolate-size: allow-keywords;
   }
 
   .navPage {
