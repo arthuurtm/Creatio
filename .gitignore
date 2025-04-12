@@ -30,6 +30,7 @@ coverage
 # critical files and folders
 *.env
 /api/auth
+*.venv
 
 *.tsbuildinfo
 */__pycache__
