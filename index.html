@@ -21,26 +21,5 @@
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
     <script src="https://accounts.google.com/gsi/client"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
-    <script>
-      google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GCLIENT_LOGIN_ID,
-        callback: this.handleGoogleLogin,
-        context: "signin",
-        ux_mode: "popup",
-        auto_prompt: false
-      });
-
-      google.accounts.id.renderButton(
-        document.getElementById("googleButton"),
-        {
-          size: "large",
-          type: "icon",
-          shape: "pill",
-          text: "continue_with",
-          logo_alignment: "left",
-        }
-      );
-    </script>
   </body>
 </html>
