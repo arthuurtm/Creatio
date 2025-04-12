@@ -1,9 +1,16 @@
 <template>
   <div class="page">
-    <span class="settings-button material-symbols-outlined notranslate" @click="handleSettingsBox">settings</span>
+    <span class="settings-button material-symbols-outlined notranslate" @click="handleSettingsBox"
+      >settings</span
+    >
 
     <transition name="errAnim">
-      <div v-if="errorMessage" id="error-message" class="error-message" :class="errorMessage && 'show'">
+      <div
+        v-if="errorMessage"
+        id="error-message"
+        class="error-message"
+        :class="errorMessage && 'show'"
+      >
         ✖ {{ errorMessage }}
       </div>
     </transition>
@@ -13,7 +20,6 @@
     </div>
 
     <div class="main-form-container">
-
       <div class="left">
         <img src="@/assets/img/min-logo.png" alt="Logo do Sysroot" id="logo" />
         <h1 v-if="config">{{ config.title }}</h1>
@@ -21,37 +27,40 @@
       </div>
 
       <div v-if="hasStepsData && currentStepData" class="right">
-
-
-        <form v-if="hasStepsData" class="form-container" @submit.prevent="submitForm">
-
-
+        <form class="form-container" @submit.prevent="submitForm">
           <div class="centered">
             <transition name="slide-left" mode="out-in">
               <div :key="currentStepData.stepIndex">
                 <div class="sepElements">
-
-                  <CreateTextField v-for="field in currentStepData.fields" :key="field.model" :field="field"
-                    v-model="formData[field.model]" :error-message="errors[field.model]"
-                    @emitEvent="handleFunctionEvent" />
-
+                  <CreateTextField
+                    v-for="field in currentStepData.fields"
+                    :key="field.model"
+                    :field="field"
+                    v-model="formData[field.model]"
+                    :error-message="errors[field.model]"
+                    @emitEvent="handleFunctionEvent"
+                  />
                 </div>
               </div>
             </transition>
           </div>
 
-          <CreateAnchor v-if="currentStepData.anchor" :anchor="currentStepData.anchor"
-            @emitEvent="handleFunctionEvent" />
+          <CreateAnchor
+            v-if="currentStepData.anchor"
+            :anchor="currentStepData.anchor"
+            @emitEvent="handleFunctionEvent"
+          />
 
-          <CreateButton v-if="currentStepData.buttons" :buttons="currentStepData.buttons"
-            @emitEvent="handleFunctionEvent" />
+          <CreateButton
+            v-if="currentStepData.buttons"
+            :buttons="currentStepData.buttons"
+            @emitEvent="handleFunctionEvent"
+          />
         </form>
       </div>
 
-
-      <div v-else class="right">
+      <div v-else-if="!hasStepsData && !currentStepData" class="right">
         <form class="form-container" @submit.prevent="submitForm">
-
           <div class="centered">
             <div class="sepElements">
               <p>Ocorreu um erro interno, tente novamente mais tarde.</p>
@@ -59,113 +68,139 @@
           </div>
 
           <div class="sepButtons">
-            <button class="btn" @click="handleFunctionEvent({ action: 'back', type: 'local' })">Voltar</button>
+            <button class="btn" @click="handleFunctionEvent({ action: 'back', type: 'local' })">
+              Voltar
+            </button>
           </div>
-
         </form>
       </div>
     </div>
   </div>
 </template>
 
-
-<script>
-import { computed, ref } from "vue";
-import { useFormStore } from "@/stores/formStore";
-import CreateTextField from "@/components/elements/CreateTextField.vue";
-import CreateAnchor from "@/components/elements/CreateAnchor.vue";
-import CreateButton from "@/components/elements/CreateButton.vue";
+<script setup>
+import { ref, computed } from 'vue'
+import { useFormStore } from '@/stores/formStore'
 import { useAppDynamicDialog } from '@/stores/store'
+import { useRouter } from 'vue-router'
+import CreateTextField from '@/components/elements/CreateTextField.vue'
+import CreateAnchor from '@/components/elements/CreateAnchor.vue'
+import CreateButton from '@/components/elements/CreateButton.vue'
 
-export default {
-  components: { CreateTextField, CreateAnchor, CreateButton },
+const props = defineProps({
+  config: Object,
+  errorMessage: String,
+  isLoading: Boolean,
+  formFunctions: Object,
+  redirectName: String,
+})
 
-  emits: ["button-click"],
+console.log(props.formFunctions)
 
-  props: {
-    config: Object,
-    errorMessage: String,
-    isLoading: Boolean,
-  },
+const emit = defineEmits(['button-click'])
 
-  setup(props) {
-    let errors = ref({});
-    let formData = computed(() => useFormStore().formData);
+const router = useRouter()
+const formStore = useFormStore()
+const appDynamicDialog = useAppDynamicDialog()
 
+const errors = ref({})
+const formData = computed(() => formStore.formData)
+const currentStep = computed(() => formStore.getCurrentStep())
 
-    let currentStep = computed(() => useFormStore().getCurrentStep());
-    console.log("Current Step:", currentStep.value);
+const allSteps = computed(() => {
+  if (!props.config?.steps) return []
+  return Object.entries(props.config.steps).map(([key, value]) => ({
+    ...value,
+    stepIndex: Number(key),
+  }))
+})
 
-    const allSteps = computed(() => {
-      if (!props.config?.steps) return [];
-      return Object.entries(props.config.steps).map(([key, value]) => ({
-        ...value,
-        stepIndex: Number(key), // Guarda a chave numérica como índice
-      }));
-    });
+const currentStepData = computed(() => {
+  return allSteps.value.find((step) => step.stepIndex === currentStep.value) || null
+})
 
-    const currentStepData = computed(() => {
-      return allSteps.value.find(step => step.stepIndex === currentStep.value) || null;
-    });
+const hasStepsData = computed(() => !!props.config?.steps)
 
-    console.log('allSteps: ', allSteps);
+function submitForm() {
+  // Lógica de submissão do formulário
+}
 
-    const hasStepsData = computed(() => !!props.config?.steps);
-    console.log('hasStepsData: ', hasStepsData);
-    // const hasCurrentStepData = computed(() => !!currentStepData.value);
+function handleSettingsBox() {
+  appDynamicDialog.setDialog('DialogSettings', { title: 'Configurações' })
+}
 
-    function submitForm() {
+function handleButtonClick(action) {
+  formStore.setRequestedFunction(action)
+  console.log('handleButtonClick() > action: ', formStore.getRequestedFunction())
+}
 
-    };
+function handleFunctionEvent(payload) {
+  const { action, value, type } = payload
 
-    function handleSettingsBox() {
-      useAppDynamicDialog().setDialog('DialogSettings', { title: 'Configurações' });
-    }
-
-    return { formData, errors, submitForm, currentStep, currentStepData, hasStepsData, handleSettingsBox };
-  },
-
-  methods: {
-    handleButtonClick(action) {
-      useFormStore().setRequestedFunction(action);
-      console.log('handleButtonClick() > action: ', useFormStore().getRequestedFunction());
-    },
-
-    handleFunctionEvent(payload) {
-      const { action, value, type } = payload;
-      if (type === 'local') {
-        if (this[action]) {
-          this[action](value);
-        } else {
-          console.warn(`Ação "${action}" não encontrada.`);
-        }
-      } else {
-        console.log('Executando função no componente pai.');
-        this.handleButtonClick(action);
+  if (type === 'local') {
+    try {
+      switch (action) {
+        case 'redirect':
+          redirect(value)
+          break
+        case 'forward':
+          forward()
+          break
+        case 'rewind':
+          rewind()
+          break
+        case 'back':
+          back()
+          break
+        default:
+          console.warn(`Ação local "${action}" não implementada.`)
       }
-    },
+    } catch (error) {
+      console.error(`Erro ao executar ação local "${action}":`, error)
+    }
+  } else {
+    if (props.formFunctions?.[action]) {
+      props.formFunctions[action](value)
+    } else {
+      handleButtonClick(action)
+    }
+  }
+}
 
-    // Funções locais reutilizáveis
+// Funções locais reutilizáveis
+function redirect(link) {
+  router.push({ name: link })
+}
 
-    redirect(link) {
-      this.$router.push({ name: link });
-    },
+function forward() {
+  formStore.setCurrentStep(formStore.getCurrentStep() + 1)
+}
 
-    forward() {
-      useFormStore().setCurrentStep(useFormStore().getCurrentStep() + 1);
-    },
+function rewind() {
+  formStore.setCurrentStep(formStore.getCurrentStep() - 1)
+}
 
-    rewind() {
-      useFormStore().setCurrentStep(useFormStore().getCurrentStep() - 1);
-    },
+function back() {
+  router.back()
+}
 
-    back() {
-      this.$router.back();
-    },
-  },
-};
+// Expondo os métodos e dados para o template
+defineExpose({
+  formData,
+  errors,
+  submitForm,
+  currentStep,
+  currentStepData,
+  hasStepsData,
+  handleSettingsBox,
+  handleButtonClick,
+  handleFunctionEvent,
+  redirect,
+  forward,
+  rewind,
+  back,
+})
 </script>
-
 
 <style scoped>
 @import url(/src/assets/css/components/c-form.css);

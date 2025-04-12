@@ -62,16 +62,17 @@ export const useUserStore = defineStore('user', {
       this.additionalData = {}
       this.isAuth = false
     },
-    isAuth() {
-      return this.id !== ''
+    checkAuth() {
+      return this.isAuth && this.id !== ''
     },
   },
   persist: {
     enabled: true, // Habilita a persistência para este store
     strategies: [
       {
-        key: 'user', // Nome da chave no storage
-        storage: localStorage, // Armazena no localStorage
+        key: 'user',
+        storage: localStorage,
+        paths: ['isAuth', 'id'],
       },
     ],
   },

@@ -13,7 +13,7 @@ const ComputedHiddenNavigator = computed(() => useRoute().meta.hiddenNavigator ?
 <template>
   <div class="app-container">
 
-    <ComponentNavigator @navigateTo="handleNavigate" :hidden="ComputedHiddenNavigator" />
+    <ComponentNavigator :hidden="ComputedHiddenNavigator" />
 
     <div class="view-app">
       <router-view v-slot="{ Component }">
