@@ -27,7 +27,7 @@
                 <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
               </div>
               <div>
-                <p class="nickname">{{ userStore.name }}</p>
+                <p class="nickname">{{ user.getName }}</p>
               </div>
             </li>
 
@@ -68,15 +68,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { logout } from '@/functions/auth'
-import { useAppDynamicDialog, useUserStore } from '@/stores/dialog'
 
 // Stores e Router
-const userStore = useUserStore()
-const dynamicDialog = useAppDynamicDialog()
 const router = useRouter()
+const store = inject('stores')
+const user = store.user
+const dialog = store.dialog
 
 // Props e Emits
 defineProps({ hidden: Boolean })
@@ -84,14 +84,14 @@ const emit = defineEmits(['navigateTo'])
 let touchTimeout = null
 
 // Estado reativo
-const isAuthenticated = computed(() => userStore.isAuth)
+const isAuthenticated = computed(() => user.getIsAuth)
 const menuRef = ref(null)
 const startY = ref(0)
 const currentY = ref(0)
 const isDragging = ref(false)
 const isMenuActive = ref(false)
 const profilePicture = computed(() => {
-  return userStore.profilePicture
+  return user.getProfilePicture
 })
 const navigatorIcon = ref('menu')
 
@@ -107,7 +107,7 @@ const navigateTo = (page) => {
 }
 
 const handleLogout = () => {
-  dynamicDialog.setDialog('DialogMessage', {
+  dialog.setDialog('DialogMessage', {
     title: 'Sair',
     message: 'Você quer mesmo sair?',
     btn1: { text: 'Não' },
@@ -123,7 +123,7 @@ const handleLogout = () => {
 }
 
 const handleSettingsBox = () => {
-  dynamicDialog.setDialog('DialogSettings', { title: 'Configurações' })
+  dialog.setDialog('DialogSettings', { title: 'Configurações' })
   updateMenuState()
 }
 

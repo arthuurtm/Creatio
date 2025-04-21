@@ -9,6 +9,15 @@ export const useUserStore = defineStore('user', {
     additionalData: {},
     isAuth: false,
   }),
+  getters: {
+    getId: (state) => state.id,
+    getName: (state) => state.name,
+    getUsername: (state) => state.username,
+    getEmail: (state) => state.email,
+    getProfilePicture: (state) => state.profilePicture,
+    getAdditionalData: (state) => state.additionalData,
+    getIsAuth: (state) => state.isAuth,
+  },
   actions: {
     setUserData(userData) {
       this.id = userData.id

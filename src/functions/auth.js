@@ -1,6 +1,6 @@
 import { get, post, del } from './functions'
 import { showToast } from '@/plugins/toast'
-import { useUserStore } from '@/stores/dialog'
+import { useUserStore } from '@/stores/user'
 
 async function handleUserData() {
   try {

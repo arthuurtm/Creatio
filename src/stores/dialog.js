@@ -6,6 +6,12 @@ export const useAppDynamicDialog = defineStore('appDynamicDialog', {
     title: 'Diálogo',
     data: {},
   }),
+  getters: {
+    getIsVisible: (state) => state.isVisible,
+    getComponent: (state) => state.component,
+    getTitle: (state) => state.title,
+    getData: (state) => state.data,
+  },
   actions: {
     show() {
       this.isVisible = true
@@ -24,6 +30,10 @@ export const useAppDynamicDialog = defineStore('appDynamicDialog', {
       }
       this.component = component
       this.show()
+    },
+
+    setData(data) {
+      this.data = data
     },
   },
 })

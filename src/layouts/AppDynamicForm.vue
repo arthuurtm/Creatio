@@ -77,9 +77,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useFormStore } from '@/stores/form'
-import { useAppDynamicDialog } from '@/stores/dialog'
+import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -93,12 +91,13 @@ const props = defineProps({
 const emit = defineEmits(['button-click'])
 
 const router = useRouter()
-const formStore = useFormStore()
-const appDynamicDialog = useAppDynamicDialog()
+const store = inject('stores')
+const formStore = store.form
+const appDynamicDialog = store.dialog
 
 const errors = ref({})
-const formData = computed(() => formStore.formData)
-const currentStep = computed(() => formStore.getCurrentStep())
+const formData = computed(() => formStore.getFormData)
+const currentStep = computed(() => formStore.getCurrentStep)
 
 const allSteps = computed(() => {
   if (!props.config?.steps) return []
@@ -174,11 +173,11 @@ function redirect(link) {
 }
 
 function forward() {
-  formStore.setCurrentStep(formStore.getCurrentStep() + 1)
+  formStore.setCurrentStep(formStore.getCurrentStep + 1)
 }
 
 function rewind() {
-  formStore.setCurrentStep(formStore.getCurrentStep() - 1)
+  formStore.setCurrentStep(formStore.getCurrentStep - 1)
 }
 
 function back() {

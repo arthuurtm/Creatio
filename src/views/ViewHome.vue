@@ -1,10 +1,11 @@
 <script setup>
 import ComponentLoadSessions from '@/components/ComponentLoadSessions.vue'
-import { useAppDynamicDialog, useUserStore } from '@/stores/dialog'
+import { inject } from 'vue'
 
 // Stores
-const userStore = useUserStore()
-const dynamicDialog = useAppDynamicDialog()
+const store = inject('stores')
+const userStore = store.user
+const dynamicDialog = store.dialog
 </script>
 
 <template>
@@ -12,7 +13,7 @@ const dynamicDialog = useAppDynamicDialog()
     <div class="header">
       <h3>
         <b>
-          <h3 class="gradient">Olá, {{ userStore.name }}!</h3>
+          <h3 class="gradient">Olá, {{ userStore.getName }}!</h3>
         </b>
       </h3>
     </div>

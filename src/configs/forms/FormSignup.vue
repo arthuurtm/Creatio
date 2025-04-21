@@ -4,14 +4,14 @@
 
 <script setup>
 import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
-import { useFormStore } from '@/stores/form'
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, inject } from 'vue'
 import * as globalFunc from '@/functions/functions'
 import { useRouter } from 'vue-router'
 import { showToast } from '@/plugins/toast'
 
-const formStore = useFormStore()
-const formData = computed(() => formStore.formData)
+const store = inject('stores')
+const formStore = store.form
+const formData = formStore.getFormData
 const nicknameValue = computed(() => formData.value.nickname)
 const router = useRouter()
 

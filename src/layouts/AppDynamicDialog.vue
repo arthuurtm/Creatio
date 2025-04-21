@@ -1,6 +1,5 @@
 <script setup>
-import { useAppDynamicDialog } from '@/stores/dialog'
-import { computed, ref, watch, defineAsyncComponent } from 'vue'
+import { computed, ref, watch, defineAsyncComponent, inject } from 'vue'
 import CreateLoading from '@/components/elements/CreateLoading.vue'
 
 const props = defineProps({
@@ -11,17 +10,18 @@ const props = defineProps({
 const show = ref(false)
 const loading = ref(true)
 const asyncComponent = ref(null)
+const store = inject('stores')
 
 function close() {
   show.value = false
   setTimeout(() => {
-    useAppDynamicDialog().close()
+    store.dialog.close()
   }, 300)
 }
 
 let dialogStyle = 'default'
 
-const isVisible = computed(() => useAppDynamicDialog().isVisible)
+const isVisible = computed(() => store.dialog.getIsVisible)
 const showDialog = computed(() => isVisible.value || show.value)
 
 watch(isVisible, (newValue) => {

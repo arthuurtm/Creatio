@@ -24,7 +24,7 @@
     </nav>
     <div class="navPage">
       <form @submit.prevent="handleAction">
-        <div class="pageContainer" :class="this.actualPage == 1 && 'active'">
+        <div class="pageContainer" :class="actualPage == 1 && 'active'">
           <ul>
             <li>
               <p>Tema Escuro</p>
@@ -36,7 +36,7 @@
           </ul>
         </div>
 
-        <div class="pageContainer" :class="this.actualPage == 2 && 'active'">
+        <div class="pageContainer" :class="actualPage == 2 && 'active'">
           <ul>
             <li>
               <p>Foto de Perfil</p>
@@ -47,7 +47,7 @@
             <li>
               <p>Conta Google</p>
               <a v-if="isGoogleConnected">
-                <p>{{ this.userData.email }}</p>
+                <p>{{ userData.email }}</p>
               </a>
               <a v-else class="btn symbolic">
                 <span class="material-symbols-outlined notranslate"> arrow_outward </span>
@@ -56,7 +56,7 @@
             <li>
               <p>Conta Discord</p>
               <a v-if="isDiscordConnected">
-                <p>{{ this.userData.email }}</p>
+                <p>{{ userData.email }}</p>
               </a>
               <a v-else class="btn symbolic">
                 <span class="material-symbols-outlined notranslate"> arrow_outward </span>
@@ -65,7 +65,7 @@
           </ul>
         </div>
 
-        <div class="pageContainer" :class="this.actualPage == 3 && 'active'">
+        <div class="pageContainer" :class="actualPage == 3 && 'active'">
           <ul>
             <li>
               <p>Alterar senha</p>
@@ -80,80 +80,61 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { appTheme, get } from '@/functions/functions'
-import { useAppDynamicDialog, useUserStore } from '@/stores/dialog'
-import { computed } from 'vue'
-export default {
-  name: 'DialogSettings',
-  inject: ['userStore'],
+import { computed, ref, onMounted, inject } from 'vue'
+import { useRoute } from 'vue-router'
 
-  setup() {
-    const settingsPanelStore = useAppDynamicDialog()
+// Stores e router
+const route = useRoute()
+const store = inject('stores')
 
-    // Propriedade computada para isVisible
-    const isVisible = computed(() => settingsPanelStore.isVisible)
+const isAuth = computed(() => store.user.getIsAuth)
+const profilePicture = computed(() => store.user.getProfilePicture)
+const selectedOption = ref(null)
+const actualPage = ref(1)
+const isDarkMode = ref(false)
+const isGoogleConnected = ref(false)
+const isDiscordConnected = ref(false)
+const userData = ref({})
 
-    const userStore = useUserStore()
-    const isAuth = computed(() => userStore.isAuth)
-    const profilePicture = computed(() => userStore.profilePicture)
-
-    return {
-      isAuth,
-      isVisible, // Estado reativo
-      close: settingsPanelStore.hide, // Ação para esconder o painel
-      profilePicture,
-    }
-  },
-
-  data() {
-    return {
-      selectedOption: null,
-      actualPage: 0,
-      isDarkMode: false,
-      isGoogleConnected: false,
-      isDiscordConnected: false,
-      userData: {},
-    }
-  },
-  async mounted() {
-    this.actualPage = 1
-    let theme = appTheme()
-    this.isDarkMode = theme.isDark == true ? true : false
-    window.addEventListener('keydown', this.close)
-
-    const gToken = get({ type: 'database', route: 'getUserBasics' })
-    if (gToken.ok) {
-      let data = gToken.json()
-      if (data.gToken != '' || data.gToken != null) {
-        this.isGoogleConnected = true
-        this.userData = data
-      }
-    }
-  },
-
-  methods: {
-    handleNavPage(value, name) {
-      this.actualPage = value
-      this.selectedOption = name ?? null
-    },
-
-    handleAction() {},
-
-    toggleTheme() {
-      console.log(appTheme(true))
-    },
-
-    handleExtLink(name, params) {
-      if (params) params = {}
-      this.$router.push({
-        name,
-        params,
-      })
-      this.close()
-    },
-  },
+function handleNavPage(value, name) {
+  actualPage.value = value
+  selectedOption.value = name ?? null
 }
+
+function handleAction() {}
+
+function toggleTheme() {
+  console.log(appTheme(true))
+}
+
+function handleExtLink(name, params) {
+  if (params) params = {}
+  route.push({
+    name,
+    params,
+  })
+  close()
+}
+
+function close() {
+  store.dialog.close()
+}
+
+onMounted(() => {
+  let theme = appTheme()
+  isDarkMode.value = theme.isDark == true ? true : false
+
+  const gToken = get({ type: 'database', route: 'getUserBasics' })
+  if (gToken.ok) {
+    let data = gToken.json()
+    if (data.gToken != '' || data.gToken != null) {
+      isGoogleConnected.value = true
+      userData.value = data
+    }
+  }
+})
 </script>
 
 <style scoped>

@@ -73,21 +73,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import { get } from '@/functions/functions'
-import { useAppDynamicDialog, useUserStore } from '@/stores/dialog'
 
 const games = ref([])
-const dynamicDialog = useAppDynamicDialog()
 const loading = ref(true)
 const scrollContainer = ref(null)
 const scrollAmount = 260
+const store = inject('stores')
 
 async function loadGames() {
   try {
     const data = await get({ type: 'database', route: 'getGames' })
     console.log('Dados recebidos:', data)
-    // dynamicDialog.setDialog('DialogMessage', {
+    // store.dialog.setDialog('DialogMessage', {
     //   title: 'Log',
     //   message: data,
     // })

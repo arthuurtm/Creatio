@@ -8,15 +8,9 @@ export const useFormStore = defineStore('form', {
     stepState: '',
   }),
   getters: {
-    getFormData: (state) => {
-      return state.formData
-    },
-    getRequestedFunction: (state) => {
-      return state.requestedFunction
-    },
-    getCurrentStep: (state) => {
-      return state.currentStep
-    },
+    getFormData: (state) => state.formData,
+    getRequestedFunction: (state) => state.requestedFunction,
+    getCurrentStep: (state) => state.currentStep,
   },
   actions: {
     updateField(field, value) {

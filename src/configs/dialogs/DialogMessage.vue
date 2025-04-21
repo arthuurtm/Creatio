@@ -13,14 +13,14 @@
 </template>
 
 <script setup>
-import { useAppDynamicDialog } from '@/stores/dialog'
-import { computed, ref, watch } from 'vue'
-const dialogBoxStore = useAppDynamicDialog()
+import { computed, ref, watch, inject } from 'vue'
+
 const params = ref({})
 const emit = defineEmits(['close'])
+const store = inject('stores')
 
 watch(
-  () => dialogBoxStore.data,
+  () => store.dialog.getData,
   (newData) => {
     params.value = {
       title: newData?.title || 'Confirmação',

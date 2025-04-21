@@ -4,14 +4,14 @@
 
 <script setup>
 import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
-import { useFormStore } from '@/stores/form'
-import { computed, ref, onMounted } from 'vue'
+import { onMounted, inject, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import * as gfunctions from '@/functions/functions'
 import { showToast } from '@/plugins/toast'
 
-const formStore = useFormStore()
-const formData = computed(() => formStore.formData)
+// Stores e router
+const store = inject('stores')
+const formData = computed(() => store.form.getFormData)
 const router = useRouter()
 
 // Configurações do formulário

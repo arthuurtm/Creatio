@@ -1,34 +1,36 @@
-import './assets/css/main.css'
-
 import { createApp } from 'vue'
+import Toast from 'vue-toastification'
 
 import App from './App.vue'
 import router from './router'
-import stores from './stores'
+import { createStores } from './stores'
 
 import pinia from './plugins/pinia'
-import * as globalFunc from './functions/functions'
-import userStorePlugin from './plugins/states'
-import dialogsComponents from '@/configs/global/dialogs'
-import { showToast } from './plugins/toast'
-import Toast from 'vue-toastification'
 import elements from './plugins/elements'
+import { showToast } from './plugins/toast'
+import dialogsComponents from '@/plugins/dialogs'
 
+import * as globalFunc from './functions/functions'
+
+import './assets/css/main.css'
 import 'vue-toastification/dist/index.css'
 import '@/assets/css/elements/e-toast.css'
 
 const app = createApp(App)
 
+// Configurações globais
+app.use(router)
+app.use(pinia)
+app.use(dialogsComponents)
+app.use(Toast)
+app.use(elements)
+
 // Configura as funções globais
 app.config.globalProperties.$globalFunc = globalFunc
 app.config.globalProperties.$toast = showToast
 
-// Carrega configurações globais
-app.use(router)
-app.use(pinia)
-app.use(userStorePlugin)
-app.use(dialogsComponents)
-app.use(Toast)
-app.use(elements)
+// Configura o store
+const allStores = createStores()
+app.provide('stores', allStores)
 
 app.mount('#app')
