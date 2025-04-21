@@ -21,7 +21,7 @@ const httpsOptions = {
 }
 
 const corsOptions = {
-  origin: ['http://localhost:5173'],
+  origin: ['http://localhost:5173', 'https://6021-138-0-82-55.ngrok-free.app'],
   credentials: true,
 }
 const app = express()
@@ -311,8 +311,23 @@ async function createUserSession(userId, deviceData) {
   }
 }
 
-async function updateUserSession(userId, oldRefreshToken) {
+async function updateUserSession(oldRefreshToken) {
   try {
+    const storedToken = await Session.findOne({
+      where: { refreshToken: oldRefreshToken },
+      include: [{ model: User }],
+    })
+
+    if (!storedToken || !storedToken.User) {
+      throw new Error('Refresh token não encontrado ou usuário inválido')
+    }
+    const userId = storedToken.User.id
+    console.log('userId = ', userId)
+
+    jwt.verify(oldRefreshToken, process.env.REFRESH_SECRET, async (err) => {
+      if (err) return res.status(403).json({ message: 'Refresh token inválido' })
+    })
+
     const accessToken = jwt.sign(
       { userId },
       process.env.ACCESS_SECRET,
@@ -325,6 +340,8 @@ async function updateUserSession(userId, oldRefreshToken) {
       { expiresIn: '30d' }, // Expira em 30 dias
     )
 
+    console.log('Novo refreshToken: ', jwt.decode(refreshToken, process.env.REFRESH_SECRET))
+
     await Session.update(
       {
         accessToken: accessToken,
@@ -333,6 +350,10 @@ async function updateUserSession(userId, oldRefreshToken) {
       },
       { where: { refreshToken: oldRefreshToken, userId } },
     )
+
+    if (!accessToken || !refreshToken) {
+      return res.status(500).json({ message: 'Erro ao gerar tokens' })
+    }
 
     return { accessToken, refreshToken }
   } catch (error) {
@@ -370,24 +391,38 @@ app.post('/setLogin', async (req, res) => {
   try {
     let user = null
 
-    if (type === 'default') {
-      user = await User.findOne({ where: checkIfUserIsValid(identification) })
-      if (!user) {
-        user = {
-          passwordHash: '$2b$10$N1qzj6.0JxD6XKpxS5TzUOfQgY9jNTGeQdIzA29YVqHjtvUO7F7Pq',
+    switch (type) {
+      case 'traditional': {
+        user = await User.findOne({ where: checkIfUserIsValid(identification) })
+        if (!user) {
+          user = {
+            passwordHash: '$2b$10$N1qzj6.0JxD6XKpxS5TzUOfQgY9jNTGeQdIzA29YVqHjtvUO7F7Pq',
+          }
         }
+
+        const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
+        if (!isPasswordValid)
+          return res.status(400).json({ message: 'Usuário ou senha incorretos.' })
+        break
       }
 
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
-      if (!isPasswordValid) return res.status(400).json({ message: 'Usuário ou senha incorretos.' })
-    } else if (type === 'google') {
-      const decoded = jwt.verify(identification, 'GOOGLE_PUBLIC_KEY', {
-        algorithms: ['RS256'],
-      })
-      user = await User.findOne({ where: { email: decoded.email } })
-      if (!user) return res.status(400).json({ message: 'Usuário não encontrado.' })
-    } else {
-      return res.status(400).json({ message: 'Solicitação incorreta.' })
+      case 'google': {
+        const { OAuth2Client } = require('google-auth-library')
+        const client = new OAuth2Client(process.env.VITE_GCLIENT_LOGIN_ID)
+
+        const ticket = await client.verifyIdToken({
+          idToken: identification,
+          audience: process.env.VITE_GCLIENT_LOGIN_ID,
+        })
+        const payload = ticket.getPayload()
+        user = await User.findOne({ where: { email: payload.email } })
+        if (!user) return res.status(400).json({ message: 'Usuário não encontrado.' })
+        break
+      }
+
+      default: {
+        return res.status(400).json({ message: 'Solicitação incorreta.' })
+      }
     }
 
     const { accessToken, refreshToken } = await createUserSession(user.id, device)
@@ -409,54 +444,6 @@ app.post('/setLogin', async (req, res) => {
     res.status(200).json({ message: 'Login bem-sucedido!' })
   } catch (error) {
     console.error('Erro ao processar solicitação de getLogin:', error)
-    res.status(500).json({ message: 'Erro interno no servidor' })
-  }
-})
-
-// Gerar novo accessToken
-app.post('/refreshToken', async (req, res) => {
-  const refreshToken = req.cookies?.refreshToken
-  if (!refreshToken) return res.status(401).json({ message: 'Refresh token ausente' })
-
-  try {
-    // Busca do refresh token no banco
-    const storedToken = await Session.findOne({ where: { refreshToken } }) // Corrigido aqui
-    if (!storedToken)
-      return res.status(404).json({ message: 'Refresh token não encontrado na base de dados' })
-
-    // Verificando e decodificando o refresh token
-    jwt.verify(refreshToken, process.env.REFRESH_SECRET, async (err, decoded) => {
-      if (err) return res.status(403).json({ message: 'Refresh token inválido' })
-
-      const { accessToken, refreshToken: newRefreshToken } = await updateUserSession(
-        decoded.userId,
-        refreshToken,
-      ) // Garantir que a função seja assíncrona
-
-      // Verificando se os tokens foram gerados corretamente
-      if (!accessToken || !newRefreshToken) {
-        return res.status(500).json({ message: 'Erro ao gerar tokens' })
-      }
-
-      // Enviar os novos tokens como cookies
-      res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        maxAge: 15 * 60 * 1000, // 15 minutos
-      })
-
-      res.cookie('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
-      })
-
-      res.json({ message: 'Tokens renovados' })
-    })
-  } catch (error) {
-    console.log('Erro ao processar solicitação de refreshToken: ', error)
     res.status(500).json({ message: 'Erro interno no servidor' })
   }
 })
@@ -510,27 +497,41 @@ app.get('/getUserBasics', async (req, res) => {
 // Verificar se a sessão é válida
 app.get('/getUserSession', async (req, res) => {
   try {
-    const accessToken = req.cookies?.accessToken
+    let { accessToken, refreshToken } = req.cookies
 
     if (!accessToken) {
-      return res.status(401).json({ message: 'Token de acesso não informado.' })
+      if (!refreshToken) {
+        return res.status(401).json({ message: 'Nenhum token disponível.' })
+      }
+
+      ;({ accessToken, refreshToken } = await updateUserSession(refreshToken))
+
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 15 * 60 * 1000, // 15 minutos
+      })
+
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
+      })
     }
 
-    let decoded
-    try {
-      decoded = jwt.verify(accessToken, process.env.ACCESS_SECRET)
-    } catch (err) {
-      return res.status(401).json({ message: 'Token inválido ou expirado.' })
-    }
-
-    // Busca o usuário
-    console.log('userId: ', decoded.userId)
+    // Se já tem accessToken, verifica normalmente
+    const decoded = jwt.verify(accessToken, process.env.ACCESS_SECRET)
+    console.log('decoded = ', decoded)
     const user = await User.findByPk(decoded.userId)
-    if (!user) return res.status(401).json({ message: 'Usuário não encontrado.' })
+    if (!user) {
+      return res.status(401).json({ message: 'Usuário não encontrado.' })
+    }
 
     res.status(200).json({ message: 'Sessão válida.' })
   } catch (error) {
-    console.error('Erro ao verificar sessão:', error)
+    console.error('Erro ao processar solicitação de getUserSession:', error)
     res.status(500).json({ message: 'Erro interno do servidor.' })
   }
 })
@@ -542,7 +543,9 @@ app.post('/setSignupCode', async (req, res) => {
   try {
     const user = await User.findOne({ where: { email } })
     if (user) {
-      return res.status(400).json({ message: 'Este e-mail já foi usado.', errCode: 'emailInUse' })
+      return res
+        .status(400)
+        .json({ message: 'Este e-mail já foi usado.', details: { errCode: 'emailInUse' } })
     }
 
     const data = {
@@ -553,9 +556,12 @@ app.post('/setSignupCode', async (req, res) => {
     const emailSent = await sendEmail('signupSendCode', data)
 
     if (!emailSent) {
-      return res
-        .status(500)
-        .json({ message: 'Ocorreu um erro interno no servidor', errCode: 'emailSendError' })
+      return res.status(500).json({
+        message: 'Ocorreu um erro interno no servidor',
+        details: { errCode: 'emailSendError' },
+      })
+    } else {
+      return res.status(200).json({ message: 'seu pai' })
     }
   } catch (error) {
     console.error('Erro ao processar solicitação de setSignupCode:', error)
@@ -571,9 +577,10 @@ app.post('/setUser', async (req, res) => {
     const currentDate = new Date()
     const birthDateObj = new Date(birthdate)
     if (isNaN(birthDateObj.getTime()) > currentDate) {
-      return res
-        .status(400)
-        .json({ message: 'A data de nascimento deve ser válida.', errCode: 'invalidDatebirth' })
+      return res.status(400).json({
+        message: 'A data de nascimento deve ser válida.',
+        details: { errCode: 'invalidDatebirth' },
+      })
     }
 
     const [verifyEntry, usernameExists] = await Promise.all([
@@ -584,17 +591,17 @@ app.post('/setUser', async (req, res) => {
     if (!verifyEntry) {
       return res
         .status(400)
-        .json({ message: 'Código de verificação inválido.', errCode: 'invalidCode' })
+        .json({ message: 'Código de verificação inválido.', details: { errCode: 'invalidCode' } })
     } else if (new Date() > verifyEntry.expiresAt) {
       return res
         .status(400)
-        .json({ message: 'Código de verificação expirado.', errCode: 'invalidCode' })
+        .json({ message: 'Código de verificação expirado.', details: { errCode: 'invalidCode' } })
     }
 
     if (usernameExists) {
       return res
         .status(400)
-        .json({ message: 'Nome de usuário já usado.', errCode: 'usernameExists' })
+        .json({ message: 'Nome de usuário já usado.', details: { errCode: 'usernameExists' } })
     }
 
     const [passwordHash, sessionToken] = await Promise.all([bcrypt.hash(password, 10), uuidv4()])
@@ -611,7 +618,9 @@ app.post('/setUser', async (req, res) => {
     return res.status(201).json({ message: 'Usuário criado com sucesso', user })
   } catch (error) {
     console.error('Erro ao processar solicitação de setUser:', error)
-    return res.status(500).json({ message: 'Erro ao criar o usuário', errCode: 'internalError' })
+    return res
+      .status(500)
+      .json({ message: 'Erro ao criar o usuário', details: { errCode: 'internalError' } })
   }
 })
 
@@ -684,7 +693,9 @@ app.post('/setResetPassCode', async (req, res) => {
         .status(200)
         .json({ message: 'Código de redefinição gerado e e-mail enviado com sucesso' })
     } else {
-      return res.status(500).json({ message: 'Erro ao enviar e-mail', errCode: 'emailSendError' })
+      return res
+        .status(500)
+        .json({ message: 'Erro ao enviar e-mail', details: { errCode: 'emailSendError' } })
     }
   } catch (error) {
     console.error('Erro ao processar solicitação de setResetPassCode: ', error)
@@ -702,7 +713,9 @@ app.post('/getResetPassCode', async (req, res) => {
     })
 
     if (!resetEntry || new Date() > resetEntry.expiresAt) {
-      return res.status(400).json({ message: 'Código inválido ou expirado.' })
+      return res
+        .status(400)
+        .json({ message: 'Código inválido ou expirado.', details: { errCode: 'invalidCode' } })
     }
 
     res.status(200).json({ message: 'Código válido.' })
@@ -722,7 +735,9 @@ app.post('/setUserPassword', async (req, res) => {
     })
 
     if (!resetEntry || new Date() > resetEntry.expiresAt) {
-      return res.status(400).json({ message: 'Código inválido ou expirado.' })
+      return res
+        .status(400)
+        .json({ message: 'Código inválido ou expirado.', details: { errCode: 'invalidCode' } })
     }
 
     // Atualizar a senha do usuário
