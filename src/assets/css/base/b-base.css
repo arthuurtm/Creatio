@@ -68,10 +68,11 @@
   --game-text-container-bg: #111111;
   --menu: #000; /* Antes, 080808 */
   --mh-user-email: #b0b0b0;
+  --mh-user-email: #b0b0b0;
   --mh-options: #dcdcdc;
-  --mh-options-hover: #646464;
-  --navigator-li-hover: #5c5c5ca9;
-  --navigator-li-focus: #5c5c5cf1;
+  --mh-options-hover: #c0c0c0;
+  --navigator-li-hover: #50505093;
+  --navigator-li-focus: #505050f2;
   --form-group: #232323;
   --overlay-bg: #242d3494;
   --scroll-button: #ffffff1c;

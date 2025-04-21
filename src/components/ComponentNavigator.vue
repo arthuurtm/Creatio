@@ -31,22 +31,34 @@
               </div>
             </li>
 
-            <li v-if="!isAuthenticated" @click="navigateTo('Login')">
+            <li
+              v-if="!isAuthenticated"
+              @click="navigateTo('Login')"
+              :class="[selectedPage === 'Login' && 'selected']"
+            >
               <span class="material-symbols-outlined notranslate">login</span>
               <p>Entrar</p>
             </li>
 
-            <li @click="navigateTo('Home')">
+            <li @click="navigateTo('Home')" :class="[selectedPage === 'Home' && 'selected']">
               <span class="material-symbols-outlined notranslate">home</span>
               <p>Início</p>
             </li>
 
-            <li v-if="isAuthenticated" @click="navigateTo('Create')">
+            <li
+              v-if="isAuthenticated"
+              @click="navigateTo('Create')"
+              :class="[selectedPage === 'Create' && 'selected']"
+            >
               <span class="material-symbols-outlined notranslate">add_circle</span>
               <p>Criar</p>
             </li>
 
-            <li v-if="isAuthenticated" @click="navigateTo('Avatar')">
+            <li
+              v-if="isAuthenticated"
+              @click="navigateTo('Avatar')"
+              :class="[selectedPage === 'Avatar' && 'selected']"
+            >
               <span class="material-symbols-outlined notranslate">person</span>
               <p>Personagens</p>
             </li>
@@ -94,6 +106,7 @@ const profilePicture = computed(() => {
   return user.getProfilePicture
 })
 const navigatorIcon = ref('menu')
+const selectedPage = ref('')
 
 // Funções
 const handleIsMobile = () => {
@@ -103,6 +116,7 @@ const handleIsMobile = () => {
 const navigateTo = (page) => {
   console.log(`navigateTo() > page: ${page}`)
   router.push({ name: page })
+  selectedPage.value = page
   updateMenuState()
 }
 
