@@ -18,7 +18,7 @@
   grid-template-columns: 1fr;
   grid-template-rows: 50px auto;
   border-radius: 15px;
-  z-index: 5;
+  z-index: 10;
   background-color: var(--bg);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   color: var(--text);
@@ -29,6 +29,12 @@
     border-color 0.5s ease,
     height 0.3s ease,
     transform 0.3s ease;
+  max-width: 60%;
+}
+
+.dialog-main.loading {
+  min-width: 400px;
+  min-height: 200px;
 }
 
 .title-bar {
@@ -43,6 +49,7 @@
 .content {
   display: grid;
   grid: 2;
+  position: relative;
 }
 
 .title-bar .options {
@@ -81,6 +88,10 @@
   top: 1em;
 }
 
+.hide {
+  display: none;
+}
+
 @media (max-width: 600px) {
   .dialog-main {
     position: fixed;
@@ -95,6 +106,8 @@
     height: 0;
     height: calc-size(auto);
     interpolate-size: allow-keywords;
+    min-width: unset;
+    min-height: unset;
   }
 
   .dialog-shadow {

@@ -82,7 +82,7 @@
 
 <script>
 import { appTheme, get } from '@/functions/functions'
-import { useAppDynamicDialog, useUserStore } from '@/stores/store'
+import { useAppDynamicDialog, useUserStore } from '@/stores/dialog'
 import { computed } from 'vue'
 export default {
   name: 'DialogSettings',

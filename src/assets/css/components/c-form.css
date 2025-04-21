@@ -46,6 +46,8 @@
   overflow: hidden; /* Evita que o conteúdo transborde */
   min-height: 350px;
   animation: fadeInBlur 0.2s ease-out;
+  scrollbar-color: var(--bg) var(--bg);
+  scrollbar-width: thin;
 }
 
 .error-message {
@@ -207,9 +209,6 @@ hr {
   }
 
   .main-form-container {
-    border-radius: 0;
-    box-shadow: none;
-    /* padding: 0; */
     min-width: 30vh;
     border: none;
     width: unset;
@@ -261,15 +260,5 @@ hr {
 
   #logo {
     justify-self: center;
-  }
-}
-
-@keyframes moveToBottom {
-  from {
-    transform: translateY(-100%);
-  }
-
-  to {
-    transform: translateY(0);
   }
 }

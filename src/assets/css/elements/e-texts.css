@@ -1,6 +1,6 @@
 /* Elementos de texto, títulos e relacionados */
 .gradient {
-  background: linear-gradient(to right, #550451, #880a7d); /* Gradiente */
+  background: linear-gradient(to right, #1565ce, #ffffff);
   -webkit-mask-image: linear-gradient(black, black); /* Cria uma máscara no texto */
   -webkit-mask-clip: text; /* Aplica a máscara ao texto */
   mask-image: linear-gradient(black, black); /* Compatível com navegadores modernos */
@@ -21,5 +21,4 @@
 }
 
 .gradient#main {
-  -webkit-background: linear-gradient(#6b0566, #880a7d);
 }

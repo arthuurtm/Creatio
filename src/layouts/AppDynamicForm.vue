@@ -15,9 +15,7 @@
       </div>
     </transition>
 
-    <div v-if="isLoading" class="loading-overlay">
-      <div class="spinner"></div>
-    </div>
+    <CreateLoading v-if="isLoading" :full="true" />
 
     <div class="main-form-container">
       <div class="left">
@@ -80,12 +78,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useFormStore } from '@/stores/formStore'
-import { useAppDynamicDialog } from '@/stores/store'
+import { useFormStore } from '@/stores/form'
+import { useAppDynamicDialog } from '@/stores/dialog'
 import { useRouter } from 'vue-router'
-import CreateTextField from '@/components/elements/CreateTextField.vue'
-import CreateAnchor from '@/components/elements/CreateAnchor.vue'
-import CreateButton from '@/components/elements/CreateButton.vue'
 
 const props = defineProps({
   config: Object,
@@ -94,8 +89,6 @@ const props = defineProps({
   formFunctions: Object,
   redirectName: String,
 })
-
-console.log(props.formFunctions)
 
 const emit = defineEmits(['button-click'])
 
@@ -122,7 +115,7 @@ const currentStepData = computed(() => {
 const hasStepsData = computed(() => !!props.config?.steps)
 
 function submitForm() {
-  // Lógica de submissão do formulário
+  console.log('Submetendo formulário com os dados...')
 }
 
 function handleSettingsBox() {
@@ -130,8 +123,8 @@ function handleSettingsBox() {
 }
 
 function handleButtonClick(action) {
+  console.log('Executando função legada: ', formStore.getRequestedFunction())
   formStore.setRequestedFunction(action)
-  console.log('handleButtonClick() > action: ', formStore.getRequestedFunction())
 }
 
 function handleFunctionEvent(payload) {
@@ -164,6 +157,14 @@ function handleFunctionEvent(payload) {
     } else {
       handleButtonClick(action)
     }
+  }
+}
+
+function showToast(type, message, timeout) {
+  try {
+    toast[type](message, { timeout })
+  } catch (error) {
+    console.error('Erro ao exibir toast:', error)
   }
 }
 

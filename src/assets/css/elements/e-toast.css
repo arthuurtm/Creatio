@@ -1,0 +1,112 @@
+:root {
+  --toastification-color-success: #27ae60;
+  --toastification-color-error: #c0392b;
+  --toastification-color-info: #2980b9;
+  --toastification-color-warning: #ffad29;
+  --toastification-color-success-lines: #187940;
+  --toastification-color-error-lines: #9b1c1c;
+  --toastification-color-info-lines: #1c4b9b;
+  --toastification-color-warning-lines: #9b6c1c;
+  --toastification-color-text: #000;
+}
+
+:root[data-theme='dark'] {
+  --toastification-color-success: #0f6e37;
+  --toastification-color-error: #8a2116;
+  --toastification-color-info: #12517a;
+  --toastification-color-warning: #b67206;
+  --toastification-color-success-lines: #003b19;
+  --toastification-color-error-lines: #5c0f0f;
+  --toastification-color-info-lines: #0f2b4d;
+  --toastification-color-warning-lines: #5c4d0f;
+  --toastification-color-text: #fff;
+}
+
+/* Toast base */
+.Vue-Toastification__toast {
+  padding: 10px !important;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  color: var(--toastification-color-text);
+  min-height: 40px;
+  font-weight: 800px;
+}
+
+/* Tipos */
+.Vue-Toastification__toast--success {
+  background-color: var(--toastification-color-success);
+}
+
+.Vue-Toastification__toast--error {
+  background-color: var(--toastification-color-error);
+}
+
+.Vue-Toastification__toast--info {
+  background-color: var(--toastification-color-info);
+}
+
+.Vue-Toastification__toast--warning {
+  background-color: var(--toastification-color-warning);
+}
+
+/* Corpo */
+.Vue-Toastification__toast-body {
+  display: flex;
+  align-items: center;
+}
+
+/* Barra de progresso */
+.Vue-Toastification__progress-bar {
+  height: 3px;
+  border-radius: 5px;
+}
+
+/* Botão de fechar */
+.Vue-Toastification__close-button {
+  opacity: 1;
+  transition: opacity 0.3s;
+  background-color: transparent !important;
+}
+
+/* Sucesso */
+.Vue-Toastification__toast--success .Vue-Toastification__progress-bar,
+.Vue-Toastification__toast--success .Vue-Toastification__close-button {
+  background-color: var(--toastification-color-success-lines);
+  color: var(--toastification-color-success-lines);
+}
+
+/* Error */
+.Vue-Toastification__toast--error .Vue-Toastification__progress-bar,
+.Vue-Toastification__toast--error .Vue-Toastification__close-button {
+  background-color: var(--toastification-color-error-lines);
+  color: var(--toastification-color-error-lines);
+}
+
+/* Info */
+.Vue-Toastification__toast--info .Vue-Toastification__progress-bar,
+.Vue-Toastification__toast--info .Vue-Toastification__close-button {
+  background-color: var(--toastification-color-info-lines);
+  color: var(--toastification-color-info-lines);
+}
+
+/* Warning */
+.Vue-Toastification__toast--warning .Vue-Toastification__progress-bar,
+.Vue-Toastification__toast--warning .Vue-Toastification__close-button {
+  background-color: var(--toastification-color-warning-lines);
+  color: var(--toastification-color-warning-lines);
+}
+
+@media (max-width: 600px) {
+  .Vue-Toastification__toast {
+    width: 90vw;
+    max-width: 90vw;
+    margin: 0 auto;
+    top: 30px;
+    backdrop-filter: unset;
+  }
+
+  .Vue-Toastification__close-button {
+    display: none;
+  }
+}

@@ -32,7 +32,7 @@
   width: 1.4em;
   left: 0.2em;
   bottom: 0.2em;
-  background-color: var(--bg2);
+  background-color: #414141;
   border-radius: inherit;
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }

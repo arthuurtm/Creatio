@@ -1,7 +1,7 @@
 <template>
   <AppDynamicForm
+    ref="formRef"
     :config="formConfig"
-    :errorMessage="errorMessage"
     :isLoading="isLoading"
     :formFunctions="functions"
   />
@@ -9,17 +9,20 @@
 
 <script setup>
 import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
-import { useFormStore } from '@/stores/formStore'
+import { useFormStore } from '@/stores/form'
 import { computed, ref } from 'vue'
 import * as globalFunc from '@/functions/functions'
+import { useRouter } from 'vue-router'
+import { showToast } from '@/plugins/toast'
 
 const formStore = useFormStore()
 const formData = computed(() => formStore.formData)
+const router = useRouter()
 
-const errorMessage = ref('')
 const sentCode = ref(false)
 const isLoading = ref(false)
 let userData = ref({})
+const formRef = ref()
 
 // Form configuration
 const formConfig = {
@@ -118,7 +121,6 @@ const formConfig = {
 
 const functions = {
   prepareVerifyCode: async () => {
-    errorMessage.value = ''
     if (!sentCode.value) {
       isLoading.value = true
 
@@ -128,10 +130,10 @@ const functions = {
           route: `getUserBasics?identification=${encodeURIComponent(formData.value.identification)}`,
         })
 
-        if (res1.ok) {
+        if (res1.okay) {
           userData.value = res1
 
-          const res2 = await globalFunc.post(
+          await globalFunc.post(
             {
               type: 'database',
               route: 'setResetPassCode',
@@ -141,14 +143,14 @@ const functions = {
             },
           )
 
-          if (res2.ok) {
-            sentCode.value = true
-            formStore.setCurrentStep(formStore.getCurrentStep() + 1)
-          }
+          sentCode.value = true
+          formStore.setCurrentStep(formStore.getCurrentStep() + 1)
         }
       } catch (error) {
-        console.error('Erro:', error)
-        errorMessage.value = 'Ocorreu um erro interno'
+        showToast({
+          type: 'error',
+          message: error.message,
+        })
       } finally {
         isLoading.value = false
       }
@@ -156,15 +158,17 @@ const functions = {
   },
 
   resetPassword: async () => {
-    errorMessage.value = ''
     isLoading.value = true
     try {
       if (formData.value.passwd1 !== formData.value.passwd2) {
-        errorMessage.value = 'As senhas não coincidem.'
+        showToast({
+          type: 'error',
+          message: 'As senhas não coincidem.',
+        })
         return
       }
 
-      const response = await globalFunc.post(
+      await globalFunc.post(
         {
           type: 'database',
           route: 'setUserPassword',
@@ -176,13 +180,23 @@ const functions = {
         },
       )
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        errorMessage.value = `${errorData.message}`
-      }
+      showToast({
+        type: 'success',
+        message: 'Senha redefinida com sucesso!',
+        timeout: 5000,
+      })
+      setTimeout(() => {
+        router.push({ name: 'Login' })
+      }, 6000)
     } catch (error) {
-      console.error('Erro:', error)
-      errorMessage.value = 'Erro ao redefinir senha.'
+      showToast({
+        type: 'error',
+        message: error.message || 'Erro ao redefinir a senha.',
+      })
+
+      if (error.details.errCode === 'invalidCode') {
+        formStore.setCurrentStep(2)
+      }
     } finally {
       isLoading.value = false
     }

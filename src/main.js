@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 
 import App from './App.vue'
 import router from './router'
+import stores from './stores'
 
 import pinia from './plugins/pinia'
 import * as globalFunc from './functions/functions'

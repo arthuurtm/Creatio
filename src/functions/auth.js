@@ -1,16 +1,17 @@
 import { get, post, del } from './functions'
-import { useUserStore } from '@/stores/store'
+import { showToast } from '@/plugins/toast'
+import { useUserStore } from '@/stores/dialog'
 
 async function handleUserData() {
   try {
     const res = await get({ type: 'database', route: 'getUserBasics' })
 
-    if (res) {
+    if (res.details) {
       useUserStore().setUserData({
-        id: res.id,
-        name: res.nickname,
-        username: res.username,
-        email: res.email,
+        id: res.details.id,
+        name: res.details.nickname,
+        username: res.details.username,
+        email: res.details.email,
         profilePicture: null,
       })
       return true
@@ -27,7 +28,7 @@ async function handleAuthentication() {
   try {
     const res = await get({ type: 'database', route: 'getUserSession' })
 
-    if (!res.ok) {
+    if (!res.okay) {
       return await handleRefreshToken()
     }
     const userDataLoaded = await handleUserData()
@@ -46,7 +47,7 @@ async function handleRefreshToken() {
   try {
     const res = await post({ type: 'database', route: 'refreshToken' })
 
-    if (!res.ok) {
+    if (!res.okay) {
       await logout()
       return false
     }
@@ -67,6 +68,18 @@ export async function isAuthenticated() {
 }
 
 export async function logout() {
-  await del({ type: 'database', route: 'logout' })
-  useUserStore().clearUserData()
+  const res = await del({ type: 'database', route: 'logout' })
+  if (res.okay) {
+    useUserStore().clearUserData()
+    showToast({
+      type: 'success',
+      message: 'Você saiu da sua conta!',
+    })
+    return
+  } else {
+    showToast({
+      type: 'error',
+      message: res.message || 'Erro interno no servidor',
+    })
+  }
 }

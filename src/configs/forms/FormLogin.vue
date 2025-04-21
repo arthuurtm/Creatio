@@ -1,17 +1,17 @@
 <template>
-  <AppDynamicForm :config="formConfig" :errorMessage="errorMessage" :formFunctions="functions" />
+  <AppDynamicForm :config="formConfig" :formFunctions="functions" />
 </template>
 
 <script setup>
 import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
-import { useFormStore } from '@/stores/formStore'
+import { useFormStore } from '@/stores/form'
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import * as gfunctions from '@/functions/functions'
+import { showToast } from '@/plugins/toast'
 
 const formStore = useFormStore()
 const formData = computed(() => formStore.formData)
-const errorMessage = ref('')
 const router = useRouter()
 
 // Configurações do formulário
@@ -126,21 +126,40 @@ const functions = {
       router.push({ name: 'Home' })
     } catch (error) {
       console.error('Erro: ', error.message)
-      errorMessage.value = error.message
+      showToast({
+        type: 'error',
+        message: error.message,
+      })
     }
   },
 
   handleLogin: async () => {
-    errorMessage.value = ''
-
     try {
+      if (formData.value.password === '' || formData.value.password === undefined) {
+        showToast({
+          type: 'warning',
+          message: 'Digite uma senha!',
+          timeout: 2000,
+        })
+        return
+      }
+
+      if (formData.value.identification === '' || formData.value.identification === undefined) {
+        showToast({
+          type: 'warning',
+          message: 'Digite um nome de usuário ou e-mail!',
+          timeout: 2000,
+        })
+        return
+      }
+
       await gfunctions.post(
         {
           type: 'database',
           route: 'setLogin',
         },
         {
-          type: 'default',
+          type: 'traditional',
           identification: formData.value.identification,
           password: formData.value.password,
         },
@@ -148,8 +167,10 @@ const functions = {
 
       router.push({ name: 'Home' })
     } catch (error) {
-      console.error('Erro interno: ', error)
-      errorMessage.value = error.message
+      showToast({
+        type: 'error',
+        message: error.message,
+      })
     }
   },
 }

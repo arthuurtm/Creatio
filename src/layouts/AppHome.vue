@@ -1,26 +1,28 @@
 <script setup>
-import ComponentNavigator from '@/components/ComponentNavigator.vue';
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import ComponentNavigator from '@/components/ComponentNavigator.vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
   hiddenNavigator: Boolean,
 })
 
-const ComputedHiddenNavigator = computed(() => useRoute().meta.hiddenNavigator ?? props.hiddenNavigator)
+const ComputedHiddenNavigator = computed(
+  () => useRoute().meta.hiddenNavigator ?? props.hiddenNavigator,
+)
 </script>
 
 <template>
   <div class="app-container">
-
-    <ComponentNavigator :hidden="ComputedHiddenNavigator" />
+    <div class="navigator-container">
+      <ComponentNavigator :hidden="ComputedHiddenNavigator" />
+    </div>
 
     <div class="view-app">
       <router-view v-slot="{ Component }">
         <component :is="Component" />
       </router-view>
     </div>
-
   </div>
 </template>
 

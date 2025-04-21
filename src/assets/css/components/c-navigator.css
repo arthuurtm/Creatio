@@ -15,7 +15,7 @@
 .container .hide-nav {
   position: absolute;
   top: 20px;
-  left: 20px;
+  left: 30px;
   transform: translateY(-50%);
   font-size: 25px;
   cursor: pointer;
@@ -29,7 +29,6 @@
 }
 
 .nav {
-  z-index: 2;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-sizing: border-box;
@@ -37,7 +36,7 @@
   scrollbar-width: thin;
   scrollbar-color: var(--bg) var(--bg);
   transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  border-right: 1px solid var(--border);
+  /* border-right: 1px solid var(--border); */
   /* background-color: var(--menu); */
 }
 
@@ -95,10 +94,6 @@
   font-size: 24px;
 }
 
-.nav #user-info * {
-  line-height: unset;
-}
-
 @media (min-width: 601px) {
   .container {
     width: 100%;
@@ -106,11 +101,9 @@
   }
 
   .nav {
-    display: grid;
-    grid-column: 1;
     align-self: flex-start;
     height: 100%;
-    width: 240px;
+    /* width: 240px; */
     transition:
       width 0.5s ease,
       transform 0.5s ease;
@@ -118,16 +111,34 @@
 
   .nav .nav-content {
     margin-top: 60px;
+    padding: 15px;
   }
 
   .nav.minimized {
-    width: 60px;
+    /* width: 60px; */
+    width: fit-content;
+  }
+
+  .nav.minimized.hidden {
+    width: 1rem;
   }
 
   .nav .center ul {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
+  }
+
+  .nav .center ul li {
+    border-radius: 50px;
+  }
+
+  .nav .center ul li:hover {
+    font-variation-settings:
+      'FILL' 1,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
   }
 
   .nav .center ul li p {
@@ -141,7 +152,12 @@
 
   .nav.minimized .center ul li p {
     opacity: 0;
+    visibility: hidden;
     transform: translateX(-20px);
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    pointer-events: none;
   }
 
   .nav .center ul li span {
@@ -282,8 +298,8 @@
     align-items: center;
     background-color: var(--overlay-bg);
     opacity: 1;
+    z-index: 1;
     /* animation: fadeInBlur 0.3s ease both; */
-    z-index: 5;
   }
 
   .hide-nav {
@@ -310,7 +326,7 @@
     background-color: var(--menu);
     /* box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); */
     transition: transform 0.3s ease;
-    z-index: 6;
+    z-index: 5;
     display: flex;
     flex-direction: column;
     padding: 10px;
@@ -359,7 +375,7 @@
     justify-content: center;
   }
 
-  .nav #user-info img.profile-picture {
+  .nav #user-info img {
     position: unset;
     width: 40px;
     height: auto;

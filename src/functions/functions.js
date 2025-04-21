@@ -58,10 +58,11 @@ export function appTheme(toggle = false) {
 }
 
 class FormError extends Error {
-  constructor(message) {
+  constructor(message, details = {}) {
     super(message)
     this.name = ''
-    this.ok = false
+    this.okay = false
+    this.details = details
   }
 }
 
@@ -98,30 +99,25 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       const serverMessage = errorData.message || `Erro ${response.status} na requisição`
-      throw new FormError(serverMessage)
-
-      // throw new Error(
-      //   `Erro na requisição para ${endpoint.route}:
-      //   Status: ${response.status} (${statusMessage})
-      //   ${errorData.message ? `| Detalhes: ${errorData.message}` : ''}
-      //   ${errorData.errors ? `| Erros: ${JSON.stringify(errorData.errors)}` : ''}`,
-      // )
+      throw new FormError(serverMessage, errorData.details)
     }
 
     const res = response ? await response.json() : {}
-    res.ok = true
 
     console.log(`Requisição para ${endpoint.route} efetuada com sucesso. `, res)
-    return res
+
+    return { details: res, okay: true }
   } catch (error) {
-    console.error('Erro na requisição:', {
+    console.error(`Erro na requisição para ${endpoint.route}:`, {
       endpoint: endpoint.route,
       method: config?.method || 'GET',
       error: error.message,
-      stack: error.stack,
-      details: error,
+      details: error.details || error,
     })
-    throw new FormError(error.message)
+
+    if (error instanceof FormError) {
+      throw error
+    }
   }
 }
 

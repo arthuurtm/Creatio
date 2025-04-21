@@ -1,23 +1,20 @@
 <template>
-  <AppDynamicForm
-    :config="formConfig"
-    :errorMessage="errorMessage"
-    :isLoading="isLoading"
-    :formFunctions="functions"
-  />
+  <AppDynamicForm :config="formConfig" :isLoading="isLoading" :formFunctions="functions" />
 </template>
 
 <script setup>
 import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
-import { useFormStore } from '@/stores/formStore'
+import { useFormStore } from '@/stores/form'
 import { computed, watch, ref } from 'vue'
 import * as globalFunc from '@/functions/functions'
+import { useRouter } from 'vue-router'
+import { showToast } from '@/plugins/toast'
 
 const formStore = useFormStore()
 const formData = computed(() => formStore.formData)
 const nicknameValue = computed(() => formData.value.nickname)
+const router = useRouter()
 
-const errorMessage = ref('')
 const sentCode = ref(false)
 const isLoading = ref(false)
 
@@ -170,12 +167,11 @@ const formConfig = ref({
 
 const functions = {
   prepareVerifyCode: async () => {
-    errorMessage.value = ''
     if (!sentCode.value) {
       isLoading.value = true
 
       try {
-        const res = await globalFunc.post(
+        await globalFunc.post(
           {
             type: 'database',
             route: 'setSignupCode',
@@ -185,16 +181,13 @@ const functions = {
           },
         )
 
-        if (res.ok) {
-          sentCode.value = true
-          formStore.setCurrentStep(formStore.getCurrentStep() + 1)
-        } else {
-          const errorData = await res.json()
-          errorMessage.value = `${errorData.message}`
-        }
+        sentCode.value = true
+        formStore.setCurrentStep(formStore.getCurrentStep() + 1)
       } catch (error) {
-        console.error('Erro:', error)
-        errorMessage.value = 'Erro interno. Tente novamente mais tarde.'
+        showToast({
+          type: 'error',
+          message: error.message,
+        })
       } finally {
         isLoading.value = false
       }
@@ -204,15 +197,17 @@ const functions = {
   },
 
   signupUser: async () => {
-    errorMessage.value = ''
     try {
       if (formData.value.passwd1 !== formData.value.passwd2) {
-        errorMessage.value = 'As senhas não coincidem.'
+        showToast({
+          type: 'error',
+          message: 'As senhas não coincidem.',
+        })
         return
       }
 
       isLoading.value = true
-      const response = await globalFunc.post(
+      await globalFunc.post(
         {
           type: 'database',
           route: 'setUser',
@@ -227,20 +222,35 @@ const functions = {
         },
       )
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        if (errorData.errCode === 'invalidCode') {
-          formStore.setCurrentStep(3)
-        } else if (errorData.errCode === 'invalidBirthdate') {
-          formStore.setCurrentStep(2)
-        } else if (errorData.errCode === 'usernameExists') {
-          formStore.setCurrentStep(1)
-        }
-        errorMessage.value = `${errorData.message}`
-      }
+      showToast({
+        type: 'success',
+        message: 'Conta criada com sucesso! Aguarde um momento...',
+      })
+
+      await globalFunc.post(
+        {
+          type: 'database',
+          route: 'setLogin',
+        },
+        {
+          type: 'traditional',
+          identification: formData.value.username,
+          password: formData.value.passwd1,
+        },
+      )
+      router.push({ name: 'Home' })
     } catch (error) {
-      console.error('Erro:', error)
-      errorMessage.value = 'Erro interno. Tente novamente mais tarde.'
+      if (error.datails.errCode === 'invalidCode') {
+        formStore.setCurrentStep(3)
+      } else if (error.errCode === 'invalidBirthdate') {
+        formStore.setCurrentStep(2)
+      } else if (error.errCode === 'usernameExists') {
+        formStore.setCurrentStep(1)
+      }
+      showToast({
+        type: 'error',
+        message: error.message,
+      })
     } finally {
       isLoading.value = false
     }

@@ -15,6 +15,7 @@
 :root {
   --text: #000;
   --bg: #fff;
+  --bg2: #f0f4f9;
   --border: #efeded;
   --input-bg: #e9ecef;
   --input-text: #737c85;
@@ -24,12 +25,14 @@
   --confirm-button-hover: #2466ea;
   --destructive-button: #bb2a2a;
   --destructive-button-hover: #a23333;
-  --bg2: #dbdbdb;
+  /* --bg2: #dbdbdb; */
   --game-text-container-bg: #f8f8f8;
   --menu: #fff; /* Antes #fafafa */
   --mh-user-email: #535353;
   --mh-options: #000000;
   --mh-options-hover: #393939;
+  --navigator-li-hover: #c5c5c5a9;
+  --navigator-li-focus: #c5c5c5f1;
   --form-group: #dddddd;
   --overlay-bg: #121212a9;
   --scroll-button: #91919194;
@@ -53,6 +56,7 @@
 :root[data-theme='dark'] {
   --text: #ffffff;
   --bg: #000;
+  --bg2: #111116;
   --border: #181818;
   --input-bg: #2e2e2e;
   --input-text: #e0e0e0;
@@ -60,12 +64,14 @@
   --confirm-button-hover: #136dc2;
   --destructive-button: #a20202;
   --destructive-button-hover: #bb0b0b;
-  --bg2: #262626;
+  /* --bg2: #262626; */
   --game-text-container-bg: #111111;
   --menu: #000; /* Antes, 080808 */
   --mh-user-email: #b0b0b0;
   --mh-options: #dcdcdc;
   --mh-options-hover: #646464;
+  --navigator-li-hover: #5c5c5ca9;
+  --navigator-li-focus: #5c5c5cf1;
   --form-group: #232323;
   --overlay-bg: #242d3494;
   --scroll-button: #ffffff1c;
@@ -81,6 +87,16 @@
   --form-input: #1f1e1e;
   --form-bg-sub: #211f1f;
   --form-sub: #cbcbcb;
+}
+
+::-webkit-scrollbar {
+}
+
+::-webkit-scrollbar-thumb {
+  background: black;
+}
+
+::-webkit-scrollbar-track {
 }
 
 body {
@@ -109,8 +125,8 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  scrollbar-color: var(--text) var(--bg);
+  scrollbar-width: thin;
 }
 
 .app {
@@ -121,26 +137,4 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-}
-
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 9999;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 6px solid var(--input-bg);
-  border-top: 6px solid var(--input-text);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
 }

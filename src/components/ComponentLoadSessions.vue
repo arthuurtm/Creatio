@@ -1,96 +1,119 @@
 <template>
-  <div class="games-grid">
-    <div class="discovery" v-for="(window, index) in windows" :key="index" :id="'d_' + index">
-      <div class="title">
-        <b>
-          <h3 class="gradient upper">Jogos disponíveis</h3>
-        </b>
-      </div>
-      <div class="content">
-        <button class="btn symbolic scroll" @click="scroll(index, 'left')">
-          <span class="material-symbols-outlined">arrow_back_ios</span>
-        </button>
-        <div v-if="games.length > 0" class="window" :id="'w_' + index" :ref="'windowRefs_' + index">
-          <div v-for="game in games" :key="game.id" class="container gameCard">
-            <div class="title">
-              <p>{{ game.title }}</p>
-            </div>
+  <div class="ggrid">
+    <div class="title">
+      <b>
+        <h3 class="upper">Jogos disponíveis</h3>
+      </b>
+    </div>
 
-            <div class="banner">
-              <img
-                id="banner"
-                :src="`./public/${game.version}/settings/banner.png`"
-                alt="Banner do jogo"
-              />
-            </div>
+    <div class="content">
+      <CreateButton
+        @emitEvent="scrollLeft"
+        :buttons="[
+          {
+            icon: 'arrow_back_ios',
+            class: 'symbolic no-padding no-scalling',
+            id: 'left',
+            type: '',
+          },
+        ]"
+      />
 
-            <div class="uiOptions">
-              <div id="play">
-                <form @submit.prevent="playGame(game.version)">
-                  <button id="play-button" class="btn symbolic" type="submit">
-                    <span class="material-symbols-outlined">play_arrow</span>
-                  </button>
-                </form>
-              </div>
+      <div v-if="loading"><CreateLoading :class="loadCont" /></div>
+
+      <div class="sliding" v-else-if="games && games.length > 0" ref="scrollContainer">
+        <div v-for="game in games" :key="game.id" class="container gameCard">
+          <div class="title">
+            <p>{{ game.title }}</p>
+          </div>
+          <div class="banner">
+            <img id="banner" alt="Banner do jogo" />
+          </div>
+
+          <div class="uiOptions">
+            <div id="play">
+              <form @submit.prevent="playGame(game.version)">
+                <button id="play-button" class="btn symbolic" type="submit">
+                  <span class="material-symbols-outlined">play_arrow</span>
+                </button>
+              </form>
             </div>
           </div>
         </div>
-        <div v-else>Nada a mostrar.</div>
-        <button class="btn symbolic scroll" @click="scroll(index, 'right')">
-          <span class="material-symbols-outlined">arrow_forward_ios</span>
-        </button>
       </div>
+
+      <div v-else>
+        <CreateButton
+          :buttons="[
+            {
+              text: '🤔💭',
+              position: 'center',
+              class: 'symbolic no-padding no-scalling no-brightness',
+              id: 'noGameFound',
+              type: '',
+            },
+          ]"
+        />
+      </div>
+
+      <CreateButton
+        @emitEvent="scrollRight"
+        :buttons="[
+          {
+            position: 'left',
+            icon: 'arrow_forward_ios',
+            class: 'symbolic no-padding no-scalling',
+            id: 'right',
+            type: '',
+          },
+        ]"
+      />
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ViewGames',
+<script setup>
+import { ref, onMounted } from 'vue'
+import { get } from '@/functions/functions'
+import { useAppDynamicDialog, useUserStore } from '@/stores/dialog'
 
-  data() {
-    return {
-      games: [],
-      userId: sessionStorage.getItem('userId'),
-      windows: Array(1).fill({}),
-    }
-  },
-  methods: {
-    scroll(index, type) {
-      console.log(`scroll() > index: ${index}, type: ${type}`)
-      const windowRef = this.$refs[`windowRefs_${index}`]
-      switch (type) {
-        case 'left':
-          windowRef[index].scrollBy({
-            top: 0,
-            left: -200,
-            behavior: 'smooth',
-          })
-          break
+const games = ref([])
+const dynamicDialog = useAppDynamicDialog()
+const loading = ref(true)
+const scrollContainer = ref(null)
+const scrollAmount = 260
 
-        case 'right':
-          windowRef[index].scrollBy({
-            top: 0,
-            left: 200,
-            behavior: 'smooth',
-          })
-          break
-
-        default:
-          console.error('scroll() > tipo de scroll desconhecido.')
-      }
-    },
-    playGame(gameVersion) {
-      this.$globalFunc.hrefTo(`/run/${gameVersion}`)
-    },
-    loadGames() {
-      this.$globalFunc.get({ type: 'database', route: 'getGames' })
-    },
-  },
-  mounted() {
-    this.loadGames() // Carregar jogos ao iniciar o componente
-  },
+async function loadGames() {
+  try {
+    const data = await get({ type: 'database', route: 'getGames' })
+    console.log('Dados recebidos:', data)
+    // dynamicDialog.setDialog('DialogMessage', {
+    //   title: 'Log',
+    //   message: data,
+    // })
+    games.value = Array.isArray(data.details) ? data.details : []
+  } catch (error) {
+    console.error('Erro ao carregar jogos:', error)
+  } finally {
+    loading.value = false
+  }
 }
+
+function scrollLeft() {
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollLeft -= scrollAmount
+  }
+}
+
+function scrollRight() {
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollLeft += scrollAmount
+  }
+}
+
+onMounted(() => {
+  loadGames()
+})
 </script>
 
 <style scoped>

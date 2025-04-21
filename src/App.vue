@@ -2,7 +2,7 @@
 import { RouterView } from 'vue-router'
 import AppDynamicDialog from '@/layouts/AppDynamicDialog.vue'
 import { computed } from 'vue'
-import { useAppDynamicDialog } from '@/stores/store'
+import { useAppDynamicDialog } from '@/stores/dialog'
 import { appTheme } from '@/functions/functions'
 
 appTheme()

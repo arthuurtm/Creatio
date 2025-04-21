@@ -23,9 +23,9 @@
         <div class="center">
           <ul>
             <li v-if="isAuthenticated" id="user-info">
-              <span>
+              <div>
                 <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
-              </span>
+              </div>
               <div>
                 <p class="nickname">{{ userStore.name }}</p>
               </div>
@@ -42,7 +42,7 @@
             </li>
 
             <li v-if="isAuthenticated" @click="navigateTo('Create')">
-              <span class="material-symbols-outlined">add_circle</span>
+              <span class="material-symbols-outlined notranslate">add_circle</span>
               <p>Criar</p>
             </li>
 
@@ -71,7 +71,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { logout } from '@/functions/auth'
-import { useAppDynamicDialog, useUserStore } from '@/stores/store'
+import { useAppDynamicDialog, useUserStore } from '@/stores/dialog'
 
 // Stores e Router
 const userStore = useUserStore()
@@ -110,10 +110,10 @@ const handleLogout = () => {
   dynamicDialog.setDialog('DialogMessage', {
     title: 'Sair',
     message: 'Você quer mesmo sair?',
-    btn1: { text: 'Não', class: 'btn' },
+    btn1: { text: 'Não' },
     btn2: {
       text: 'Sim',
-      class: 'btn confirm',
+      class: 'confirm',
       action: () => {
         logout()
       },

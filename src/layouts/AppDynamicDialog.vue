@@ -1,12 +1,16 @@
 <script setup>
-import { useAppDynamicDialog } from '@/stores/store'
-import { computed, ref, watch } from 'vue'
+import { useAppDynamicDialog } from '@/stores/dialog'
+import { computed, ref, watch, defineAsyncComponent } from 'vue'
+import CreateLoading from '@/components/elements/CreateLoading.vue'
+
 const props = defineProps({
   component: String,
   title: String,
 })
 
 const show = ref(false)
+const loading = ref(true)
+const asyncComponent = ref(null)
 
 function close() {
   show.value = false
@@ -16,9 +20,6 @@ function close() {
 }
 
 let dialogStyle = 'default'
-if (props.component === 'DialogSettings') {
-  dialogStyle = 'menu'
-}
 
 const isVisible = computed(() => useAppDynamicDialog().isVisible)
 const showDialog = computed(() => isVisible.value || show.value)
@@ -30,6 +31,35 @@ watch(isVisible, (newValue) => {
     }, 100)
   }
 })
+
+watch(
+  () => props.component,
+  async (newComponent) => {
+    if (!newComponent) return
+
+    loading.value = true
+
+    asyncComponent.value = defineAsyncComponent({
+      loader: () => import(`@/configs/dialogs/${newComponent}.vue`),
+      timeout: 6000,
+      loadingComponent: CreateLoading,
+      onError(error, retry, fail, attempts) {
+        if (attempts <= 3) retry()
+        else fail()
+      },
+    })
+
+    // opcional: esperar o componente carregar (se quiser esconder loader depois)
+    try {
+      await asyncComponent.value.__asyncLoader()
+    } catch (err) {
+      console.error('Erro ao carregar componente:', err)
+    } finally {
+      loading.value = false
+    }
+  },
+  { immediate: true },
+)
 
 // onMounted(() => {
 //   window.addEventListener('keydown', close());
@@ -44,7 +74,7 @@ watch(isVisible, (newValue) => {
         class="dialog-main"
         :id="[dialogStyle === 'menu' && 'menuStyle']"
         ref="dialogRef"
-        :class="[show && 'active']"
+        :class="[show && 'active', loading && 'loading']"
       >
         <div class="title-bar">
           <div class="options">
@@ -59,7 +89,8 @@ watch(isVisible, (newValue) => {
           </div>
         </div>
         <div class="content">
-          <component :is="props.component" :key="props.component" @close="close" />
+          <CreateLoading v-if="loading" />
+          <component v-else :is="asyncComponent" :key="props.component" @close="close" />
         </div>
       </div>
     </transition>

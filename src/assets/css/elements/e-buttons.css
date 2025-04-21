@@ -70,9 +70,38 @@
   padding: 0;
 }
 
+.btn.no-brightness {
+  filter: unset;
+}
+
 .btn.symbolic.normal:hover {
   color: var(--form-normal-link);
 }
+
+.btn.neon {
+  float: left;
+  background: transparent;
+  outline: none;
+  transition: 400ms;
+}
+
+.btn.neon:hover {
+  /* border: 2px solid; */
+  box-shadow: 0 0 8px;
+}
+
+#discordButton .tooltip-container .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #5865f2;
+  cursor: pointer;
+}
+
+/* containers */
 
 .button-container {
   display: flex;
@@ -90,44 +119,23 @@
   margin-right: auto;
 }
 
+.group-button.center {
+  margin: 0 auto;
+}
+
 .sepButtons {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  padding: 5px;
 }
 
 .modal-buttons .btn {
   width: 100%;
 }
 
-#create-avatar-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 100;
-  width: 80px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20px;
-  background-color: var(--button);
-  color: var(--text);
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-#create-avatar-button:hover {
-  transform: scale(1.1);
-}
-
-#discordButton .tooltip-container .icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #5865f2;
-  cursor: pointer;
+@media (max-width: 600px) {
+  .sepButtons {
+    justify-content: space-between;
+  }
 }
