@@ -12,7 +12,7 @@ import { showToast } from '@/plugins/toast'
 const store = inject('stores')
 const formStore = store.form
 const formData = formStore.getFormData
-const nicknameValue = computed(() => formData.value.nickname)
+const nicknameValue = computed(() => formData.nickname)
 const router = useRouter()
 
 const sentCode = ref(false)
@@ -132,7 +132,7 @@ const formConfig = ref({
           type: 'password',
           name: 'password',
           model: 'passwd1',
-          id: 'psswd1',
+          id: 'passwd1',
           label: 'Sua senha',
           placeholder: 'Digite uma senha BEM segura!',
           required: true,
@@ -141,7 +141,7 @@ const formConfig = ref({
           type: 'password',
           name: 'passwordConfirm',
           model: 'passwd2',
-          id: 'psswd2',
+          id: 'passwd2',
           label: 'Confirme sua senha',
           placeholder: 'Re-digite sua senha!',
           required: true,
@@ -177,12 +177,12 @@ const functions = {
             route: 'setSignupCode',
           },
           {
-            email: formData.value.email,
+            email: formData.email,
           },
         )
 
         sentCode.value = true
-        formStore.setCurrentStep(formStore.getCurrentStep() + 1)
+        formStore.setCurrentStep(formStore.getCurrentStep + 1)
       } catch (error) {
         showToast({
           type: 'error',
@@ -192,13 +192,13 @@ const functions = {
         isLoading.value = false
       }
     } else {
-      formStore.setCurrentStep(formStore.getCurrentStep() + 1)
+      formStore.setCurrentStep(formStore.getCurrentStep + 1)
     }
   },
 
   signupUser: async () => {
     try {
-      if (formData.value.passwd1 !== formData.value.passwd2) {
+      if (formData.passwd1 !== formData.passwd2) {
         showToast({
           type: 'error',
           message: 'As senhas não coincidem.',
@@ -213,12 +213,12 @@ const functions = {
           route: 'setUser',
         },
         {
-          nickname: formData.value.nickname,
-          username: formData.value.username,
-          email: formData.value.email,
-          birthdate: formData.value.birthdate,
-          password: formData.value.passwd1,
-          verificationCode: formData.value.verifyCode,
+          nickname: formData.nickname,
+          username: formData.username,
+          email: formData.email,
+          birthdate: formData.birthdate,
+          password: formData.passwd1,
+          verificationCode: formData.verifyCode,
         },
       )
 
@@ -234,18 +234,20 @@ const functions = {
         },
         {
           type: 'traditional',
-          identification: formData.value.username,
-          password: formData.value.passwd1,
+          identification: formData.username,
+          password: formData.passwd1,
         },
       )
       router.push({ name: 'Home' })
     } catch (error) {
-      if (error.datails.errCode === 'invalidCode') {
+      if (error.details?.errCode === 'invalidCode') {
         formStore.setCurrentStep(3)
-      } else if (error.errCode === 'invalidBirthdate') {
+      } else if (error.details?.errCode === 'invalidBirthdate') {
         formStore.setCurrentStep(2)
-      } else if (error.errCode === 'usernameExists') {
+      } else if (error.details?.errCode === 'usernameExists') {
         formStore.setCurrentStep(1)
+      } else {
+        console.error(error)
       }
       showToast({
         type: 'error',

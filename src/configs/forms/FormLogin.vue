@@ -4,14 +4,14 @@
 
 <script setup>
 import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
-import { onMounted, inject, computed } from 'vue'
+import { onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import * as gfunctions from '@/functions/functions'
 import { showToast } from '@/plugins/toast'
 
 // Stores e router
 const store = inject('stores')
-const formData = computed(() => store.form.getFormData)
+const formData = store.form.getFormData
 const router = useRouter()
 
 // Configurações do formulário
@@ -135,7 +135,7 @@ const functions = {
 
   handleLogin: async () => {
     try {
-      if (formData.value.password === '' || formData.value.password === undefined) {
+      if (formData.password === '' || formData.password === undefined) {
         showToast({
           type: 'warning',
           message: 'Digite uma senha!',
@@ -144,7 +144,7 @@ const functions = {
         return
       }
 
-      if (formData.value.identification === '' || formData.value.identification === undefined) {
+      if (formData.identification === '' || formData.identification === undefined) {
         showToast({
           type: 'warning',
           message: 'Digite um nome de usuário ou e-mail!',
@@ -160,8 +160,8 @@ const functions = {
         },
         {
           type: 'traditional',
-          identification: formData.value.identification,
-          password: formData.value.password,
+          identification: formData.identification,
+          password: formData.password,
         },
       )
 

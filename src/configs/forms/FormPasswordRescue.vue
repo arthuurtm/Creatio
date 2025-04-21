@@ -127,11 +127,11 @@ const functions = {
       try {
         const res1 = await globalFunc.get({
           type: 'database',
-          route: `getUserBasics?identification=${encodeURIComponent(formData.value.identification)}`,
+          route: `getUserBasics?identification=${encodeURIComponent(formData.identification)}`,
         })
 
         if (res1.okay) {
-          userData.value = res1
+          userData.value = res1.details
 
           await globalFunc.post(
             {
@@ -144,7 +144,7 @@ const functions = {
           )
 
           sentCode.value = true
-          formStore.setCurrentStep(formStore.getCurrentStep() + 1)
+          formStore.setCurrentStep(formStore.getCurrentStep + 1)
         }
       } catch (error) {
         showToast({
@@ -160,7 +160,7 @@ const functions = {
   resetPassword: async () => {
     isLoading.value = true
     try {
-      if (formData.value.passwd1 !== formData.value.passwd2) {
+      if (formData.passwd1 !== formData.passwd2) {
         showToast({
           type: 'error',
           message: 'As senhas não coincidem.',
@@ -175,8 +175,8 @@ const functions = {
         },
         {
           userId: userData.value.id,
-          resetToken: formData.value.verifyCode,
-          newPassword: formData.value.passwd1,
+          resetToken: formData.verifyCode,
+          newPassword: formData.passwd1,
         },
       )
 
