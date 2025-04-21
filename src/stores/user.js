@@ -1,45 +1,11 @@
-// src/stores/store.js
 import { defineStore } from 'pinia'
-
-export const useAppDynamicDialog = defineStore('appDynamicDialog', {
-  state: () => ({
-    isVisible: false,
-    component: '',
-    title: 'Diálogo',
-    data: {},
-  }),
-  actions: {
-    show() {
-      this.isVisible = true
-    },
-
-    close() {
-      this.isVisible = false
-      this.component = ''
-      this.data = {}
-    },
-
-    setDialog(component, data = {}) {
-      console.log(
-        `store.js() > useAppDynamic() > setDialog(component: ${component}, data: ${data})`,
-      )
-      if (data) {
-        this.data = data
-        this.title = data.title
-      }
-      this.component = component
-      this.show()
-    },
-  },
-})
-
 export const useUserStore = defineStore('user', {
   state: () => ({
     id: '',
     name: '',
     username: '',
     email: '',
-    profilePicture: '/src/data/default/profile-pic.png',
+    profilePicture: '/src/data/default/profile-3.png',
     additionalData: {},
     isAuth: false,
   }),
@@ -49,7 +15,7 @@ export const useUserStore = defineStore('user', {
       this.name = userData.name
       this.username = userData.username
       this.email = userData.email
-      this.profilePicture = userData.profilePicture || '/src/data/default/profile-pic.png'
+      this.profilePicture = userData.profilePicture || '/src/data/default/profile-3.png'
       this.additionalData = userData.additionalData || {}
       this.isAuth = true
     },

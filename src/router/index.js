@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useFormStore } from '@/stores/formStore'
+import { useFormStore } from '@/stores/form'
 import { isAuthenticated } from '@/functions/auth'
 
 // Errors
@@ -17,8 +17,7 @@ import ViewGameRun from '@/views/ViewGameRun.vue'
 import ViewHome from '@/views/ViewHome.vue'
 
 // Layouts
-import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
-import AppMain from '@/layouts/AppMain.vue'
+import AppMain from '@/layouts/AppHome.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -91,22 +90,18 @@ const router = createRouter({
 // Router Guard
 router.beforeEach(async (to, from, next) => {
   const isLoggedIn = await isAuthenticated()
-  console.log('Vue Router Guard() > isLoggedIn? ', isLoggedIn)
 
   if (to.meta.requiresAuth && !isLoggedIn) {
-    console.log('Vue Router > situation: 1')
     next({ name: 'Login', query: { redirect: to.name } })
   } else if ((to.name === 'Login' || to.name === 'Main') && isLoggedIn) {
-    console.log('Vue Router > situation: 2')
     next({ name: 'Home' })
   } else {
-    console.log('Vue Router > situation: 3')
     next()
   }
 })
 
 router.beforeEach((to, from, next) => {
-  useFormStore().resetCriticalValues()
+  useFormStore().$reset()
   next()
 })
 

@@ -1,4 +1,4 @@
-import { useUserStore, useAppDynamicDialog } from '@/stores/store'
+import { useUserStore, useAppDynamicDialog } from '@/stores/dialog'
 
 export default {
   install(app) {
