@@ -1,0 +1,141 @@
+/* Estilos básicos para todos os botões */
+.btn {
+  display: inline-block;
+  width: auto;
+  padding: 12px 18px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 5px;
+  color: var(--text);
+  background-color: transparent;
+  text-align: center;
+  border: 1px solid var(--default-button);
+  opacity: 1;
+  /* transition:
+    opacity 0.3s ease,
+    margin-left 0.5s ease,
+    filter 0.3s ease; */
+}
+
+.btn:hover {
+  filter: brightness(110%);
+}
+
+.btn.destructive {
+  border: 3px dotted var(--destructive-button);
+}
+
+.btn.cancel {
+  border: 1px solid var(--destructive-button);
+}
+
+.btn.cancel:hover {
+  border: 1px solid var(--destructive-button-hover);
+}
+
+.btn.confirm {
+  color: #fff;
+  border: 1px solid var(--confirm-button);
+  background-color: var(--confirm-button);
+}
+
+.btn.confirm:hover {
+  background-color: var(--confirm-button-hover);
+}
+
+.btn.symbolic {
+  /* padding: 10px; */
+  border: none;
+  border-radius: 30px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn.symbolic:hover {
+  transform: scale(1.05);
+}
+
+.btn.symbolic.no-scalling:hover {
+  transform: unset;
+}
+
+.btn.symbolic.scroll {
+  background-color: var(--scroll-button);
+  margin: 20px;
+}
+
+.btn.symbolic.no-padding {
+  padding: 0;
+}
+
+.btn.no-brightness {
+  filter: unset;
+}
+
+.btn.symbolic.normal:hover {
+  color: var(--form-normal-link);
+}
+
+.btn.neon {
+  float: left;
+  background: transparent;
+  outline: none;
+  transition: 400ms;
+}
+
+.btn.neon:hover {
+  /* border: 2px solid; */
+  box-shadow: 0 0 8px;
+}
+
+#discordButton .tooltip-container .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #5865f2;
+  cursor: pointer;
+}
+
+/* containers */
+
+.button-container {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.group-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.group-button.left {
+  margin-right: auto;
+}
+
+.group-button.center {
+  margin: 0 auto;
+}
+
+.sepButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 5px;
+}
+
+.modal-buttons .btn {
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .sepButtons {
+    justify-content: space-between;
+  }
+}

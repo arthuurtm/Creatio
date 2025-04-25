@@ -1,31 +1,35 @@
 import os
+import base64
+from requests import HTTPError
 from flask_cors import CORS
 from flask import Flask, request, jsonify, render_template_string, make_response
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-import base64
 from email.message import EmailMessage
-from oauth2client.client import Credentials
-from f_getAutorization import get_stored_credentials, store_credentials, init_db
-init_db()
+from dotenv import load_dotenv
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+import webbrowser
 
-admin_id = os.getenv('EMAIL_ID')
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+
+# Configurações do OAuth
+SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
 email_from = os.getenv('EMAIL_FROM')
+
+# Configuração do Flask
 app = Flask(__name__)
-CORS(app, origins=[
-    "http://localhost:5173"
-])
+CORS(app, origins=["http://localhost:3000", "https://6021-138-0-82-55.ngrok-free.app"])
 
-def load_credentials(admin_id):
-    stored_credentials = get_stored_credentials(admin_id)
-    if not stored_credentials:
-        raise Exception(f"Nenhuma credencial encontrada para o usuário {admin_id}.")
-    return Credentials.new_from_json(stored_credentials.to_json())
+# Variável global para armazenar o serviço autenticado
+service = None
 
+# Função para autenticar com o Google OAuth
+def authenticate_google():
+    flow = InstalledAppFlow.from_client_secrets_file('./auth/credentials.json', SCOPES)
+    creds = flow.run_local_server(port=8080)
+    return build('gmail', 'v1', credentials=creds)
 
 # Função para carregar e renderizar um modelo HTML
 def load_template(structure_name, variables):
-    """Carrega e renderiza o modelo HTML correspondente."""
     templates_path = os.path.join(os.getcwd(), "templates/")
     template_file = os.path.join(templates_path, f"{structure_name}.html")
 
@@ -35,96 +39,81 @@ def load_template(structure_name, variables):
     with open(template_file, "r", encoding="utf-8") as file:
         template_content = file.read()
 
-    # Renderiza o template usando as variáveis fornecidas
     return render_template_string(template_content, **variables)
-
 
 # Função para criar o conteúdo do e-mail
 def create_email_content(structure_name, variables):
+    if not variables:
+        raise ValueError(f"Erro: Nenhuma variável fornecida para o template '{structure_name}'.")
+
     try:
         return load_template(structure_name, variables)
     except Exception as e:
         raise ValueError(f"Erro ao criar conteúdo do e-mail: {e}")
 
 
-# Funções de envio e criação de rascunho
-def gmail_create_draft(admin_id, structure_name, variables):
-    try:
-        creds = load_credentials(admin_id)
-        service = build("gmail", "v1", credentials=creds)
+# Função de envio de e-mail usando a API do Gmail com OAuth2
+def send_email_function(variables):
+    global service
+    if not service:
+        raise ValueError("O serviço de e-mail não foi autenticado. Chame /authenticate primeiro.")
 
-        # Gera o conteúdo do e-mail
+    print(f"Dados em variables: {variables}")
+
+    try:
+        structure_name = variables.get("structure_name")
         email_content = create_email_content(structure_name, variables)
 
-        message = EmailMessage()
-        message.set_content(email_content, subtype="html")
-        message["To"] = variables.get("to")
-        message["From"] = variables.get("from")
-        message["Subject"] = variables.get("subject")
+        msg = EmailMessage()
+        msg.set_content(email_content, subtype="html")
+        msg["To"] = variables.get("to")
+        msg["From"] = email_from
+        msg["Subject"] = variables.get("subject")
+        secure_msg = {'raw': base64.urlsafe_b64encode(msg.as_bytes()).decode()}
 
-        encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-        create_message = {"message": {"raw": encoded_message}}
+        message = service.users().messages().send(userId="me", body=secure_msg).execute()
+        print(f'Sent message to {variables.get("to")}. ID: {message["id"]}')
 
-        draft = service.users().drafts().create(userId="me", body=create_message).execute()
-        return {"status": "success", "draft_id": draft["id"]}
-    except HttpError as error:
-        return {"status": "error", "message": str(error)}
+        return {"status": 200, "message": "E-mail enviado com sucesso!"}
 
+    except HTTPError as e:
+        print(f'Ocorreu um erro HTTP: {e}')
+        raise e
 
-def gmail_send_message(admin_id, structure_name, variables):
-    try:
-        creds = load_credentials(admin_id)
-        service = build("gmail", "v1", credentials=creds)
-
-        email_content = create_email_content(structure_name, variables)
-
-        message = EmailMessage()
-        message.set_content(email_content, subtype="html")
-        message["To"] = variables.get("to")
-        message["From"] = email_from
-        message["Subject"] = variables.get("subject")
-
-        encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-        create_message = {"raw": encoded_message}
-
-        sent_message = service.users().messages().send(userId="me", body=create_message).execute()
-        return {"status": 200, "message_id": sent_message["id"]}
-    except HttpError as error:
-        return {"status": 500, "message": str(error)}
+    except Exception as e:
+        print(f'Ocorreu um erro não especificado: {e}')
+        raise e
 
 
-# Endpoints
-@app.route("/create-draft", methods=["POST, GET"])
-def create_draft():
-    data = request.json
-    user_id = data.get("user_id")
-    structure_name = data.get("structure_name")
-    variables = data.get("variables")
-    result = gmail_create_draft(admin_id, structure_name, variables)
-    return jsonify(result)
-
-
-@app.route("/send-email", methods=["POST", "GET"])
+# Rota para envio de e-mails
+@app.route("/send-email", methods=["POST"])
 def send_email():
-    if request.method == "GET":
-        structure_name = request.args.get("structure_name")
-        variables = request.args.to_dict(flat=True)
-    else:  # POST
-        data = request.json
-        structure_name = data.get("structure_name")
-        variables = data.get("variables")
+    data = request.json
+    variables = data.get("variables")
 
     try:
-        # Usa o token como parte do conteúdo do e-mail
-        result = gmail_send_message(admin_id, structure_name, variables)
-        return make_response(jsonify({'message': 'E-mail enviado com sucesso.', 'result': result}), 200)
+        send_email_function(variables)
+        return make_response(jsonify({'message': 'E-mail enviado com sucesso.'}), 200)
     except Exception as e:
         print(f"Erro ao enviar e-mail: {e}")
         return make_response(jsonify({'message': 'Erro ao enviar e-mail.', 'error': str(e)}), 500)
 
 
+# Rota para autenticação OAuth
+@app.route("/authenticate", methods=["GET"])
+def authenticate():
+    global service  # Agora 'service' será modificada corretamente
+    try:
+        service = authenticate_google()  # Salva o serviço autenticado
+        return jsonify({"message": "Autenticação realizada com sucesso!"})
+    except Exception as e:
+        return jsonify({"error": f"Erro na autenticação: {e}"}), 500
+
+
+# Inicia o servidor
 if __name__ == "__main__":
     port = 3001
     print('.::: MAIL SERVICE BACKEND :::.')
     print(f'Servidor rodando na porta {port}')
-    app.run(port=3001, debug=False)
+    app.run(port=port, debug=True)
+    webbrowser.open(f'https://localhost:{port}/authenticate')

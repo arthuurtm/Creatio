@@ -1,0 +1,141 @@
+/* color palette from <https://github.com/vuejs/theme> */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('/src/assets/css/elements/e-_import.css');
+
+/* Outras configurações */
+:root {
+  --form-field-text-hover: #1778fb;
+  --font: 'Noto Sans';
+  --global-device-desktop-resolution: 1024px;
+  --global-device-mobile-resolution: 728px;
+}
+
+/* Tema claro */
+:root {
+  --text: #000;
+  --bg: #fff;
+  --bg2: #f0f4f9;
+  --border: #efeded;
+  --input-bg: #e9ecef;
+  --input-text: #737c85;
+  --default-button: #7e7e7e;
+  --default-button-hover: #757575;
+  --confirm-button: #205edc;
+  --confirm-button-hover: #2466ea;
+  --destructive-button: #bb2a2a;
+  --destructive-button-hover: #a23333;
+  /* --bg2: #dbdbdb; */
+  --game-text-container-bg: #f8f8f8;
+  --menu: #fff; /* Antes #fafafa */
+  --mh-user-email: #535353;
+  --mh-options: #000000;
+  --mh-options-hover: #393939;
+  --navigator-li-hover: #c5c5c5a9;
+  --navigator-li-focus: #c5c5c5f1;
+  --form-group: #dddddd;
+  --overlay-bg: #121212a9;
+  --scroll-button: #91919194;
+  --scroll-button-hover: #ffffff85;
+  --discovery-play-button: #31a526;
+
+  --form-bg: #f0f4f9;
+  --form: #fff;
+  --form-critical-link: #a20202;
+  --form-normal-link: #0066ff;
+  --form-normal-link-hover: #0066ff;
+  --form-bg_f: #f7f7f7;
+  --form-input: #ffffff;
+  --form-bg-sub: #f1f1f1;
+  --form-sub: #666;
+  --form-err-border: #7c0000;
+  --form-err: #a52f2f;
+}
+
+/* Tema escuro */
+:root[data-theme='dark'] {
+  --text: #ffffff;
+  --bg: #000;
+  --bg2: #111116;
+  --border: #181818;
+  --input-bg: #2e2e2e;
+  --input-text: #e0e0e0;
+  --confirm-button: #105faa;
+  --confirm-button-hover: #136dc2;
+  --destructive-button: #a20202;
+  --destructive-button-hover: #bb0b0b;
+  /* --bg2: #262626; */
+  --game-text-container-bg: #111111;
+  --menu: #000; /* Antes, 080808 */
+  --mh-user-email: #b0b0b0;
+  --mh-user-email: #b0b0b0;
+  --mh-options: #dcdcdc;
+  --mh-options-hover: #c0c0c0;
+  --navigator-li-hover: #50505093;
+  --navigator-li-focus: #505050f2;
+  --form-group: #232323;
+  --overlay-bg: #242d3494;
+  --scroll-button: #ffffff1c;
+  --scroll-button-hover: #ffffff2c;
+  --discovery-play-button: #075500;
+
+  --form-bg: #111116;
+  --form: #000;
+  --form-critical-link: #bb0b0b;
+  --form-normal-link: #0f67ec;
+  --form-normal-link-hover: #0066ff;
+  --form-bg_f: #151414;
+  --form-input: #1f1e1e;
+  --form-bg-sub: #211f1f;
+  --form-sub: #cbcbcb;
+}
+
+::-webkit-scrollbar {
+}
+
+::-webkit-scrollbar-thumb {
+  background: black;
+}
+
+::-webkit-scrollbar-track {
+}
+
+body {
+  height: 100vh;
+  width: 100vw;
+  color: var(--text);
+  background: var(--bg);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scrollbar-color: var(--text) var(--bg);
+  scrollbar-width: thin;
+}
+
+.app {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

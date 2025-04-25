@@ -1,0 +1,25 @@
+.minComponentContainer {
+  position: fixed;
+  display: flex;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  animation: fadeIn 0.3s ease both;
+  z-index: 5;
+}
+
+.focus-element {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--overlay-bg);
+  visibility: visible;
+  opacity: 1;
+  z-index: 6;
+}

@@ -1,0 +1,128 @@
+.dialog-shadow {
+  position: fixed;
+  display: flex;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  min-height: 100vh; /* Alterado para min-height */
+  justify-content: center;
+  align-items: center;
+  background-color: var(--overlay-bg);
+  opacity: 1;
+  /* animation: fadeInBlur 0.3s ease both; */
+  z-index: 5;
+}
+
+.dialog-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 50px auto;
+  border-radius: 15px;
+  z-index: 10;
+  background-color: var(--bg);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: var(--text);
+  /* animation: moveToCenter 0.6s ease forwards; */
+  transition:
+    color 0.5s ease,
+    background-color 0.5s ease,
+    border-color 0.5s ease,
+    height 0.3s ease,
+    transform 0.3s ease;
+  max-width: 60%;
+}
+
+.dialog-main.loading {
+  min-width: 400px;
+  min-height: 200px;
+}
+
+.title-bar {
+  display: grid;
+  grid-row: 1;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 10px;
+  position: relative;
+}
+
+.content {
+  display: grid;
+  grid: 2;
+  position: relative;
+}
+
+.title-bar .options {
+  display: flex;
+  flex-direction: row;
+  /* justify-content: space-between; */
+  align-items: center;
+  justify-content: center;
+}
+
+.title-bar .options p {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+/* .title-bar .options #close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text);
+  cursor: pointer;
+  background-color: var(--bg2);
+  border-radius: 15px;
+} */
+
+.title-bar .options #close {
+  all: unset;
+  font-weight: bold;
+  align-self: flex-start;
+  cursor: pointer;
+  position: absolute;
+  right: 1em;
+  top: 1em;
+}
+
+.hide {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .dialog-main {
+    position: fixed;
+    border-radius: unset;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    /* transform: translateY(100%); */
+    bottom: calc(env(safe-area-inset-bottom, 100px));
+    left: 0;
+    right: 0;
+    max-width: unset;
+    height: 0;
+    height: calc-size(auto);
+    interpolate-size: allow-keywords;
+    min-width: unset;
+    min-height: unset;
+  }
+
+  .dialog-shadow {
+    transition: unset;
+  }
+
+  .dialog-main.active {
+    height: auto;
+  }
+
+  .title-bar {
+    order: 2;
+  }
+
+  .content {
+    order: 1;
+  }
+}

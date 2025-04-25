@@ -1,0 +1,24 @@
+/* Elementos de texto, títulos e relacionados */
+.gradient {
+  background: linear-gradient(to right, #1565ce, #ffffff);
+  -webkit-mask-image: linear-gradient(black, black); /* Cria uma máscara no texto */
+  -webkit-mask-clip: text; /* Aplica a máscara ao texto */
+  mask-image: linear-gradient(black, black); /* Compatível com navegadores modernos */
+  mask-clip: text;
+  color: transparent; /* Faz o fundo aparecer através do texto */
+}
+
+@-moz-document url-prefix() {
+  .gradient {
+    background-clip: text;
+  }
+}
+
+/* Variante para texto em maiúsculas */
+.gradient.upper {
+  text-transform: uppercase;
+  font-size: 20px;
+}
+
+.gradient#main {
+}
