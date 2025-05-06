@@ -1,9 +1,9 @@
 <template>
-  <AppDynamicForm :config="formConfig" :isLoading="isLoading" :formFunctions="functions" />
+  <ComponentForm :config="formConfig" :isLoading="isLoading" :formFunctions="functions" />
 </template>
 
 <script setup>
-import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
+import ComponentForm from '@/components/ComponentForm.vue'
 import { computed, watch, ref, inject } from 'vue'
 import * as globalFunc from '@/functions/functions'
 import { useRouter } from 'vue-router'

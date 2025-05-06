@@ -1,10 +1,10 @@
 <template>
-  <AppDynamicForm :config="formConfig" :formFunctions="functions" />
+  <ComponentForm :config="formConfig" :isLoading="isLoading" :formFunctions="functions" />
 </template>
 
 <script setup>
-import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
-import { onMounted, inject } from 'vue'
+import ComponentForm from '@/components/ComponentForm.vue'
+import { onMounted, inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import * as gfunctions from '@/functions/functions'
 import { showToast } from '@/plugins/toast'
@@ -13,6 +13,7 @@ import { showToast } from '@/plugins/toast'
 const store = inject('stores')
 const formData = store.form.getFormData
 const router = useRouter()
+const isLoading = ref(false)
 
 // Configurações do formulário
 const formConfig = {
@@ -135,6 +136,7 @@ const functions = {
 
   handleLogin: async () => {
     try {
+      isLoading.value = true
       if (formData.password === '' || formData.password === undefined) {
         showToast({
           type: 'warning',
@@ -171,6 +173,8 @@ const functions = {
         type: 'error',
         message: error.message,
       })
+    } finally {
+      isLoading.value = false
     }
   },
 }

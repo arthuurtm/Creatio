@@ -1,5 +1,5 @@
 <template>
-  <AppDynamicForm
+  <ComponentForm
     ref="formRef"
     :config="formConfig"
     :isLoading="isLoading"
@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
+import ComponentForm from '@/components/ComponentForm.vue'
 import { ref, inject } from 'vue'
 import * as globalFunc from '@/functions/functions'
 import { useRouter } from 'vue-router'
