@@ -1,46 +1,49 @@
 <template>
-  <div class="groupElements">
-    <label :for="field.model">{{ field.label }}</label>
-    <input
-      v-model="inputValue"
+  <div class="input-group" v-for="(field, index) in props.fields" :key="index">
+    <label v-if="field.label" :for="field.model">{{ field.label }}</label>
+    <div
       class="input"
-      :class="field.class"
-      :type="field.type"
-      :id="field.model"
-      :placeholder="field.placeholder"
-    />
+      :class="[
+        field.class,
+        field.style?.rounded && 'rounded',
+        field.style?.border && 'border',
+        field.style?.color,
+      ]"
+    >
+      <div v-if="field.icon" class="material-symbols-outlined notranslate">{{ field.icon }}</div>
+      <input
+        class="input-field"
+        v-model="formData[field.model]"
+        :type="field.type"
+        :id="field.model"
+        :placeholder="field.placeholder"
+      />
+    </div>
     <CreateAnchor v-if="field.anchor" @emitEvent="reEmitEvent" :anchor="field.anchor" />
   </div>
 </template>
 
-<script>
-import { computed } from 'vue'
+<script setup>
+import { computed, inject } from 'vue'
 import CreateAnchor from '@/components/elements/CreateAnchor.vue'
 
-export default {
-  name: 'CreateTextField',
-  props: {
-    field: Object,
-    modelValue: String,
-  },
-  components: { CreateAnchor },
-  emits: ['update:modelValue', 'emitEvent'],
-  setup(props, { emit }) {
-    const inputValue = computed({
-      get: () => props.modelValue,
-      set: (value) => emit('update:modelValue', value),
-    })
+const props = defineProps({ fields: Array })
+const emits = defineEmits(['emitEvent'])
 
-    return { inputValue }
-  },
-  methods: {
-    reEmitEvent(actions) {
-      this.$emit('emitEvent', actions)
-    },
-  },
+const store = inject('stores')
+const formStore = store.form
+const formData = computed(() => formStore.getFormData)
+
+function reEmitEvent(actions) {
+  emits('emitEvent', actions)
 }
 </script>
 
 <style scoped>
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
 @import url('/src/assets/css/components/c-form.css');
 </style>
