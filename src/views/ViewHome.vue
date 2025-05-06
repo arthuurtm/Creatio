@@ -13,7 +13,8 @@ const dynamicDialog = store.dialog
     <div class="header">
       <h3>
         <b>
-          <h3 class="gradient">Olá, {{ userStore.getName }}!</h3>
+          <h3 v-if="userStore.getIsAuth" class="gradient">Olá, {{ userStore.getName }}!</h3>
+          <h3 v-else class="gradient">Olá!</h3>
         </b>
       </h3>
     </div>
