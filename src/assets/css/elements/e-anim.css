@@ -76,13 +76,18 @@
 .fade-enter-active,
 .fade-leave-active {
   transition:
-    opacity 0.5s ease-in-out,
-    visibility 0s ease 0.5s;
+    opacity 0.3s ease-in-out,
+    visibility 0.3s ease;
 }
-.fade-enter,
+.fade-enter-from,
 .fade-leave-to {
   opacity: 0;
   visibility: hidden;
+}
+.fade-leave-from,
+.fade-enter-to {
+  opacity: 1;
+  visibility: visible;
 }
 
 .moveToCenter-enter-active,

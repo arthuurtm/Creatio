@@ -30,11 +30,19 @@
     height 0.3s ease,
     transform 0.3s ease;
   max-width: 60%;
+  height: 0;
+  height: calc-size(auto);
+  interpolate-size: allow-keywords;
+  overflow: hidden;
 }
 
 .dialog-main.loading {
   min-width: 400px;
   min-height: 200px;
+}
+
+.dialog-main.active {
+  height: auto;
 }
 
 .title-bar {
@@ -103,19 +111,12 @@
     left: 0;
     right: 0;
     max-width: unset;
-    height: 0;
-    height: calc-size(auto);
-    interpolate-size: allow-keywords;
     min-width: unset;
     min-height: unset;
   }
 
   .dialog-shadow {
     transition: unset;
-  }
-
-  .dialog-main.active {
-    height: auto;
   }
 
   .title-bar {

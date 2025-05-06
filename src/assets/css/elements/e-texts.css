@@ -22,3 +22,19 @@
 
 .gradient#main {
 }
+
+.h-link {
+  color: var(--form-sub);
+}
+
+.h-link.critical:hover {
+  color: var(--form-critical-link);
+}
+
+.h-link.normal {
+  color: var(--text);
+}
+
+.h-link.normal:hover {
+  color: var(--form-normal-link);
+}

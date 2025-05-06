@@ -1,0 +1,193 @@
+/* color palette from <https://github.com/vuejs/theme> */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('/src/assets/css/elements/e-_import.css');
+
+:root {
+  --form-field-text-hover: #1778fb;
+  --font: 'Noto Sans';
+}
+
+/* Tema claro */
+:root {
+  /* Base */
+  --primary: #205edc;
+  --primary-hover: #2466ea;
+  --secondary: #7e7e7e;
+  --secondary-hover: #757575;
+  --danger: #bb2a2a;
+  --danger-hover: #a23333;
+  --accent: #31a526;
+
+  --text-color: #000;
+  --background-color: #fff;
+  --background-alt: #f0f4f9;
+  --border-color: #efeded;
+
+  --input-bg-neutral: #e9ecef;
+  --input-text-neutral: #737c85;
+
+  --overlay-neutral: #121212a9;
+  --scroll-btn: #91919194;
+  --scroll-btn-hover: #ffffff85;
+
+  --element-focus: #c5c5c5f1;
+  --element-hover: #c5c5c5a9;
+
+  /* Mapa semântico*/
+  --text: var(--text-color);
+  --bg: var(--background-color);
+  --bg2: var(--background-alt);
+  --border: var(--border-color);
+
+  --input-bg: var(--input-bg-neutral);
+  --input-text: var(--input-text-neutral);
+
+  --default-button: var(--secondary);
+  --default-button-hover: var(--secondary-hover);
+  --confirm-button: var(--primary);
+  --confirm-button-hover: var(--primary-hover);
+  --destructive-button: var(--danger);
+  --destructive-button-hover: var(--danger-hover);
+
+  --game-text-container-bg: #f8f8f8;
+  --menu: var(--bg); /* Antes #fafafa */
+  --mh-user-email: #535353;
+  --mh-options: var(--text);
+  --mh-options-hover: #393939;
+
+  --navigator-li-hover: var(--element-hover);
+  --navigator-li-focus: var(--element-focus);
+  --global-input-focus: var(--element-focus);
+  --global-input-hover: var(--element-hover);
+
+  --form-group: #dddddd;
+  --overlay-bg: var(--overlay-neutral);
+  --scroll-button: var(--scroll-btn);
+  --scroll-button-hover: var(--scroll-btn-hover);
+  --discovery-play-button: var(--accent);
+
+  --form-bg: var(--bg2);
+  --form: var(--bg);
+  --form-critical-link: var(--danger);
+  --form-normal-link: var(--primary);
+  --form-normal-link-hover: var(--primary-hover);
+  --form-bg_f: #f7f7f7;
+  --form-input: var(--bg);
+  --form-bg-sub: #f1f1f1;
+  --form-sub: #666;
+  --form-err-border: #7c0000;
+  --form-err: #a52f2f;
+}
+
+/* Tema escuro */
+:root[data-theme='dark'] {
+  /* Base */
+  --primary: #105faa;
+  --primary-hover: #136dc2;
+  --secondary: #7e7e7e; /* Se quiser ajustar: #999 */
+  --secondary-hover: #999;
+  --danger: #a20202;
+  --danger-hover: #bb0b0b;
+  --accent: #075500;
+
+  --text-color: #ffffff;
+  --background-color: #000;
+  --background-alt: #111116;
+  --border-color: #181818;
+
+  --input-bg-neutral: #2e2e2e;
+  --input-text-neutral: #e0e0e0;
+
+  --overlay-neutral: #242d3494;
+  --scroll-btn: #ffffff1c;
+  --scroll-btn-hover: #ffffff2c;
+
+  --element-focus: #505050f2;
+  --element-hover: #50505093;
+
+  /* Mapa semântico */
+  --text: var(--text-color);
+  --bg: var(--background-color);
+  --bg2: var(--background-alt);
+  --border: var(--border-color);
+
+  --input-bg: var(--input-bg-neutral);
+  --input-text: var(--input-text-neutral);
+
+  --default-button: var(--secondary);
+  --default-button-hover: var(--secondary-hover);
+  --confirm-button: var(--primary);
+  --confirm-button-hover: var(--primary-hover);
+  --destructive-button: var(--danger);
+  --destructive-button-hover: var(--danger-hover);
+
+  --game-text-container-bg: #111111;
+  --menu: var(--bg);
+  --mh-user-email: #b0b0b0;
+  --mh-options: #dcdcdc;
+  --mh-options-hover: #c0c0c0;
+
+  --navigator-li-focus: var(--element-focus);
+  --navigator-li-hover: var(--element-hover);
+  --global-input-focus: var(--element-focus);
+  --global-input-hover: var(--element-hover);
+
+  --form-group: #232323;
+  --overlay-bg: var(--overlay-neutral);
+  --scroll-button: var(--scroll-btn);
+  --scroll-button-hover: var(--scroll-btn-hover);
+  --discovery-play-button: var(--accent);
+
+  --form-bg: var(--bg2);
+  --form: var(--bg);
+  --form-critical-link: var(--danger);
+  --form-normal-link: var(--primary);
+  --form-normal-link-hover: var(--primary-hover);
+  --form-bg_f: #151414;
+  --form-input: #1f1e1e;
+  --form-bg-sub: #211f1f;
+  --form-sub: #cbcbcb;
+  --form-err-border: #7c0000;
+  --form-err: #a52f2f;
+}
+
+body {
+  height: 100vh;
+  width: 100vw;
+  color: var(--text);
+  background: var(--bg);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scrollbar-color: var(--text) var(--bg);
+  scrollbar-width: thin;
+}
+
+.app {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

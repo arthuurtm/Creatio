@@ -57,21 +57,25 @@
   transform: scale(1.05);
 }
 
-.btn.symbolic.no-scalling:hover {
-  transform: unset;
-}
-
 .btn.symbolic.scroll {
   background-color: var(--scroll-button);
   margin: 20px;
 }
 
-.btn.symbolic.no-padding {
+.btn.no-scalling:hover {
+  transform: unset;
+}
+
+.btn.no-padding {
   padding: 0;
 }
 
 .btn.no-brightness {
   filter: unset;
+}
+
+.btn.min-eq-padding {
+  padding: 15px;
 }
 
 .btn.symbolic.normal:hover {
@@ -88,6 +92,10 @@
 .btn.neon:hover {
   /* border: 2px solid; */
   box-shadow: 0 0 8px;
+}
+
+.highlight {
+  outline: 4px solid var(--text) !important;
 }
 
 #discordButton .tooltip-container .icon {

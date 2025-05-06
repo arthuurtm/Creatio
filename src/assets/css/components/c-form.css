@@ -109,22 +109,6 @@
   cursor: pointer;
 }
 
-.main-form-container .form-link {
-  color: var(--form-sub);
-}
-
-.main-form-container .form-link.critical:hover {
-  color: var(--form-critical-link);
-}
-
-.main-form-container .form-link.normal {
-  color: var(--text);
-}
-
-.main-form-container .form-link.normal:hover {
-  color: var(--form-normal-link);
-}
-
 .form-container {
   display: flex;
   flex-direction: column;
@@ -174,8 +158,8 @@
 }
 
 .centered > div {
-  width: 100%; /* Faz com que os filhos ocupem a largura total do pai */
-  box-sizing: border-box; /* Garante consistência com padding e border */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 hr {
