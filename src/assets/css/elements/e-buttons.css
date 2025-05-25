@@ -1,6 +1,6 @@
 /* Estilos básicos para todos os botões */
 .btn {
-  display: inline-block;
+  display: flex;
   width: auto;
   padding: 12px 18px;
   border-radius: 30px;
@@ -13,18 +13,27 @@
   text-align: center;
   border: 1px solid var(--default-button);
   opacity: 1;
-  /* transition:
+  transition:
     opacity 0.3s ease,
     margin-left 0.5s ease,
-    filter 0.3s ease; */
+    filter 0.3s ease;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn:hover {
   filter: brightness(110%);
 }
 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .btn.destructive {
-  border: 3px dotted var(--destructive-button);
+  background-color: var(--destructive-button);
+  border: none;
 }
 
 .btn.cancel {
@@ -127,8 +136,13 @@
   margin-right: auto;
 }
 
-.group-button.center {
-  margin: 0 auto;
+.group-button.fixed {
+  position: relative;
+}
+
+.group-button.fixed.center .btn {
+  position: absolute;
+  top: 0;
 }
 
 .sepButtons {

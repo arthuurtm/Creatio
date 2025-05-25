@@ -21,8 +21,13 @@
 }
 
 @keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -86,6 +91,23 @@
 }
 .fade-leave-from,
 .fade-enter-to {
+  opacity: 1;
+  visibility: visible;
+}
+
+.fastFade-enter-active,
+.fastFade-leave-active {
+  transition:
+    opacity 0.1s ease,
+    visibility 0.1s ease;
+}
+.fastFade-enter-from,
+.fastFade-leave-to {
+  opacity: 0;
+  visibility: hidden;
+}
+.fastFade-leave-from,
+.fastFade-enter-to {
   opacity: 1;
   visibility: visible;
 }

@@ -29,8 +29,8 @@
     border-color 0.5s ease,
     height 0.3s ease,
     transform 0.3s ease;
-  max-width: 60%;
   height: 0;
+  width: auto;
   height: calc-size(auto);
   interpolate-size: allow-keywords;
   overflow: hidden;
@@ -111,6 +111,7 @@
     left: 0;
     right: 0;
     max-width: unset;
+    max-height: 80%;
     min-width: unset;
     min-height: unset;
   }
@@ -125,5 +126,9 @@
 
   .content {
     order: 1;
+  }
+
+  .container {
+    overflow-y: scroll;
   }
 }
