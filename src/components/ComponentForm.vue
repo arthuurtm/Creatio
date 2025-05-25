@@ -1,6 +1,9 @@
 <template>
   <div class="page">
-    <span class="settings-button material-symbols-outlined notranslate" @click="handleSettingsBox"
+    <span
+      v-if="isMinimal()"
+      class="settings-button material-symbols-outlined notranslate"
+      @click="handleSettingsBox"
       >settings</span
     >
 
@@ -18,7 +21,7 @@
     <CreateLoading v-if="isLoading" :full="true" />
 
     <div class="main-form-container">
-      <div class="left">
+      <div v-if="isMinimal()" class="left">
         <img src="@/assets/img/min-logo.png" alt="Logo do Sysroot" id="logo" />
         <h1 v-if="config">{{ config.title }}</h1>
         <h1 v-else>Erro Interno</h1>
@@ -33,7 +36,11 @@
                   <CreateTextField
                     :fields="currentStepData.fields"
                     @emitEvent="handleFunctionEvent"
+                    :storeName="config.store || 'form'"
                   />
+                  <div class="text warning" id="capslock-text" style="display: none">
+                    <p>Capslock está ativo</p>
+                  </div>
                 </div>
               </div>
             </transition>
@@ -74,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -109,6 +116,13 @@ const currentStepData = computed(() => {
 })
 
 const hasStepsData = computed(() => !!props.config?.steps)
+
+function isMinimal() {
+  if (props.config?.type === 'minimal') {
+    return false
+  }
+  return true
+}
 
 function submitForm() {
   console.log('Submetendo formulário com os dados...')
@@ -180,6 +194,34 @@ function rewind() {
 function back() {
   router.back()
 }
+
+onMounted(() => {
+  // var input = document.querySelector('.input-field')
+  // var text = document.getElementById('capslock-text')
+  // input.addEventListener('keyup', function (event) {
+  //   if (event.getModifierState('CapsLock')) {
+  //     text.style.display = 'block'
+  //   } else {
+  //     text.style.display = 'none'
+  //   }
+  // })
+
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      const submitButton = document.querySelector('.btn.confirm')
+      if (submitButton) {
+        submitButton.click()
+      }
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      const submitButton = document.querySelector('.btn')
+      if (submitButton) {
+        submitButton.click()
+      }
+    }
+  })
+})
 
 // Expondo os métodos e dados para o template
 defineExpose({

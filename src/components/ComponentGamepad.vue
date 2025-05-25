@@ -23,7 +23,16 @@ const selectedIndex = ref(0)
 const { isSupported, gamepads, onConnected, onDisconnected } = useGamepad()
 const gamepad = computed(() => gamepads.value.find((g) => g.mapping === 'standard'))
 
-const selectors = ['button', '.btn', '[tabindex]', '.input', 'a', '.controller-index', 'input']
+const selectors = [
+  'button',
+  '.btn',
+  '[tabindex]',
+  '.input',
+  'a',
+  '.controller-index',
+  'input',
+  '.gameCard',
+]
 const options = ['Iniciar', 'Opções', 'Créditos', 'Sair']
 
 const connected = computed(() => gamepad.value?.connected)
@@ -144,6 +153,7 @@ onMounted(() => {
   color: var(--text);
   font-weight: bold;
   gap: 20px;
+  z-index: 10;
 }
 
 .notify-box.bottom-center {

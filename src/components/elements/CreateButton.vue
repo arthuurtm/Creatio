@@ -13,7 +13,13 @@
       :id="button.id || ''"
       :type="button.type || 'submit'"
       @click="
-        emitEvent(button.action?.name || '', button.action?.value || '', button.action?.type || '')
+        typeof button.action === 'function'
+          ? button.action()
+          : emitEvent(
+              button.action?.name || '',
+              button.action?.value || '',
+              button.action?.type || '',
+            )
       "
     >
       {{ button.text }}
@@ -25,12 +31,17 @@
       :id="button.id || ''"
       :type="button.type || 'submit'"
       @click="
-        emitEvent(button.action?.name || '', button.action?.value || '', button.action?.type || '')
+        typeof button.action === 'function'
+          ? button.action()
+          : emitEvent(
+              button.action?.name || '',
+              button.action?.value || '',
+              button.action?.type || '',
+            )
       "
     >
-      <span class="material-symbols-outlined notranslate"
-        >{{ button.icon }}{{ button.text || '' }}</span
-      >
+      <span class="material-symbols-outlined notranslate">{{ button.icon }}</span>
+      <p>{{ button.text || '' }}</p>
     </button>
   </div>
 </template>

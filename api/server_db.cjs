@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 const express = require('express')
-const { Sequelize, DataTypes } = require('sequelize')
+const { Sequelize, DataTypes, Op } = require('sequelize')
 const cors = require('cors')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
@@ -85,7 +85,6 @@ const Game = sequelize.define(
     title: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.TEXT },
     genre: { type: DataTypes.STRING },
-    releaseDate: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -455,6 +454,27 @@ app.delete('/logout', (req, res) => {
   res.status(200).json({ message: 'Usuário deslogado com sucesso' })
 })
 
+app.delete('/logoutAll', async (req, res) => {
+  try {
+    const accessToken = req.cookies?.accessToken
+    const decoded = jwt.verify(accessToken, process.env.ACCESS_SECRET)
+
+    const sessions = await Session.findAll({
+      where: {
+        userId: decoded.userId,
+        accessToken: { [Op.ne]: accessToken },
+      },
+    })
+
+    await Promise.all(sessions.map((session) => session.destroy()))
+
+    res.status(200).json({ message: 'Todos os dispositivos foram desconectados!' })
+  } catch (error) {
+    console.error('Erro ao processar solicitação de logoutAll:', error)
+    res.status(500).json({ message: 'Erro interno no servidor' })
+  }
+})
+
 // Buscar dados básicos do usuário
 app.get('/getUserBasics', async (req, res) => {
   try {
@@ -625,7 +645,7 @@ app.post('/setUser', async (req, res) => {
 })
 
 // Lista todas as sessões de um usuário
-app.get('/getAllUserSessions', async (req, res) => {
+app.post('/getAllUserSessions', async (req, res) => {
   const { userId } = req.body
 
   try {
@@ -669,6 +689,24 @@ app.get('/getGames', async (req, res) => {
     res.status(200).json(games)
   } catch (error) {
     console.error('Erro ao processar solicitação de getGames: ', error)
+    res.status(500).json({ message: 'Erro interno no servidor' })
+  }
+})
+
+app.post('/setGame', async (req, res) => {
+  try {
+    const { title, description, genre, userId } = req.body
+
+    const game = await Game.create({
+      title,
+      description,
+      genre,
+      userId,
+    })
+
+    res.status(201).json({ message: 'Jogo criado com sucesso', game })
+  } catch (error) {
+    console.error('Erro ao processar solicitação de setGames: ', error)
     res.status(500).json({ message: 'Erro interno no servidor' })
   }
 })
@@ -807,8 +845,7 @@ app.post('/setDiscord', async (req, res) => {
 
 const port = 3000
 app.listen(port, () => {
-  console.log('.::: DATABASE BACKEND :::.')
-  console.log(`Servidor rodando na porta ${port}\n`)
+  console.log(`🚀 Servidor rodando em http://localhost:${port}`)
 })
 // https.createServer(httpsOptions, app).listen(port, () => {
 //   console.log('.::: DATABASE BACKEND :::.');

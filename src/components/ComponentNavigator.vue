@@ -1,12 +1,12 @@
 <template>
   <div class="container" :class="[isMenuActive && 'active']">
-    <a class="hide-nav" @click="updateMenuState(true)">
+    <a class="hide-nav" @click="updateMenuState(true)" v-if="defaultHideButton">
       <span class="material-symbols-outlined notranslate">{{ navigatorIcon }}</span>
     </a>
 
     <div
       class="nav"
-      :class="[isMenuActive ? 'active' : 'minimized', hidden ? 'hidden' : '']"
+      :class="[isMenuActive ? 'active' : 'minimized', hidden && 'hidden']"
       id="nav"
       ref="menu"
     >
@@ -24,7 +24,7 @@
           <ul>
             <li v-if="isAuthenticated" id="user-info" class="user-info controller-index">
               <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
-              <p class="nickname">{{ user.getName }}</p>
+              <p class="nickname">@{{ user.getUsername }}</p>
             </li>
 
             <li
@@ -58,12 +58,12 @@
 
             <li
               v-if="isAuthenticated"
-              @click="navigateTo('Avatar')"
-              :class="[selectedPage === 'Avatar' && 'selected']"
+              @click="navigateTo('Chat')"
+              :class="[selectedPage === 'Chat' && 'selected']"
               class="controller-index"
             >
-              <span class="material-symbols-outlined notranslate">person</span>
-              <p>Personagens</p>
+              <span class="material-symbols-outlined notranslate">chat</span>
+              <p>Conversas</p>
             </li>
 
             <li @click="handleSettingsBox" class="controller-index">
@@ -108,8 +108,13 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  defaultHideButton: {
+    type: Boolean,
+    default: false,
+  },
 })
-const emit = defineEmits(['navigateTo'])
+const emit = defineEmits(['navigateTo', 'navigatorStatus'])
+defineExpose({ updateMenuState })
 let touchTimeout = null
 
 // Estado reativo
@@ -124,6 +129,7 @@ const profilePicture = computed(() => {
 })
 const navigatorIcon = ref('menu')
 const selectedPage = ref(props.page)
+const hidden = ref(props.hidden)
 
 // Funções
 const handleIsMobile = () => {
@@ -204,6 +210,7 @@ function updateMenuState(force = false) {
   if (isMobile || force) {
     isMenuActive.value = !isMenuActive.value
   }
+  emit('navigatorStatus', isMenuActive.value)
 }
 
 // Watchers

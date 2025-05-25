@@ -8,10 +8,36 @@
         field.style?.rounded && 'rounded',
         field.style?.border && 'border',
         field.style?.color,
+        (field.type === 'password' || field.type === 'password-view') && 'flex-reverse',
       ]"
     >
       <div v-if="field.icon" class="material-symbols-outlined notranslate">{{ field.icon }}</div>
+      <div
+        v-if="field.type === 'password' || field.type === 'password-view'"
+        class="btn symbolic no-padding no-scale material-symbols-outlined notranslate"
+        @click="togglePassView(field)"
+      >
+        {{ customIcon.password }}
+      </div>
+      <select
+        v-if="field.type === 'select'"
+        class="input-field"
+        v-model="formData[field.model]"
+        :id="field.model"
+        :placeholder="field.placeholder"
+      >
+        <option v-for="(option, index) in field.options" :key="index" :value="option.value">
+          {{ option.label }}
+        </option>
+      </select>
       <input
+        v-else-if="field.type === 'file'"
+        class="input-field"
+        :type="field.type"
+        :id="field.model"
+      />
+      <input
+        v-else
         class="input-field"
         v-model="formData[field.model]"
         :type="field.type"
@@ -24,18 +50,36 @@
 </template>
 
 <script setup>
-import { computed, inject } from 'vue'
+import { computed, inject, ref } from 'vue'
 import CreateAnchor from '@/components/elements/CreateAnchor.vue'
 
-const props = defineProps({ fields: Array })
+const props = defineProps({
+  fields: Array,
+  storeName: {
+    type: String,
+    default: 'global',
+  },
+})
 const emits = defineEmits(['emitEvent'])
 
 const store = inject('stores')
-const formStore = store.form
-const formData = computed(() => formStore.getFormData)
+const activeStore = computed(() => store[props.storeName])
+const formData = computed(() => activeStore.value.getInputData)
+
+const customIcon = ref({ password: 'visibility' })
 
 function reEmitEvent(actions) {
   emits('emitEvent', actions)
+}
+
+function togglePassView(field) {
+  if (customIcon.value.password === 'visibility_off') {
+    customIcon.value.password = 'visibility'
+    field.type = 'password'
+  } else {
+    customIcon.value.password = 'visibility_off'
+    field.type = 'password-view'
+  }
 }
 </script>
 

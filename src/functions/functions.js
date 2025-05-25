@@ -41,7 +41,7 @@ export function appTheme(toggle = false) {
 
   // Alternar o tema se toggle for verdadeiro
   if (toggle) {
-    console.log('toggle theme: ', currentTheme)
+    // console.log('toggle theme: ', currentTheme)
     currentTheme = currentTheme === 'dark' ? 'light' : 'dark'
     localStorage.setItem('data-theme', currentTheme)
   }

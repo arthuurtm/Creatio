@@ -113,7 +113,6 @@ def authenticate():
 # Inicia o servidor
 if __name__ == "__main__":
     port = 3001
-    print('.::: MAIL SERVICE BACKEND :::.')
-    print(f'Servidor rodando na porta {port}')
+    print(f'🚀 Servidor rodando em http://localhost:{port}')
     app.run(port=port, debug=True)
     webbrowser.open(f'https://localhost:{port}/authenticate')

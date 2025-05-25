@@ -1,34 +1,29 @@
 <script setup>
-import { computed, ref, watch, defineAsyncComponent, inject } from 'vue'
-import CreateLoading from '@/components/elements/CreateLoading.vue'
+import { computed, ref, watch, resolveDynamicComponent, inject } from 'vue'
 
 const props = defineProps({
   component: String,
   title: String,
 })
 
-const show = ref(false)
-const loading = ref(true)
 const asyncComponent = ref(null)
 const store = inject('stores')
 
 function close() {
-  show.value = false
+  if (!store.dialog.getIsHistory) showDialogAnim.value = false
   setTimeout(() => {
     store.dialog.close()
   }, 300)
 }
 
-let dialogStyle = 'default'
+const showDialog = computed(() => store.dialog.getIsVisible)
+const showDialogAnim = ref(false)
 
-const isVisible = computed(() => store.dialog.getIsVisible)
-const showDialog = computed(() => isVisible.value || show.value)
-
-watch(isVisible, (newValue) => {
+watch(showDialog, (newValue) => {
   if (newValue) {
     setTimeout(() => {
-      show.value = true
-    }, 100)
+      showDialogAnim.value = newValue
+    }, 200)
   }
 })
 
@@ -37,45 +32,18 @@ watch(
   async (newComponent) => {
     if (!newComponent) return
 
-    loading.value = true
-
-    asyncComponent.value = defineAsyncComponent({
-      loader: () => import(`@/configs/dialogs/${newComponent}.vue`),
-      timeout: 6000,
-      loadingComponent: CreateLoading,
-      onError(error, retry, fail, attempts) {
-        if (attempts <= 3) retry()
-        else fail()
-      },
-    })
-
-    // opcional: esperar o componente carregar (se quiser esconder loader depois)
-    try {
-      await asyncComponent.value.__asyncLoader()
-    } catch (err) {
-      console.error('Erro ao carregar componente:', err)
-    } finally {
-      loading.value = false
+    const resolved = resolveDynamicComponent(newComponent)
+    if (resolved) {
+      asyncComponent.value = resolved
     }
   },
   { immediate: true },
 )
-
-// onMounted(() => {
-//   window.addEventListener('keydown', close());
-// });
 </script>
 
 <template>
   <div class="dialog-shadow" v-show="showDialog">
-    <CreateLoading v-if="loading" />
-    <div
-      v-else
-      class="dialog-main"
-      :id="[dialogStyle === 'menu' && 'menuStyle']"
-      ref="dialogRef"
-      :class="[show && 'active', loading && 'loading']"
-    >
+    <div class="dialog-main" :id="[]" :class="[showDialogAnim && 'active']">
       <div class="title-bar">
         <div class="options">
           <div class="title">
@@ -89,7 +57,9 @@ watch(
         </div>
       </div>
       <div class="content">
-        <component :is="asyncComponent" :key="props.component" @close="close" />
+        <transition name="fastFade" mode="out-in">
+          <component :is="asyncComponent" :key="props.component" @close="close" />
+        </transition>
       </div>
     </div>
   </div>
