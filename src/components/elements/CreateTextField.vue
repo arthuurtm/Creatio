@@ -34,7 +34,7 @@
         v-else-if="field.type === 'file'"
         class="input-field"
         :type="field.type"
-        :id="field.model"
+        @change="handleFile($event, field.model)"
       />
       <input
         v-else
@@ -79,6 +79,14 @@ function togglePassView(field) {
   } else {
     customIcon.value.password = 'visibility_off'
     field.type = 'password-view'
+  }
+}
+
+function handleFile(event, field) {
+  const file = event.target.files[0]
+  console.log('Handling file for field:', field, 'file: ', file)
+  if (file) {
+    formData.value[field] = file
   }
 }
 </script>

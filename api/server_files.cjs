@@ -33,30 +33,53 @@ minioClient.bucketExists(bucketName, (err, exists) => {
   }
 })
 
-// Rota para upload
-app.post('/upload', upload.single('arquivo'), (req, res) => {
-  const file = req.file
-  if (!file) return res.status(400).send('Nenhum arquivo enviado.')
+app.post('/upload', upload.any(), async (req, res) => {
+  const files = req.files
 
-  const minioFileName = file.originalname
+  console.log('Arquivos recebidos:', files)
 
-  minioClient.fPutObject(
-    bucketName,
-    minioFileName,
-    file.path,
-    { 'Content-Type': file.mimetype },
-    function (err, etag) {
-      // Remove o arquivo temporário local
-      fs.unlinkSync(file.path)
+  if (!files || files.length === 0) {
+    return res.status(400).send({ message: 'Nenhum arquivo enviado.' })
+  }
 
-      if (err) {
-        console.error(err)
-        return res.status(500).send('Erro ao enviar para o MinIO.')
-      }
+  const uploadResults = []
 
-      res.send(`Arquivo enviado para o MinIO com sucesso: ${minioFileName}`)
-    },
-  )
+  for (const file of files) {
+    const minioFileName = file.originalname
+
+    try {
+      // Upload para o MinIO
+      await new Promise((resolve, reject) => {
+        minioClient.fPutObject(
+          bucketName,
+          minioFileName,
+          file.path,
+          { 'Content-Type': file.mimetype },
+          function (err, etag) {
+            // Apaga o arquivo local
+            fs.unlinkSync(file.path)
+
+            if (err) return reject(err)
+            resolve(etag)
+          },
+        )
+      })
+
+      uploadResults.push({
+        file: file.originalname,
+        status: 'sucesso',
+      })
+    } catch (err) {
+      console.error(`Erro ao enviar ${file.originalname}:`, err)
+      uploadResults.push({
+        file: file.originalname,
+        status: 'erro',
+        erro: err.message,
+      })
+    }
+  }
+
+  res.send({ message: 'Upload concluído.', resultados: uploadResults })
 })
 
 app.listen(port, () => {

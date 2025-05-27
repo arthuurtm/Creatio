@@ -14,7 +14,7 @@
     </div>
 
     <Transition name="moveToBottom" mode="out-in">
-      <CreateStepProgress :steps="steps" :currentStep="actualPage" v-if="actualPage != 0" />
+      <CreateStepProgress :steps="steps" :currentStep="actualPage - 1" v-if="actualPage != 0" />
     </Transition>
 
     <div class="steps">
@@ -62,11 +62,25 @@
                           rounded: true,
                         },
                       },
+                    ],
+                    buttons: [
+                      {
+                        text: 'Avançar',
+                        class: 'confirm',
+                        action: {
+                          name: 'forward',
+                          type: 'local',
+                        },
+                      },
+                    ],
+                  },
+                  2: {
+                    fields: [
                       {
                         label: 'Imagem do Jogo',
                         type: 'file',
                         icon: 'image',
-                        name: 'arquivo',
+                        model: 'gameImage',
                         style: {
                           rounded: true,
                         },
@@ -75,7 +89,7 @@
                         label: 'Som do Jogo',
                         type: 'file',
                         icon: 'music_note',
-                        name: 'arquivo',
+                        model: 'gameSound',
                         style: {
                           rounded: true,
                         },
@@ -83,21 +97,34 @@
                     ],
                     buttons: [
                       {
+                        text: 'Voltar',
+                        position: 'left',
+                        class: '',
+                        action: {
+                          name: '',
+                        },
+                      },
+                      {
+                        text: 'Pular',
+                        icon: 'skip_next',
+                        class: 'symbolic',
+                        action: {
+                          name: 'forward',
+                          type: 'local',
+                        },
+                      },
+                      {
                         text: 'Avançar',
                         class: 'confirm',
                         action: {
-                          name: '',
+                          name: 'handleGameDetails',
                         },
                       },
                     ],
                   },
                 },
               }"
-              :formFunctions="{
-                handleGameCreate: async () => {
-                  //Criar uma função que faz a conexão com o websocket usando algo que vou importar em ViewCreate
-                },
-              }"
+              :formFunctions="functions"
             />
           </div>
         </div>
@@ -130,6 +157,7 @@
 <script setup>
 import ComponentForm from '@/components/ComponentForm.vue'
 import { inject, ref, computed, onMounted } from 'vue'
+import { post } from '@/functions/functions'
 
 const store = inject('stores')
 const globalStore = store.global
@@ -140,6 +168,17 @@ const actualPage = ref(0)
 
 function criarNovoJogo() {
   actualPage.value = 1
+}
+
+const functions = {
+  handleGameDetails: async () => {
+    const gameData = new FormData()
+    // gameData.append('gameName', inputData.gameName)
+    // gameData.append('gameDescription', inputData.gameDescription)
+    gameData.append('gameImage', inputData.gameImage)
+    gameData.append('gameSound', inputData.gameSound)
+    await post({ type: 'file', route: 'upload' }, { data: gameData })
+  },
 }
 </script>
 
@@ -169,15 +208,14 @@ function criarNovoJogo() {
 .step-form,
 .step-preview {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
-.step-form .container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-width: 50%;
+.step-form {
+  margin-left: auto;
+}
+
+.step-preview {
+  margin-right: auto;
 }
 
 /* Lista de jogos */

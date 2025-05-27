@@ -4,16 +4,7 @@ function getApiUrl(type, route) {
     console.error('Tipo ou rota não fornecidos.')
     return null
   }
-  switch (type) {
-    case 'database':
-      return `${origin}/api/database/${route}`
-    case 'email':
-      return `${origin}/api/email/${route}`
-    case 'gameData':
-      return `${origin}/api/gameData/${route}`
-    default:
-      return null
-  }
+  return `${origin}/api/${type}/${route}`
 }
 
 export function hrefTo(url, args = {}) {
