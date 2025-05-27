@@ -17,7 +17,7 @@ email_from = os.getenv('EMAIL_FROM')
 
 # Configuração do Flask
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "https://6021-138-0-82-55.ngrok-free.app"])
+CORS(app, origins=["http://localhost:3000"])
 
 # Variável global para armazenar o serviço autenticado
 service = None
