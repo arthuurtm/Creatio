@@ -129,7 +129,7 @@ const profilePicture = computed(() => {
 })
 const navigatorIcon = ref('menu')
 const selectedPage = ref(props.page)
-const hidden = ref(props.hidden)
+const hidden = computed(() => props.hidden)
 
 // Funções
 const handleIsMobile = () => {

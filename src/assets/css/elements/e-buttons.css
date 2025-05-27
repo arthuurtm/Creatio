@@ -32,8 +32,7 @@
 }
 
 .btn.destructive {
-  background-color: var(--destructive-button);
-  border: none;
+  border: 3px dotted var(--destructive-button);
 }
 
 .btn.cancel {

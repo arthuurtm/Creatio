@@ -1,7 +1,7 @@
 <template>
-  <div class="page">
+  <div class="page" :class="isMinimal() && 'minimal'">
     <span
-      v-if="isMinimal()"
+      v-if="!isMinimal()"
       class="settings-button material-symbols-outlined notranslate"
       @click="handleSettingsBox"
       >settings</span
@@ -21,13 +21,13 @@
     <CreateLoading v-if="isLoading" :full="true" />
 
     <div class="main-form-container">
-      <div v-if="isMinimal()" class="left">
+      <div class="left">
         <img src="@/assets/img/min-logo.png" alt="Logo do Sysroot" id="logo" />
         <h1 v-if="config">{{ config.title }}</h1>
         <h1 v-else>Erro Interno</h1>
       </div>
 
-      <div v-if="hasStepsData && currentStepData" class="right">
+      <div v-if="hasStepsData && currentStepData && !hasErrors" class="right">
         <form class="form-container" @submit.prevent="submitForm">
           <div class="centered">
             <transition name="slide-left" mode="out-in">
@@ -61,7 +61,7 @@
         </form>
       </div>
 
-      <div v-else-if="!hasStepsData && !currentStepData" class="right">
+      <div v-else-if="!hasStepsData || !currentStepData || hasErrors" class="right">
         <form class="form-container" @submit.prevent="submitForm">
           <div class="centered">
             <div class="sepElements">
@@ -70,9 +70,18 @@
           </div>
 
           <div class="sepButtons">
-            <button class="btn" @click="handleFunctionEvent({ action: 'back', type: 'local' })">
-              Voltar
-            </button>
+            <CreateButton
+              :buttons="[
+                {
+                  text: 'Voltar',
+                  action: {
+                    name: !hasStepsData ? 'back' : !currentStep ? 'rewind' : 'back',
+                    type: 'local',
+                  },
+                },
+              ]"
+              @emitEvent="handleFunctionEvent"
+            />
           </div>
         </form>
       </div>
@@ -83,12 +92,19 @@
 <script setup>
 import { ref, computed, inject, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { showToast } from '@/plugins/toast'
 
 const props = defineProps({
-  config: Object,
+  config: {
+    type: Object,
+    default: () => ({}),
+  },
+  formFunctions: {
+    type: Object,
+    default: () => ({}),
+  },
   errorMessage: String,
   isLoading: Boolean,
-  formFunctions: Object,
   redirectName: String,
 })
 
@@ -99,7 +115,7 @@ const store = inject('stores')
 const formStore = store.form
 const appDynamicDialog = store.dialog
 
-const errors = ref({})
+const errors = ref([])
 const formData = computed(() => formStore.getFormData)
 const currentStep = computed(() => formStore.getCurrentStep)
 
@@ -116,12 +132,13 @@ const currentStepData = computed(() => {
 })
 
 const hasStepsData = computed(() => !!props.config?.steps)
+const hasErrors = computed(() => errors.value.length > 0)
 
 function isMinimal() {
   if (props.config?.type === 'minimal') {
-    return false
+    return true
   }
-  return true
+  return false
 }
 
 function submitForm() {
@@ -130,11 +147,6 @@ function submitForm() {
 
 function handleSettingsBox() {
   appDynamicDialog.setDialog('DialogSettings', { title: 'Configurações' })
-}
-
-function handleButtonClick(action) {
-  console.log('Executando função legada: ', formStore.getRequestedFunction())
-  formStore.setRequestedFunction(action)
 }
 
 function handleFunctionEvent(payload) {
@@ -165,16 +177,10 @@ function handleFunctionEvent(payload) {
     if (props.formFunctions?.[action]) {
       props.formFunctions[action](value)
     } else {
-      handleButtonClick(action)
+      errors.value.push({
+        function: action,
+      })
     }
-  }
-}
-
-function showToast(type, message, timeout) {
-  try {
-    toast[type](message, { timeout })
-  } catch (error) {
-    console.error('Erro ao exibir toast:', error)
   }
 }
 
@@ -232,7 +238,6 @@ defineExpose({
   currentStepData,
   hasStepsData,
   handleSettingsBox,
-  handleButtonClick,
   handleFunctionEvent,
   redirect,
   forward,

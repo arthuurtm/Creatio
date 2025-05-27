@@ -44,20 +44,20 @@
   --danger-hover: #bb0b0b;
   --accent: #075500;
 
-  --text-color: #ffffff;
-  --background-color: #000;
-  --background-alt: #111116;
-  --border-color: #181818;
+  --text-color: #f2f2f2;
+  --background-color: #0e0e0e;
+  --background-alt: #1a1a1f;
+  --border-color: #2a2a2a;
 
-  --input-bg-neutral: #2e2e2e;
-  --input-text-neutral: #e0e0e0;
+  --input-bg-neutral: #3a3a3a;
+  --input-text-neutral: #f0f0f0;
 
-  --overlay-neutral: #242d3494;
-  --scroll-btn: #ffffff1c;
-  --scroll-btn-hover: #ffffff2c;
+  --overlay-neutral: #2f394394;
+  --scroll-btn: #ffffff33;
+  --scroll-btn-hover: #ffffff4d;
 
-  --element-focus: #505050f2;
-  --element-hover: #50505093;
+  --element-focus: #6a6a6ad9;
+  --element-hover: #6a6a6aaa;
 }
 
 /* Mapa semântico*/

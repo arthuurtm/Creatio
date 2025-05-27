@@ -32,6 +32,34 @@
   background-color: var(--form-bg);
 }
 
+.page.minimal {
+  background-color: var(--bg);
+  display: unset;
+  width: unset;
+}
+
+.page.minimal .main-form-container {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  width: 100%;
+  min-width: unset;
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.page.minimal .main-form-container .left {
+  display: none !important;
+}
+
+.page.minimal .main-form-container .right {
+  grid-column: 1;
+  width: 100%;
+  padding: 0;
+}
+
 .main-form-container {
   display: grid;
   grid-template-columns: 50% 50%;
