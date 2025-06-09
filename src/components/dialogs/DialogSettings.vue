@@ -2,20 +2,20 @@
   <div class="container">
     <nav class="nav">
       <ul>
-        <li>
-          <a @click="handleNavPage(1, 'Geral')">
+        <li @click="handleNavPage(1, 'Geral')" :id="1">
+          <a>
             <span class="material-symbols-outlined notranslate">settings</span>
             <p>Geral</p>
           </a>
         </li>
-        <li>
-          <a @click="handleNavPage(2, 'Conta')" v-if="isAuth">
+        <li @click="handleNavPage(2, 'Conta')" v-if="isAuth" :id="2">
+          <a>
             <span class="material-symbols-outlined notranslate">account_circle</span>
             <p>Conta</p>
           </a>
         </li>
-        <li>
-          <a @click="handleNavPage(3, 'Segurança')" v-if="isAuth">
+        <li @click="handleNavPage(3, 'Segurança')" v-if="isAuth" :id="3">
+          <a>
             <span class="material-symbols-outlined notranslate">Security</span>
             <p>Segurança</p>
           </a>
@@ -36,7 +36,11 @@
             <li>
               <p>Menu Lateral</p>
               <label class="switch">
-                <input type="checkbox" @change="toggleSideBar" v-model="store.global.getSideBar" />
+                <input
+                  type="checkbox"
+                  @change="toggleSideBar"
+                  v-model="store.settings.getSideBar"
+                />
                 <span class="slider"></span>
               </label>
             </li>
@@ -151,11 +155,12 @@ const isDarkMode = ref(false)
 const isGoogleConnected = ref(false)
 const isDiscordConnected = ref(false)
 const userData = ref({})
-const isSideBarEnable = computed(() => store.global.getSideBar)
+const isSideBarEnable = computed(() => store.settings.getSideBar)
 
 function handleNavPage(value, name) {
   actualPage.value = value
   selectedOption.value = name ?? null
+  document.getElementById(1).classList.add('selected')
 }
 
 function handleAction() {}
@@ -165,7 +170,7 @@ function toggleTheme() {
 }
 
 function toggleSideBar() {
-  store.global.setSideBar(!isSideBarEnable.value)
+  store.settings.setSideBar(!isSideBarEnable.value)
 }
 
 function handleExtLink(name, params) {

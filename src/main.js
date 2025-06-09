@@ -15,7 +15,6 @@ import * as globalFunc from './functions/functions'
 import './assets/css/main.css'
 import 'vue-toastification/dist/index.css'
 import '@/assets/css/elements/e-toast.css'
-import 'vue-step-progress/dist/main.css'
 
 const app = createApp(App)
 

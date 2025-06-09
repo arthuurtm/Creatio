@@ -34,6 +34,7 @@
   height: calc-size(auto);
   interpolate-size: allow-keywords;
   overflow: hidden;
+  border: 1px solid var(--border)
 }
 
 .dialog-main.loading {

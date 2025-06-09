@@ -4,12 +4,11 @@ import { computed, ref, inject } from 'vue'
 import { useRoute } from 'vue-router'
 
 const store = inject('stores')
-const globalStore = store.global
 const props = defineProps({
   hiddenNavigator: Boolean,
 })
 const routeHidden = useRoute().meta.hiddenNavigator
-const sideBar = computed(() => globalStore.getSideBar)
+const sideBar = computed(() => store.settings.getSideBar)
 const navigator = ref(null)
 
 const hiddenNavigator = computed(() => {
@@ -117,7 +116,9 @@ const pageName = computed(() => useRoute().name)
 
       <div class="view-app" :class="[!navStatus && 'no-rounded']">
         <router-view v-slot="{ Component }">
-          <component :is="Component" />
+          <transition name="fastFade" mode="out-in">
+            <component :is="Component" />
+          </transition>
         </router-view>
       </div>
     </div>
@@ -132,7 +133,7 @@ const pageName = computed(() => useRoute().name)
   height: 100%;
   width: 100%;
   position: relative;
-  background-color: var(--bg2);
+  background-color: var(--bg);
 }
 
 .header-bar {
@@ -140,6 +141,8 @@ const pageName = computed(() => useRoute().name)
   align-items: center;
   padding: 0.6rem;
   grid-row: 1;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 6px var(--primary-shadow);
 }
 
 .header-bar .search {
@@ -171,12 +174,11 @@ const pageName = computed(() => useRoute().name)
   display: grid;
   grid-column: 1;
   z-index: 2;
+  background-color: var(--bg);
 }
 
 .view-app {
   padding: 30px;
-  background-color: var(--bg);
-  border-top-left-radius: 15px;
   overflow-y: auto;
   flex-grow: 1;
   z-index: 1;

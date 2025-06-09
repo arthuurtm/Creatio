@@ -128,8 +128,8 @@ const profilePicture = computed(() => {
   return user.getProfilePicture
 })
 const navigatorIcon = ref('menu')
-const selectedPage = ref(props.page)
-const hidden = computed(() => props.hidden)
+const selectedPage = computed(() => props.page)
+const hidden = ref(props.hidden)
 
 // Funções
 const handleIsMobile = () => {

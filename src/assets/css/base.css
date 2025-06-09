@@ -10,8 +10,9 @@
 
 /* Tema claro */
 :root {
-  --primary: #205edc;
-  --primary-hover: #2466ea;
+  --primary: #0b6a90;
+  --primary-hover: rgb(51, 117, 248);
+  --primary-back: #205fdc44;
   --secondary: #7e7e7e;
   --secondary-hover: #757575;
   --danger: #bb2a2a;
@@ -22,6 +23,7 @@
   --background-color: #fff;
   --background-alt: #f0f4f9;
   --border-color: #efeded;
+  --primary-shadow: #d5dce340;
 
   --input-bg-neutral: #e9ecef;
   --input-text-neutral: #737c85;
@@ -30,14 +32,15 @@
   --scroll-btn: #91919194;
   --scroll-btn-hover: #ffffff85;
 
-  --element-focus: #b8b8b8f1;
+  --element-focus: #ddddddf1;
   --element-hover: #c5c5c5a9;
 }
 
 /* Tema escuro */
 :root[data-theme='dark'] {
-  --primary: #105faa;
+  --primary: #0d4b85;
   --primary-hover: #136dc2;
+  --primary-back: #1060aa3d;
   --secondary: #7e7e7e;
   --secondary-hover: #999;
   --danger: #a20202;
@@ -48,6 +51,7 @@
   --background-color: #0e0e0e;
   --background-alt: #1a1a1f;
   --border-color: #2a2a2a;
+  --primary-shadow: #1d1b1b80;
 
   --input-bg-neutral: #3a3a3a;
   --input-text-neutral: #f0f0f0;
@@ -56,8 +60,8 @@
   --scroll-btn: #ffffff33;
   --scroll-btn-hover: #ffffff4d;
 
-  --element-focus: #6a6a6ad9;
-  --element-hover: #6a6a6aaa;
+  --element-focus: #7a7a7ad9;
+  --element-hover: #777777aa;
 }
 
 /* Mapa semântico*/

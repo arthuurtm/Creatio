@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import ComponentForm from '@/components/ComponentForm.vue'
+import ComponentForm from '@/components/ComponentFormPage.vue'
 import { computed, watch, ref, inject } from 'vue'
 import * as globalFunc from '@/functions/functions'
 import { useRouter } from 'vue-router'

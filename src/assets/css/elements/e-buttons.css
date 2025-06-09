@@ -16,7 +16,9 @@
   transition:
     opacity 0.3s ease,
     margin-left 0.5s ease,
-    filter 0.3s ease;
+    filter 0.3s ease,
+    background-color 0.1s ease,
+    box-shadow 0.1s ease;
   gap: 0.5rem;
   align-items: center;
   justify-content: center;
@@ -45,12 +47,14 @@
 
 .btn.confirm {
   color: #fff;
-  border: 1px solid var(--confirm-button);
+  border: 2px solid var(--bg);
   background-color: var(--confirm-button);
+  box-shadow: 0 0 0 2px var(--confirm-button); /* borda azul mais escura externa */
 }
 
 .btn.confirm:hover {
   background-color: var(--confirm-button-hover);
+  box-shadow: 0 0 0 2px var(--confirm-button-hover);
 }
 
 .btn.symbolic {

@@ -1,7 +1,6 @@
 import { useUserStore } from './user'
 import { useFormStore } from './form'
-import { useAppDynamicDialog } from './dialog'
-import { useGlobalStore } from './global'
+import { useGlobalStore, useSettingsStore, useAppDynamicDialog } from './global'
 
 export function createStores() {
   return {
@@ -9,5 +8,6 @@ export function createStores() {
     form: useFormStore(),
     dialog: useAppDynamicDialog(),
     global: useGlobalStore(),
+    settings: useSettingsStore(),
   }
 }

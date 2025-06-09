@@ -20,7 +20,7 @@ function emitEvent(args = {}) {
     v-for="game in props.games"
     :key="game.id"
     class="gameCard"
-    @click="emitEvent({ name: 'playgame', id: game.id })"
+    @click="emitEvent({ id: game.id })"
   >
     <div class="title">
       <p>{{ game.title || 'Exemplo' }}</p>

@@ -24,7 +24,7 @@
       <div v-if="loading"><CreateLoading :class="loadCont" /></div>
 
       <div class="sliding" v-else-if="games && games.length > 0" ref="scrollContainer">
-        <CreateCard :games="games" />
+        <CreateCard :games="games" @emitEvent="playGame" />
       </div>
 
       <div v-else>
@@ -100,10 +100,10 @@ function scrollRight() {
   }
 }
 
-function playGame(id) {
+function playGame(args = {}) {
   router.push({
     name: 'GameDetails',
-    params: { id },
+    params: { id: args.id },
   })
 }
 

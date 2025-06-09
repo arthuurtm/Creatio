@@ -64,7 +64,7 @@ const emits = defineEmits(['emitEvent'])
 
 const store = inject('stores')
 const activeStore = computed(() => store[props.storeName])
-const formData = computed(() => activeStore.value.getInputData)
+const formData = ref(activeStore.value.getInputData)
 
 const customIcon = ref({ password: 'visibility' })
 

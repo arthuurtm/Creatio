@@ -1,251 +1,68 @@
-<template>
-  <div class="page" :class="isMinimal() && 'minimal'">
-    <span
-      v-if="!isMinimal()"
-      class="settings-button material-symbols-outlined notranslate"
-      @click="handleSettingsBox"
-      >settings</span
-    >
-
-    <transition name="errAnim">
-      <div
-        v-if="errorMessage"
-        id="error-message"
-        class="error-message"
-        :class="errorMessage && 'show'"
-      >
-        ✖ {{ errorMessage }}
-      </div>
-    </transition>
-
-    <CreateLoading v-if="isLoading" :full="true" />
-
-    <div class="main-form-container">
-      <div class="left">
-        <img src="@/assets/img/min-logo.png" alt="Logo do Sysroot" id="logo" />
-        <h1 v-if="config">{{ config.title }}</h1>
-        <h1 v-else>Erro Interno</h1>
-      </div>
-
-      <div v-if="hasStepsData && currentStepData && !hasErrors" class="right">
-        <form class="form-container" @submit.prevent="submitForm">
-          <div class="centered">
-            <transition name="slide-left" mode="out-in">
-              <div :key="currentStepData.stepIndex">
-                <div class="sepElements">
-                  <CreateTextField
-                    :fields="currentStepData.fields"
-                    @emitEvent="handleFunctionEvent"
-                    :storeName="config.store || 'form'"
-                  />
-                  <div class="text warning" id="capslock-text" style="display: none">
-                    <p>Capslock está ativo</p>
-                  </div>
-                </div>
-              </div>
-            </transition>
-          </div>
-
-          <CreateAnchor
-            v-if="currentStepData.anchor"
-            :anchor="currentStepData.anchor"
-            @emitEvent="handleFunctionEvent"
-          />
-          <div class="sepButtons">
-            <CreateButton
-              v-if="currentStepData.buttons"
-              :buttons="currentStepData.buttons"
-              @emitEvent="handleFunctionEvent"
-            />
-          </div>
-        </form>
-      </div>
-
-      <div v-else-if="!hasStepsData || !currentStepData || hasErrors" class="right">
-        <form class="form-container" @submit.prevent="submitForm">
-          <div class="centered">
-            <div class="sepElements">
-              <p>Ocorreu um erro interno, tente novamente mais tarde.</p>
-            </div>
-          </div>
-
-          <div class="sepButtons">
-            <CreateButton
-              :buttons="[
-                {
-                  text: 'Voltar',
-                  action: {
-                    name: !hasStepsData ? 'back' : !currentStep ? 'rewind' : 'back',
-                    type: 'local',
-                  },
-                },
-              ]"
-              @emitEvent="handleFunctionEvent"
-            />
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, computed, inject, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { showToast } from '@/plugins/toast'
-
-const props = defineProps({
-  config: {
+defineProps({
+  stepData: {
+    type: Object,
+    default: () => ({
+      stepIndex: 0,
+      fields: [],
+      buttons: [
+        {
+          text: 'Voltar',
+          action: { type: 'local', name: 'back' },
+        },
+      ],
+      anchor: null,
+      message: 'Ocorreu um erro ao carregar os dados do formulário.',
+    }),
+  },
+  general: {
     type: Object,
     default: () => ({}),
   },
-  formFunctions: {
-    type: Object,
-    default: () => ({}),
-  },
-  errorMessage: String,
-  isLoading: Boolean,
-  redirectName: String,
 })
+const emit = defineEmits(['submit-form', 'emit-event'])
 
-const emit = defineEmits(['button-click'])
-
-const router = useRouter()
-const store = inject('stores')
-const formStore = store.form
-const appDynamicDialog = store.dialog
-
-const errors = ref([])
-const formData = computed(() => formStore.getFormData)
-const currentStep = computed(() => formStore.getCurrentStep)
-
-const allSteps = computed(() => {
-  if (!props.config?.steps) return []
-  return Object.entries(props.config.steps).map(([key, value]) => ({
-    ...value,
-    stepIndex: Number(key),
-  }))
-})
-
-const currentStepData = computed(() => {
-  return allSteps.value.find((step) => step.stepIndex === currentStep.value) || null
-})
-
-const hasStepsData = computed(() => !!props.config?.steps)
-const hasErrors = computed(() => errors.value.length > 0)
-
-function isMinimal() {
-  if (props.config?.type === 'minimal') {
-    return true
-  }
-  return false
+function submitForm() {}
+function handleFunctionEvent(event) {
+  emit('emitEvent', event)
 }
-
-function submitForm() {
-  console.log('Submetendo formulário com os dados...')
-}
-
-function handleSettingsBox() {
-  appDynamicDialog.setDialog('DialogSettings', { title: 'Configurações' })
-}
-
-function handleFunctionEvent(payload) {
-  const { action, value, type } = payload
-
-  if (type === 'local') {
-    try {
-      switch (action) {
-        case 'redirect':
-          redirect(value)
-          break
-        case 'forward':
-          forward()
-          break
-        case 'rewind':
-          rewind()
-          break
-        case 'back':
-          back()
-          break
-        default:
-          console.warn(`Ação local "${action}" não implementada.`)
-      }
-    } catch (error) {
-      console.error(`Erro ao executar ação local "${action}":`, error)
-    }
-  } else {
-    if (props.formFunctions?.[action]) {
-      props.formFunctions[action](value)
-    } else {
-      errors.value.push({
-        function: action,
-      })
-    }
-  }
-}
-
-// Funções locais reutilizáveis
-function redirect(link) {
-  router.push({ name: link })
-}
-
-function forward() {
-  formStore.setCurrentStep(formStore.getCurrentStep + 1)
-}
-
-function rewind() {
-  formStore.setCurrentStep(formStore.getCurrentStep - 1)
-}
-
-function back() {
-  router.back()
-}
-
-onMounted(() => {
-  // var input = document.querySelector('.input-field')
-  // var text = document.getElementById('capslock-text')
-  // input.addEventListener('keyup', function (event) {
-  //   if (event.getModifierState('CapsLock')) {
-  //     text.style.display = 'block'
-  //   } else {
-  //     text.style.display = 'none'
-  //   }
-  // })
-
-  window.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault()
-      const submitButton = document.querySelector('.btn.confirm')
-      if (submitButton) {
-        submitButton.click()
-      }
-    } else if (event.key === 'Escape') {
-      event.preventDefault()
-      const submitButton = document.querySelector('.btn')
-      if (submitButton) {
-        submitButton.click()
-      }
-    }
-  })
-})
-
-// Expondo os métodos e dados para o template
-defineExpose({
-  formData,
-  errors,
-  submitForm,
-  currentStep,
-  currentStepData,
-  hasStepsData,
-  handleSettingsBox,
-  handleFunctionEvent,
-  redirect,
-  forward,
-  rewind,
-  back,
-})
 </script>
 
+<template>
+  <form class="form-container" @submit.prevent="submitForm">
+    <div class="centered">
+      <transition name="slide-left" mode="out-in">
+        <div :key="stepData.stepIndex">
+          <div class="sepElements">
+            <p v-if="stepData.message">{{ stepData.message }}</p>
+            <CreateTextField
+              :fields="stepData.fields"
+              @emitEvent="handleFunctionEvent"
+              :storeName="general.store || 'form'"
+            />
+            <div class="text warning" id="capslock-text" style="display: none">
+              <p>Capslock está ativo</p>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </div>
+
+    <CreateAnchor
+      v-if="stepData.anchor"
+      :anchor="stepData.anchor"
+      @emitEvent="handleFunctionEvent"
+    />
+    <div class="sepButtons">
+      <CreateButton
+        v-if="stepData.buttons"
+        :buttons="stepData.buttons"
+        @emitEvent="handleFunctionEvent"
+      />
+    </div>
+  </form>
+</template>
+
 <style scoped>
-@import url(/src/assets/css/components/c-form.css);
+@import '/src/assets/css/components/c-form.css';
 </style>

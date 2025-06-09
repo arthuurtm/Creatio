@@ -13,13 +13,13 @@ const dynamicDialog = store.dialog
     <div class="header">
       <h3>
         <b>
-          <h3 v-if="userStore.getIsAuth" class="">{{ userStore.getName }}</h3>
+          <h3 v-if="userStore.getIsAuth" class="gradient">{{ userStore.getName }}</h3>
           <h3 v-else class="gradient">Início</h3>
         </b>
       </h3>
       <div class="header-profile">
         <img
-          v-if="userStore.getProfilePicture"
+          v-if="userStore.getIsAuth"
           :src="userStore.getProfilePicture"
           alt="Foto de perfil"
           class="profile-picture"

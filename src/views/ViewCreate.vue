@@ -38,93 +38,10 @@
         <div class="step-form" style="grid-column: 1">
           <div class="container">
             <ComponentForm
-              :config="{
-                type: 'minimal',
-                store: 'global',
-                steps: {
-                  1: {
-                    fields: [
-                      {
-                        label: 'Nome do Jogo',
-                        model: 'gameName',
-                        placeholder: 'Um nome bem legal!',
-                        icon: 'emoji_objects',
-                        style: {
-                          rounded: true,
-                        },
-                      },
-                      {
-                        label: 'Descrição do Jogo',
-                        model: 'gameDescription',
-                        placeholder: 'Uma descrição legal!',
-                        icon: 'description',
-                        style: {
-                          rounded: true,
-                        },
-                      },
-                    ],
-                    buttons: [
-                      {
-                        text: 'Avançar',
-                        class: 'confirm',
-                        action: {
-                          name: 'forward',
-                          type: 'local',
-                        },
-                      },
-                    ],
-                  },
-                  2: {
-                    fields: [
-                      {
-                        label: 'Imagem do Jogo',
-                        type: 'file',
-                        icon: 'image',
-                        model: 'gameImage',
-                        style: {
-                          rounded: true,
-                        },
-                      },
-                      {
-                        label: 'Som do Jogo',
-                        type: 'file',
-                        icon: 'music_note',
-                        model: 'gameSound',
-                        style: {
-                          rounded: true,
-                        },
-                      },
-                    ],
-                    buttons: [
-                      {
-                        text: 'Voltar',
-                        position: 'left',
-                        class: '',
-                        action: {
-                          name: '',
-                        },
-                      },
-                      {
-                        text: 'Pular',
-                        icon: 'skip_next',
-                        class: 'symbolic',
-                        action: {
-                          name: 'forward',
-                          type: 'local',
-                        },
-                      },
-                      {
-                        text: 'Avançar',
-                        class: 'confirm',
-                        action: {
-                          name: 'handleGameDetails',
-                        },
-                      },
-                    ],
-                  },
-                },
-              }"
-              :formFunctions="functions"
+              :stepData="stepConfigs[actualStep]"
+              :general="{ store: 'global' }"
+              :key="actualStep"
+              @emitEvent="handleFormEvent"
             />
           </div>
         </div>
@@ -150,14 +67,17 @@
 
       <!-- Etapa 4 - Revisão -->
       <div class="step-container" v-if="actualPage === 4"></div>
+
+      <button class="btn" @click="actualPage++">Avançar (forçar -> dev)</button>
     </div>
   </div>
 </template>
 
 <script setup>
 import ComponentForm from '@/components/ComponentForm.vue'
-import { inject, ref, computed, onMounted } from 'vue'
+import { inject, ref, computed } from 'vue'
 import { post } from '@/functions/functions'
+import { showToast } from '@/plugins/toast'
 
 const store = inject('stores')
 const globalStore = store.global
@@ -165,19 +85,109 @@ const inputData = globalStore.getInputData
 
 const steps = ['Configurações básicas', 'Jogo', 'Créditos', 'Revisão']
 const actualPage = ref(0)
+const actualStep = computed(() => actualPage.value) // ou ajuste conforme sua lógica
+
+const stepConfigs = {
+  1: {
+    stepIndex: 1,
+    fields: [
+      {
+        label: 'Nome do Jogo',
+        model: 'gameName',
+        placeholder: 'Um nome bem legal!',
+        icon: 'emoji_objects',
+        style: { rounded: true },
+      },
+      {
+        label: 'Descrição do Jogo',
+        model: 'gameDescription',
+        placeholder: 'Uma descrição legal!',
+        icon: 'description',
+        style: { rounded: true },
+      },
+    ],
+    buttons: [
+      {
+        text: 'Pular',
+        icon: 'skip_next',
+        position: 'left',
+        class: 'symbolic',
+        action: { name: 'handleGameCreate' },
+      },
+      {
+        text: 'Avançar',
+        class: 'confirm',
+        action: { name: 'forward', type: 'local' },
+      },
+    ],
+  },
+  2: {
+    stepIndex: 2,
+    fields: [
+      {
+        label: 'Imagem do Jogo',
+        type: 'file',
+        icon: 'image',
+        model: 'gameImage',
+        style: { rounded: true },
+      },
+      {
+        label: 'Som do Jogo',
+        type: 'file',
+        icon: 'music_note',
+        model: 'gameSound',
+        style: { rounded: true },
+      },
+    ],
+    buttons: [
+      {
+        text: 'Voltar',
+        position: 'left',
+        class: '',
+        action: { type: 'local', name: 'rewind' },
+      },
+      {
+        text: 'Avançar',
+        class: 'confirm',
+        action: { name: 'handleGameCreate', value: 'true' },
+      },
+    ],
+  },
+}
 
 function criarNovoJogo() {
   actualPage.value = 1
 }
 
+function handleFormEvent(event) {
+  if (event.type === 'local') {
+  }
+  if (typeof event.name === 'function') {
+  } else {
+  }
+}
+
 const functions = {
-  handleGameDetails: async () => {
-    const gameData = new FormData()
-    // gameData.append('gameName', inputData.gameName)
-    // gameData.append('gameDescription', inputData.gameDescription)
-    gameData.append('gameImage', inputData.gameImage)
-    gameData.append('gameSound', inputData.gameSound)
-    await post({ type: 'file', route: 'upload' }, { data: gameData })
+  handleGameCreate: async (images = false) => {
+    try {
+      post(
+        { type: 'database', route: 'setGame' },
+        { title: inputData.gameName, description: inputData.gameDescription },
+      )
+
+      if (images) {
+        const gameData = new FormData()
+        gameData.append('gameImage', inputData.gameImage)
+        gameData.append('gameSound', inputData.gameSound)
+        for (const pair of gameData.entries()) {
+          console.log(pair[0], pair[1])
+        }
+        post({ type: 'file', route: 'upload', contentType: 'multipart/form-data' }, gameData)
+      }
+    } catch (error) {
+      showToast({ type: 'error', message: 'Erro ao criar o jogo.' })
+      console.error('Erro ao criar o jogo:', error)
+    }
   },
 }
 </script>
@@ -216,6 +226,55 @@ const functions = {
 
 .step-preview {
   margin-right: auto;
+}
+
+/* Garante que o formulário tenha tamanho consistente */
+.step-form .container,
+.step-form form.form-container {
+  width: 100%;
+  max-width: 400px;
+  min-width: 280px;
+  margin: 0 auto;
+  background: var(--form-bg, #fff);
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Remove padding duplicado se o form já tiver */
+.step-form .container {
+  padding: 0;
+  box-shadow: none;
+  background: none;
+}
+
+/* Responsividade para telas pequenas */
+@media (max-width: 600px) {
+  .step-container {
+    padding: 0;
+  }
+  .step-container.double-divided {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .step-form,
+  .step-preview {
+    display: flex;
+    margin-left: unset;
+  }
+
+  .step-form .container,
+  .step-form form.form-container {
+    max-width: 100vw;
+    min-width: unset;
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
 }
 
 /* Lista de jogos */

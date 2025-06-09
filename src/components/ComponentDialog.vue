@@ -1,12 +1,13 @@
 <script setup>
 import { computed, ref, watch, resolveDynamicComponent, inject } from 'vue'
+import CreateLoading from './elements/CreateLoading.vue'
 
 const props = defineProps({
   component: String,
   title: String,
 })
 
-const asyncComponent = ref(null)
+const asyncComponent = ref(CreateLoading)
 const store = inject('stores')
 
 function close() {
@@ -32,6 +33,7 @@ watch(
   async (newComponent) => {
     if (!newComponent) return
 
+    asyncComponent.value = CreateLoading
     const resolved = resolveDynamicComponent(newComponent)
     if (resolved) {
       asyncComponent.value = resolved

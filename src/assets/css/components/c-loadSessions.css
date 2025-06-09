@@ -25,7 +25,7 @@
   width: 100%;
   box-sizing: border-box;
   position: relative;
-  overflow-x: auto;
+  /* overflow-x: auto; */
   scroll-behavior: smooth;
 }
 

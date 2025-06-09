@@ -4,10 +4,13 @@ import { computed, ref } from 'vue'
 const props = defineProps({
   steps: {
     type: Array,
+
     default: () => [],
   },
+
   currentStep: {
     type: Number,
+
     default: 0,
   },
 })
@@ -30,7 +33,8 @@ const progressWidth = computed(() => {
       <div class="step" :class="{ active: props.currentStep >= index }">
         <div class="dot"></div>
       </div>
-      <p class="step-label">{{ step }}</p>
+
+      <p class="step-label" :class="{ active: props.currentStep >= index }">{{ step }}</p>
     </div>
   </div>
 </template>
@@ -72,6 +76,7 @@ const progressWidth = computed(() => {
 }
 
 /* Cada bolinha */
+
 .step-wrapper {
   display: flex;
   flex-direction: column;
@@ -109,5 +114,16 @@ const progressWidth = computed(() => {
   color: var(--text);
   text-align: center;
   white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  p {
+    transition: opaticy 0.5s;
+    opacity: 0;
+  }
+
+  p.active {
+    opacity: 1;
+  }
 }
 </style>

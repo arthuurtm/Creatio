@@ -70,21 +70,21 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
     return messages[status] || 'Erro desconhecido'
   }
 
-  const headers = {
-    'Content-Type': 'application/json',
-  }
+  const isFormData = body instanceof FormData
 
   const config = {
     credentials: 'include',
     method,
-    headers,
-  }
-
-  if (body) {
-    config.body = JSON.stringify(body)
+    headers: isFormData
+      ? undefined
+      : {
+          'Content-Type': endpoint.contentType || 'application/json',
+        },
+    body: isFormData ? body : body ? JSON.stringify(body) : null,
   }
 
   try {
+    // console.log(`Fazendo requisição para ${endpoint.route}...`, config)
     const response = await fetch(getApiUrl(endpoint.type, endpoint.route), config)
 
     if (!response.ok) {

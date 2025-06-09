@@ -48,6 +48,8 @@
   margin: 0 auto;
   border-radius: 1rem;
   padding: 1.5rem;
+  border: none;
+  box-shadow: none;
 }
 
 .page.minimal .main-form-container .left {
@@ -68,14 +70,15 @@
   gap: 5px;
   width: 830px;
   height: auto;
-  /* border: 2px solid var(--border); */
+  border: 1px solid var(--border);
   background-color: var(--form);
   transition: border 300ms ease-out;
-  overflow: hidden; /* Evita que o conteúdo transborde */
+  overflow: hidden;
   min-height: 350px;
   animation: fadeInBlur 0.2s ease-out;
   scrollbar-color: var(--bg) var(--bg);
   scrollbar-width: thin;
+  box-shadow: 0 7px 14px var(--primary-shadow);
 }
 
 .error-message {
@@ -241,6 +244,7 @@ hr {
     gap: 0; /* Espaçamento entre os elementos */
     width: auto;
     height: auto;
+    box-shadow: none;
   }
 
   .main-form-container .left {
