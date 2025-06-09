@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['3d8e-138-0-83-164.ngrok-free.app'],
+    allowedHosts: [],
     proxy: {
       // API de Leitura do Banco de Dados
       '/api/database': {
