@@ -7,14 +7,14 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), vueJsx(), vueDevTools()],
+  plugins: [vue(), vueJsx() /*vueDevTools()*/],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   server: {
-    allowedHosts: ['9091287adef43d3f801ceed1e742f6a3.serveo.net'],
+    allowedHosts: ['3d8e-138-0-83-164.ngrok-free.app'],
     proxy: {
       // API de Leitura do Banco de Dados
       '/api/database': {

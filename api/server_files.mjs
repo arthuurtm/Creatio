@@ -1,13 +1,28 @@
 /* eslint-disable no-undef */
-const express = require('express')
-const multer = require('multer')
-const Minio = require('minio')
-const fs = require('fs')
-require('dotenv').config({ path: '../.env' })
+import express from 'express'
+import multer from 'multer'
+import * as Minio from 'minio'
+import fs from 'fs'
+import path from 'path'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: '../.env' })
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, '/tmp')
+  },
+  filename: (req, file, cb) => {
+    // para evitar conflito, cria um nome único, ex: timestamp + nome original
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+    const ext = path.extname(file.originalname)
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext)
+  },
+})
 
 const app = express()
 const port = 3003
-const upload = multer({ dest: multer.memoryStorage })
+const upload = multer({ storage })
 
 const minioClient = new Minio.Client({
   endPoint: 'localhost', // ou IP do seu servidor
@@ -34,11 +49,11 @@ minioClient.bucketExists(bucketName, (err, exists) => {
 })
 
 app.post('/upload', upload.any(), async (req, res) => {
-  const files = req.files
+  const files = req.files || []
 
-  console.log('Arquivos recebidos:', files)
+  // console.log('Arquivos recebidos:', files)
 
-  if (!files || files.length === 0) {
+  if (!files.length) {
     return res.status(400).send({ message: 'Nenhum arquivo enviado.' })
   }
 
@@ -48,16 +63,17 @@ app.post('/upload', upload.any(), async (req, res) => {
     const minioFileName = file.originalname
 
     try {
-      // Upload para o MinIO
       await new Promise((resolve, reject) => {
         minioClient.fPutObject(
           bucketName,
           minioFileName,
-          file.path,
+          file.path, // caminho do arquivo temporário em /tmp
           { 'Content-Type': file.mimetype },
-          function (err, etag) {
-            // Apaga o arquivo local
-            fs.unlinkSync(file.path)
+          (err, etag) => {
+            // Apaga o arquivo temporário depois do upload
+            fs.unlink(file.path, (unlinkErr) => {
+              if (unlinkErr) console.error('Erro ao apagar arquivo temporário:', unlinkErr)
+            })
 
             if (err) return reject(err)
             resolve(etag)

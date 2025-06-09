@@ -1,14 +1,11 @@
-/* eslint-disable no-undef */
-const express = require('express')
-const http = require('http')
-const WebSocket = require('ws')
-;(async () => {
-  const request = await import('../src/functions/functions.js')
-})()
+import express from 'express'
+import http from 'http'
+import { WebSocketServer } from 'ws'
+import * as request from '../src/functions/functions.js'
 
 const app = express()
 const server = http.createServer(app)
-const wss = new WebSocket.Server({ server })
+const wss = new WebSocketServer({ server })
 
 wss.on('connection', (ws) => {
   console.log('🧠 Novo cliente conectado')

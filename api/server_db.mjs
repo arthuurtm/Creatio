@@ -1,24 +1,29 @@
 /* eslint-disable no-undef */
-const express = require('express')
-const { Sequelize, DataTypes, Op } = require('sequelize')
-const cors = require('cors')
-const bcrypt = require('bcrypt')
-const crypto = require('crypto')
-const { v4: uuidv4 } = require('uuid')
-const cookieParser = require('cookie-parser')
-const UAParser = require('ua-parser-js')
-const rateLimit = require('express-rate-limit')
-const fs = require('fs')
-const jwt = require('jsonwebtoken')
-const https = require('https')
-const validator = require('validator')
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args))
-require('dotenv').config({ path: '../.env' })
+import express from 'express'
+import { Sequelize, DataTypes, Op } from 'sequelize'
+import cors from 'cors'
+import bcrypt from 'bcrypt'
+import crypto from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
+import cookieParser from 'cookie-parser'
+import * as UAParser from 'ua-parser-js'
+import rateLimit from 'express-rate-limit'
+import fs from 'fs'
+import jwt from 'jsonwebtoken'
+import https from 'https'
+import validator from 'validator'
+import dotenv from 'dotenv'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const httpsOptions = {
-  key: fs.readFileSync('./auth/certificate/auto/key.pem'),
-  cert: fs.readFileSync('./auth/certificate/auto/cert.pem'),
-}
+// Corrige __dirname para ES Modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Carrega variáveis de ambiente
+dotenv.config({ path: '../.env' })
+
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args))
 
 const corsOptions = {
   origin: ['http://localhost:5173', 'https://6021-138-0-82-55.ngrok-free.app'],
@@ -383,7 +388,7 @@ const loginLimiter = rateLimit({
 app.post('/setLogin', async (req, res) => {
   const { type, identification, password } = req.body
   const userAgent = req.headers['user-agent']
-  const parser = new UAParser()
+  const parser = new UAParser.UAParser()
   const device = parser.setUA(userAgent).getResult()
   // const isMobile = req.headers['sec-ch-ua-mobile'] === '?1';
 
@@ -695,13 +700,22 @@ app.get('/getGames', async (req, res) => {
 
 app.post('/setGame', async (req, res) => {
   try {
-    const { title, description, genre, userId } = req.body
+    const accessToken = req.cookies?.accessToken
+    const { title, description } = req.body
+
+    const session = await Session.findOne({
+      where: { accessToken },
+      include: [{ model: User, attributes: ['id'] }],
+    })
+
+    if (!session || !session.User) {
+      res.status(404).json({ message: 'Sessão não encontrada ou usuário inválido.' })
+    }
 
     const game = await Game.create({
       title,
       description,
-      genre,
-      userId,
+      userId: session.User.id,
     })
 
     res.status(201).json({ message: 'Jogo criado com sucesso', game })
@@ -710,7 +724,6 @@ app.post('/setGame', async (req, res) => {
     res.status(500).json({ message: 'Erro interno no servidor' })
   }
 })
-
 // Gera um código de verificação e envia um e-mail para resetar a senha
 app.post('/setResetPassCode', async (req, res) => {
   const { userId } = req.body
