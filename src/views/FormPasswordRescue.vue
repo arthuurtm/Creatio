@@ -1,5 +1,5 @@
 <template>
-  <AppDynamicForm
+  <ComponentForm
     ref="formRef"
     :config="formConfig"
     :isLoading="isLoading"
@@ -8,16 +8,17 @@
 </template>
 
 <script setup>
-import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
+import ComponentForm from '@/components/ComponentFormPage.vue'
 import { ref, inject } from 'vue'
 import * as globalFunc from '@/functions/functions'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { showToast } from '@/plugins/toast'
 
 const store = inject('stores')
 const formStore = store.form
-const formData = formStore.getFormData
+const formData = formStore.getInputData
 const router = useRouter()
+const route = useRoute()
 
 const sentCode = ref(false)
 const isLoading = ref(false)
@@ -109,7 +110,7 @@ const formConfig = {
           action: { name: 'rewind', type: 'local' },
         },
         {
-          text: 'Cadastrar',
+          text: 'Confirmar',
           class: 'confirm',
           type: 'submit',
           action: { name: 'resetPassword' },
@@ -187,7 +188,7 @@ const functions = {
       })
       setTimeout(() => {
         router.push({ name: 'Login' })
-      }, 6000)
+      }, 2000)
     } catch (error) {
       showToast({
         type: 'error',

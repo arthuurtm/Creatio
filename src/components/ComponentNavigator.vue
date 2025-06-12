@@ -1,12 +1,12 @@
 <template>
   <div class="container" :class="[isMenuActive && 'active']">
-    <div class="hide-nav" @click="updateMenuState(true)">
+    <a class="hide-nav" @click="updateMenuState(true)" v-if="defaultHideButton">
       <span class="material-symbols-outlined notranslate">{{ navigatorIcon }}</span>
-    </div>
+    </a>
 
     <div
       class="nav"
-      :class="[isMenuActive ? 'active' : 'minimized', hidden ? 'hidden' : '']"
+      :class="[isMenuActive ? 'active' : 'minimized', hidden && 'hidden']"
       id="nav"
       ref="menu"
     >
@@ -22,25 +22,26 @@
 
         <div class="center">
           <ul>
-            <li v-if="isAuthenticated" id="user-info">
-              <div>
-                <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
-              </div>
-              <div>
-                <p class="nickname">{{ user.getName }}</p>
-              </div>
+            <li v-if="isAuthenticated" id="user-info" class="user-info controller-index">
+              <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
+              <p class="nickname">@{{ user.getUsername }}</p>
             </li>
 
             <li
               v-if="!isAuthenticated"
               @click="navigateTo('Login')"
               :class="[selectedPage === 'Login' && 'selected']"
+              class="controller-index"
             >
               <span class="material-symbols-outlined notranslate">login</span>
               <p>Entrar</p>
             </li>
 
-            <li @click="navigateTo('Home')" :class="[selectedPage === 'Home' && 'selected']">
+            <li
+              @click="navigateTo('Home')"
+              :class="[selectedPage === 'Home' && 'selected']"
+              class="controller-index"
+            >
               <span class="material-symbols-outlined notranslate">home</span>
               <p>Início</p>
             </li>
@@ -49,6 +50,7 @@
               v-if="isAuthenticated"
               @click="navigateTo('Create')"
               :class="[selectedPage === 'Create' && 'selected']"
+              class="controller-index"
             >
               <span class="material-symbols-outlined notranslate">add_circle</span>
               <p>Criar</p>
@@ -56,19 +58,25 @@
 
             <li
               v-if="isAuthenticated"
-              @click="navigateTo('Avatar')"
-              :class="[selectedPage === 'Avatar' && 'selected']"
+              @click="navigateTo('Chat')"
+              :class="[selectedPage === 'Chat' && 'selected']"
+              class="controller-index"
             >
-              <span class="material-symbols-outlined notranslate">person</span>
-              <p>Personagens</p>
+              <span class="material-symbols-outlined notranslate">chat</span>
+              <p>Conversas</p>
             </li>
 
-            <li @click="handleSettingsBox">
+            <li @click="handleSettingsBox" class="controller-index">
               <span class="material-symbols-outlined notranslate">settings</span>
               <p>Configurações</p>
             </li>
 
-            <li v-if="isAuthenticated" @click="handleLogout" id="logoutMenuButton">
+            <li
+              v-if="isAuthenticated"
+              @click="handleLogout"
+              id="logoutMenuButton"
+              class="controller-index"
+            >
               <span class="material-symbols-outlined notranslate">logout</span>
               <p>Sair</p>
             </li>
@@ -91,8 +99,22 @@ const user = store.user
 const dialog = store.dialog
 
 // Props e Emits
-defineProps({ hidden: Boolean })
-const emit = defineEmits(['navigateTo'])
+const props = defineProps({
+  hidden: {
+    type: Boolean,
+    default: false,
+  },
+  page: {
+    type: String,
+    default: '',
+  },
+  defaultHideButton: {
+    type: Boolean,
+    default: false,
+  },
+})
+const emit = defineEmits(['navigateTo', 'navigatorStatus'])
+defineExpose({ updateMenuState })
 let touchTimeout = null
 
 // Estado reativo
@@ -101,12 +123,13 @@ const menuRef = ref(null)
 const startY = ref(0)
 const currentY = ref(0)
 const isDragging = ref(false)
-const isMenuActive = ref(false)
+const isMenuActive = ref(true)
 const profilePicture = computed(() => {
   return user.getProfilePicture
 })
 const navigatorIcon = ref('menu')
-const selectedPage = ref('')
+const selectedPage = computed(() => props.page)
+const hidden = ref(props.hidden)
 
 // Funções
 const handleIsMobile = () => {
@@ -133,12 +156,11 @@ const handleLogout = () => {
       },
     },
   })
-  updateMenuState()
 }
 
 const handleSettingsBox = () => {
   dialog.setDialog('DialogSettings', { title: 'Configurações' })
-  updateMenuState()
+  // updateMenuState()
 }
 
 // Eventos de Toque
@@ -188,6 +210,7 @@ function updateMenuState(force = false) {
   if (isMobile || force) {
     isMenuActive.value = !isMenuActive.value
   }
+  emit('navigatorStatus', isMenuActive.value)
 }
 
 // Watchers

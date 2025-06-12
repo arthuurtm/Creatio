@@ -29,12 +29,21 @@
     border-color 0.5s ease,
     height 0.3s ease,
     transform 0.3s ease;
-  max-width: 60%;
+  height: 0;
+  width: auto;
+  height: calc-size(auto);
+  interpolate-size: allow-keywords;
+  overflow: hidden;
+  border: 1px solid var(--border)
 }
 
 .dialog-main.loading {
   min-width: 400px;
   min-height: 200px;
+}
+
+.dialog-main.active {
+  height: auto;
 }
 
 .title-bar {
@@ -103,9 +112,7 @@
     left: 0;
     right: 0;
     max-width: unset;
-    height: 0;
-    height: calc-size(auto);
-    interpolate-size: allow-keywords;
+    max-height: 80%;
     min-width: unset;
     min-height: unset;
   }
@@ -114,15 +121,15 @@
     transition: unset;
   }
 
-  .dialog-main.active {
-    height: auto;
-  }
-
   .title-bar {
     order: 2;
   }
 
   .content {
     order: 1;
+  }
+
+  .container {
+    overflow-y: scroll;
   }
 }

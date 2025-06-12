@@ -1,9 +1,9 @@
 <template>
-  <AppDynamicForm :config="formConfig" :isLoading="isLoading" :formFunctions="functions" />
+  <ComponentForm :config="formConfig" :isLoading="isLoading" :formFunctions="functions" />
 </template>
 
 <script setup>
-import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
+import ComponentForm from '@/components/ComponentFormPage.vue'
 import { computed, watch, ref, inject } from 'vue'
 import * as globalFunc from '@/functions/functions'
 import { useRouter } from 'vue-router'
@@ -11,7 +11,7 @@ import { showToast } from '@/plugins/toast'
 
 const store = inject('stores')
 const formStore = store.form
-const formData = formStore.getFormData
+const formData = formStore.getInputData
 const nicknameValue = computed(() => formData.nickname)
 const router = useRouter()
 
@@ -21,7 +21,7 @@ const isLoading = ref(false)
 // Watchers
 watch(nicknameValue, (newNickname) => {
   if (newNickname !== undefined) {
-    formStore.formData.username = newNickname
+    formData.username = newNickname
       .toLowerCase()
       .replace(/[^a-z0-9_.]/g, '')
       .replace(/\s+/g, '')

@@ -7,39 +7,24 @@
     </div>
 
     <div class="content">
-      <CreateButton
-        @emitEvent="scrollLeft"
-        :buttons="[
-          {
-            icon: 'arrow_back_ios',
-            class: 'symbolic no-padding no-scalling',
-            id: 'left',
-            type: '',
-          },
-        ]"
-      />
+      <div id="btn">
+        <CreateButton
+          @emitEvent="scrollLeft"
+          :buttons="[
+            {
+              icon: 'arrow_back_ios',
+              class: 'symbolic no-padding no-scalling',
+              id: 'left',
+              type: '',
+            },
+          ]"
+        />
+      </div>
 
       <div v-if="loading"><CreateLoading :class="loadCont" /></div>
 
       <div class="sliding" v-else-if="games && games.length > 0" ref="scrollContainer">
-        <div v-for="game in games" :key="game.id" class="container gameCard">
-          <div class="title">
-            <p>{{ game.title }}</p>
-          </div>
-          <div class="banner">
-            <img id="banner" alt="Banner do jogo" />
-          </div>
-
-          <div class="uiOptions">
-            <div id="play">
-              <form @submit.prevent="playGame(game.version)">
-                <button id="play-button" class="btn symbolic" type="submit">
-                  <span class="material-symbols-outlined">play_arrow</span>
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
+        <CreateCard :games="games" @emitEvent="playGame" />
       </div>
 
       <div v-else>
@@ -56,24 +41,27 @@
         />
       </div>
 
-      <CreateButton
-        @emitEvent="scrollRight"
-        :buttons="[
-          {
-            position: 'left',
-            icon: 'arrow_forward_ios',
-            class: 'symbolic no-padding no-scalling',
-            id: 'right',
-            type: '',
-          },
-        ]"
-      />
+      <div id="btn">
+        <CreateButton
+          @emitEvent="scrollRight"
+          :buttons="[
+            {
+              position: 'left',
+              icon: 'arrow_forward_ios',
+              class: 'symbolic no-padding no-scalling',
+              id: 'right',
+              type: '',
+            },
+          ]"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import { get } from '@/functions/functions'
 
 const games = ref([])
@@ -81,6 +69,8 @@ const loading = ref(true)
 const scrollContainer = ref(null)
 const scrollAmount = 260
 const store = inject('stores')
+
+const router = useRouter()
 
 async function loadGames() {
   try {
@@ -108,6 +98,13 @@ function scrollRight() {
   if (scrollContainer.value) {
     scrollContainer.value.scrollLeft += scrollAmount
   }
+}
+
+function playGame(args = {}) {
+  router.push({
+    name: 'GameDetails',
+    params: { id: args.id },
+  })
 }
 
 onMounted(() => {

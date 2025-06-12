@@ -30,6 +30,9 @@ trap cleanup SIGINT
 # Vetor para armazenar os PIDs dos processos em segundo plano
 pids=()
 
+# Executa o servidor de arquivos
+docket start minio
+
 # Procurar por todos os arquivos .py **somente na raiz**, ignorando os que começam com "f_"
 for file in $(find . -maxdepth 1 -type f -name "*.py" | grep -v '/f_'); do
   echo "Executando $file com Python..."
@@ -37,8 +40,8 @@ for file in $(find . -maxdepth 1 -type f -name "*.py" | grep -v '/f_'); do
   pids+=($!)  # Armazenar o PID do processo em segundo plano
 done
 
-# Procurar por todos os arquivos .cjs **somente na raiz**, ignorando os que começam com "f_"
-for file in $(find . -maxdepth 1 -type f -name "*.cjs" | grep -v '/f_'); do
+# Procurar por todos os arquivos .mjs **somente na raiz**, ignorando os que começam com "f_"
+for file in $(find . -maxdepth 1 -type f -name "*.mjs" | grep -v '/f_'); do
   echo "Executando $file com Node.js..."
   node "$file" &
   pids+=($!)  # Armazenar o PID do processo em segundo plano

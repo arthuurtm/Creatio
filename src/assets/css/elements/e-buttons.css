@@ -1,6 +1,6 @@
 /* Estilos básicos para todos os botões */
 .btn {
-  display: inline-block;
+  display: flex;
   width: auto;
   padding: 12px 18px;
   border-radius: 30px;
@@ -13,14 +13,24 @@
   text-align: center;
   border: 1px solid var(--default-button);
   opacity: 1;
-  /* transition:
+  transition:
     opacity 0.3s ease,
     margin-left 0.5s ease,
-    filter 0.3s ease; */
+    filter 0.3s ease,
+    background-color 0.1s ease,
+    box-shadow 0.1s ease;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn:hover {
   filter: brightness(110%);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn.destructive {
@@ -37,12 +47,14 @@
 
 .btn.confirm {
   color: #fff;
-  border: 1px solid var(--confirm-button);
+  border: 2px solid var(--bg);
   background-color: var(--confirm-button);
+  box-shadow: 0 0 0 2px var(--confirm-button); /* borda azul mais escura externa */
 }
 
 .btn.confirm:hover {
   background-color: var(--confirm-button-hover);
+  box-shadow: 0 0 0 2px var(--confirm-button-hover);
 }
 
 .btn.symbolic {
@@ -57,21 +69,25 @@
   transform: scale(1.05);
 }
 
-.btn.symbolic.no-scalling:hover {
-  transform: unset;
-}
-
 .btn.symbolic.scroll {
   background-color: var(--scroll-button);
   margin: 20px;
 }
 
-.btn.symbolic.no-padding {
+.btn.no-scalling:hover {
+  transform: unset;
+}
+
+.btn.no-padding {
   padding: 0;
 }
 
 .btn.no-brightness {
   filter: unset;
+}
+
+.btn.min-eq-padding {
+  padding: 15px;
 }
 
 .btn.symbolic.normal:hover {
@@ -88,6 +104,10 @@
 .btn.neon:hover {
   /* border: 2px solid; */
   box-shadow: 0 0 8px;
+}
+
+.highlight {
+  outline: 4px solid var(--text) !important;
 }
 
 #discordButton .tooltip-container .icon {
@@ -119,8 +139,13 @@
   margin-right: auto;
 }
 
-.group-button.center {
-  margin: 0 auto;
+.group-button.fixed {
+  position: relative;
+}
+
+.group-button.fixed.center .btn {
+  position: absolute;
+  top: 0;
 }
 
 .sepButtons {

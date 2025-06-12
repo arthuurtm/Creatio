@@ -1,0 +1,141 @@
+/* color palette from <https://github.com/vuejs/theme> */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('/src/assets/css/elements/e-_import.css');
+
+:root {
+  --form-field-text-hover: #1778fb;
+  --font: 'Noto Sans';
+}
+
+/* Tema claro */
+:root {
+  --primary: #0b6a90;
+  --primary-hover: rgb(51, 117, 248);
+  --primary-back: #205fdc44;
+  --secondary: #7e7e7e;
+  --secondary-hover: #757575;
+  --danger: #bb2a2a;
+  --danger-hover: #a23333;
+  --accent: #31a526;
+
+  --text-color: #000;
+  --background-color: #fff;
+  --background-alt: #f0f4f9;
+  --border-color: #efeded;
+  --primary-shadow: #d5dce340;
+
+  --input-bg-neutral: #e9ecef;
+  --input-text-neutral: #737c85;
+
+  --overlay-neutral: #121212a9;
+  --scroll-btn: #91919194;
+  --scroll-btn-hover: #ffffff85;
+
+  --element-focus: #ddddddf1;
+  --element-hover: #c5c5c5a9;
+}
+
+/* Tema escuro */
+:root[data-theme='dark'] {
+  --primary: #0d4b85;
+  --primary-hover: #136dc2;
+  --primary-back: #1060aa3d;
+  --secondary: #7e7e7e;
+  --secondary-hover: #999;
+  --danger: #a20202;
+  --danger-hover: #bb0b0b;
+  --accent: #075500;
+
+  --text-color: #f2f2f2;
+  --background-color: #0e0e0e;
+  --background-alt: #1a1a1f;
+  --border-color: #2a2a2a;
+  --primary-shadow: #1d1b1b80;
+
+  --input-bg-neutral: #3a3a3a;
+  --input-text-neutral: #f0f0f0;
+
+  --overlay-neutral: #2f394394;
+  --scroll-btn: #ffffff33;
+  --scroll-btn-hover: #ffffff4d;
+
+  --element-focus: #7a7a7ad9;
+  --element-hover: #777777aa;
+}
+
+/* Mapa semântico*/
+:root {
+  --text: var(--text-color);
+  --bg: var(--background-color);
+  --bg2: var(--background-alt);
+  --border: var(--border-color);
+
+  --input-bg: var(--input-bg-neutral);
+  --input-text: var(--input-text-neutral);
+  --global-input-focus: var(--element-focus);
+  --global-input-hover: var(--element-hover);
+
+  --default-button: var(--secondary);
+  --default-button-hover: var(--secondary-hover);
+  --confirm-button: var(--primary);
+  --confirm-button-hover: var(--primary-hover);
+  --destructive-button: var(--danger);
+  --destructive-button-hover: var(--danger-hover);
+
+  --navigator: var(--bg);
+  --navigator-li-hover: var(--element-hover);
+  --navigator-li-focus: var(--element-focus);
+
+  --overlay-bg: var(--overlay-neutral);
+  --scroll-button: var(--scroll-btn);
+  --scroll-button-hover: var(--scroll-btn-hover);
+  --discovery-play-button: var(--accent);
+
+  --form-bg: var(--bg2);
+  --form: var(--bg);
+  --form-critical-link: var(--danger);
+  --form-normal-link: var(--primary);
+  --form-normal-link-hover: var(--primary-hover);
+  --form-sub: var(--secondary);
+}
+
+body {
+  height: 100vh;
+  width: 100vw;
+  color: var(--text);
+  background: var(--bg);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scrollbar-color: var(--text) var(--bg);
+  scrollbar-width: thin;
+}
+
+.app {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

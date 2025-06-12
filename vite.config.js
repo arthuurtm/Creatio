@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['4f2d-138-0-82-55.ngrok-free.app'],
+    allowedHosts: [],
     proxy: {
       // API de Leitura do Banco de Dados
       '/api/database': {
@@ -30,11 +30,18 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/email/, ''),
       },
 
-      // API de Leitura de Arquivos JSON
-      '/api/gameData': {
+      // API de Comunicação em tempo real
+      '/api/websocket': {
         target: 'http://localhost:3002',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/protected/, ''),
+        rewrite: (path) => path.replace(/^\/api\/websocket/, ''),
+      },
+
+      // API de Leitura e Escrita de Arquivos
+      '/api/file': {
+        target: 'http://localhost:3003',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/file/, ''),
       },
     },
   },

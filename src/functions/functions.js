@@ -4,16 +4,7 @@ function getApiUrl(type, route) {
     console.error('Tipo ou rota não fornecidos.')
     return null
   }
-  switch (type) {
-    case 'database':
-      return `${origin}/api/database/${route}`
-    case 'email':
-      return `${origin}/api/email/${route}`
-    case 'gameData':
-      return `${origin}/api/gameData/${route}`
-    default:
-      return null
-  }
+  return `${origin}/api/${type}/${route}`
 }
 
 export function hrefTo(url, args = {}) {
@@ -41,7 +32,7 @@ export function appTheme(toggle = false) {
 
   // Alternar o tema se toggle for verdadeiro
   if (toggle) {
-    console.log('toggle theme: ', currentTheme)
+    // console.log('toggle theme: ', currentTheme)
     currentTheme = currentTheme === 'dark' ? 'light' : 'dark'
     localStorage.setItem('data-theme', currentTheme)
   }
@@ -79,21 +70,21 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
     return messages[status] || 'Erro desconhecido'
   }
 
-  const headers = {
-    'Content-Type': 'application/json',
-  }
+  const isFormData = body instanceof FormData
 
   const config = {
     credentials: 'include',
     method,
-    headers,
-  }
-
-  if (body) {
-    config.body = JSON.stringify(body)
+    headers: isFormData
+      ? undefined
+      : {
+          'Content-Type': endpoint.contentType || 'application/json',
+        },
+    body: isFormData ? body : body ? JSON.stringify(body) : null,
   }
 
   try {
+    // console.log(`Fazendo requisição para ${endpoint.route}...`, config)
     const response = await fetch(getApiUrl(endpoint.type, endpoint.route), config)
 
     if (!response.ok) {

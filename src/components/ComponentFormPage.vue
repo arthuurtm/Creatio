@@ -1,6 +1,9 @@
 <template>
-  <div class="page">
-    <span class="settings-button material-symbols-outlined notranslate" @click="handleSettingsBox"
+  <div class="page" :class="isMinimal() && 'minimal'">
+    <span
+      v-if="!isMinimal()"
+      class="settings-button material-symbols-outlined notranslate"
+      @click="handleSettingsBox"
       >settings</span
     >
 
@@ -17,74 +20,44 @@
 
     <CreateLoading v-if="isLoading" :full="true" />
 
-    <div class="main-form-container">
+    <div class="main-form-container" :style="isMinimal() && 'border: none'">
       <div class="left">
         <img src="@/assets/img/min-logo.png" alt="Logo do Sysroot" id="logo" />
         <h1 v-if="config">{{ config.title }}</h1>
         <h1 v-else>Erro Interno</h1>
       </div>
 
-      <div v-if="hasStepsData && currentStepData" class="right">
-        <form class="form-container" @submit.prevent="submitForm">
-          <div class="centered">
-            <transition name="slide-left" mode="out-in">
-              <div :key="currentStepData.stepIndex">
-                <div class="sepElements">
-                  <CreateTextField
-                    v-for="field in currentStepData.fields"
-                    :key="field.model"
-                    :field="field"
-                    v-model="formData[field.model]"
-                    :error-message="errors[field.model]"
-                    @emitEvent="handleFunctionEvent"
-                  />
-                </div>
-              </div>
-            </transition>
-          </div>
-
-          <CreateAnchor
-            v-if="currentStepData.anchor"
-            :anchor="currentStepData.anchor"
-            @emitEvent="handleFunctionEvent"
-          />
-
-          <CreateButton
-            v-if="currentStepData.buttons"
-            :buttons="currentStepData.buttons"
-            @emitEvent="handleFunctionEvent"
-          />
-        </form>
+      <div v-if="hasStepsData && currentStepData && !hasErrors" class="right">
+        <ComponentForm
+          :general="config"
+          :stepData="currentStepData"
+          @emitEvent="handleFunctionEvent"
+        />
       </div>
 
-      <div v-else-if="!hasStepsData && !currentStepData" class="right">
-        <form class="form-container" @submit.prevent="submitForm">
-          <div class="centered">
-            <div class="sepElements">
-              <p>Ocorreu um erro interno, tente novamente mais tarde.</p>
-            </div>
-          </div>
-
-          <div class="sepButtons">
-            <button class="btn" @click="handleFunctionEvent({ action: 'back', type: 'local' })">
-              Voltar
-            </button>
-          </div>
-        </form>
+      <div v-else-if="!hasStepsData || !currentStepData || hasErrors" class="right">
+        <ComponentForm :stepData="'error'" @emitEvent="handleFunctionEvent" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import ComponentForm from './ComponentForm.vue'
 
 const props = defineProps({
-  config: Object,
+  config: {
+    type: Object,
+    default: () => ({}),
+  },
+  formFunctions: {
+    type: Object,
+    default: () => ({}),
+  },
   errorMessage: String,
   isLoading: Boolean,
-  formFunctions: Object,
   redirectName: String,
 })
 
@@ -95,7 +68,7 @@ const store = inject('stores')
 const formStore = store.form
 const appDynamicDialog = store.dialog
 
-const errors = ref({})
+const errors = ref([])
 const formData = computed(() => formStore.getFormData)
 const currentStep = computed(() => formStore.getCurrentStep)
 
@@ -112,6 +85,14 @@ const currentStepData = computed(() => {
 })
 
 const hasStepsData = computed(() => !!props.config?.steps)
+const hasErrors = computed(() => errors.value.length > 0)
+
+function isMinimal() {
+  if (props.config?.type === 'minimal') {
+    return true
+  }
+  return false
+}
 
 function submitForm() {
   console.log('Submetendo formulário com os dados...')
@@ -119,11 +100,6 @@ function submitForm() {
 
 function handleSettingsBox() {
   appDynamicDialog.setDialog('DialogSettings', { title: 'Configurações' })
-}
-
-function handleButtonClick(action) {
-  console.log('Executando função legada: ', formStore.getRequestedFunction())
-  formStore.setRequestedFunction(action)
 }
 
 function handleFunctionEvent(payload) {
@@ -154,16 +130,10 @@ function handleFunctionEvent(payload) {
     if (props.formFunctions?.[action]) {
       props.formFunctions[action](value)
     } else {
-      handleButtonClick(action)
+      errors.value.push({
+        function: action,
+      })
     }
-  }
-}
-
-function showToast(type, message, timeout) {
-  try {
-    toast[type](message, { timeout })
-  } catch (error) {
-    console.error('Erro ao exibir toast:', error)
   }
 }
 
@@ -184,6 +154,34 @@ function back() {
   router.back()
 }
 
+onMounted(() => {
+  // var input = document.querySelector('.input-field')
+  // var text = document.getElementById('capslock-text')
+  // input.addEventListener('keyup', function (event) {
+  //   if (event.getModifierState('CapsLock')) {
+  //     text.style.display = 'block'
+  //   } else {
+  //     text.style.display = 'none'
+  //   }
+  // })
+
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      const submitButton = document.querySelector('.btn.confirm')
+      if (submitButton) {
+        submitButton.click()
+      }
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      const submitButton = document.querySelector('.btn')
+      if (submitButton) {
+        submitButton.click()
+      }
+    }
+  })
+})
+
 // Expondo os métodos e dados para o template
 defineExpose({
   formData,
@@ -193,7 +191,6 @@ defineExpose({
   currentStepData,
   hasStepsData,
   handleSettingsBox,
-  handleButtonClick,
   handleFunctionEvent,
   redirect,
   forward,

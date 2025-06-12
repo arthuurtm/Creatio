@@ -1,18 +1,19 @@
 <template>
-  <AppDynamicForm :config="formConfig" :formFunctions="functions" />
+  <ComponentForm :config="formConfig" :isLoading="isLoading" :formFunctions="functions" />
 </template>
 
 <script setup>
-import AppDynamicForm from '@/layouts/AppDynamicForm.vue'
-import { onMounted, inject } from 'vue'
+import ComponentForm from '@/components/ComponentFormPage.vue'
+import { onMounted, inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import * as gfunctions from '@/functions/functions'
 import { showToast } from '@/plugins/toast'
 
 // Stores e router
 const store = inject('stores')
-const formData = store.form.getFormData
+const formData = store.form.getInputData
 const router = useRouter()
+const isLoading = ref(false)
 
 // Configurações do formulário
 const formConfig = {
@@ -35,7 +36,6 @@ const formConfig = {
           text: 'Criar conta',
           class: 'symbolic no-padding normal no-scalling',
           id: 'createAnAccountButton',
-          type: '',
           action: {
             name: 'redirect',
             value: 'Signup',
@@ -43,10 +43,8 @@ const formConfig = {
           },
         },
         {
-          text: '',
           class: 'symbolic no-padding',
           id: 'googleButton',
-          type: '',
           action: {
             name: 'handleGoogleLogin',
           },
@@ -55,7 +53,6 @@ const formConfig = {
           text: 'Avançar',
           class: 'confirm',
           id: 'loginButton',
-          type: '',
           action: {
             name: 'forward',
             type: 'local',
@@ -86,8 +83,6 @@ const formConfig = {
       buttons: [
         {
           text: 'Voltar',
-          class: '',
-          id: '',
           type: 'submit',
           action: {
             name: 'rewind',
@@ -135,19 +130,20 @@ const functions = {
 
   handleLogin: async () => {
     try {
-      if (formData.password === '' || formData.password === undefined) {
+      isLoading.value = true
+      if (formData.identification === '' || formData.identification === undefined) {
         showToast({
           type: 'warning',
-          message: 'Digite uma senha!',
+          message: 'Digite um nome de usuário ou e-mail!',
           timeout: 2000,
         })
         return
       }
 
-      if (formData.identification === '' || formData.identification === undefined) {
+      if (formData.password === '' || formData.password === undefined) {
         showToast({
           type: 'warning',
-          message: 'Digite um nome de usuário ou e-mail!',
+          message: 'Digite uma senha!',
           timeout: 2000,
         })
         return
@@ -171,6 +167,8 @@ const functions = {
         type: 'error',
         message: error.message,
       })
+    } finally {
+      isLoading.value = false
     }
   },
 }

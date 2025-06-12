@@ -3,17 +3,17 @@ import { useFormStore } from '@/stores/form'
 import { isAuthenticated } from '@/functions/auth'
 
 // Errors
-import ErrNotFound from '@/configs/errors/ErrNotFound.vue'
+import ErrNotFound from '@/views/ErrNotFound.vue'
 
 // Forms page
-import Login from '@/configs/forms/FormLogin.vue'
-import Signup from '@/configs/forms/FormSignup.vue'
-import PasswordRescue from '@/configs/forms/FormPasswordRescue.vue'
+import Login from '@/views/FormLogin.vue'
+import Signup from '@/views/FormSignup.vue'
+import PasswordRescue from '@/views/FormPasswordRescue.vue'
 
 // Main Pages
 import ViewAbout from '@/views/ViewAbout.vue'
 import ViewCreate from '@/views/ViewCreate.vue'
-import ViewGameRun from '@/views/ViewGameRun.vue'
+import ViewGameDetails from '@/views/ViewGameDetails.vue'
 import ViewHome from '@/views/ViewHome.vue'
 
 // Layouts
@@ -56,6 +56,13 @@ const router = createRouter({
           meta: { requiresAuth: true, hiddenNavigator: true },
           props: true,
         },
+
+        {
+          path: 'game/:id',
+          name: 'GameDetails',
+          component: ViewGameDetails,
+          props: true,
+        },
       ],
     },
 
@@ -65,21 +72,18 @@ const router = createRouter({
         {
           path: 'login',
           name: 'Login',
-          props: { configFile: 'login' },
           meta: { requiresAuth: false },
           component: Login,
         },
         {
           path: 'signup',
           name: 'Signup',
-          props: { configFile: 'signup' },
           meta: { requiresAuth: false },
           component: Signup,
         },
         {
           path: 'password/rescue',
           name: 'PasswordRescue',
-          props: { configFile: 'passwordRescue' },
           component: PasswordRescue,
         },
       ],

@@ -83,3 +83,16 @@ export async function logout() {
     })
   }
 }
+
+export async function logoutAll() {
+  del({ type: 'database', route: 'logoutAll' }).then((result) => {
+    if (result.okay) {
+      showToast({
+        type: 'success',
+        message: 'Você saiu de todas as outras sessões!',
+      })
+      return true
+    }
+    return
+  })
+}

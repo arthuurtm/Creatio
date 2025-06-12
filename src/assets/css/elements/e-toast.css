@@ -99,11 +99,11 @@
 
 @media (max-width: 600px) {
   .Vue-Toastification__toast {
-    width: 90vw;
     max-width: 90vw;
     margin: 0 auto;
     top: 30px;
     backdrop-filter: unset;
+    border-radius: 30px;
   }
 
   .Vue-Toastification__close-button {

@@ -1,7 +1,19 @@
 /* Estilos básicos para todos os inputs */
+.input-field {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: transparent;
+  color: var(--text);
+}
 
 .input {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
   padding: 15px;
+  gap: 10px;
   border: solid 1px var(--border);
   outline: none;
   box-sizing: border-box;
@@ -9,11 +21,11 @@
   color: var(--input-text);
   height: 45px;
   font-size: 16px;
-  border-radius: 5px;
+  border-radius: 30px;
   transition: border 300ms ease-out;
 }
 
-.input:focus {
+.input:focus-within {
   border-color: #1778fb;
   outline: none;
 }
@@ -26,15 +38,12 @@
   background-image: url('data:image/svg+xml;utf8,<svg fill="%231778FB" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
   background-repeat: no-repeat;
   background-position: right 15px center;
-  background-color: transparent;
-}
-
-.input.select:focus {
-  border-color: #1778fb;
 }
 
 .input.select option {
-  color: #000;
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 1rem;
 }
 
 .input.date {
@@ -44,14 +53,56 @@
   background-position: right 15px center;
 }
 
-.input.date:focus {
-  border-color: #1778fb;
-}
-
 .input.date::-webkit-calendar-picker-indicator {
   cursor: pointer;
   background: transparent;
   padding-right: 10px;
+}
+
+.input.rounded {
+  border-radius: 30px;
+}
+
+.input.border {
+  border: 2px solid var(--input-bg);
+}
+
+.input.border.sameText {
+  border: 2px solid var(--text);
+}
+
+.input.sameText .input-field {
+  color: var(--text);
+}
+
+.input-field:focus::placeholder {
+  filter: invert();
+  opacity: 1;
+}
+
+.input.border:focus-within {
+  background-color: var(--global-input-focus);
+}
+
+.input.border:focus-within {
+  border: none;
+}
+
+.input.flex-reverse {
+  flex-direction: row-reverse;
+}
+
+.input .visually-hidden {
+  opacity: 0;
+}
+
+.input-field[type='file'] {
+  cursor: pointer;
+  opacity: 0;
+}
+
+.input-field[type='file']:focus {
+  cursor: progress;
 }
 
 .input.star {

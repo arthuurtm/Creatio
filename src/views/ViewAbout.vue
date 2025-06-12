@@ -1,12 +1,27 @@
 <template>
-  PÁGINA DE APRESENTAÇÃO DO SOFTWARE (EM BREVE)
-  <a @click="this.$router.push({ name: 'Home' })">Página Inicial</a>
+  <p></p>
 </template>
 
-<script>
-export default {
-  name: 'ViewAbout',
-}
+<script setup>
+import { onMounted, inject } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter() // <- Chama aqui uma vez
+const store = inject('stores')
+const dialog = store.dialog
+
+dialog.setDialog('DialogMessage', {
+  title: 'Demonstração',
+  message:
+    'Este site está em fase de desenvolvimento. Algumas funcionalidades podem não estar completas ou apresentar instabilidades durante o uso.',
+  btn1: {
+    text: 'Ok',
+    class: 'confirm',
+    action: () => {
+      router.push({ name: 'Login' })
+    },
+  },
+})
 </script>
 
 <style scoped>

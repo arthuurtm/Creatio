@@ -1,8 +1,9 @@
 <script setup>
 import { RouterView } from 'vue-router'
-import AppDynamicDialog from '@/layouts/AppDynamicDialog.vue'
+import ComponentDialog from '@/components/ComponentDialog.vue'
+import ComponentGamepad from '@/components/ComponentGamepad.vue'
 import { computed } from 'vue'
-import { useAppDynamicDialog } from '@/stores/dialog'
+import { useAppDynamicDialog } from '@/stores/global'
 import { appTheme } from '@/functions/functions'
 
 appTheme()
@@ -12,7 +13,8 @@ const title = computed(() => useAppDynamicDialog().title)
 
 <template>
   <RouterView />
-  <AppDynamicDialog :component="component" :title="title" />
+  <ComponentDialog :component="component" :title="title" />
+  <ComponentGamepad />
 </template>
 
 <style scoped></style>

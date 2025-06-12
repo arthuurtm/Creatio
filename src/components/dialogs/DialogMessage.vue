@@ -1,6 +1,8 @@
 <template>
   <div class="modal" @click.stop>
-    <p>{{ params.message }}</p>
+    <div class="modal-message">
+      <p>{{ params.message }}</p>
+    </div>
     <div class="modal-buttons">
       <button class="btn" :class="params.btn1?.class" @click="handleBtn1">
         {{ params.btn1?.text }}
@@ -51,10 +53,38 @@ function handleBtn2() {
 }
 
 function close() {
-  emit('close')
+  emit('close', true)
 }
 </script>
 
 <style scoped>
-@import url('/src/assets/css/components/c-dialogMessage.css');
+/* Estilo da janela modal */
+.modal {
+  background: transparent;
+  border-radius: 8px;
+  padding: 10px;
+  min-width: 300px;
+  max-width: 600px;
+  color: var(--text);
+}
+
+.modal-message {
+  padding: 10px 30px;
+  text-align: center;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn,
+.btn-destructive {
+  margin: 5px;
+}
+
+.callOverlay {
+  cursor: pointer;
+}
 </style>

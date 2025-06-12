@@ -1,4 +1,4 @@
-@import './base/b-base.css';
+@import './base.css';
 
 #app {
   display: flex;

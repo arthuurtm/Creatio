@@ -27,6 +27,7 @@ const isFull = computed(() => props.full)
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 3;
 }
 
 .loading-overlay.full {
