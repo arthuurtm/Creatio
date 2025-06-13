@@ -15,6 +15,7 @@ import validator from 'validator'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { OAuth2Client } from 'google-auth-library'
 
 // Corrige __dirname para ES Modules
 const __filename = fileURLToPath(import.meta.url)
@@ -411,7 +412,6 @@ app.post('/setLogin', async (req, res) => {
       }
 
       case 'google': {
-        const { OAuth2Client } = require('google-auth-library')
         const client = new OAuth2Client(process.env.VITE_GCLIENT_LOGIN_ID)
 
         const ticket = await client.verifyIdToken({
