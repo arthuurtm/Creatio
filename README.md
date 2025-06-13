@@ -1,11 +1,11 @@
 ## 🗡️ Creatio — construa experiências online sem complicações
 
-Creatio é um sistema para criar sessões interativas de RPG online, oferecendo as possibilidades de multiplay e singleplay, além de uma interface facilitada para o usuário geral, com o objetivo de democratizar ferramentas deste tipo para todos.
+Creatio é um sistema projetado para criar sessões interativas de RPG online, oferecendo suporte a modos singleplayer e multiplayer. Com uma interface acessível e intuitiva, o objetivo é democratizar ferramentas de narrativa para que qualquer pessoa possa criar, jogar e compartilhar suas histórias.
 
 ### 💡 Recursos
 
 Este sistema fornece alguns recursos que você pode querer saber:
-- ✏️ Editor de sessões centralizado: Permite que tanto sessões singleplay quanto multiplay sejam criadas/editadas.
+- ✏️ Editor de sessões centralizado: Crie e edite campanhas em singleplay ou multiplay com facilidade, tudo em um só lugar.
 
 ### </> Tecnologias usadas
 
