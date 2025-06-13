@@ -31,7 +31,7 @@ trap cleanup SIGINT
 pids=()
 
 # Executa o servidor de arquivos
-docket start minio
+docker start minio
 
 # Procurar por todos os arquivos .py **somente na raiz**, ignorando os que começam com "f_"
 for file in $(find . -maxdepth 1 -type f -name "*.py" | grep -v '/f_'); do
