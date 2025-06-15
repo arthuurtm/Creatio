@@ -95,7 +95,7 @@
   position: relative;
   grid-column: 2;
   grid-auto-flow: column;
-  /* overflow-x: scroll; */
+  overflow-x: hidden;
   min-width: 0;
   max-height: 800px;
 }
