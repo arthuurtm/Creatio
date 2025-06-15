@@ -27,14 +27,21 @@
         <div class="pageContainer" :class="actualPage == 1 && 'active'">
           <ul>
             <li>
-              <p>Tema Escuro</p>
+              <p>Tema escuro</p>
               <label class="switch">
-                <input type="checkbox" @change="toggleTheme" v-model="isDarkMode" />
+                <input type="checkbox" @change="toggleThemeColor" v-model="isDarkMode" />
                 <span class="slider"></span>
               </label>
             </li>
             <li>
-              <p>Menu Lateral</p>
+              <p>Tema translúcido</p>
+              <label class="switch">
+                <input type="checkbox" @change="toggleThemeGlassy" v-model="isGlassy" />
+                <span class="slider"></span>
+              </label>
+            </li>
+            <li>
+              <p>Menu lateral</p>
               <label class="switch">
                 <input
                   type="checkbox"
@@ -50,7 +57,7 @@
         <div class="pageContainer" :class="actualPage == 2 && 'active'">
           <ul>
             <li>
-              <p>Foto de Perfil</p>
+              <p>Foto de perfil</p>
               <a>
                 <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
               </a>
@@ -152,6 +159,7 @@ const profilePicture = computed(() => store.user.getProfilePicture)
 const selectedOption = ref(null)
 const actualPage = ref(1)
 const isDarkMode = ref(false)
+const isGlassy = ref(false)
 const isGoogleConnected = ref(false)
 const isDiscordConnected = ref(false)
 const userData = ref({})
@@ -165,8 +173,12 @@ function handleNavPage(value, name) {
 
 function handleAction() {}
 
-function toggleTheme() {
+function toggleThemeColor() {
   appTheme(true)
+}
+
+function toggleThemeGlassy() {
+  appTheme(false, true)
 }
 
 function toggleSideBar() {
@@ -219,6 +231,7 @@ const connectedDevices = ref([])
 onMounted(async () => {
   let theme = appTheme()
   isDarkMode.value = theme.isDark == true ? true : false
+  isGlassy.value = theme.isGlassy == true ? true : false
 
   const gToken = get({ type: 'database', route: 'getUserBasics' })
   if (gToken.ok) {

@@ -21,8 +21,8 @@
 
   --text-color: #000;
   --background-color: #fff;
-  --background-alt: #f0f4f9;
-  --border-color: #efeded;
+  --background-alt: #fafafa;
+  --border-color: #cecece;
   --primary-shadow: #d5dce340;
 
   --input-bg-neutral: #e9ecef;
@@ -34,6 +34,20 @@
 
   --element-focus: #ddddddf1;
   --element-hover: #c5c5c5a9;
+
+  --main-gradient: linear-gradient(135deg, #fdfbfb, #ebedee, #d7e2f0);
+
+  --btn-glass-default: rgba(255, 255, 255, 0.18);
+  --btn-glass-default-border: rgba(255, 255, 255, 0.24);
+
+  --btn-glass-confirm: linear-gradient(135deg, #0b6a90cc 0%, #1290c2cc 100%);
+  --btn-glass-confirm-border: rgba(11, 106, 144, 0.24);
+
+  --btn-glass-destructive: linear-gradient(135deg, #681d1dcc 0%, #b31313cc 100%);
+  --btn-glass-destructive-border: rgba(187, 42, 42, 0.24);
+
+  --btn-glass-cancel: rgba(255, 255, 255, 0.1);
+  --btn-glass-cancel-border: rgba(255, 255, 255, 0.18);
 }
 
 /* Tema escuro */
@@ -49,7 +63,7 @@
 
   --text-color: #f2f2f2;
   --background-color: #0e0e0e;
-  --background-alt: #1a1a1f;
+  --background-alt: #0d0d0d;
   --border-color: #2a2a2a;
   --primary-shadow: #1d1b1b80;
 
@@ -62,6 +76,20 @@
 
   --element-focus: #7a7a7ad9;
   --element-hover: #777777aa;
+
+  --main-gradient: linear-gradient(135deg, #0e0e0e, #0b0c0e, #0e1318);
+
+  --btn-glass-default: rgba(40, 40, 60, 0.22);
+  --btn-glass-default-border: rgba(255, 255, 255, 0.08);
+
+  --btn-glass-confirm: linear-gradient(135deg, #1677d3cc 0%, #034380cc 100%);
+  --btn-glass-confirm-border: rgba(19, 109, 194, 0.18);
+
+  --btn-glass-destructive: linear-gradient(135deg, #e91616cc 0%, #a20202cc 100%);
+  --btn-glass-destructive-border: rgba(187, 11, 11, 0.18);
+
+  --btn-glass-cancel: rgba(60, 60, 80, 0.18);
+  --btn-glass-cancel-border: rgba(255, 255, 255, 0.08);
 }
 
 /* Mapa semântico*/
@@ -100,6 +128,11 @@
   --form-sub: var(--secondary);
 }
 
+:root[data-modifier='glass'] {
+  --bg: var(--main-gradient);
+  --form-bg: var(--main-gradient);
+}
+
 body {
   height: 100vh;
   width: 100vw;
@@ -126,7 +159,7 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scrollbar-color: var(--text) var(--bg);
+  scrollbar-color: var(--border) transparent;
   scrollbar-width: thin;
 }
 

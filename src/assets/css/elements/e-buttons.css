@@ -49,12 +49,12 @@
   color: #fff;
   border: 2px solid var(--bg);
   background-color: var(--confirm-button);
-  box-shadow: 0 0 0 2px var(--confirm-button); /* borda azul mais escura externa */
+  box-shadow: 0 0 0 2px var(--confirm-button-hover); /* borda azul mais escura externa */
 }
 
 .btn.confirm:hover {
   background-color: var(--confirm-button-hover);
-  box-shadow: 0 0 0 2px var(--confirm-button-hover);
+  /* box-shadow: 0 0 0 2px var(--confirm-button-hover); */
 }
 
 .btn.symbolic {
@@ -139,6 +139,10 @@
   margin-right: auto;
 }
 
+.group-button.center .btn * {
+  text-align: center;
+}
+
 .group-button.fixed {
   position: relative;
 }
@@ -163,4 +167,65 @@
   .sepButtons {
     justify-content: space-between;
   }
+}
+
+:root[data-modifier='glass'] .btn {
+  background: var(--btn-glass-default);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 24px;
+  border: 2px solid var(--btn-glass-default-border);
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
+}
+
+:root[data-modifier='glass'] .btn.symbolic {
+  background: unset;
+  box-shadow: unset;
+  backdrop-filter: unset;
+  -webkit-backdrop-filter: unset;
+  border: unset;
+}
+
+/* Confirm Button */
+:root[data-modifier='glass'] .btn.confirm {
+  color: #fff;
+  background: var(--btn-glass-confirm);
+  border: 2px solid var(--btn-glass-confirm-border);
+  box-shadow: 0 0 0 2px var(--btn-glass-confirm-border);
+}
+
+/* Destructive Button */
+:root[data-modifier='glass'] .btn.destructive {
+  background: var(--btn-glass-destructive);
+  border: 2px solid var(--btn-glass-destructive-border);
+  color: #fff;
+}
+
+/* Cancel Button */
+:root[data-modifier='glass'] .btn.cancel {
+  background: var(--btn-glass-cancel);
+  border: 2px solid var(--btn-glass-cancel-border);
+  color: var(--text);
+}
+
+/* Hover states */
+:root[data-modifier='glass'] .btn:hover,
+:root[data-modifier='glass'] .btn:focus {
+  filter: brightness(1.08);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+}
+
+:root[data-modifier='glass'] .btn.confirm:hover {
+  filter: brightness(1.12);
+}
+
+:root[data-modifier='glass'] .btn.destructive:hover {
+  filter: brightness(1.12);
+}
+
+:root[data-modifier='glass'] .btn.cancel:hover {
+  filter: brightness(1.08);
 }

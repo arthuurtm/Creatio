@@ -155,16 +155,6 @@ function back() {
 }
 
 onMounted(() => {
-  // var input = document.querySelector('.input-field')
-  // var text = document.getElementById('capslock-text')
-  // input.addEventListener('keyup', function (event) {
-  //   if (event.getModifierState('CapsLock')) {
-  //     text.style.display = 'block'
-  //   } else {
-  //     text.style.display = 'none'
-  //   }
-  // })
-
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
       event.preventDefault()

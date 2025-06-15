@@ -24,7 +24,7 @@
       <div v-if="loading"><CreateLoading :class="loadCont" /></div>
 
       <div class="sliding" v-else-if="games && games.length > 0" ref="scrollContainer">
-        <CreateCard :games="games" @emitEvent="playGame" />
+        <CreateCard :card="games" @emitEvent="playGame" />
       </div>
 
       <div v-else>

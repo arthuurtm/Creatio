@@ -7,44 +7,37 @@ function getApiUrl(type, route) {
   return `${origin}/api/${type}/${route}`
 }
 
-export function hrefTo(url, args = {}) {
-  const queryString = new URLSearchParams(args).toString()
-  const finalUrl = queryString ? `${url}?${queryString}` : url
-  window.location.href = finalUrl
-}
-
-export function appTheme(toggle = false) {
-  // Obter tema salvo no localStorage
+export function appTheme(toggle = false, glassy = false) {
   const savedTheme = localStorage.getItem('data-theme')
+  let themeModifier = localStorage.getItem('data-modifier')
   let currentTheme
   let isDark
 
   if (savedTheme) {
-    // Respeita o tema salvo
     currentTheme = savedTheme
   } else {
-    // Usa a preferência do sistema
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     currentTheme = prefersDark ? 'dark' : 'light'
-    // Salva o tema inicial no localStorage
     localStorage.setItem('data-theme', currentTheme)
   }
 
-  // Alternar o tema se toggle for verdadeiro
+  if (glassy) {
+    themeModifier = themeModifier === 'glass' ? 'default' : 'glass'
+    localStorage.setItem('data-modifier', themeModifier)
+  }
+
   if (toggle) {
-    // console.log('toggle theme: ', currentTheme)
     currentTheme = currentTheme === 'dark' ? 'light' : 'dark'
     localStorage.setItem('data-theme', currentTheme)
   }
 
-  currentTheme === 'dark' ? (isDark = true) : (isDark = false)
-
-  // Aplicar o tema atual
   document.documentElement.setAttribute('data-theme', currentTheme)
+  document.documentElement.setAttribute('data-modifier', themeModifier || 'default')
 
   return {
     currentTheme: currentTheme,
-    isDark: isDark,
+    isDark: currentTheme === 'dark' ? true : false,
+    isGlassy: themeModifier === 'glass' ? true : false,
   }
 }
 

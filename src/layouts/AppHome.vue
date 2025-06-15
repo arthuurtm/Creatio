@@ -174,7 +174,6 @@ const pageName = computed(() => useRoute().name)
   display: grid;
   grid-column: 1;
   z-index: 2;
-  background-color: var(--bg);
 }
 
 .view-app {
@@ -205,6 +204,45 @@ const pageName = computed(() => useRoute().name)
   }
 
   .header-bar #toggleNavigator {
+    margin-left: 0;
+  }
+}
+
+:root[data-modifier='glass'] .app-container {
+  background: var(--main-gradient);
+}
+
+:root[data-modifier='glass'] .header-bar {
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.24);
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
+  margin: 1rem 1rem 0.2rem 1rem;
+}
+
+:root[data-theme='dark'][data-modifier='glass'] .header-bar {
+  background: rgba(20, 20, 30, 0.35);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+  border: 2px solid rgba(73, 67, 67, 0.1);
+}
+
+:root[data-modifier='glass'] .header-bar #toggleNavigator {
+  margin-left: 1rem;
+}
+
+@media (max-width: 600px) {
+  :root[data-modifier='glass'] .header-bar {
+    margin: 0;
+    padding: 0.6rem;
+    border-radius: 0 0 20px 20px;
+  }
+
+  :root[data-modifier='glass'] .header-bar #toggleNavigator {
     margin-left: 0;
   }
 }

@@ -37,17 +37,12 @@
       <div class="step-container double-divided" v-if="actualPage === 1">
         <div class="step-form" style="grid-column: 1">
           <div class="container">
-            <ComponentForm
-              :stepData="stepConfigs[actualStep]"
-              :general="{ store: 'global' }"
-              :key="actualStep"
-              @emitEvent="handleFormEvent"
-            />
+            <ComponentFormPage :config="stepConfigs" :formFunctions="functions" />
           </div>
         </div>
         <div class="step-preview" style="grid-column: 2">
           <CreateCard
-            :games="[
+            :card="[
               {
                 title: inputData.gameName,
                 description: inputData.gameDescription,
@@ -67,14 +62,12 @@
 
       <!-- Etapa 4 - Revisão -->
       <div class="step-container" v-if="actualPage === 4"></div>
-
-      <button class="btn" @click="actualPage++">Avançar (forçar -> dev)</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import ComponentForm from '@/components/ComponentForm.vue'
+import ComponentFormPage from '@/components/ComponentFormPage.vue'
 import { inject, ref, computed } from 'vue'
 import { post } from '@/functions/functions'
 import { showToast } from '@/plugins/toast'
@@ -85,73 +78,80 @@ const inputData = globalStore.getInputData
 
 const steps = ['Configurações básicas', 'Jogo', 'Créditos', 'Revisão']
 const actualPage = ref(0)
-const actualStep = computed(() => actualPage.value) // ou ajuste conforme sua lógica
 
 const stepConfigs = {
-  1: {
-    stepIndex: 1,
-    fields: [
-      {
-        label: 'Nome do Jogo',
-        model: 'gameName',
-        placeholder: 'Um nome bem legal!',
-        icon: 'emoji_objects',
-        style: { rounded: true },
-      },
-      {
-        label: 'Descrição do Jogo',
-        model: 'gameDescription',
-        placeholder: 'Uma descrição legal!',
-        icon: 'description',
-        style: { rounded: true },
-      },
-    ],
-    buttons: [
-      {
-        text: 'Pular',
-        icon: 'skip_next',
-        position: 'left',
-        class: 'symbolic',
-        action: { name: 'handleGameCreate' },
-      },
-      {
-        text: 'Avançar',
-        class: 'confirm',
-        action: { name: 'forward', type: 'local' },
-      },
-    ],
-  },
-  2: {
-    stepIndex: 2,
-    fields: [
-      {
-        label: 'Imagem do Jogo',
-        type: 'file',
-        icon: 'image',
-        model: 'gameImage',
-        style: { rounded: true },
-      },
-      {
-        label: 'Som do Jogo',
-        type: 'file',
-        icon: 'music_note',
-        model: 'gameSound',
-        style: { rounded: true },
-      },
-    ],
-    buttons: [
-      {
-        text: 'Voltar',
-        position: 'left',
-        class: '',
-        action: { type: 'local', name: 'rewind' },
-      },
-      {
-        text: 'Avançar',
-        class: 'confirm',
-        action: { name: 'handleGameCreate', value: 'true' },
-      },
-    ],
+  type: 'minimal',
+  store: 'global',
+  steps: {
+    1: {
+      fields: [
+        {
+          label: 'Nome do Jogo',
+          model: 'gameName',
+          placeholder: 'Um nome bem legal!',
+          icon: 'emoji_objects',
+          style: { rounded: true },
+        },
+        {
+          label: 'Descrição do Jogo',
+          model: 'gameDescription',
+          placeholder: 'Uma descrição legal!',
+          icon: 'description',
+          style: { rounded: true },
+        },
+      ],
+      buttons: [
+        {
+          text: 'Pular',
+          icon: 'skip_next',
+          position: 'left',
+          class: 'symbolic',
+          action: { name: 'handleGameCreate' },
+        },
+        {
+          text: 'Avançar',
+          class: 'confirm',
+          action: { name: 'forward', type: 'local' },
+        },
+      ],
+    },
+    2: {
+      fields: [
+        {
+          label: 'Imagem do Jogo',
+          type: 'file',
+          icon: 'image',
+          model: 'gameImage',
+          style: { rounded: true },
+        },
+        {
+          label: 'Som do Jogo',
+          type: 'file',
+          icon: 'music_note',
+          model: 'gameSound',
+          style: { rounded: true },
+        },
+      ],
+      buttons: [
+        {
+          text: 'Voltar',
+          position: 'left',
+          class: '',
+          action: { type: 'local', name: 'rewind' },
+        },
+        {
+          text: 'Pular',
+          icon: 'skip_next',
+          class: 'symbolic',
+          action: { name: 'handleGameCreate' },
+        },
+        {
+          text: 'Avançar',
+          class: 'confirm',
+          action: { name: 'handleGameCreate', value: 'true' },
+        },
+      ],
+    },
   },
 }
 
@@ -159,17 +159,14 @@ function criarNovoJogo() {
   actualPage.value = 1
 }
 
-function handleFormEvent(event) {
-  if (event.type === 'local') {
-  }
-  if (typeof event.name === 'function') {
-  } else {
-  }
-}
-
 const functions = {
   handleGameCreate: async (images = false) => {
     try {
+      if (inputData.gameName === undefined || inputData.gameDescription === undefined) {
+        showToast({ type: 'warning', message: 'Preencha o nome e a descrição do jogo.' })
+        return
+      }
+
       post(
         { type: 'database', route: 'setGame' },
         { title: inputData.gameName, description: inputData.gameDescription },
@@ -235,9 +232,6 @@ const functions = {
   max-width: 400px;
   min-width: 280px;
   margin: 0 auto;
-  background: var(--form-bg, #fff);
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;

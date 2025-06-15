@@ -19,7 +19,7 @@
   grid-template-rows: 50px auto;
   border-radius: 15px;
   z-index: 10;
-  background-color: var(--bg);
+  background: var(--bg);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   color: var(--text);
   /* animation: moveToCenter 0.6s ease forwards; */
@@ -34,7 +34,7 @@
   height: calc-size(auto);
   interpolate-size: allow-keywords;
   overflow: hidden;
-  border: 1px solid var(--border)
+  border: 1px solid var(--border);
 }
 
 .dialog-main.loading {
