@@ -95,7 +95,7 @@
   position: relative;
   grid-column: 2;
   grid-auto-flow: column;
-  overflow-x: hidden;
+  overflow-x: clip;
   min-width: 0;
   max-height: 800px;
 }

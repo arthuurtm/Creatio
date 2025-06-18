@@ -35,7 +35,10 @@
   --element-focus: #ddddddf1;
   --element-hover: #c5c5c5a9;
 
-  --main-gradient: linear-gradient(135deg, #fdfbfb, #ebedee, #d7e2f0);
+  --main-gradient: linear-gradient(135deg, #fdfbfb, #dce7ec, #c1d1e7);
+  --main-glass-background: rgba(255, 255, 255, 0.32);
+  --main-glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  --main-glass-border: 2px solid rgba(255, 255, 255, 0.24);
 
   --btn-glass-default: rgba(255, 255, 255, 0.18);
   --btn-glass-default-border: rgba(255, 255, 255, 0.24);
@@ -77,7 +80,10 @@
   --element-focus: #7a7a7ad9;
   --element-hover: #777777aa;
 
-  --main-gradient: linear-gradient(135deg, #0e0e0e, #0b0c0e, #0e1318);
+  --main-gradient: linear-gradient(135deg, #0e0e0e, #090c16, #05121d);
+  --main-glass-background: rgba(40, 40, 60, 0.22);
+  --main-glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+  --main-glass-border: 2px solid rgba(73, 67, 67, 0.1);
 
   --btn-glass-default: rgba(40, 40, 60, 0.22);
   --btn-glass-default-border: rgba(255, 255, 255, 0.08);
@@ -131,6 +137,10 @@
 :root[data-modifier='glass'] {
   --bg: var(--main-gradient);
   --form-bg: var(--main-gradient);
+  --main-glass-blur: blur(16px);
+  --main-glass-saturate: saturate(180%);
+  --element-focus: rgba(94, 94, 104, 0.096);
+  --element-hover: #777777aa;
 }
 
 body {

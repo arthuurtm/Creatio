@@ -26,7 +26,6 @@
         <h1 v-if="config">{{ config.title }}</h1>
         <h1 v-else>Erro Interno</h1>
       </div>
-
       <div v-if="hasStepsData && currentStepData && !hasErrors" class="right">
         <ComponentForm
           :general="config"
@@ -36,7 +35,18 @@
       </div>
 
       <div v-else-if="!hasStepsData || !currentStepData || hasErrors" class="right">
-        <ComponentForm :stepData="'error'" @emitEvent="handleFunctionEvent" />
+        <ComponentForm
+          :stepData="{
+            formEvent: 'error',
+            buttons: [
+              {
+                text: 'Voltar',
+                action: { type: 'local', name: 'back' },
+              },
+            ],
+          }"
+          @emitEvent="handleFunctionEvent"
+        />
       </div>
     </div>
   </div>
@@ -50,7 +60,6 @@ import ComponentForm from './ComponentForm.vue'
 const props = defineProps({
   config: {
     type: Object,
-    default: () => ({}),
   },
   formFunctions: {
     type: Object,

@@ -18,7 +18,7 @@
   outline: none;
   box-sizing: border-box;
   background-color: transparent;
-  color: var(--input-text);
+  color: var(--text);
   height: 45px;
   font-size: 16px;
   border-radius: 30px;
@@ -65,14 +65,6 @@
 
 .input.border {
   border: 2px solid var(--input-bg);
-}
-
-.input.border.sameText {
-  border: 2px solid var(--text);
-}
-
-.input.sameText .input-field {
-  color: var(--text);
 }
 
 .input-field:focus::placeholder {
@@ -130,4 +122,21 @@
 
 .input.star .star.hover {
   color: #ffd700;
+}
+
+@media (max-width: 600px) {
+  .input.minimal .input-field {
+    visibility: hidden;
+    display: none;
+  }
+
+  .input.minimal {
+    border: none;
+  }
+
+  .input.minimal:hover .input-field,
+  .input.minimal:focus-within .input-field {
+    visibility: visible;
+    display: block;
+  }
 }

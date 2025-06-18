@@ -50,57 +50,64 @@ const pageName = computed(() => useRoute().name)
 
 <template>
   <div class="app-container">
-    <div class="header-bar">
-      <div id="toggleNavigator">
-        <CreateButton
-          @emitEvent="toggleNavigator"
-          :buttons="[
-            {
-              icon: 'menu',
-              class: 'symbolic no-padding no-scalling',
-              id: 'toggleNavigatorButton',
-              type: '',
-            },
-          ]"
-        />
-      </div>
-      <div class="search">
-        <div class="wrapper">
-          <CreateTextField
-            :fields="[
-              {
-                type: 'text',
-                name: 'globalSearch',
-                model: 'globalSearch',
-                placeholder: 'Pesquisar por...',
-                icon: 'search',
-                style: {
-                  rounded: true,
-                  border: true,
-                  // color: 'sameText',
+    <div class="app-header">
+      <div class="header-bar">
+        <div class="util">
+          <div id="toggleNavigator">
+            <CreateButton
+              @emitEvent="toggleNavigator"
+              :buttons="[
+                {
+                  icon: 'menu',
+                  class: 'symbolic no-padding no-scalling',
+                  id: 'toggleNavigatorButton',
+                  type: '',
                 },
-              },
-            ]"
-          />
+              ]"
+            />
+          </div>
+          <div class="search">
+            <div class="wrapper">
+              <CreateTextField
+                :fields="[
+                  {
+                    type: 'text',
+                    name: 'globalSearch',
+                    model: 'globalSearch',
+                    placeholder: 'Pesquisar por...',
+                    icon: 'search',
+                    style: {
+                      rounded: true,
+                      border: true,
+                      minimal: true,
+                      // color: 'sameText',
+                    },
+                  },
+                ]"
+              />
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="notifications">
-        <CreateButton
-          :buttons="[
-            {
-              position: 'right',
-              icon: 'notifications',
-              class: 'symbolic no-padding no-scalling no-brightness',
-              id: 'notificationsButton',
-              type: '',
-              action: {
-                name: '--',
-                value: '--',
-                type: '--',
-              },
-            },
-          ]"
-        />
+        <div class="notifications">
+          <div class="notification-wrapper">
+            <CreateButton
+              :buttons="[
+                {
+                  position: 'right',
+                  icon: 'notifications',
+                  class: 'symbolic no-padding no-scalling no-brightness',
+                  id: 'notificationsButton',
+                  type: '',
+                  action: {
+                    name: '--',
+                    value: '--',
+                    type: '--',
+                  },
+                },
+              ]"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -136,13 +143,21 @@ const pageName = computed(() => useRoute().name)
   background-color: var(--bg);
 }
 
+.app-header {
+  grid-row: 1;
+}
+
 .header-bar {
   display: flex;
   align-items: center;
   padding: 0.6rem;
-  grid-row: 1;
   border-bottom: 1px solid var(--border);
   box-shadow: 0 4px 6px var(--primary-shadow);
+}
+
+.util {
+  display: flex;
+  justify-content: space-between;
 }
 
 .header-bar .search {
@@ -177,19 +192,66 @@ const pageName = computed(() => useRoute().name)
 }
 
 .view-app {
-  padding: 30px;
+  padding: 15px;
   overflow-y: auto;
   flex-grow: 1;
   z-index: 1;
   grid-column: 2;
+  margin: 1px solid var(--border);
+  border-radius: 24px;
 }
 
 .view-app.no-rounded {
   border-radius: 0;
 }
+
+.notifications {
+  margin-left: auto;
+}
 @media (max-width: 600px) {
   .app-container {
     background-color: var(--bg);
+    grid-template-rows: 1fr auto;
+  }
+
+  .app-header {
+    grid-row: 2;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    max-height: 70px;
+  }
+
+  .header-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: var(--bg2);
+    position: relative;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .header-bar .util {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+
+  .header-bar .notifications .notification-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .search {
+    margin-right: auto;
+    flex-grow: 0 !important;
+    z-index: 2;
+  }
+
+  .main-content {
+    grid-row: 1;
+    z-index: 1;
   }
 
   .view-app {
@@ -198,13 +260,13 @@ const pageName = computed(() => useRoute().name)
     padding: 5px;
   }
 
-  .header-bar {
-    border-radius: 0 0 20px 20px;
-    background-color: var(--bg2);
-  }
-
   .header-bar #toggleNavigator {
-    margin-left: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    margin: 0;
   }
 }
 
@@ -213,16 +275,13 @@ const pageName = computed(() => useRoute().name)
 }
 
 :root[data-modifier='glass'] .header-bar {
-  background: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  background: var(--main-glass-background);
+  /* box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); */
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border-radius: 24px;
+  /* border-radius: 24px; */
   border: 2px solid rgba(255, 255, 255, 0.24);
-  transition:
-    background 0.3s,
-    box-shadow 0.3s;
-  margin: 1rem 1rem 0.2rem 1rem;
+  /* margin: 1rem 1rem 0.2rem 1rem; */
 }
 
 :root[data-theme='dark'][data-modifier='glass'] .header-bar {
@@ -239,7 +298,6 @@ const pageName = computed(() => useRoute().name)
   :root[data-modifier='glass'] .header-bar {
     margin: 0;
     padding: 0.6rem;
-    border-radius: 0 0 20px 20px;
   }
 
   :root[data-modifier='glass'] .header-bar #toggleNavigator {

@@ -1,26 +1,36 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const defaultStepData = {
+  fields: [],
+  buttons: [
+    {
+      text: 'Voltar',
+      action: { type: 'local', name: 'back' },
+    },
+  ],
+  anchor: [],
+}
+
+const props = defineProps({
   stepData: {
     type: Object,
-    default: () => ({
-      stepIndex: 0,
-      fields: [],
-      buttons: [
-        {
-          text: 'Voltar',
-          action: { type: 'local', name: 'back' },
-        },
-      ],
-      anchor: null,
-      message: 'Ocorreu um erro ao carregar os dados do formulário.',
-    }),
+    default: () => ({}),
   },
   general: {
     type: Object,
     default: () => ({}),
   },
 })
+
 const emit = defineEmits(['submit-form', 'emit-event'])
+
+const stepData = computed(() => {
+  return {
+    ...defaultStepData,
+    ...props.stepData,
+  }
+})
 
 function submitForm() {}
 function handleFunctionEvent(event) {
@@ -35,6 +45,9 @@ function handleFunctionEvent(event) {
         <div :key="stepData.stepIndex">
           <div class="sepElements">
             <p v-if="stepData.message">{{ stepData.message }}</p>
+            <p v-if="stepData.formEvent === 'error'" class="error">
+              {{ stepData.errorMessage || 'Ocorreu um erro ao carregar dados do formulário.' }}
+            </p>
             <CreateTextField
               :fields="stepData.fields"
               @emitEvent="handleFunctionEvent"

@@ -3,11 +3,13 @@
     <label v-if="field.label" :for="field.model">{{ field.label }}</label>
     <div
       class="input"
+      ref="inputWrapper"
       :class="[
         field.class,
         field.style?.rounded && 'rounded',
         field.style?.border && 'border',
         field.style?.color,
+        field.style?.minimal && 'minimal',
         (field.type === 'password' || field.type === 'password-view') && 'flex-reverse',
       ]"
     >
@@ -50,7 +52,7 @@
 </template>
 
 <script setup>
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, onMounted } from 'vue'
 import CreateAnchor from '@/components/elements/CreateAnchor.vue'
 
 const props = defineProps({
@@ -67,6 +69,18 @@ const activeStore = computed(() => store[props.storeName])
 const formData = ref(activeStore.value.getInputData)
 
 const customIcon = ref({ password: 'visibility' })
+
+onMounted(() => {
+  const inputContainer = document.querySelector('.input')
+  if (inputContainer) {
+    inputContainer.addEventListener('click', (e) => {
+      const inputField = e.currentTarget.querySelector('.input-field')
+      if (inputField) {
+        inputField.focus()
+      }
+    })
+  }
+})
 
 function reEmitEvent(actions) {
   emits('emitEvent', actions)
