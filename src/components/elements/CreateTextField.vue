@@ -1,6 +1,7 @@
 <template>
   <div class="input-group" v-for="(field, index) in props.fields" :key="index">
     <label v-if="field.label" :for="field.model">{{ field.label }}</label>
+    <!--<fieldset-->
     <div
       class="input"
       ref="inputWrapper"
@@ -13,6 +14,7 @@
         (field.type === 'password' || field.type === 'password-view') && 'flex-reverse',
       ]"
     >
+      <!-- <legend v-if="field.label" :for="field.model">{{ field.label }}</legend> -->
       <div v-if="field.icon" class="material-symbols-outlined notranslate">{{ field.icon }}</div>
       <div
         v-if="field.type === 'password' || field.type === 'password-view'"

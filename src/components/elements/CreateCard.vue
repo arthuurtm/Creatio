@@ -56,7 +56,11 @@ function handleMouseLeave(index) {
       <p>{{ game.title || 'Exemplo' }}</p>
     </div>
     <div class="banner">
-      <img id="banner" alt="Banner do jogo" :src="getImageSrc(game.img)" />
+      <img
+        id="banner"
+        alt="Banner do jogo"
+        :src="`http://localhost:9000/data/${game.banner}` || getImageSrc(game.img)"
+      />
     </div>
   </div>
 </template>

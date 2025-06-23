@@ -22,7 +22,7 @@
 .page.minimal {
   background-color: transparent;
   display: unset;
-  width: unset;
+  width: 100%;
 }
 
 .page.minimal .main-form-container {
@@ -38,6 +38,7 @@
   border: none;
   box-shadow: none;
   background-color: transparent;
+  padding: 0;
 }
 
 .page.minimal .main-form-container .left {
@@ -45,9 +46,11 @@
 }
 
 .page.minimal .main-form-container .right {
-  grid-column: 1;
+  flex: 1 1 auto;
   width: 100%;
-  padding: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .main-form-container {
@@ -101,10 +104,12 @@
 }
 
 #logo {
-  margin-left: auto;
+  /* margin-left: auto;
   margin-right: auto;
-  width: 50%; /* ou qualquer outro valor que você deseja */
-  height: auto; /* mantém a proporção da imagem */
+  width: 50%;
+  height: auto; */
+  width: fit-content;
+  height: 6rem;
 }
 
 .main-form-container p {
@@ -116,6 +121,10 @@
 .main-form-container label {
   font-size: 14px;
   font-weight: 600;
+}
+
+.main-form-container h1 {
+  margin: 0 0 1rem 0;
 }
 
 .main-form-container a {

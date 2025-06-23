@@ -94,7 +94,6 @@
   }
 
   .nav.minimized.hidden {
-    /* width: 1rem; */
     width: 0px;
     border: none;
   }
@@ -117,7 +116,6 @@
     width: 0;
     overflow: hidden;
     white-space: nowrap;
-    pointer-events: none;
   }
 
   .nav .center ul li span {
@@ -368,11 +366,12 @@
 }
 
 :root[data-modifier='glass'] .nav {
-  background: var(--main-glass-background);
-  /* box-shadow: var(--main-glass-shadow); */
-  backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
-  -webkit-backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
-  border: var(--main-glass-border);
+  background: transparent;
+  box-shadow: unset;
+  /* backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate); */
+  /* -webkit-backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate); */
+  /* border: var(--main-glass-border); */
+  border: none;
 }
 
 :root[data-modifier='glass'] .nav.minimized.hidden {
@@ -381,19 +380,25 @@
 }
 
 :root[data-modifier='glass'] .nav .center ul li {
-  background: var(--btn-glass-default);
-  /* box-shadow: var(--main-glass-shadow); */
+  /*background: var(--btn-glass-default);*/
   border: 1.5px solid rgba(120, 120, 180, 0.18);
 }
 
 :root[data-modifier='glass'] .nav .center ul li:hover,
 :root[data-modifier='glass'] .nav .center ul li.selected {
-  border: 2px solid var(--primary);
+  border: 1.5px solid var(--border);
   background: var(--element-focus);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.28);
 }
 
 @media (max-width: 600px) {
+  :root[data-modifier='glass'] .nav {
+    background: var(--main-glass-background);
+    backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
+    -webkit-backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
+    border: var(--main-glass-border);
+  }
+
   :root[data-modifier='glass'] .nav.minimized {
     margin: 0;
   }
