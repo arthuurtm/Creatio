@@ -153,6 +153,7 @@ const pageName = computed(() => useRoute().name)
   padding: 0.6rem;
   border-bottom: 1px solid var(--border);
   box-shadow: 0 4px 6px var(--primary-shadow);
+  position: relative;
 }
 
 .util {
@@ -165,6 +166,9 @@ const pageName = computed(() => useRoute().name)
   flex-grow: 1;
   justify-content: center;
   align-items: center;
+  position: absolute;
+  left: 50%;
+  right: 50%;
 }
 
 .header-bar .search .wrapper {
@@ -202,12 +206,37 @@ const pageName = computed(() => useRoute().name)
 }
 
 .view-app.no-rounded {
-  border-radius: 0;
+  border-radius: 0 0 0 0;
+  border-top-left-radius: 0 !important;
 }
 
 .notifications {
   margin-left: auto;
 }
+
+:root[data-modifier='glass'] .app-container {
+  background: var(--main-glass-background);
+  backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
+  -webkit-backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
+}
+
+:root[data-modifier='glass'] .header-bar {
+  box-shadow: unset !important; /* 0 8px 32px 0 rgba(31, 38, 135, 0.1) */
+  border: none;
+  /* margin: 1rem 1rem 0.2rem 1rem; */
+}
+
+:root[data-modifier='glass'] .header-bar #toggleNavigator {
+  margin-left: 1rem;
+}
+
+:root[data-modifier='glass'] .view-app {
+  border-radius: 0;
+  border-top-left-radius: 24px;
+  border: var(--main-glass-border);
+  background: var(--main-gradient);
+}
+
 @media (max-width: 600px) {
   .app-container {
     background-color: var(--bg);
@@ -247,6 +276,7 @@ const pageName = computed(() => useRoute().name)
     margin-right: auto;
     flex-grow: 0 !important;
     z-index: 2;
+    position: static !important;
   }
 
   .main-content {
@@ -256,7 +286,7 @@ const pageName = computed(() => useRoute().name)
 
   .view-app {
     margin: 0;
-    border-radius: 0;
+    border-top-left-radius: 0 !important;
     padding: 5px;
   }
 
@@ -268,40 +298,29 @@ const pageName = computed(() => useRoute().name)
     z-index: 1;
     margin: 0;
   }
-}
 
-:root[data-modifier='glass'] .app-container {
-  background: var(--main-gradient);
-}
+  :root[data-modifier='glass'] .app-header {
+    padding: 8px 16px;
+  }
 
-:root[data-modifier='glass'] .header-bar {
-  background: var(--main-glass-background);
-  /* box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); */
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  /* border-radius: 24px; */
-  border: 2px solid rgba(255, 255, 255, 0.24);
-  /* margin: 1rem 1rem 0.2rem 1rem; */
-}
-
-:root[data-theme='dark'][data-modifier='glass'] .header-bar {
-  background: rgba(20, 20, 30, 0.35);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
-  border: 2px solid rgba(73, 67, 67, 0.1);
-}
-
-:root[data-modifier='glass'] .header-bar #toggleNavigator {
-  margin-left: 1rem;
-}
-
-@media (max-width: 600px) {
   :root[data-modifier='glass'] .header-bar {
     margin: 0;
     padding: 0.6rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    background: var(--main-glass-background);
+    backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
+    -webkit-backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
+    border-radius: 24px !important;
   }
 
   :root[data-modifier='glass'] .header-bar #toggleNavigator {
     margin-left: 0;
+  }
+
+  :root[data-modifier='glass'] .app-container {
+    background: var(--main-glass-background);
+    backdrop-filter: unset;
+    -webkit-backdrop-filter: unset;
   }
 }
 </style>

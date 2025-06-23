@@ -3,14 +3,14 @@
     <div class="separador">
       <div class="separador">
         <div class="container">
-          <div class="bubble right">{{ this.msgText }}</div>
+          <div class="bubble right" id="message-text">{{ msgText }}</div>
           <div class="bubble left">👽 bilu???</div>
         </div>
         <div class="container text-container">
           <h1>Algo de errado parece não estar certo... <i>Erro 404</i></h1>
           <h2>Essa página não existe</h2>
-          <form method="POST" @submit.prevent="back">
-            <button class="btn" type="submit">Voltar</button>
+          <form method="POST" @submit.prevent>
+            <CreateButton :buttons="[{ text: 'Voltar', position: 'right' }]" @emitEvent="back" />
           </form>
         </div>
       </div>
@@ -18,31 +18,30 @@
   </main>
 </template>
 
-<script>
-export default {
-  Name: 'NotFound',
-  data() {
-    return {
-      msgText: window.location.pathname,
-      maxLength: 20,
-    }
-  },
-  mounted() {
-    const truncatedText = this.truncateText(this.msgText, this.maxLength)
-    document.getElementById('message-text').textContent = truncatedText
-  },
-  methods: {
-    truncateText(text, maxLength) {
-      if (text.length > maxLength) {
-        return text.substring(0, maxLength - 3) + '...'
-      } else {
-        return text
-      }
-    },
-    back() {
-      this.$globalFunc.hrefTo('/')
-    },
-  },
+<script setup>
+import { useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
+
+const msgText = ref(window.location.pathname)
+const maxLength = ref(30)
+const router = useRouter()
+
+onMounted(() => {
+  const truncatedText = handleTruncateText(msgText.value, maxLength.value)
+  document.getElementById('message-text').textContent = truncatedText
+})
+
+function handleTruncateText(text, maxLength) {
+  if (text.length > maxLength) {
+    console.log(text.substring(0, maxLength - 3) + '...')
+    return text.substring(0, maxLength - 3) + '...'
+  } else {
+    return text
+  }
+}
+
+function back() {
+  router.push({ name: 'Home' })
 }
 </script>
 
@@ -61,13 +60,17 @@ main {
 }
 
 .container {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   box-sizing: border-box;
   margin: 30px;
+  gap: 2rem;
 }
 
 .text-container {
   text-align: left;
+  gap: 0;
 }
 
 .text-container h2 {

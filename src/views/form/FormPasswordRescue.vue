@@ -1,10 +1,5 @@
 <template>
-  <ComponentForm
-    ref="formRef"
-    :config="formConfig"
-    :isLoading="isLoading"
-    :formFunctions="functions"
-  />
+  <ComponentForm ref="formRef" :config="formConfig" :formFunctions="functions" />
 </template>
 
 <script setup>
@@ -21,7 +16,6 @@ const router = useRouter()
 const route = useRoute()
 
 const sentCode = ref(false)
-const isLoading = ref(false)
 let userData = ref({})
 const formRef = ref()
 
@@ -123,8 +117,6 @@ const formConfig = {
 const functions = {
   prepareVerifyCode: async () => {
     if (!sentCode.value) {
-      isLoading.value = true
-
       try {
         const res1 = await globalFunc.get({
           type: 'database',
@@ -152,14 +144,11 @@ const functions = {
           type: 'error',
           message: error.message,
         })
-      } finally {
-        isLoading.value = false
       }
     }
   },
 
   resetPassword: async () => {
-    isLoading.value = true
     try {
       if (formData.passwd1 !== formData.passwd2) {
         showToast({
@@ -198,8 +187,6 @@ const functions = {
       if (error.details.errCode === 'invalidCode') {
         formStore.setCurrentStep(2)
       }
-    } finally {
-      isLoading.value = false
     }
   },
 }

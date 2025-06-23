@@ -1,5 +1,5 @@
 <template>
-  <ComponentForm :config="formConfig" :isLoading="isLoading" :formFunctions="functions" />
+  <ComponentForm :config="formConfig" :formFunctions="functions" />
 </template>
 
 <script setup>
@@ -16,7 +16,6 @@ const nicknameValue = computed(() => formData.nickname)
 const router = useRouter()
 
 const sentCode = ref(false)
-const isLoading = ref(false)
 
 // Watchers
 watch(nicknameValue, (newNickname) => {
@@ -168,8 +167,6 @@ const formConfig = ref({
 const functions = {
   prepareVerifyCode: async () => {
     if (!sentCode.value) {
-      isLoading.value = true
-
       try {
         await globalFunc.post(
           {
@@ -188,8 +185,6 @@ const functions = {
           type: 'error',
           message: error.message,
         })
-      } finally {
-        isLoading.value = false
       }
     } else {
       formStore.setCurrentStep(formStore.getCurrentStep + 1)
@@ -206,7 +201,6 @@ const functions = {
         return
       }
 
-      isLoading.value = true
       await globalFunc.post(
         {
           type: 'database',
@@ -253,8 +247,6 @@ const functions = {
         type: 'error',
         message: error.message,
       })
-    } finally {
-      isLoading.value = false
     }
   },
 }

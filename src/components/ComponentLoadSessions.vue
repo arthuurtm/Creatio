@@ -2,7 +2,7 @@
   <div class="ggrid">
     <div class="title">
       <b>
-        <h3 class="upper">Jogos disponíveis</h3>
+        <h3 class="upper">{{ props.title }}</h3>
       </b>
     </div>
 
@@ -24,14 +24,14 @@
       <div v-if="loading"><CreateLoading :class="loadCont" /></div>
 
       <div class="sliding" v-else-if="games && games.length > 0" ref="scrollContainer">
-        <CreateCard :card="games" @emitEvent="playGame" />
+        <CreateCard :card="games" @emitEvent="reEmitEvent" />
       </div>
 
       <div v-else>
         <CreateButton
           :buttons="[
             {
-              text: '🤔💭',
+              text: '🤔💭 nada por aqui...',
               position: 'center',
               class: 'symbolic no-padding no-scalling no-brightness',
               id: 'noGameFound',
@@ -70,11 +70,25 @@ const scrollContainer = ref(null)
 const scrollAmount = 260
 const store = inject('stores')
 
+const props = defineProps({
+  url: {
+    type: String,
+    default: 'getGames',
+    required: true,
+  },
+  title: {
+    type: String,
+    default: '',
+  },
+})
+
+const emits = defineEmits(['emitEvent'])
+
 const router = useRouter()
 
 async function loadGames() {
   try {
-    const data = await get({ type: 'database', route: 'getGames' })
+    const data = await get({ type: 'database', route: props.url })
     console.log('Dados recebidos:', data)
     // store.dialog.setDialog('DialogMessage', {
     //   title: 'Log',
@@ -82,7 +96,7 @@ async function loadGames() {
     // })
     games.value = Array.isArray(data.details) ? data.details : []
   } catch (error) {
-    console.error('Erro ao carregar jogos:', error)
+    console.error('Erro ao carregar dados:', error)
   } finally {
     loading.value = false
   }
@@ -100,11 +114,8 @@ function scrollRight() {
   }
 }
 
-function playGame(args = {}) {
-  router.push({
-    name: 'GameDetails',
-    params: { id: args.id },
-  })
+function reEmitEvent(args = {}) {
+  emits('emitEvent', args)
 }
 
 onMounted(() => {

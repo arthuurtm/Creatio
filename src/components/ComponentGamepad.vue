@@ -1,5 +1,5 @@
 <template>
-  <transition name="fade">
+  <transition name="">
     <div v-if="connected">
       <div class="notify-box bottom-center">
         <div class="container">
@@ -154,9 +154,7 @@ onMounted(() => {
   font-weight: bold;
   gap: 20px;
   z-index: 10;
-}
 
-.notify-box.bottom-center {
   position: fixed;
   bottom: 1rem;
   left: 50%;
@@ -174,5 +172,11 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 5px;
+}
+
+@media (max-width: 600px) {
+  .notify-box {
+    bottom: 5rem;
+  }
 }
 </style>

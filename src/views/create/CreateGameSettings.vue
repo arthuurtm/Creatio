@@ -1,83 +1,40 @@
 <template>
-  <div class="main-container">
-    <div id="helpButton" title="Ajuda">
-      <CreateButton
-        :buttons="[
-          {
-            label: 'Ajuda',
-            icon: 'help',
-            color: 'primary',
-            class: 'symbolic no-padding no-scalling',
-          },
-        ]"
-      />
-    </div>
-
-    <Transition name="moveToBottom" mode="out-in">
-      <CreateStepProgress :steps="steps" :currentStep="actualPage - 1" v-if="actualPage != 0" />
-    </Transition>
-
-    <div class="steps">
-      <!-- Etapa 0 - Página Inicial -->
-      <div class="step-container" v-if="actualPage === 0">
-        <h2>Suas Criações</h2>
-        <CreateButton
-          :buttons="[
+  <ComponentCreateGamePage>
+    <div class="step-container double-divided">
+      <div class="step-form">
+        <div class="container" style="grid-column: 1">
+          <ComponentFormPage :config="stepConfigs" :formFunctions="functions" />
+        </div>
+      </div>
+      <div class="step-preview" style="grid-column: 2">
+        <CreateCard
+          :card="[
             {
-              text: 'Criar',
-              icon: 'add',
-              class: 'symbolic no-padding no-scalling',
+              title: inputData.gameName,
+              description: inputData.gameDescription,
+              img: inputData.gameImage,
+              sound: inputData.gameSound,
             },
           ]"
-          @emitEvent="criarNovoJogo"
         />
       </div>
-
-      <!-- Etapa 1 - Configurações Básicas -->
-      <div class="step-container double-divided" v-if="actualPage === 1">
-        <div class="step-form" style="grid-column: 1">
-          <div class="container">
-            <ComponentFormPage :config="stepConfigs" :formFunctions="functions" />
-          </div>
-        </div>
-        <div class="step-preview" style="grid-column: 2">
-          <CreateCard
-            :card="[
-              {
-                title: inputData.gameName,
-                description: inputData.gameDescription,
-                img: inputData.gameImage,
-                sound: inputData.gameSound,
-              },
-            ]"
-          />
-        </div>
-      </div>
-
-      <!-- Etapa 2 - Editor -->
-      <div class="step-container" v-if="actualPage === 2"></div>
-
-      <!-- Etapa 3 - Créditos -->
-      <div class="step-container" v-if="actualPage === 3"></div>
-
-      <!-- Etapa 4 - Revisão -->
-      <div class="step-container" v-if="actualPage === 4"></div>
     </div>
-  </div>
+  </ComponentCreateGamePage>
 </template>
-
 <script setup>
-import ComponentFormPage from '@/components/ComponentFormPage.vue'
-import { inject, ref, computed } from 'vue'
+import { inject } from 'vue'
+import { useRouter /*useRoute*/ } from 'vue-router'
 import { post } from '@/functions/functions'
 import { showToast } from '@/plugins/toast'
+import ComponentCreateGamePage from '@/components/ComponentCreateGamePage.vue'
+import ComponentFormPage from '@/components/ComponentFormPage.vue'
 
 const store = inject('stores')
 const globalStore = store.global
 const inputData = globalStore.getInputData
 
-const steps = ['Configurações básicas', 'Jogo', 'Créditos', 'Revisão']
-const actualPage = ref(0)
+const router = useRouter()
+// const route = useRoute()
 
 const stepConfigs = {
   type: 'minimal',
@@ -155,10 +112,6 @@ const stepConfigs = {
   },
 }
 
-function criarNovoJogo() {
-  actualPage.value = 1
-}
-
 const functions = {
   handleGameCreate: async (images = false) => {
     try {
@@ -167,7 +120,7 @@ const functions = {
         return
       }
 
-      post(
+      let result = await post(
         { type: 'database', route: 'setGame' },
         { title: inputData.gameName, description: inputData.gameDescription },
       )
@@ -176,11 +129,18 @@ const functions = {
         const gameData = new FormData()
         gameData.append('gameImage', inputData.gameImage)
         gameData.append('gameSound', inputData.gameSound)
+        gameData.append('gameId', result.details.game.id)
+
         for (const pair of gameData.entries()) {
           console.log(pair[0], pair[1])
         }
-        post({ type: 'file', route: 'upload', contentType: 'multipart/form-data' }, gameData)
+        post(
+          { type: 'database', route: 'setFileUpload', contentType: 'multipart/form-data' },
+          gameData,
+        )
       }
+
+      router.push({ name: 'EditGame', params: { id: result.details.game.id } })
     } catch (error) {
       showToast({ type: 'error', message: 'Erro ao criar o jogo.' })
       console.error('Erro ao criar o jogo:', error)
@@ -190,13 +150,6 @@ const functions = {
 </script>
 
 <style scoped>
-#helpButton {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 10;
-}
-
 /* Etapas */
 .step-container {
   border-radius: 1rem;
@@ -211,7 +164,6 @@ const functions = {
   gap: 2rem;
 }
 
-/* Formulários e prévia */
 .step-form,
 .step-preview {
   display: flex;
@@ -247,15 +199,6 @@ const functions = {
 
 /* Responsividade para telas pequenas */
 @media (max-width: 600px) {
-  .step-container {
-    padding: 0;
-  }
-  .step-container.double-divided {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-
   .step-form,
   .step-preview {
     display: flex;
@@ -265,40 +208,8 @@ const functions = {
   .step-form .container,
   .step-form form.form-container {
     max-width: 100vw;
-    min-width: unset;
     border-radius: 0.5rem;
     padding: 1rem;
   }
 }
-
-/* Lista de jogos */
-.game-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1rem;
-}
-
-/* Créditos */
-.creditos-lista {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.creditos-lista input {
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid #ddd;
-  flex: 1;
-}
-
-/* Preview */
-.step-preview img {
-  max-width: 100%;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-/* Animações */
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <ComponentForm :config="formConfig" :isLoading="isLoading" :formFunctions="functions" />
+  <ComponentForm :config="formConfig" :formFunctions="functions" />
 </template>
 
 <script setup>
@@ -13,7 +13,6 @@ import { showToast } from '@/plugins/toast'
 const store = inject('stores')
 const formData = store.form.getInputData
 const router = useRouter()
-const isLoading = ref(false)
 
 // Configurações do formulário
 const formConfig = {
@@ -130,7 +129,6 @@ const functions = {
 
   handleLogin: async () => {
     try {
-      isLoading.value = true
       if (formData.identification === '' || formData.identification === undefined) {
         showToast({
           type: 'warning',
@@ -167,8 +165,6 @@ const functions = {
         type: 'error',
         message: error.message,
       })
-    } finally {
-      isLoading.value = false
     }
   },
 }

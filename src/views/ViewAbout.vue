@@ -18,7 +18,7 @@ dialog.setDialog('DialogMessage', {
     text: 'Ok',
     class: 'confirm',
     action: () => {
-      router.push({ name: 'Login' })
+      router.push({ name: 'Home' })
     },
   },
 })

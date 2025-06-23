@@ -1,11 +1,19 @@
 <script setup>
 import ComponentLoadSessions from '@/components/ComponentLoadSessions.vue'
 import { inject } from 'vue'
+import { useRouter } from 'vue-router'
 
 // Stores
 const store = inject('stores')
 const userStore = store.user
-const dynamicDialog = store.dialog
+const router = useRouter()
+
+function playGame(args = {}) {
+  router.push({
+    name: 'GameDetails',
+    params: { id: args.id },
+  })
+}
 </script>
 
 <template>
@@ -13,8 +21,8 @@ const dynamicDialog = store.dialog
     <div class="header">
       <h3>
         <b>
-          <h3 v-if="userStore.getIsAuth" class="gradient">{{ userStore.getName }}</h3>
-          <h3 v-else class="gradient">Início</h3>
+          <h3 v-if="userStore.getIsAuth" class="">{{ userStore.getName }}</h3>
+          <h3 v-else class="">Início</h3>
         </b>
       </h3>
       <div class="header-profile">
@@ -27,7 +35,7 @@ const dynamicDialog = store.dialog
       </div>
     </div>
     <div class="sessions-show">
-      <ComponentLoadSessions />
+      <ComponentLoadSessions @emitEvent="playGame" />
     </div>
   </div>
 </template>

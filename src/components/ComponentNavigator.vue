@@ -139,7 +139,7 @@ const handleIsMobile = () => {
 const navigateTo = (page) => {
   console.log(`navigateTo() > page: ${page}`)
   router.push({ name: page })
-  selectedPage.value = page
+  // selectedPage.value = page
   updateMenuState()
 }
 

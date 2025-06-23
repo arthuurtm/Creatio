@@ -22,10 +22,13 @@
 
     <div class="main-form-container" :style="isMinimal() && 'border: none'">
       <div class="left">
-        <img src="@/assets/img/min-logo.png" alt="Logo do Sysroot" id="logo" />
+        <div id="logo">
+          <CreateLogo />
+        </div>
         <h1 v-if="config">{{ config.title }}</h1>
         <h1 v-else>Erro Interno</h1>
       </div>
+
       <div v-if="hasStepsData && currentStepData && !hasErrors" class="right">
         <ComponentForm
           :general="config"
@@ -56,6 +59,7 @@
 import { ref, computed, inject, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ComponentForm from './ComponentForm.vue'
+import { showToast } from '@/plugins/toast'
 
 const props = defineProps({
   config: {
@@ -66,7 +70,6 @@ const props = defineProps({
     default: () => ({}),
   },
   errorMessage: String,
-  isLoading: Boolean,
   redirectName: String,
 })
 
@@ -80,6 +83,7 @@ const appDynamicDialog = store.dialog
 const errors = ref([])
 const formData = computed(() => formStore.getFormData)
 const currentStep = computed(() => formStore.getCurrentStep)
+const isLoading = ref(false)
 
 const allSteps = computed(() => {
   if (!props.config?.steps) return []
@@ -111,7 +115,7 @@ function handleSettingsBox() {
   appDynamicDialog.setDialog('DialogSettings', { title: 'Configurações' })
 }
 
-function handleFunctionEvent(payload) {
+async function handleFunctionEvent(payload) {
   const { action, value, type } = payload
 
   if (type === 'local') {
@@ -137,7 +141,14 @@ function handleFunctionEvent(payload) {
     }
   } else {
     if (props.formFunctions?.[action]) {
-      props.formFunctions[action](value)
+      try {
+        isLoading.value = true
+        await props.formFunctions[action](value)
+      } catch (err) {
+        showToast({ type: 'error', message: err })
+      } finally {
+        isLoading.value = false
+      }
     } else {
       errors.value.push({
         function: action,
