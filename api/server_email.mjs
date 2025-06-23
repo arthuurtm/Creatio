@@ -109,6 +109,14 @@ app.post('/send-email', async (req, res) => {
   try {
     const html = loadTemplate(variables.structure_name, variables)
 
+    const attachments = [
+      {
+        filename: 'bitmap.svg',
+        path: 'templates/bitmap.svg',
+        cid: 'unique@cid',
+      },
+    ]
+
     const tokenResult = await oAuth2Client.getAccessToken()
     accessToken = tokenResult.token
 
@@ -129,6 +137,7 @@ app.post('/send-email', async (req, res) => {
       to: variables.to,
       subject: variables.subject,
       html,
+      attachments,
     })
     console.log('E-mail enviado:', result.response)
     res.json({ success: true, message: 'E-mail enviado com sucesso!' })

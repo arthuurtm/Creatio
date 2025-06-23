@@ -127,6 +127,7 @@ const Game = sequelize.define(
     title: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.TEXT },
     genre: { type: DataTypes.STRING },
+    banner: { type: DataTypes.TEXT },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -455,13 +456,28 @@ async function verifyAndRenewSession(req, res) {
   }
 }
 
+async function authMiddleware(req, res, next) {
+  try {
+    const session = await verifyAndRenewSession(req, res)
+    if (!session) {
+      return res.status(401).json({ message: 'Sessão inválida ou expirada.' })
+    }
+
+    // Se quiser, pode anexar dados da sessão ao request
+    req.sessionData = session
+    next()
+  } catch (error) {
+    console.error('Erro no middleware de autenticação:', error)
+    res.status(500).json({ message: 'Erro interno do servidor.' })
+  }
+}
+
 // Efetua o login do usuário
 app.post('/setLogin', async (req, res) => {
   const { type, identification, password } = req.body
   const userAgent = req.headers['user-agent']
   const parser = new UAParser.UAParser()
   const device = parser.setUA(userAgent).getResult()
-  // const isMobile = req.headers['sec-ch-ua-mobile'] === '?1';
 
   try {
     let user = null
@@ -729,8 +745,11 @@ app.delete('/deleteSession', async (req, res) => {
 
 // Retornar todos os jogos disponíveis no site
 app.get('/getGames', async (req, res) => {
+  const { filters } = req.query
   try {
-    const games = await Game.findAll()
+    const games = await Game.findAll({
+      where: filters ? JSON.parse(filters) : {},
+    })
     if (games.length === 0) return res.status(404).json({ message: 'Nenhum jogo encontrado' })
     res.status(200).json(games)
   } catch (error) {
@@ -869,11 +888,12 @@ app.post('/setFileUpload', upload.any(), async (req, res) => {
     return res.status(400).send({ message: 'Nenhum arquivo enviado.' })
   }
 
+  const body = req.body || {}
+
   const uploadResults = []
 
   for (const file of files) {
-    const minioFileName = file.originalname
-
+    const minioFileName = uuidv4()
     try {
       await new Promise((resolve, reject) => {
         minioClient.fPutObject(
@@ -893,6 +913,7 @@ app.post('/setFileUpload', upload.any(), async (req, res) => {
         )
       })
 
+      await Game.update({ banner: minioFileName }, { where: { id: body.gameId } })
       uploadResults.push({
         file: file.originalname,
         status: 'sucesso',
