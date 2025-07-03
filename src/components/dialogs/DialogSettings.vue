@@ -143,7 +143,7 @@
 </template>
 
 <script setup>
-import { appTheme, get, post } from '@/functions/functions'
+import { appTheme, get, post } from '@/functions'
 import { logoutAll } from '@/functions/auth'
 import { computed, ref, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'

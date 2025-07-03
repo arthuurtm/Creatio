@@ -1,4 +1,4 @@
-import { get, post, del } from './functions'
+import { get, post, del } from '.'
 import { showToast } from '@/plugins/toast'
 import { useUserStore } from '@/stores/user'
 

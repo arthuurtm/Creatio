@@ -6,7 +6,7 @@
 import ComponentForm from '@/components/ComponentFormPage.vue'
 import { onMounted, inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import * as gfunctions from '@/functions/functions'
+import * as gfunctions from '@/functions'
 import { showToast } from '@/plugins/toast'
 
 // Stores e router

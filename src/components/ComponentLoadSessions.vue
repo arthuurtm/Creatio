@@ -23,7 +23,7 @@
 
       <div v-if="loading"><CreateLoading :class="loadCont" /></div>
 
-      <div class="sliding" v-else-if="games && games.length > 0" ref="scrollContainer">
+      <div v-else-if="games && games.length > 0" class="sliding" ref="scrollContainer">
         <CreateCard :card="games" @emitEvent="reEmitEvent" />
       </div>
 
@@ -62,7 +62,7 @@
 <script setup>
 import { ref, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
-import { get } from '@/functions/functions'
+import { get } from '@/functions'
 
 const games = ref([])
 const loading = ref(true)

@@ -5,7 +5,7 @@
 <script setup>
 import ComponentForm from '@/components/ComponentFormPage.vue'
 import { ref, inject } from 'vue'
-import * as globalFunc from '@/functions/functions'
+import * as globalFunc from '@/functions'
 import { useRouter, useRoute } from 'vue-router'
 import { showToast } from '@/plugins/toast'
 

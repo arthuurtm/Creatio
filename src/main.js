@@ -10,7 +10,7 @@ import elements from './plugins/elements'
 import { showToast } from './plugins/toast'
 import dialogsComponents from '@/plugins/dialogs'
 
-import * as globalFunc from './functions/functions'
+import * as globalFunc from './functions'
 
 import './assets/css/main.css'
 import 'vue-toastification/dist/index.css'
