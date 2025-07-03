@@ -5,6 +5,10 @@
   z-index: 10;
 }
 
+.main-container {
+  padding: 14px;
+}
+
 /* Lista de jogos */
 .game-list {
   display: grid;

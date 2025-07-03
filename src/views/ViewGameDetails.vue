@@ -8,7 +8,7 @@
 
       <!-- Posição absoluta -->
       <div class="gameOptions">
-        <div id="gameTitle">...</div>
+        <div id="gameTitle"></div>
         <div id="gameRate"></div>
         <div id="gameStart"></div>
       </div>
@@ -20,12 +20,27 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { get } from '@/functions'
 
-const router = useRouter()
 const route = useRoute()
-const id = ref(route.params.id)
+const gameData = ref(null)
+const loading = ref(true)
+const error = ref(null)
 
-onMounted(() => {})
+onMounted(async () => {
+  try {
+    const id = route.params.id
+    const res = await get({
+      type: 'database',
+      route: `getGames?filters=${encodeURIComponent(JSON.stringify({ id }))}`,
+    })
+    gameData.value = res
+  } catch (err) {
+    error.value = err
+  } finally {
+    loading.value = false
+  }
+})
 </script>

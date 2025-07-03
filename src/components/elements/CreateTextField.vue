@@ -11,6 +11,7 @@
         field.style?.border && 'border',
         field.style?.color,
         field.style?.minimal && 'minimal',
+        field.style?.onlyIcon && 'onlyIcon',
         (field.type === 'password' || field.type === 'password-view') && 'flex-reverse',
       ]"
     >

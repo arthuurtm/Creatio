@@ -22,64 +22,68 @@
 
         <div class="center">
           <ul>
-            <li v-if="isAuthenticated" id="user-info" class="user-info controller-index">
-              <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
-              <p class="nickname">@{{ user.getUsername }}</p>
-            </li>
-
-            <li
-              v-if="!isAuthenticated"
-              @click="navigateTo('Login')"
-              :class="[selectedPage === 'Login' && 'selected']"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">login</span>
-              <p>Entrar</p>
-            </li>
-
-            <li
-              @click="navigateTo('Home')"
-              :class="[selectedPage === 'Home' && 'selected']"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">home</span>
-              <p>Início</p>
-            </li>
-
-            <li
-              v-if="isAuthenticated"
-              @click="navigateTo('Create')"
-              :class="[selectedPage === 'Create' && 'selected']"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">add_circle</span>
-              <p>Criar</p>
-            </li>
-
-            <li
-              v-if="isAuthenticated"
-              @click="navigateTo('Chat')"
-              :class="[selectedPage === 'Chat' && 'selected']"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">chat</span>
-              <p>Conversas</p>
-            </li>
-
-            <li @click="handleSettingsBox" class="controller-index">
-              <span class="material-symbols-outlined notranslate">settings</span>
-              <p>Configurações</p>
-            </li>
-
-            <li
-              v-if="isAuthenticated"
-              @click="handleLogout"
-              id="logoutMenuButton"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">logout</span>
-              <p>Sair</p>
-            </li>
+            <CreateButton
+              :rules="['noGroup']"
+              :buttons="[
+                {
+                  tag: 'nav-li',
+                  text: `@${user.getUsername}`,
+                  img: {
+                    src: profilePicture,
+                    alt: 'Foto de perfil',
+                    class: 'profile-picture',
+                  },
+                  class: `controller-index`,
+                  id: 'user-info',
+                  rules: [!isAuthenticated && 'hide'],
+                },
+                {
+                  tag: 'nav-li',
+                  text: 'Entrar',
+                  icon: 'login',
+                  class: `controller-index ${selectedPage === 'Login' && 'selected'}`,
+                  action: () => navigateTo('Login'),
+                  rules: [isAuthenticated && 'hide'],
+                },
+                {
+                  tag: 'nav-li',
+                  text: 'Início',
+                  icon: 'home',
+                  class: `controller-index ${selectedPage === 'Home' && 'selected'}`,
+                  action: () => navigateTo('Home'),
+                },
+                {
+                  tag: 'nav-li',
+                  text: 'Criar',
+                  icon: 'add_circle',
+                  class: `controller-index ${selectedPage === 'Create' && 'selected'}`,
+                  action: () => navigateTo('Create'),
+                  rules: [!isAuthenticated && 'hide'],
+                },
+                {
+                  tag: 'nav-li',
+                  text: 'Conversas',
+                  icon: 'chat',
+                  class: `controller-index ${selectedPage === 'Chat' && 'selected'}`,
+                  rules: [!isAuthenticated && 'hide'],
+                },
+                {
+                  tag: 'nav-li',
+                  text: 'Configurações',
+                  icon: 'settings',
+                  class: 'controller-index',
+                  action: handleSettingsBox,
+                },
+                {
+                  tag: 'nav-li',
+                  text: 'Sair',
+                  icon: 'logout',
+                  class: `controller-index ${isAuthenticated ? '' : 'hidden'}`,
+                  action: handleLogout,
+                  rules: [!isAuthenticated && 'hide'],
+                },
+              ]"
+            />
           </ul>
         </div>
       </div>
@@ -129,7 +133,7 @@ const profilePicture = computed(() => {
 })
 const navigatorIcon = ref('menu')
 const selectedPage = computed(() => props.page)
-const hidden = ref(props.hidden)
+const hidden = computed(() => props.hidden)
 
 // Funções
 const handleIsMobile = () => {

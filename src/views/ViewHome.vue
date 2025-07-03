@@ -41,6 +41,10 @@ function playGame(args = {}) {
 </template>
 
 <style scoped>
+.main {
+  padding: 15px;
+}
+
 .header {
   display: flex;
   flex-direction: row-reverse;

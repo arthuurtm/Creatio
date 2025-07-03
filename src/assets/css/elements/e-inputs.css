@@ -85,6 +85,16 @@
   opacity: 0;
 }
 
+.input.onlyIcon .input-field {
+  visibility: hidden !important;
+  display: none !important;
+}
+
+.input.onlyIcon {
+  border: none !important;
+  cursor: pointer;
+}
+
 .input-field[type='file'] {
   flex: none;
   position: absolute;

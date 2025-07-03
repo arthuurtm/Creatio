@@ -14,10 +14,6 @@
 import { ref } from 'vue'
 const steps = ['Configurações básicas', 'Jogo', 'Créditos', 'Revisão']
 const actualPage = ref(0)
-
-function criarNovoJogo() {
-  actualPage.value = 1
-}
 </script>
 
 <style scoped>

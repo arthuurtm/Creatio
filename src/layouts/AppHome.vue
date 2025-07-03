@@ -4,16 +4,13 @@ import { computed, ref, inject } from 'vue'
 import { useRoute } from 'vue-router'
 
 const store = inject('stores')
-const props = defineProps({
-  hiddenNavigator: Boolean,
-})
-const routeHidden = useRoute().meta.hiddenNavigator
+const routeHidden = computed(() => useRoute().meta.hiddenNavigator)
 const sideBar = computed(() => store.settings.getSideBar)
 const navigator = ref(null)
 
 const hiddenNavigator = computed(() => {
-  if (routeHidden === true) return true
-  return !(props.hiddenNavigator || sideBar.value)
+  if (routeHidden.value) return true
+  return !sideBar.value
 })
 
 const navElementStatus = ref(() => {
@@ -196,13 +193,13 @@ const pageName = computed(() => useRoute().name)
 }
 
 .view-app {
-  padding: 15px;
+  /* padding: 15px; */
   overflow-y: auto;
   flex-grow: 1;
   z-index: 1;
   grid-column: 2;
-  margin: 1px solid var(--border);
-  border-radius: 24px;
+  /* border: 1px solid var(--border); */
+  /* border-radius: 24px; */
 }
 
 .view-app.no-rounded {

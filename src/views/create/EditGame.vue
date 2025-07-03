@@ -1,5 +1,12 @@
-<script setup></script>
+<script setup>
+import ComponentCreateGamePage from '@/components/ComponentCreateGamePage.vue'
+</script>
 
 <template>
-  <h1>página de editar jogo</h1>
+  <ComponentCreateGamePage>
+    <div class="main-container">
+      <div class="container"></div>
+      <div class="main-floating-options"></div>
+    </div>
+  </ComponentCreateGamePage>
 </template>

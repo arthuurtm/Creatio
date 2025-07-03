@@ -1,40 +1,14 @@
-<template>
-  <ComponentCreateGamePage>
-    <div class="step-container double-divided">
-      <div class="step-form">
-        <div class="container" style="grid-column: 1">
-          <ComponentFormPage :config="stepConfigs" :formFunctions="functions" />
-        </div>
-      </div>
-      <div class="step-preview" style="grid-column: 2">
-        <CreateCard
-          :card="[
-            {
-              title: inputData.gameName,
-              description: inputData.gameDescription,
-              img: inputData.gameImage,
-              sound: inputData.gameSound,
-            },
-          ]"
-        />
-      </div>
-    </div>
-  </ComponentCreateGamePage>
-</template>
 <script setup>
 import { inject } from 'vue'
 import { useRouter /*useRoute*/ } from 'vue-router'
-import { post } from '@/functions/functions'
+import { post } from '@/functions'
 import { showToast } from '@/plugins/toast'
-import ComponentCreateGamePage from '@/components/ComponentCreateGamePage.vue'
-import ComponentFormPage from '@/components/ComponentFormPage.vue'
 
 const store = inject('stores')
 const globalStore = store.global
 const inputData = globalStore.getInputData
 
 const router = useRouter()
-// const route = useRoute()
 
 const stepConfigs = {
   type: 'minimal',
@@ -149,67 +123,91 @@ const functions = {
 }
 </script>
 
+<template>
+  <div class="main-container">
+    <!-- Posição fixada (fixed) -->
+    <div class="background dialog-shadow">
+      <div class="corner-blur-mask"></div>
+      <!-- Posição absoluta -->
+      <div class="ui-options">
+        <div class="game-details">
+          <div id="game-title">
+            <CreateTextField
+              :fields="[
+                {
+                  type: 'file',
+                  icon: 'camera',
+                  position: 'center',
+                  style: {
+                    onlyIcon: true,
+                    minimal: true,
+                  },
+                },
+              ]"
+            />
+            Logo
+          </div>
+
+          <div class="options">
+            <div id="game-rate"></div>
+            <div id="game-start"></div>
+          </div>
+        </div>
+
+        <!-- deve funcionar como um footer no futuro-->
+        <div class="game-description"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <style scoped>
-/* Etapas */
-.step-container {
-  border-radius: 1rem;
-  padding: 2rem;
-  animation: fadeIn 0.3s ease;
-}
-
-/* Tela dividida para Configurações */
-.step-container.double-divided {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-}
-
-.step-form,
-.step-preview {
+.main-container {
   display: flex;
-}
-
-.step-form {
-  margin-left: auto;
-}
-
-.step-preview {
-  margin-right: auto;
-}
-
-/* Garante que o formulário tenha tamanho consistente */
-.step-form .container,
-.step-form form.form-container {
   width: 100%;
-  max-width: 400px;
-  min-width: 280px;
-  margin: 0 auto;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  height: 100%;
+  position: relative;
 }
 
-/* Remove padding duplicado se o form já tiver */
-.step-form .container {
-  padding: 0;
-  box-shadow: none;
-  background: none;
+.background,
+.background-banner {
+  width: 100%;
+  height: 100%;
 }
 
-/* Responsividade para telas pequenas */
-@media (max-width: 600px) {
-  .step-form,
-  .step-preview {
-    display: flex;
-    margin-left: unset;
-  }
+.background {
+  background: var(--input-bg);
+  /* position: fixed; */
+}
 
-  .step-form .container,
-  .step-form form.form-container {
-    max-width: 100vw;
-    border-radius: 0.5rem;
-    padding: 1rem;
-  }
+.corner-blur-mask {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.6) 100%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ui-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.ui-options .game-details {
+  margin: auto 0 auto 3rem;
+}
+
+.ui-options .game-details .options {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.ui-options .game-description {
+  grid-row: 2;
 }
 </style>

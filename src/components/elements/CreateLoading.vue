@@ -68,6 +68,10 @@ const isFull = computed(() => props.full)
   animation: spinner-fade9234 1s infinite linear;
 }
 
+.spinner .spinner-blade:nth-child {
+  color: var(--text);
+}
+
 .spinner .spinner-blade:nth-child(1) {
   -webkit-animation-delay: 0s;
   animation-delay: 0s;

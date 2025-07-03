@@ -1,49 +1,34 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <template>
-  <div
-    v-for="(button, index) in buttons"
-    :key="index"
-    class="group-button"
-    :class="button.position || ''"
-  >
-    <button
-      v-if="!button.icon"
-      class="btn"
-      :class="button.class"
-      :id="button.id || ''"
-      :type="button.type || 'submit'"
-      @click="
-        typeof button.action === 'function'
-          ? button.action()
-          : emitEvent(
-              button.action?.name || '',
-              button.action?.value || '',
-              button.action?.type || '',
-            )
-      "
+  <template v-for="(button, index) in buttons" :key="index">
+    <div
+      class="group-button"
+      :class="[button.position || '', rules]"
+      v-if="button.rules ? !button.rules.includes('hide') : true"
     >
-      {{ button.text }}
-    </button>
-    <button
-      v-else
-      class="btn"
-      :class="button.class"
-      :id="button.id || ''"
-      :type="button.type || 'submit'"
-      @click="
-        typeof button.action === 'function'
-          ? button.action()
-          : emitEvent(
-              button.action?.name || '',
-              button.action?.value || '',
-              button.action?.type || '',
-            )
-      "
-    >
-      <span class="material-symbols-outlined notranslate">{{ button.icon }}</span>
-      <p>{{ button.text || '' }}</p>
-    </button>
-  </div>
+      <component
+        :is="button.tag || 'button'"
+        :class="[!button.tag && 'btn', button.class]"
+        :id="button.id || ''"
+        :type="button.type || 'submit'"
+        @click="
+          typeof button.action === 'function'
+            ? button.action()
+            : emitEvent(
+                button.action?.name || '',
+                button.action?.value || '',
+                button.action?.type || '',
+              )
+        "
+      >
+        <span v-if="button.icon" class="material-symbols-outlined notranslate">
+          {{ button.icon }}
+        </span>
+        <img v-if="button.img" :src="button.img.src" :alt="button.img.alt" :class="button.img" />
+        <p>{{ button.text || '' }}</p>
+      </component>
+    </div>
+  </template>
 </template>
 
 <script>
@@ -55,7 +40,13 @@ export default {
       type: Array,
       default: () => [{}],
     },
-    modelValue: String,
+    modelValue: {
+      type: String,
+    },
+    rules: {
+      type: Array,
+      default: () => [],
+    },
   },
   emits: ['update:modelValue', 'emitEvent'],
   setup(props, { emit }) {

@@ -54,14 +54,14 @@ const router = createRouter({
         {
           path: 'create',
           name: 'Create',
-          meta: { requiresAuth: true, hiddenNavigator: true },
+          meta: { requiresAuth: true },
           component: CreateHome,
         },
 
         {
           path: 'create/init',
           name: 'CreateGame',
-          meta: { requiresAuth: true, hiddenNavigator: true },
+          meta: { requiresAuth: true },
           component: CreateGameSettings,
         },
 
