@@ -472,6 +472,24 @@ async function authMiddleware(req, res, next) {
   }
 }
 
+function reqLimiter(max, timeout, message) {
+  max = max || 3
+  let windowMs = 60 * 60 * 1000 * timeout
+  message = message || 'Tente novamente mais tarde'
+  return rateLimit({
+    windowMs,
+    max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+      res.status(429).json({
+        success: false,
+        message,
+        retryAfter: Math.ceil(windowMs / 1000), // opcional
+      })
+    },
+  })
+}
 // Efetua o login do usuário
 app.post('/setLogin', async (req, res) => {
   const { type, identification, password } = req.body
@@ -758,7 +776,7 @@ app.get('/getGames', async (req, res) => {
   }
 })
 
-app.post('/setGame', async (req, res) => {
+app.post('/setGame', reqLimiter(1, 12), async (req, res) => {
   try {
     const accessToken = req.cookies?.accessToken
     const { title, description } = req.body
