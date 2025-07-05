@@ -24,7 +24,13 @@
         <span v-if="button.icon" class="material-symbols-outlined notranslate">
           {{ button.icon }}
         </span>
-        <img v-if="button.img" :src="button.img.src" :alt="button.img.alt" :class="button.img" />
+        <img
+          v-if="button.img"
+          :src="button.img.src"
+          :alt="button.img.alt"
+          :class="button.img"
+          :style="button.img?.style"
+        />
         <p>{{ button.text || '' }}</p>
       </component>
     </div>

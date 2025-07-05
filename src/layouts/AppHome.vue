@@ -166,6 +166,7 @@ const pageName = computed(() => useRoute().name)
   position: absolute;
   left: 50%;
   right: 50%;
+  top: 0.3rem;
 }
 
 .header-bar .search .wrapper {

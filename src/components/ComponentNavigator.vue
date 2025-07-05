@@ -29,7 +29,7 @@
                   tag: 'nav-li',
                   text: `@${user.getUsername}`,
                   img: {
-                    src: profilePicture,
+                    src: user.getProfilePicture,
                     alt: 'Foto de perfil',
                     class: 'profile-picture',
                   },
@@ -128,9 +128,6 @@ const startY = ref(0)
 const currentY = ref(0)
 const isDragging = ref(false)
 const isMenuActive = ref(true)
-const profilePicture = computed(() => {
-  return user.getProfilePicture
-})
 const navigatorIcon = ref('menu')
 const selectedPage = computed(() => props.page)
 const hidden = computed(() => props.hidden)

@@ -33,6 +33,10 @@
   cursor: not-allowed;
 }
 
+.btn p {
+  all: unset;
+}
+
 .btn.destructive {
   border: 3px dotted var(--destructive-button);
 }
@@ -149,8 +153,33 @@ nav-li.selected {
   background: var(--navigator-li-focus);
 }
 
-nav-li span {
-  font-size: 24px;
+header-li {
+  display: flex;
+  padding: 0px 15px;
+  cursor: pointer;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  font-size: large;
+  font-weight: bolder;
+}
+
+header-li:hover {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  color: var(--primary-hover);
+}
+
+header-li.selected {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  color: var(--primary);
 }
 
 @media (min-width: 601px) {
