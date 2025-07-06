@@ -11,7 +11,6 @@ export function appTheme(toggle = false, glassy = false) {
   const savedTheme = localStorage.getItem('data-theme')
   let themeModifier = localStorage.getItem('data-modifier')
   let currentTheme
-  let isDark
 
   if (savedTheme) {
     currentTheme = savedTheme
@@ -77,7 +76,6 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
   }
 
   try {
-    // console.log(`Fazendo requisição para ${endpoint.route}...`, config)
     const response = await fetch(getApiUrl(endpoint.type, endpoint.route), config)
 
     if (!response.ok) {

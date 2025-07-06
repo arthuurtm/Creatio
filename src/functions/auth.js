@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/user'
 
 async function handleUserData() {
   try {
-    const res = await get({ type: 'database', route: 'getUserBasics' })
+    const res = await get({ type: 'database', route: 'getUserData' })
 
     if (res.details) {
       useUserStore().setUserData({
@@ -19,52 +19,13 @@ async function handleUserData() {
     throw new Error(res.message || 'Dados do usuário não encontrados')
   } catch (error) {
     console.error(`Erro ao recuperar dados: ${error}`)
-    useUserStore().clearUserData() // Garante o logout em caso de erro
-    return false
-  }
-}
-
-async function handleAuthentication() {
-  try {
-    const res = await get({ type: 'database', route: 'getUserSession' })
-
-    if (!res.okay) {
-      return await handleRefreshToken()
-    }
-    const userDataLoaded = await handleUserData()
-
-    // Atualiza o estado de autenticação baseado no resultado
-    useUserStore().isAuth = userDataLoaded
-    return userDataLoaded
-  } catch (error) {
-    console.error('Erro ao validar a sessão:', error)
-    useUserStore().isAuth = false
-    return false
-  }
-}
-
-async function handleRefreshToken() {
-  try {
-    const res = await post({ type: 'database', route: 'refreshToken' })
-
-    if (!res.okay) {
-      await logout()
-      return false
-    }
-
-    const userDataLoaded = await handleUserData()
-
-    useUserStore().isAuth = userDataLoaded
-    return userDataLoaded
-  } catch (error) {
-    console.error('Erro ao renovar token:', error)
-    await logout()
+    useUserStore().clearUserData()
     return false
   }
 }
 
 export async function isAuthenticated() {
-  return handleAuthentication()
+  return handleUserData()
 }
 
 export async function logout() {

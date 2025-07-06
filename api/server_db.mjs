@@ -416,6 +416,25 @@ function checkIfUserIsValid(input) {
   }
 }
 
+function reqLimiter(max, timeout, message) {
+  max = max || 3
+  let windowMs = 60 * 60 * 1000 * timeout
+  message = message || 'Tente novamente mais tarde'
+  return rateLimit({
+    windowMs,
+    max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+      res.status(429).json({
+        success: false,
+        message,
+        retryAfter: Math.ceil(windowMs / 1000), // opcional
+      })
+    },
+  })
+}
+
 async function verifyAndRenewSession(req, res) {
   try {
     let { accessToken, refreshToken } = req.cookies
@@ -456,40 +475,24 @@ async function verifyAndRenewSession(req, res) {
   }
 }
 
-async function authMiddleware(req, res, next) {
-  try {
-    const session = await verifyAndRenewSession(req, res)
-    if (!session) {
-      return res.status(401).json({ message: 'Sessão inválida ou expirada.' })
-    }
+// middleware de autenticação com renovação de token
+async function isAuthenticated(req, res, next) {
+  const session = await verifyAndRenewSession(req, res)
 
-    // Se quiser, pode anexar dados da sessão ao request
-    req.sessionData = session
-    next()
-  } catch (error) {
-    console.error('Erro no middleware de autenticação:', error)
-    res.status(500).json({ message: 'Erro interno do servidor.' })
+  if (!session || !session.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Sessão inválida ou expirada',
+      details: { errCode: 'AUTH_EXPIRED' },
+    })
   }
+
+  req.user = session.user
+  req.accessToken = session.accessToken
+  req.refreshToken = session.refreshToken
+  next()
 }
 
-function reqLimiter(max, timeout, message) {
-  max = max || 3
-  let windowMs = 60 * 60 * 1000 * timeout
-  message = message || 'Tente novamente mais tarde'
-  return rateLimit({
-    windowMs,
-    max,
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res) => {
-      res.status(429).json({
-        success: false,
-        message,
-        retryAfter: Math.ceil(windowMs / 1000), // opcional
-      })
-    },
-  })
-}
 // Efetua o login do usuário
 app.post('/setLogin', async (req, res) => {
   const { type, identification, password } = req.body
@@ -563,15 +566,12 @@ app.delete('/logout', (req, res) => {
   res.status(200).json({ message: 'Usuário deslogado com sucesso' })
 })
 
-app.delete('/logoutAll', async (req, res) => {
+app.delete('/logoutAll', isAuthenticated, async (req, res) => {
   try {
-    const accessToken = req.cookies?.accessToken
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_SECRET)
-
     const sessions = await Session.findAll({
       where: {
-        userId: decoded.userId,
-        accessToken: { [Op.ne]: accessToken },
+        userId: req.user.id,
+        accessToken: { [Op.ne]: req.accessToken },
       },
     })
 
@@ -582,6 +582,11 @@ app.delete('/logoutAll', async (req, res) => {
     console.error('Erro ao processar solicitação de logoutAll:', error)
     res.status(500).json({ message: 'Erro interno no servidor' })
   }
+})
+
+// Busca por TODOS os dados do usuário
+app.get('/getUserData', isAuthenticated, async (req, res) => {
+  res.status(200).json(req.user)
 })
 
 // Buscar dados básicos do usuário
@@ -620,19 +625,6 @@ app.get('/getUserBasics', async (req, res) => {
   } catch (error) {
     console.error('Erro ao processar getUserBasics:', error)
     res.status(500).json({ message: 'Erro interno no servidor' })
-  }
-})
-
-app.get('/getUserSession', async (req, res) => {
-  try {
-    const session = await verifyAndRenewSession(req, res)
-    if (!session) {
-      return res.status(401).json({ message: 'Sessão inválida ou expirada.' })
-    }
-    res.status(200).json({ message: 'Sessão válida.' })
-  } catch (error) {
-    console.error('Erro ao processar solicitação de getUserSession:', error)
-    res.status(500).json({ message: 'Erro interno do servidor.' })
   }
 })
 
@@ -725,7 +717,7 @@ app.post('/setUser', async (req, res) => {
 })
 
 // Lista todas as sessões de um usuário
-app.post('/getAllUserSessions', async (req, res) => {
+app.post('/getAllUserSessions', isAuthenticated, async (req, res) => {
   const { userId } = req.body
 
   try {
@@ -743,7 +735,7 @@ app.post('/getAllUserSessions', async (req, res) => {
 })
 
 // Deleta uma sessão específica, desconectando a mesma
-app.delete('/deleteSession', async (req, res) => {
+app.delete('/deleteSession', isAuthenticated, async (req, res) => {
   const { sessionId } = req.body
 
   try {
@@ -776,24 +768,14 @@ app.get('/getGames', async (req, res) => {
   }
 })
 
-app.post('/setGame', reqLimiter(1, 12), async (req, res) => {
+app.post('/setGame', reqLimiter(1, 12), isAuthenticated, async (req, res) => {
   try {
-    const accessToken = req.cookies?.accessToken
     const { title, description } = req.body
-
-    const session = await Session.findOne({
-      where: { accessToken },
-      include: [{ model: User, attributes: ['id'] }],
-    })
-
-    if (!session || !session.User) {
-      res.status(404).json({ message: 'Sessão não encontrada ou usuário inválido.' })
-    }
 
     const game = await Game.create({
       title,
       description,
-      userId: session.User.id,
+      userId: req.user.id,
     })
 
     res.status(201).json({ message: 'Jogo criado com sucesso', game })
@@ -895,12 +877,7 @@ app.post('/setUserPassword', async (req, res) => {
   }
 })
 
-app.post('/setFileUpload', upload.any(), async (req, res) => {
-  const session = await verifyAndRenewSession(req, res)
-  if (!session) {
-    return res.status(401).json({ message: 'Sessão inválida ou expirada.' })
-  }
-
+app.post('/setFileUpload', isAuthenticated, upload.any(), async (req, res) => {
   const files = req.files || []
   if (!files.length) {
     return res.status(400).send({ message: 'Nenhum arquivo enviado.' })
