@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { handleImage } from '@/functions'
 
 const props = defineProps({
   card: {
@@ -14,13 +15,6 @@ function emitEvent(args = {}) {
 }
 
 const cards = ref([])
-
-function getImageSrc(file) {
-  if (file instanceof File || file instanceof Blob) {
-    return URL.createObjectURL(file)
-  }
-  return typeof file === 'string' ? file : ''
-}
 
 function handleMouseMove(e, index) {
   const card = cards.value[index]
@@ -56,11 +50,7 @@ function handleMouseLeave(index) {
       <p>{{ game.title || 'Exemplo' }}</p>
     </div>
     <div class="banner">
-      <img
-        id="banner"
-        alt="Banner do jogo"
-        :src="`http://localhost:9000/data/${game.banner}` || getImageSrc(game.img)"
-      />
+      <img id="banner" alt="Banner do jogo" :src="handleImage(game.banner)" />
     </div>
   </div>
 </template>

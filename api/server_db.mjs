@@ -49,7 +49,7 @@ const storage = multer.diskStorage({
 })
 
 const upload = multer({ storage })
-const bucketName = 'data'
+const bucketName = 'public'
 
 const minioClient = new Minio.Client({
   endPoint: 'localhost',

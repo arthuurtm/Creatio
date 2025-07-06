@@ -102,8 +102,24 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
     }
   }
 }
-
 export const get = (endpoint) => request(endpoint, 'GET')
 export const post = (endpoint, body) => request(endpoint, 'POST', body)
 export const put = (endpoint, body) => request(endpoint, 'PUT', body)
 export const del = (endpoint) => request(endpoint, 'DELETE')
+
+export const handleImage = (file, isPublic = true) => {
+  if (file instanceof File || file instanceof Blob) {
+    return URL.createObjectURL(file)
+  }
+
+  if (typeof file === 'string') {
+    if (file.startsWith('http://') || file.startsWith('https://')) {
+      return file
+    }
+    if (isPublic) {
+      return getApiUrl('file', `public/${file}`)
+    }
+  }
+
+  return null
+}
