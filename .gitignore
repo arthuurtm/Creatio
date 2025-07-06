@@ -18,6 +18,7 @@ coverage
 /cypress/screenshots/
 
 /ignore/
+*.zip
 
 # Editor directories and files
 .vscode/*
