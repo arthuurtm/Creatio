@@ -121,6 +121,10 @@
             @emitEvent="disconnectAllDevices"
           />
           <ul class="devices">
+            <li class="device">
+              <div><b>Nome do dispositivo</b></div>
+              <p><b>Online</b></p>
+            </li>
             <li v-for="(device, index) in connectedDevices" :key="index" class="device">
               <div>
                 <div
@@ -132,15 +136,17 @@
                 <div v-else class="material-symbols-outlined notranslate">computer</div>
                 <p>
                   {{ device.deviceNavigator }} no {{ device.deviceOS }}
-                  {{ itsMe(device) && '(Você)' }}
+                  <!-- {{ itsMe(device) && '(Você)' }} -->
                 </p>
               </div>
               <p>
                 {{
-                  new Date(device.updatedAt).toLocaleTimeString(undefined, {
+                  new Date(device.updatedAt).toLocaleString(undefined, {
                     hour: '2-digit',
                     minute: '2-digit',
-                    date: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
                   })
                 }}
               </p>
@@ -253,15 +259,7 @@ onMounted(async () => {
     }
   }
 
-  let result = await post(
-    {
-      type: 'database',
-      route: 'getAllUserSessions',
-    },
-    {
-      userId: userId.value,
-    },
-  )
+  let result = await get({ type: 'database', route: 'getAllUserSessions' })
   connectedDevices.value = result.details
 })
 </script>
@@ -390,6 +388,7 @@ ul.devices li > div {
 
 ul.devices li > p {
   font-size: 16px;
+  text-align: end;
 }
 
 @media (max-width: 600px) {

@@ -718,8 +718,8 @@ app.post('/setUser', async (req, res) => {
 })
 
 // Lista todas as sessões de um usuário
-app.post('/getAllUserSessions', isAuthenticated, async (req, res) => {
-  const { userId } = req.body
+app.get('/getAllUserSessions', isAuthenticated, async (req, res) => {
+  const userId = req.user.id
 
   try {
     const sessions = await Session.findAll({ where: { userId } })
