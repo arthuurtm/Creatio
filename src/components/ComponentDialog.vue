@@ -41,12 +41,52 @@ watch(
   },
   { immediate: true },
 )
+
+//Eventos de Toque
+let touchTimeout = null
+const startY = ref(0)
+const currentY = ref(0)
+const isDragging = ref(false)
+
+const onTouchStart = (event) => {
+  startY.value = event.touches[0].clientY
+  isDragging.value = false
+  touchTimeout = setTimeout(() => {
+    isDragging.value = true
+  }, 100)
+}
+
+const onTouchMove = (event) => {
+  event.stopPropagation()
+  event.preventDefault()
+  if (!isDragging.value) return
+
+  currentY.value = event.touches[0].clientY
+}
+
+const onTouchEnd = () => {
+  if (!isDragging.value) return
+  isDragging.value = false
+  clearTimeout(touchTimeout)
+
+  const deltaY = currentY.value - startY.value
+  const activationThreshold = 50
+
+  if (deltaY > activationThreshold) {
+    close()
+  }
+}
 </script>
 
 <template>
   <div class="dialog-shadow" v-show="showDialog">
     <div class="dialog-main" :id="[]" :class="[showDialogAnim && 'active']">
-      <div class="title-bar">
+      <div
+        class="title-bar"
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+      >
         <div class="options">
           <div class="title">
             <p>{{ props.title }}</p>
