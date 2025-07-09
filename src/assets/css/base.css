@@ -98,6 +98,64 @@
   --btn-glass-cancel-border: rgba(255, 255, 255, 0.08);
 }
 
+:root[data-modifier='glass'] {
+  --bg: var(--main-gradient);
+  --bg2: rgba(255, 255, 255, 0.2);
+  --border: rgba(200, 200, 200, 0.35);
+
+  --input-bg: rgba(255, 255, 255, 0.28);
+  --input-text: var(--input-text-neutral);
+
+  --default-button: rgba(126, 126, 126, 0.3);
+  --default-button-hover: rgba(117, 117, 117, 0.4);
+  --confirm-button: var(--btn-glass-confirm);
+  --confirm-button-hover: linear-gradient(135deg, #0b6a90dd, #1290c2dd);
+  --destructive-button: var(--btn-glass-destructive);
+  --destructive-button-hover: linear-gradient(135deg, #681d1ddd, #b31313dd);
+
+  --navigator: rgba(255, 255, 255, 0.25);
+  --navigator-li-hover: rgba(230, 230, 230, 0.5);
+  --navigator-li-focus: rgba(255, 255, 255, 0.4);
+
+  /* --overlay-bg: rgba(255, 255, 255, 0.08); */
+  --scroll-button: rgba(180, 180, 180, 0.35);
+  --scroll-button-hover: rgba(255, 255, 255, 0.55);
+
+  --form-critical-link: rgba(187, 42, 42, 0.85);
+  --form-normal-link: rgba(11, 106, 144, 0.85);
+  --form-normal-link-hover: rgba(51, 117, 248, 0.85);
+  --form-sub: rgba(126, 126, 126, 0.7);
+}
+
+:root[data-theme='dark'][data-modifier='glass'] {
+  --bg: var(--main-gradient);
+  --bg2: rgba(10, 10, 15, 0.3);
+  --border: rgba(80, 80, 80, 0.2);
+
+  --input-bg: rgba(60, 60, 80, 0.25);
+  --input-text: var(--input-text-neutral);
+
+  --default-button: rgba(126, 126, 126, 0.25);
+  --default-button-hover: rgba(153, 153, 153, 0.35);
+  --confirm-button: var(--btn-glass-confirm);
+  --confirm-button-hover: linear-gradient(135deg, #1677d3dd, #034380dd);
+  --destructive-button: var(--btn-glass-destructive);
+  --destructive-button-hover: linear-gradient(135deg, #e91616dd, #a20202dd);
+
+  --navigator: rgba(20, 20, 30, 0.25);
+  --navigator-li-hover: rgba(200, 200, 200, 0.1);
+  --navigator-li-focus: rgba(255, 255, 255, 0.12);
+
+  /* --overlay-bg: rgba(0, 0, 0, 0.3); */
+  --scroll-button: rgba(255, 255, 255, 0.2);
+  --scroll-button-hover: rgba(255, 255, 255, 0.4);
+
+  --form-critical-link: rgba(230, 30, 30, 0.85);
+  --form-normal-link: rgba(19, 109, 194, 0.85);
+  --form-normal-link-hover: rgba(51, 117, 248, 0.85);
+  --form-sub: rgba(180, 180, 180, 0.5);
+}
+
 /* Mapa semântico*/
 :root {
   --text: var(--text-color);
@@ -135,8 +193,6 @@
 }
 
 :root[data-modifier='glass'] {
-  --bg: var(--main-gradient);
-  --form-bg: var(--main-gradient);
   --main-glass-blur: blur(16px);
   --main-glass-saturate: saturate(180%);
   --element-focus: rgba(94, 94, 104, 0.096);

@@ -2,24 +2,34 @@
   <div class="container">
     <nav class="nav">
       <ul>
-        <li @click="handleNavPage(1, 'Geral')" :id="1">
-          <a>
-            <span class="material-symbols-outlined notranslate">settings</span>
-            <p>Geral</p>
-          </a>
-        </li>
-        <li @click="handleNavPage(2, 'Conta')" v-if="isAuth" :id="2">
-          <a>
-            <span class="material-symbols-outlined notranslate">account_circle</span>
-            <p>Conta</p>
-          </a>
-        </li>
-        <li @click="handleNavPage(3, 'Segurança')" v-if="isAuth" :id="3">
-          <a>
-            <span class="material-symbols-outlined notranslate">Security</span>
-            <p>Segurança</p>
-          </a>
-        </li>
+        <CreateButton
+          :rules="['noGroup']"
+          :buttons="[
+            {
+              id: 1,
+              text: 'Geral',
+              icon: 'settings',
+              class: 'symbolic',
+              action: () => handleNavPage(1, 'Geral'),
+            },
+            {
+              id: 2,
+              text: 'Conta',
+              icon: 'account_circle',
+              class: 'symbolic',
+              action: () => handleNavPage(2, 'Conta'),
+              rules: [!isAuth && 'hide'],
+            },
+            {
+              id: 3,
+              text: 'Segurança',
+              icon: 'security',
+              class: 'symbolic',
+              action: () => handleNavPage(3, 'Segurança'),
+              rules: [!isAuth && 'hide'],
+            },
+          ]"
+        />
       </ul>
     </nav>
     <div class="navPage">
@@ -147,6 +157,7 @@ import { appTheme, get, post } from '@/functions'
 import { logoutAll } from '@/functions/auth'
 import { computed, ref, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
+import CreateButton from '../elements/CreateButton.vue'
 
 // Stores e router
 const router = useRouter()
@@ -261,11 +272,19 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: 0.5fr 2fr;
   max-height: 60vh;
+  overflow-x: hidden;
 }
 
 .nav {
   grid-column: 1;
   padding: 15px 20px;
+  border-right: 1px solid var(--border);
+}
+
+.nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 ul {
@@ -401,6 +420,11 @@ ul.devices li > p {
     bottom: 0;
     width: 100%;
     background-color: var(--bg);
+  }
+
+  .nav ul {
+    gap: 0;
+    flex-direction: row;
   }
 
   ul {

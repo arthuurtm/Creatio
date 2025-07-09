@@ -3,6 +3,7 @@ import { inject } from 'vue'
 import { useRouter /*useRoute*/ } from 'vue-router'
 import { post } from '@/functions'
 import { showToast } from '@/plugins/toast'
+import ComponentFormPage from '@/components/ComponentFormPage.vue'
 
 const store = inject('stores')
 const globalStore = store.global
@@ -10,7 +11,7 @@ const inputData = globalStore.getInputData
 
 const router = useRouter()
 
-const stepConfigs = {
+const steps = {
   type: 'minimal',
   store: 'global',
   steps: {
@@ -125,39 +126,7 @@ const functions = {
 
 <template>
   <div class="main-container">
-    <!-- Posição fixada (fixed) -->
-    <div class="background dialog-shadow">
-      <div class="corner-blur-mask"></div>
-      <!-- Posição absoluta -->
-      <div class="ui-options">
-        <div class="game-details">
-          <div id="game-title">
-            <CreateTextField
-              :fields="[
-                {
-                  type: 'file',
-                  icon: 'camera',
-                  position: 'center',
-                  style: {
-                    onlyIcon: true,
-                    minimal: true,
-                  },
-                },
-              ]"
-            />
-            Logo
-          </div>
-
-          <div class="options">
-            <div id="game-rate"></div>
-            <div id="game-start"></div>
-          </div>
-        </div>
-
-        <!-- deve funcionar como um footer no futuro-->
-        <div class="game-description"></div>
-      </div>
-    </div>
+    <ComponentFormPage :config="steps" :functions="functions" />
   </div>
 </template>
 

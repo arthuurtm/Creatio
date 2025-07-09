@@ -1,20 +1,22 @@
 <template>
   <div class="main-container">
     <!-- Posição fixada (fixed) -->
-    <div class="background">
-      <div class="background-banner">
-        <img src="" />
-      </div>
-
+    <div class="background dialog-shadow">
+      <div class="corner-blur-mask"></div>
       <!-- Posição absoluta -->
-      <div class="gameOptions">
-        <div id="gameTitle"></div>
-        <div id="gameRate"></div>
-        <div id="gameStart"></div>
-      </div>
+      <div class="ui-options">
+        <div class="game-details">
+          <div id="game-title"></div>
 
-      <!-- deve funcionar como um footer no futuro-->
-      <div class="gameDetails"></div>
+          <div class="options">
+            <div id="game-rate"></div>
+            <div id="game-start"></div>
+          </div>
+        </div>
+
+        <!-- deve funcionar como um footer no futuro-->
+        <div class="game-description"></div>
+      </div>
     </div>
   </div>
 </template>

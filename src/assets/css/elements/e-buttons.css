@@ -49,6 +49,7 @@
   border: 1px solid var(--destructive-button-hover);
 }
 
+.btn.primary,
 .btn.confirm {
   color: #fff;
   border: 2px solid var(--bg);
@@ -56,6 +57,7 @@
   box-shadow: 0 0 0 2px var(--confirm-button-hover); /* borda azul mais escura externa */
 }
 
+.btn.primary:hover,
 .btn.confirm:hover {
   background-color: var(--confirm-button-hover);
   /* box-shadow: 0 0 0 2px var(--confirm-button-hover); */
@@ -353,6 +355,7 @@ header-li.selected {
 }
 
 /* Confirm Button */
+:root[data-modifier='glass'] .btn.primary,
 :root[data-modifier='glass'] .btn.confirm {
   color: #fff;
   background: var(--btn-glass-confirm);
@@ -385,6 +388,7 @@ header-li.selected {
   box-shadow: unset;
 }
 
+:root[data-modifier='glass'] .btn.primary:hover,
 :root[data-modifier='glass'] .btn.confirm:hover {
   filter: brightness(1.12);
 }
