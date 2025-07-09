@@ -8,7 +8,7 @@
       class="nav"
       :class="[isMenuActive ? 'active' : 'minimized', hidden && 'hidden']"
       id="nav"
-      ref="menu"
+      ref="menuRef"
     >
       <div class="nav-content">
         <div
