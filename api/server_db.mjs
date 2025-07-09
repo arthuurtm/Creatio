@@ -95,7 +95,6 @@ const User = sequelize.define(
     username: { type: DataTypes.STRING, unique: true, allowNull: false },
     nickname: { type: DataTypes.STRING, allowNull: true },
     passwordHash: { type: DataTypes.STRING, allowNull: false },
-    gToken: { type: DataTypes.STRING, unique: true, allowNull: true },
     profilePic: { type: DataTypes.TEXT, allowNull: true },
   },
   { timestamps: true },
@@ -487,7 +486,9 @@ async function isAuthenticated(req, res, next) {
     })
   }
 
-  req.user = session.user
+  const secureData = { ...session.user.get({ plain: true }) }
+  delete secureData.passwordHash
+  req.user = secureData
   req.accessToken = session.accessToken
   req.refreshToken = session.refreshToken
   next()
