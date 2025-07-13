@@ -41,13 +41,13 @@ const formConfig = {
             type: 'local',
           },
         },
-        {
-          class: 'symbolic no-padding',
-          id: 'googleButton',
-          action: {
-            name: 'handleGoogleLogin',
-          },
-        },
+        // {
+        //   class: 'symbolic no-padding',
+        //   id: 'googleButton',
+        //   action: {
+        //     name: 'handleGoogleLogin',
+        //   },
+        // },
         {
           text: 'Avançar',
           class: 'confirm',
