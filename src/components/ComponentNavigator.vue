@@ -1,14 +1,24 @@
 <template>
   <div class="container" :class="[isMenuActive && 'active']">
-    <a class="hide-nav" @click="updateMenuState(true)" v-if="defaultHideButton">
-      <span class="material-symbols-outlined notranslate">{{ navigatorIcon }}</span>
-    </a>
+    <div class="hide-nav">
+      <CreateButton
+        :buttons="[
+          {
+            icon: navigatorIcon,
+            class: 'symbolic no-padding no-scalling',
+            action: () => updateMenuState(true),
+            rules: [!defaultHideButton && 'hide'],
+          },
+        ]"
+      />
+    </div>
 
     <div
       class="nav"
       :class="[isMenuActive ? 'active' : 'minimized', hidden && 'hidden']"
       id="nav"
       ref="menuRef"
+      :style="defaultHideButton && { marginTop: '3rem' }"
     >
       <div class="nav-content">
         <div

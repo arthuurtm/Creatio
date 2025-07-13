@@ -38,7 +38,7 @@ const isFull = computed(() => props.full)
 
 /* From Uiverse.io by mrhyddenn */
 .spinner {
-  font-size: 40px;
+  font-size: 36px;
   position: relative;
   display: inline-block;
   width: 1em;
@@ -66,10 +66,6 @@ const isFull = computed(() => props.full)
   -ms-transform-origin: center -0.2222em;
   transform-origin: center -0.2222em;
   animation: spinner-fade9234 1s infinite linear;
-}
-
-.spinner .spinner-blade:nth-child {
-  color: var(--text);
 }
 
 .spinner .spinner-blade:nth-child(1) {
@@ -170,7 +166,7 @@ const isFull = computed(() => props.full)
 
 @keyframes spinner-fade9234 {
   0% {
-    background-color: var(--border);
+    background-color: var(--text);
   }
 
   100% {

@@ -44,7 +44,7 @@
               </label>
             </li>
             <li>
-              <p>Tema translúcido</p>
+              <p>Tema moderno</p>
               <label class="switch">
                 <input type="checkbox" @change="toggleThemeGlassy" v-model="isGlassy" />
                 <span class="slider"></span>

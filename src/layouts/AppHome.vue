@@ -113,6 +113,7 @@ const pageName = computed(() => useRoute().name)
         <ComponentNavigator
           :hidden="hiddenNavigator"
           :page="pageName"
+          :defaultHideButton="true"
           @navigatorStatus="updateNavStatus"
           ref="navigator"
         />
@@ -153,6 +154,10 @@ const pageName = computed(() => useRoute().name)
   position: relative;
 }
 
+.header-bar {
+  display: none;
+}
+
 .util {
   display: flex;
   justify-content: space-between;
@@ -189,6 +194,7 @@ const pageName = computed(() => useRoute().name)
 
 .navigator-container {
   display: grid;
+  position: sticky;
   grid-column: 1;
   z-index: 2;
 }
@@ -199,13 +205,13 @@ const pageName = computed(() => useRoute().name)
   flex-grow: 1;
   z-index: 1;
   grid-column: 2;
-  /* border: 1px solid var(--border); */
+  border-left: 2px solid var(--border);
   /* border-radius: 24px; */
 }
 
 .view-app.no-rounded {
-  border-radius: 0 0 0 0;
-  border-top-left-radius: 0 !important;
+  border-radius: 0 0 0 0 !important;
+  /* border-top-left-radius: 0 !important; */
 }
 
 .notifications {
@@ -214,8 +220,6 @@ const pageName = computed(() => useRoute().name)
 
 :root[data-modifier='glass'] .app-container {
   background: var(--main-glass-background);
-  backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
-  -webkit-backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
 }
 
 :root[data-modifier='glass'] .header-bar {
@@ -230,9 +234,12 @@ const pageName = computed(() => useRoute().name)
 
 :root[data-modifier='glass'] .view-app {
   border-radius: 0;
-  border-top-left-radius: 24px;
-  border: var(--main-glass-border);
+  border-radius: 24px 0 0 24px;
+  /* border: var(--main-glass-border); */
   background: var(--main-gradient);
+}
+
+:root[data-modifier='glass'] .navigator-container {
 }
 
 @media (max-width: 600px) {
@@ -284,8 +291,9 @@ const pageName = computed(() => useRoute().name)
 
   .view-app {
     margin: 0;
-    border-top-left-radius: 0 !important;
+    border-radius: 0 !important;
     padding: 5px;
+    border-left: none;
   }
 
   .header-bar #toggleNavigator {

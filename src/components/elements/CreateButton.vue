@@ -31,7 +31,7 @@
           :class="button.img"
           :style="button.img?.style"
         />
-        <p>{{ button.text || '' }}</p>
+        <p v-if="button.text">{{ button.text }}</p>
       </component>
     </div>
   </template>

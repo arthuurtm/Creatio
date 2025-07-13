@@ -36,6 +36,9 @@ function playGame(args = {}) {
     </div>
     <div class="sessions-show">
       <ComponentLoadSessions @emitEvent="playGame" />
+      <ComponentLoadSessions @emitEvent="playGame" />
+      <ComponentLoadSessions @emitEvent="playGame" />
+      <ComponentLoadSessions @emitEvent="playGame" />
     </div>
   </div>
 </template>

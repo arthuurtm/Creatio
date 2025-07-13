@@ -12,6 +12,11 @@
   height: 100%;
 }
 
+.steps {
+  height: 100%;
+  width: 100%;
+}
+
 /* Lista de jogos */
 .game-list {
   display: grid;
