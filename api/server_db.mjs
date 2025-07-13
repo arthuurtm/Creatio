@@ -464,9 +464,10 @@ async function verifyAndRenewSession(req, res) {
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
     }
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_SECRET)
-    const user = await User.findByPk(decoded.userId)
-    if (!user) return null
+
+    const session = await Session.findOne({ where: { accessToken }, include: [{ model: User }] })
+    const user = session ? session.user : null
+
     return { user, accessToken, refreshToken }
   } catch (err) {
     console.error('Erro ao processar função verifyAndRenewSession: ', err)
