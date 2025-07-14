@@ -466,7 +466,7 @@ async function verifyAndRenewSession(req, res) {
     }
 
     const session = await Session.findOne({ where: { accessToken }, include: [{ model: User }] })
-    const user = session ? session.user : null
+    const user = session ? session.User : null
 
     return { user, accessToken, refreshToken }
   } catch (err) {
