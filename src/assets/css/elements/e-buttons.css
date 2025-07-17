@@ -112,6 +112,23 @@
   box-shadow: 0 0 8px;
 }
 
+.btn.left {
+  margin-right: auto;
+}
+
+.btn.center .btn * {
+  text-align: center;
+}
+
+.btn.fixed {
+  position: relative;
+}
+
+.btn.fixed.center .btn {
+  position: absolute;
+  top: 0;
+}
+
 .highlight {
   outline: 4px solid var(--text) !important;
 }
@@ -291,33 +308,6 @@ header-li.selected {
   display: flex;
   gap: 10px;
   justify-content: space-between;
-}
-
-.group-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.group-button.noGroup {
-  all: unset;
-}
-
-.group-button.left {
-  margin-right: auto;
-}
-
-.group-button.center .btn * {
-  text-align: center;
-}
-
-.group-button.fixed {
-  position: relative;
-}
-
-.group-button.fixed.center .btn {
-  position: absolute;
-  top: 0;
 }
 
 .sepButtons {

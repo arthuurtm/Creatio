@@ -1,40 +1,37 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <template>
+  <!-- <component :is="rules?.includes('group') ? 'div' : 'fragment'" class="button-group"> -->
   <template v-for="(button, index) in buttons" :key="index">
-    <div
-      class="group-button"
-      :class="[button.position || '', rules]"
-      v-if="button.rules ? !button.rules.includes('hide') : true"
+    <component
+      v-if="!button?.rules?.includes('hide')"
+      :is="button.tag || 'button'"
+      :class="[!button.tag && 'btn', button.class, button?.position]"
+      :id="button.id || ''"
+      :type="button.type || 'submit'"
+      @click="
+        typeof button.action === 'function'
+          ? button.action()
+          : emitEvent(
+              button.action?.name || '',
+              button.action?.value || '',
+              button.action?.type || '',
+            )
+      "
     >
-      <component
-        :is="button.tag || 'button'"
-        :class="[!button.tag && 'btn', button.class]"
-        :id="button.id || ''"
-        :type="button.type || 'submit'"
-        @click="
-          typeof button.action === 'function'
-            ? button.action()
-            : emitEvent(
-                button.action?.name || '',
-                button.action?.value || '',
-                button.action?.type || '',
-              )
-        "
-      >
-        <span v-if="button.icon" class="material-symbols-outlined notranslate">
-          {{ button.icon }}
-        </span>
-        <img
-          v-if="button.img"
-          :src="button.img.src"
-          :alt="button.img.alt"
-          :class="button.img"
-          :style="button.img?.style"
-        />
-        <p v-if="button.text">{{ button.text }}</p>
-      </component>
-    </div>
+      <span v-if="button.icon" class="material-symbols-outlined notranslate">
+        {{ button.icon }}
+      </span>
+      <img
+        v-if="button.img"
+        :src="button.img.src"
+        :alt="button.img.alt"
+        :class="button.img"
+        :style="button.img?.style"
+      />
+      <p v-if="button.text">{{ button.text }}</p>
+    </component>
   </template>
+  <!-- </component> -->
 </template>
 
 <script>
