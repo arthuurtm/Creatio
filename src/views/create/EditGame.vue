@@ -1,5 +1,8 @@
 <script setup>
-import ComponentCreateGamePage from '@/components/ComponentGamePage.vue'
+import ComponentCreateGamePage from '@/layouts/AppGamePage.vue'
+import CreateContextMenu from '@/components/elements/CreateContextMenu.vue'
+
+const openCreateContextMenu = () => {}
 </script>
 
 <template>
@@ -17,9 +20,12 @@ import ComponentCreateGamePage from '@/components/ComponentGamePage.vue'
                 id: 'create-game-button',
               },
             ]"
+            @emitEvent="openCreateContextMenu"
           />
         </div>
       </div>
+
+      <CreateContextMenu />
     </div>
   </ComponentCreateGamePage>
 </template>
@@ -40,9 +46,9 @@ import ComponentCreateGamePage from '@/components/ComponentGamePage.vue'
   left: 0;
   right: 0;
   bottom: 0;
-  background-image:
+  /* background-image:
     linear-gradient(to right, var(--border) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px); */
   background-size: 20px 20px;
   z-index: 0;
 }

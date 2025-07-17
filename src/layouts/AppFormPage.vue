@@ -58,7 +58,7 @@
 <script setup>
 import { ref, computed, inject, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import ComponentForm from './ComponentForm.vue'
+import ComponentForm from '@/components/ComponentForm.vue'
 import { showToast } from '@/plugins/toast'
 
 const props = defineProps({

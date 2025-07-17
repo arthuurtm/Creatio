@@ -45,7 +45,7 @@ function playGame(args = {}) {
 
 <style scoped>
 .main {
-  padding: 15px;
+  /* padding: 15px; */
 }
 
 .header {

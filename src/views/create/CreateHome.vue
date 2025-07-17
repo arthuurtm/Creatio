@@ -22,7 +22,7 @@
 import { inject } from 'vue'
 import { useRouter } from 'vue-router'
 import ComponentLoadSessions from '@/components/ComponentLoadSessions.vue'
-import ComponentCreateGamePage from '@/components/ComponentGamePage.vue'
+import ComponentCreateGamePage from '@/layouts/AppGamePage.vue'
 import { post } from '@/functions'
 import { showToast } from '@/plugins/toast'
 

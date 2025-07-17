@@ -3,7 +3,7 @@ import { inject } from 'vue'
 import { useRouter /*useRoute*/ } from 'vue-router'
 import { post } from '@/functions'
 import { showToast } from '@/plugins/toast'
-import ComponentFormPage from '@/components/ComponentFormPage.vue'
+import ComponentFormPage from '@/layouts/AppFormPage.vue'
 
 const store = inject('stores')
 const globalStore = store.global

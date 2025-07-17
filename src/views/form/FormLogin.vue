@@ -1,9 +1,9 @@
 <template>
-  <ComponentForm :config="formConfig" :formFunctions="functions" />
+  <AppFormPage :config="formConfig" :formFunctions="functions" />
 </template>
 
 <script setup>
-import ComponentForm from '@/components/ComponentFormPage.vue'
+import AppFormPage from '@/layouts/AppFormPage.vue'
 import { onMounted, inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import * as gfunctions from '@/functions'

@@ -201,6 +201,7 @@ const pageName = computed(() => useRoute().name)
 
 .view-app {
   /* padding: 15px; */
+  padding: 1rem;
   overflow-y: auto;
   flex-grow: 1;
   z-index: 1;

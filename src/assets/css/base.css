@@ -190,6 +190,8 @@
   --form-normal-link: var(--primary);
   --form-normal-link-hover: var(--primary-hover);
   --form-sub: var(--secondary);
+
+  --context-menu-bg: var(--secondary);
 }
 
 :root[data-modifier='glass'] {
