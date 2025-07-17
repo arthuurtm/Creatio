@@ -1,7 +1,6 @@
-<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <!-- <component :is="rules?.includes('group') ? 'div' : 'fragment'" class="button-group"> -->
-  <template v-for="(button, index) in buttons" :key="index">
+  <template v-for="(button, index) in props.buttons" :key="index">
     <component
       v-if="!button?.rules?.includes('hide')"
       :is="button.tag || 'button'"
@@ -34,37 +33,22 @@
   <!-- </component> -->
 </template>
 
-<script>
-import { computed } from 'vue'
-export default {
-  name: 'CreateButton',
-  props: {
-    buttons: {
-      type: Array,
-      default: () => [{}],
-    },
-    modelValue: {
-      type: String,
-    },
-    rules: {
-      type: Array,
-      default: () => [],
-    },
+<script setup>
+const props = defineProps({
+  buttons: {
+    type: Array,
+    default: () => [{}],
   },
-  emits: ['update:modelValue', 'emitEvent'],
-  setup(props, { emit }) {
-    const inputValue = computed({
-      get: () => props.modelValue,
-      set: (value) => emit('update:modelValue', value),
-    })
+  rules: {
+    type: Array,
+    default: () => [],
+  },
+})
 
-    return { inputValue }
-  },
-  methods: {
-    emitEvent(action, value, type) {
-      this.$emit('emitEvent', { action, value, type })
-    },
-  },
+const emits = defineEmits(['emitEvent'])
+
+const emitEvent = (action, value, type) => {
+  emits('emitEvent', { action, value, type })
 }
 </script>
 
