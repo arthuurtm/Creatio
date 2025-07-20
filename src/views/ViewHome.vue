@@ -1,11 +1,10 @@
 <script setup>
 import ComponentLoadSessions from '@/components/ComponentLoadSessions.vue'
-import { inject } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores'
 
 // Stores
-const store = inject('stores')
-const userStore = store.user
+const userStore = useUserStore()
 const router = useRouter()
 
 function playGame(args = {}) {

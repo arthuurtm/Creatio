@@ -1,11 +1,10 @@
 <script setup>
 import ComponentNavigator from '@/components/ComponentNavigator.vue'
-import { computed, ref, inject } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-
-const store = inject('stores')
+import { useSettingsStore } from '@/stores'
 const routeHidden = computed(() => useRoute().meta.hiddenNavigator)
-const sideBar = computed(() => store.settings.getSideBar)
+const sideBar = computed(() => useSettingsStore().getSideBar)
 const navigator = ref(null)
 
 const hiddenNavigator = computed(() => {

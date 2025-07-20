@@ -4,57 +4,18 @@
       <p>{{ params.message }}</p>
     </div>
     <div class="modal-buttons">
-      <button class="btn" :class="params.btn1?.class" @click="handleBtn1">
-        {{ params.btn1?.text }}
-      </button>
-      <button class="btn" v-if="params.btn2?.text" :class="params.btn2?.class" @click="handleBtn2">
-        {{ params.btn2?.text }}
-      </button>
+      <CreateButton :buttons="params.buttons" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, watch, inject } from 'vue'
+import { computed } from 'vue'
+import { useAppDynamicDialog as dialog } from '@/stores'
 
-const params = ref({})
-const emit = defineEmits(['close'])
-const store = inject('stores')
-
-watch(
-  () => store.dialog.getData,
-  (newData) => {
-    params.value = {
-      title: newData?.title || 'Confirmação',
-      message: newData?.message || 'Você tem certeza desta ação?',
-      btn1: {
-        text: newData?.btn1?.text || 'Ok',
-        class: newData?.btn1?.class || '',
-        action: newData?.btn1?.action || close,
-      },
-      btn2: {
-        text: newData?.btn2?.text || '',
-        class: newData?.btn2?.class || '',
-        action: newData?.btn2?.action || close,
-      },
-    }
-  },
-  { immediate: true },
-)
-
-function handleBtn1() {
-  if (params.value.btn1?.action) params.value.btn1.action()
-  close()
-}
-
-function handleBtn2() {
-  if (params.value.btn2?.action) params.value.btn2.action()
-  close()
-}
-
-function close() {
-  emit('close', true)
-}
+const params = computed(() => {
+  return dialog.getData || {}
+})
 </script>
 
 <style scoped>

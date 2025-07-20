@@ -1,23 +1,21 @@
 <script setup>
-import { computed, ref, watch, resolveDynamicComponent, inject } from 'vue'
-import CreateLoading from './elements/CreateLoading.vue'
+import { computed, ref, watch } from 'vue'
+import { useAppDynamicDialog } from '@/stores'
 
 const props = defineProps({
-  component: String,
+  component: Object,
   title: String,
 })
 
-const asyncComponent = ref(CreateLoading)
-const store = inject('stores')
-
+const dialog = useAppDynamicDialog()
 function close() {
-  if (!store.dialog.getIsHistory) showDialogAnim.value = false
+  if (!dialog.getIsHistory) showDialogAnim.value = false
   setTimeout(() => {
-    store.dialog.close()
+    dialog.close()
   }, 300)
 }
 
-const showDialog = computed(() => store.dialog.getIsVisible)
+const showDialog = computed(() => dialog.getIsVisible)
 const showDialogAnim = ref(false)
 
 watch(showDialog, (newValue) => {
@@ -27,20 +25,6 @@ watch(showDialog, (newValue) => {
     }, 200)
   }
 })
-
-watch(
-  () => props.component,
-  async (newComponent) => {
-    if (!newComponent) return
-
-    asyncComponent.value = CreateLoading
-    const resolved = resolveDynamicComponent(newComponent)
-    if (resolved) {
-      asyncComponent.value = resolved
-    }
-  },
-  { immediate: true },
-)
 
 //Eventos de Toque
 let touchTimeout = null
@@ -100,7 +84,7 @@ const onTouchEnd = () => {
       </div>
       <div class="content">
         <transition name="fastFade" mode="out-in">
-          <component :is="asyncComponent" :key="props.component" @close="close" />
+          <component :is="component" :key="props.component" @close="close" />
         </transition>
       </div>
     </div>

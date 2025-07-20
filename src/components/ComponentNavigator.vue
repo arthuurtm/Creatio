@@ -102,15 +102,17 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, inject } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { logout } from '@/functions/auth'
+import DialogMessage from './dialogs/DialogMessage.vue'
+import DialogSettings from './dialogs/DialogSettings.vue'
+import { useUserStore, useAppDynamicDialog } from '@/stores'
 
 // Stores e Router
 const router = useRouter()
-const store = inject('stores')
-const user = store.user
-const dialog = store.dialog
+const user = useUserStore()
+const dialog = useAppDynamicDialog()
 
 // Props e Emits
 const props = defineProps({
@@ -155,22 +157,25 @@ const navigateTo = (page) => {
 }
 
 const handleLogout = () => {
-  dialog.setDialog('DialogMessage', {
+  dialog.setDialog(DialogMessage, {
     title: 'Sair',
     message: 'Você quer mesmo sair?',
-    btn1: { text: 'Não' },
-    btn2: {
-      text: 'Sim',
-      class: 'confirm',
-      action: () => {
-        logout()
+    buttons: [
+      {
+        text: 'Não',
+        action: dialog.close(),
       },
-    },
+      {
+        text: 'Sim',
+        class: 'confirm',
+        action: () => logout(),
+      },
+    ],
   })
 }
 
 const handleSettingsBox = () => {
-  dialog.setDialog('DialogSettings', { title: 'Configurações' })
+  dialog.setDialog(DialogSettings, { title: 'Configurações' })
   // updateMenuState()
 }
 

@@ -3,12 +3,11 @@
 </template>
 
 <script setup>
-import { onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAppDynamicDialog } from '@/stores'
 
-const router = useRouter() // <- Chama aqui uma vez
-const store = inject('stores')
-const dialog = store.dialog
+const router = useRouter()
+const dialog = useAppDynamicDialog()
 
 dialog.setDialog('DialogMessage', {
   title: 'Demonstração',
@@ -23,10 +22,3 @@ dialog.setDialog('DialogMessage', {
   },
 })
 </script>
-
-<style scoped>
-a {
-  color: blue;
-  cursor: pointer;
-}
-</style>

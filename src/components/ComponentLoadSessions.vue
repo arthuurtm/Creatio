@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { get } from '@/functions'
 
@@ -68,7 +68,6 @@ const games = ref([])
 const loading = ref(true)
 const scrollContainer = ref(null)
 const scrollAmount = 260
-const store = inject('stores')
 
 const props = defineProps({
   url: {
@@ -104,11 +103,6 @@ const gridType = computed(() => {
 async function loadGames() {
   try {
     const data = await get({ type: 'database', route: props.url })
-    console.log('Dados recebidos:', data)
-    // store.dialog.setDialog('DialogMessage', {
-    //   title: 'Log',
-    //   message: data,
-    // })
     games.value = Array.isArray(data.details) ? data.details : []
   } catch (error) {
     console.error('Erro ao carregar dados:', error)

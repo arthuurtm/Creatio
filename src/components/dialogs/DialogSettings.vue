@@ -53,11 +53,7 @@
             <li>
               <p>Menu lateral</p>
               <label class="switch">
-                <input
-                  type="checkbox"
-                  @change="toggleSideBar"
-                  v-model="store.settings.getSideBar"
-                />
+                <input type="checkbox" @change="toggleSideBar" v-model="settings.getSideBar" />
                 <span class="slider"></span>
               </label>
             </li>
@@ -159,20 +155,24 @@
 </template>
 
 <script setup>
-import { appTheme, get, post } from '@/functions'
+import { appTheme, get } from '@/functions'
 import { logoutAll } from '@/functions/auth'
-import { computed, ref, onMounted, inject } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CreateButton from '../elements/CreateButton.vue'
+import { useAppDynamicDialog, useUserStore, useSettingsStore } from '@/stores'
+import DialogMessage from './DialogMessage.vue'
 
 // Stores e router
 const router = useRouter()
-const store = inject('stores')
+const user = useUserStore()
+const dialog = useAppDynamicDialog()
+const settings = useSettingsStore()
 const emit = defineEmits(['close'])
 
-const isAuth = computed(() => store.user.getIsAuth)
-const userId = computed(() => store.user.getId)
-const profilePicture = computed(() => store.user.getProfilePicture)
+const isAuth = computed(() => user.getIsAuth)
+const userId = computed(() => user.getId)
+const profilePicture = computed(() => user.getProfilePicture)
 const selectedOption = ref(null)
 const actualPage = ref(1)
 const isDarkMode = ref(false)
@@ -180,7 +180,7 @@ const isGlassy = ref(false)
 const isGoogleConnected = ref(false)
 const isDiscordConnected = ref(false)
 const userData = ref({})
-const isSideBarEnable = computed(() => store.settings.getSideBar)
+const isSideBarEnable = computed(() => settings.getSideBar)
 
 function handleNavPage(value, name) {
   actualPage.value = value
@@ -199,7 +199,7 @@ function toggleThemeGlassy() {
 }
 
 function toggleSideBar() {
-  store.settings.setSideBar(!isSideBarEnable.value)
+  settings.setSideBar(!isSideBarEnable.value)
 }
 
 function handleExtLink(name, params) {
@@ -216,7 +216,7 @@ function close() {
 }
 
 function disconnectAllDevices() {
-  store.dialog.setDialog('DialogMessage', {
+  dialog.setDialog(DialogMessage, {
     title: 'Desconectar outras sessões',
     message: 'Você tem certeza que deseja desconectar todas as outras sessões?',
     btn1: {

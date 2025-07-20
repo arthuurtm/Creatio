@@ -1,12 +1,11 @@
 <script setup>
-import { inject } from 'vue'
 import { useRouter /*useRoute*/ } from 'vue-router'
 import { post } from '@/functions'
 import { showToast } from '@/plugins/toast'
 import ComponentFormPage from '@/layouts/AppFormPage.vue'
+import { useGlobalStore } from '@/stores'
 
-const store = inject('stores')
-const globalStore = store.global
+const globalStore = useGlobalStore()
 const inputData = globalStore.getInputData
 
 const router = useRouter()
