@@ -109,7 +109,7 @@ const router = createRouter({
 
 // Router Guard
 router.beforeEach(async (to, from, next) => {
-  console.log(to, from, next)
+  // console.log(to, from, next)
   const isLoggedIn = await isAuthenticated()
 
   if (to.meta.requiresAuth && !isLoggedIn) {
