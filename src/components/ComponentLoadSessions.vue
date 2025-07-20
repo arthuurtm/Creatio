@@ -1,5 +1,5 @@
 <template>
-  <div class="ggrid">
+  <div class="ggrid" :class="gridType">
     <div class="title">
       <b>
         <h3 class="upper">{{ props.title }}</h3>
@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { get } from '@/functions'
 
@@ -78,13 +78,28 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: '',
+    default: 'Jogos',
+  },
+  styleType: {
+    type: String,
   },
 })
 
 const emits = defineEmits(['emitEvent'])
-
 const router = useRouter()
+
+const gridType = computed(() => {
+  switch (props.styleType) {
+    case 'grade':
+      return 'grade'
+
+    case 'list':
+      return 'list'
+
+    default:
+      return 'line'
+  }
+})
 
 async function loadGames() {
   try {
