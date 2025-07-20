@@ -11,11 +11,10 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useAppDynamicDialog as dialog } from '@/stores'
+import { useAppDynamicDialog } from '@/stores'
 
-const params = computed(() => {
-  return dialog.getData || {}
-})
+const dialog = useAppDynamicDialog()
+const params = computed(() => dialog.getData || [{}])
 </script>
 
 <style scoped>
