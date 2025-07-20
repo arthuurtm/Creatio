@@ -21,7 +21,7 @@
         />
       </div>
 
-      <div v-if="loading"><CreateLoading :class="loadCont" /></div>
+      <div v-if="loading"><CreateLoading /></div>
 
       <div v-else-if="games && games.length > 0" class="sliding" ref="scrollContainer">
         <CreateCard :card="games" @emitEvent="reEmitEvent" />
@@ -73,7 +73,6 @@ const props = defineProps({
   url: {
     type: String,
     default: 'getGames',
-    required: true,
   },
   title: {
     type: String,

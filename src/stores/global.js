@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { markRaw } from 'vue'
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
@@ -27,7 +28,7 @@ export const useSettingsStore = defineStore('settings', {
 export const useAppDynamicDialog = defineStore('appDynamicDialog', {
   state: () => ({
     isVisible: false,
-    component: '',
+    component: null,
     title: 'Diálogo',
     data: {},
     history: [],
@@ -74,7 +75,7 @@ export const useAppDynamicDialog = defineStore('appDynamicDialog', {
         this.title = data.title
       }
 
-      this.component = component
+      this.component = markRaw(component)
 
       if (isFirst) {
         this.show()
