@@ -35,19 +35,12 @@ function playGame(args = {}) {
       </div>
     </div>
     <div class="sessions-show">
-      <ComponentLoadSessions @emitEvent="playGame" />
-      <ComponentLoadSessions @emitEvent="playGame" />
-      <ComponentLoadSessions @emitEvent="playGame" />
-      <ComponentLoadSessions @emitEvent="playGame" />
+      <ComponentLoadSessions styleType:="grade" @emitEvent="playGame" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.main {
-  /* padding: 15px; */
-}
-
 .header {
   display: flex;
   flex-direction: row-reverse;

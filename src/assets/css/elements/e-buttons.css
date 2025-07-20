@@ -100,6 +100,10 @@
   color: var(--form-normal-link);
 }
 
+.btn.symbolic.critical:hover {
+  color: var(--form-critical-link);
+}
+
 .btn.neon {
   float: left;
   background: transparent;

@@ -1,214 +1,62 @@
 <template>
-  <div class="page" :class="isMinimal() && 'minimal'">
-    <span
-      v-if="!isMinimal()"
-      class="settings-button material-symbols-outlined notranslate"
-      @click="handleSettingsBox"
-      >settings</span
-    >
+  <div class="page">
+    <CreateButton
+      :buttons="[
+        {
+          icon: 'settings',
+          class: 'symbolic settings-button no-padding no-scalling',
+          action: () => handleSettingsBox(),
+          style: `
+          position: absolute;
+          top: 0.5rem;
+          right: 0.5rem;
+          color: var(--form-sub);
+          `,
+        },
+      ]"
+    />
 
-    <transition name="errAnim">
-      <div
-        v-if="errorMessage"
-        id="error-message"
-        class="error-message"
-        :class="errorMessage && 'show'"
-      >
-        ✖ {{ errorMessage }}
-      </div>
-    </transition>
-
-    <CreateLoading v-if="isLoading" :full="true" />
-
-    <div class="main-form-container" :style="isMinimal() && 'border: none'">
+    <div class="main-form-container">
       <div class="left">
         <div id="logo">
           <CreateLogo />
         </div>
-        <h1 v-if="config">{{ config.title }}</h1>
-        <h1 v-else>Erro Interno</h1>
+        <h1>{{ title }}</h1>
+        <h4>{{ subTitle }}</h4>
+        <slot name="formInfo" />
       </div>
 
-      <div v-if="hasStepsData && currentStepData && !hasErrors" class="right">
-        <ComponentForm
-          :general="config"
-          :stepData="currentStepData"
-          @emitEvent="handleFunctionEvent"
-        />
-      </div>
+      <div class="right">
+        <form class="form-container centered" @submit.prevent="submitForm">
+          <transition name="slide-left" mode="out-in">
+            <div class="sepElements">
+              <slot name="fields" />
+            </div>
+          </transition>
 
-      <div v-else-if="!hasStepsData || !currentStepData || hasErrors" class="right">
-        <ComponentForm
-          :stepData="{
-            formEvent: 'error',
-            buttons: [
-              {
-                text: 'Voltar',
-                action: { type: 'local', name: 'back' },
-              },
-            ],
-          }"
-          @emitEvent="handleFunctionEvent"
-        />
+          <slot name="anchors" />
+          <div class="sepButtons">
+            <slot name="buttons" />
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, inject, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import ComponentForm from '@/components/ComponentForm.vue'
-import { showToast } from '@/plugins/toast'
-
-const props = defineProps({
-  config: {
-    type: Object,
+defineProps({
+  title: {
+    type: String,
+    default: 'Formulário',
   },
-  formFunctions: {
-    type: Object,
-    default: () => ({}),
+  subTitle: {
+    type: String,
+    default: '',
   },
-  errorMessage: String,
-  redirectName: String,
-})
-
-const emit = defineEmits(['button-click'])
-
-const router = useRouter()
-const store = inject('stores')
-const formStore = store.form
-const appDynamicDialog = store.dialog
-
-const errors = ref([])
-const formData = computed(() => formStore.getFormData)
-const currentStep = computed(() => formStore.getCurrentStep)
-const isLoading = ref(false)
-
-const allSteps = computed(() => {
-  if (!props.config?.steps) return []
-  return Object.entries(props.config.steps).map(([key, value]) => ({
-    ...value,
-    stepIndex: Number(key),
-  }))
-})
-
-const currentStepData = computed(() => {
-  return allSteps.value.find((step) => step.stepIndex === currentStep.value) || null
-})
-
-const hasStepsData = computed(() => !!props.config?.steps)
-const hasErrors = computed(() => errors.value.length > 0)
-
-function isMinimal() {
-  if (props.config?.type === 'minimal') {
-    return true
-  }
-  return false
-}
-
-function submitForm() {
-  console.log('Submetendo formulário com os dados...')
-}
-
-function handleSettingsBox() {
-  appDynamicDialog.setDialog('DialogSettings', { title: 'Configurações' })
-}
-
-async function handleFunctionEvent(payload) {
-  const { action, value, type } = payload
-
-  if (type === 'local') {
-    try {
-      switch (action) {
-        case 'redirect':
-          redirect(value)
-          break
-        case 'forward':
-          forward()
-          break
-        case 'rewind':
-          rewind()
-          break
-        case 'back':
-          back()
-          break
-        default:
-          console.warn(`Ação local "${action}" não implementada.`)
-      }
-    } catch (error) {
-      console.error(`Erro ao executar ação local "${action}":`, error)
-    }
-  } else {
-    if (props.formFunctions?.[action]) {
-      try {
-        isLoading.value = true
-        await props.formFunctions[action](value)
-      } catch (err) {
-        showToast({ type: 'error', message: err })
-      } finally {
-        isLoading.value = false
-      }
-    } else {
-      errors.value.push({
-        function: action,
-      })
-    }
-  }
-}
-
-// Funções locais reutilizáveis
-function redirect(link) {
-  router.push({ name: link })
-}
-
-function forward() {
-  formStore.setCurrentStep(formStore.getCurrentStep + 1)
-}
-
-function rewind() {
-  formStore.setCurrentStep(formStore.getCurrentStep - 1)
-}
-
-function back() {
-  router.back()
-}
-
-onMounted(() => {
-  window.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault()
-      const submitButton = document.querySelector('.btn.confirm')
-      if (submitButton) {
-        submitButton.click()
-      }
-    } else if (event.key === 'Escape') {
-      event.preventDefault()
-      const submitButton = document.querySelector('.btn')
-      if (submitButton) {
-        submitButton.click()
-      }
-    }
-  })
-})
-
-// Expondo os métodos e dados para o template
-defineExpose({
-  formData,
-  errors,
-  submitForm,
-  currentStep,
-  currentStepData,
-  hasStepsData,
-  handleSettingsBox,
-  handleFunctionEvent,
-  redirect,
-  forward,
-  rewind,
-  back,
 })
 </script>
 
 <style scoped>
-@import url(/src/assets/css/components/c-form.css);
+@import url('/src/assets/css/components/c-form.css');
 </style>

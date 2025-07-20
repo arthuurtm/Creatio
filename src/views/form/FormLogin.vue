@@ -1,178 +1,172 @@
 <template>
-  <AppFormPage :config="formConfig" :formFunctions="functions" />
+  <AppFormPage :title="'Entre em sua conta'">
+    <template #fields>
+      <template v-if="currentStep === 1">
+        <CreateTextField
+          :fields="[
+            {
+              type: 'text',
+              name: 'identification',
+              model: 'identification',
+              label: 'Usuário ou e-mail',
+              placeholder: 'Digite seu nome de usuário ou e-mail',
+              required: true,
+            },
+          ]"
+          v-model="formData"
+        />
+      </template>
+
+      <template v-if="currentStep === 2">
+        <CreateTextField
+          :fields="[
+            {
+              type: 'password',
+              model: 'password',
+              label: 'Senha',
+              placeholder: 'Digite sua senha',
+              required: true,
+              anchor: {
+                text: 'Esqueci minha senha',
+                class: 'critical',
+                model: 'forgotPassword',
+                action: () => pageRedirect('PasswordRescue'),
+              },
+            },
+          ]"
+          v-model="formData"
+        />
+      </template>
+    </template>
+
+    <template #buttons>
+      <template v-if="currentStep === 1">
+        <CreateButton
+          :buttons="[
+            {
+              position: 'left',
+              text: 'Criar conta',
+              class: 'symbolic no-padding normal no-scalling',
+              id: 'createAnAccountButton',
+              action: () => pageRedirect('Signup'),
+            },
+            {
+              class: 'symbolic no-padding',
+              id: 'googleButton',
+              action: () => handleGoogleLogin(),
+            },
+            {
+              text: 'Avançar',
+              class: 'confirm',
+              id: 'loginButton',
+              action: () => nextStep(),
+            },
+          ]"
+        />
+      </template>
+
+      <template v-if="currentStep === 2">
+        <CreateButton
+          :buttons="[
+            {
+              text: 'Voltar',
+              type: 'submit',
+              action: () => prevStep(),
+            },
+            {
+              text: 'Entrar',
+              class: 'confirm',
+              id: 'loginButton',
+              type: 'submit',
+              action: () => handleLogin(),
+            },
+          ]"
+        />
+      </template>
+    </template>
+  </AppFormPage>
 </template>
 
 <script setup>
 import AppFormPage from '@/layouts/AppFormPage.vue'
-import { onMounted, inject, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useMultiStepForm } from '@/functions/form'
+import { onMounted, ref } from 'vue'
 import * as gfunctions from '@/functions'
 import { showToast } from '@/plugins/toast'
+const { currentStep, nextStep, prevStep, pageRedirect } = useMultiStepForm({ totalSteps: 2 })
 
-// Stores e router
-const store = inject('stores')
-const formData = store.form.getInputData
-const router = useRouter()
-
-// Configurações do formulário
-const formConfig = {
-  title: 'Acesse sua Conta',
-  steps: {
-    1: {
-      fields: [
-        {
-          type: 'text',
-          name: 'identification',
-          model: 'identification',
-          label: 'Usuário ou e-mail',
-          placeholder: 'Digite seu nome de usuário ou e-mail',
-          required: true,
-        },
-      ],
-      buttons: [
-        {
-          position: 'left',
-          text: 'Criar conta',
-          class: 'symbolic no-padding normal no-scalling',
-          id: 'createAnAccountButton',
-          action: {
-            name: 'redirect',
-            value: 'Signup',
-            type: 'local',
-          },
-        },
-        // {
-        //   class: 'symbolic no-padding',
-        //   id: 'googleButton',
-        //   action: {
-        //     name: 'handleGoogleLogin',
-        //   },
-        // },
-        {
-          text: 'Avançar',
-          class: 'confirm',
-          id: 'loginButton',
-          action: {
-            name: 'forward',
-            type: 'local',
-          },
-        },
-      ],
-    },
-    2: {
-      fields: [
-        {
-          type: 'password',
-          model: 'password',
-          label: 'Senha',
-          placeholder: 'Digite sua senha',
-          required: true,
-          anchor: {
-            text: 'Esqueci minha senha',
-            class: 'critical',
-            model: 'forgotPassword',
-            action: {
-              event: 'redirect',
-              value: 'PasswordRescue',
-              type: 'local',
-            },
-          },
-        },
-      ],
-      buttons: [
-        {
-          text: 'Voltar',
-          type: 'submit',
-          action: {
-            name: 'rewind',
-            type: 'local',
-          },
-        },
-        {
-          text: 'Entrar',
-          class: 'confirm',
-          id: 'loginButton',
-          type: 'submit',
-          action: {
-            name: 'handleLogin',
-          },
-        },
-      ],
-    },
-  },
-}
+// Dados do formulário
+const formData = ref({})
 
 // Funções do formulário
-const functions = {
-  handleGoogleLogin: async (response) => {
-    try {
-      await gfunctions.post(
-        {
-          type: 'database',
-          route: 'setLogin',
-        },
-        {
-          type: 'google',
-          identification: response.credential,
-        },
-      )
+const handleGoogleLogin = async (response) => {
+  try {
+    await gfunctions.post(
+      {
+        type: 'database',
+        route: 'setLogin',
+      },
+      {
+        type: 'google',
+        identification: response.credential,
+      },
+    )
 
-      router.push({ name: 'Home' })
-    } catch (error) {
-      console.error('Erro: ', error.message)
-      showToast({
-        type: 'error',
-        message: error.message,
-      })
-    }
-  },
-
-  handleLogin: async () => {
-    try {
-      if (formData.identification === '' || formData.identification === undefined) {
-        showToast({
-          type: 'warning',
-          message: 'Digite um nome de usuário ou e-mail!',
-          timeout: 2000,
-        })
-        return
-      }
-
-      if (formData.password === '' || formData.password === undefined) {
-        showToast({
-          type: 'warning',
-          message: 'Digite uma senha!',
-          timeout: 2000,
-        })
-        return
-      }
-
-      await gfunctions.post(
-        {
-          type: 'database',
-          route: 'setLogin',
-        },
-        {
-          type: 'traditional',
-          identification: formData.identification,
-          password: formData.password,
-        },
-      )
-
-      router.push({ name: 'Home' })
-    } catch (error) {
-      showToast({
-        type: 'error',
-        message: error.message,
-      })
-    }
-  },
+    pageRedirect('Home')
+  } catch (error) {
+    console.error('Erro: ', error.message)
+    showToast({
+      type: 'error',
+      message: error.message,
+    })
+  }
 }
 
-onMounted(() => {
+const handleLogin = async () => {
+  try {
+    if (formData.value.identification === '' || formData.value.identification === undefined) {
+      showToast({
+        type: 'warning',
+        message: 'Digite um nome de usuário ou e-mail!',
+        timeout: 2000,
+      })
+      return
+    }
+
+    if (formData.value.password === '' || formData.value.password === undefined) {
+      showToast({
+        type: 'warning',
+        message: 'Digite uma senha!',
+        timeout: 2000,
+      })
+      return
+    }
+
+    await gfunctions.post(
+      {
+        type: 'database',
+        route: 'setLogin',
+      },
+      {
+        type: 'traditional',
+        identification: formData.value.identification,
+        password: formData.value.password,
+      },
+    )
+
+    pageRedirect('Home')
+  } catch (error) {
+    showToast({
+      type: 'error',
+      message: error.message,
+    })
+  }
+}
+
+onMounted(async () => {
   google.accounts.id.initialize({
     client_id: import.meta.env.VITE_GCLIENT_LOGIN_ID,
-    callback: functions.handleGoogleLogin,
+    callback: handleGoogleLogin,
     context: 'signin',
     ux_mode: 'popup',
     auto_prompt: false,
