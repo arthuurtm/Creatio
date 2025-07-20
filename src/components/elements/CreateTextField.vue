@@ -1,118 +1,109 @@
 <template>
-  <div class="input-group" v-for="(field, index) in props.fields" :key="index">
+  <div v-for="(field, index) in allFields" :key="index" class="input-container">
     <label v-if="field.label" :for="field.model">{{ field.label }}</label>
-    <!--<fieldset-->
-    <div
-      class="input"
-      ref="inputWrapper"
-      :class="[
-        field.class,
-        field.style?.rounded && 'rounded',
-        field.style?.border && 'border',
-        field.style?.color,
-        field.style?.minimal && 'minimal',
-        field.style?.onlyIcon && 'onlyIcon',
-        (field.type === 'password' || field.type === 'password-view') && 'flex-reverse',
-      ]"
-    >
-      <!-- <legend v-if="field.label" :for="field.model">{{ field.label }}</legend> -->
+
+    <div class="input" ref="inputWrapper" :class="[field.class]">
       <div v-if="field.icon" class="material-symbols-outlined notranslate">{{ field.icon }}</div>
-      <div
+
+      <component
+        :is="getComponentType(field.type)"
+        class="input-field"
+        :type="field.type"
+        :id="field.model"
+        :placeholder="field.placeholder"
+        @change="field.type === 'file' && handleFile($event, field.model)"
+        @input="updateValue(field.model, $event.target.value)"
+        :value="props.modelValue[field.model]"
+      >
+        <template v-if="field.type === 'select'">
+          <option v-for="(option, index) in field.options" :key="index" :value="option.value">
+            {{ option.label }}
+          </option>
+        </template>
+      </component>
+
+      <CreateButton
         v-if="field.type === 'password' || field.type === 'password-view'"
-        class="btn symbolic no-padding no-scale material-symbols-outlined notranslate"
+        :buttons="[
+          {
+            icon: field.actionIcon || 'visibility',
+            class: 'symbolic no-padding no-scale center',
+          },
+        ]"
         @click="togglePassView(field)"
-      >
-        {{ customIcon.password }}
-      </div>
-      <select
-        v-if="field.type === 'select'"
-        class="input-field"
-        v-model="formData[field.model]"
-        :id="field.model"
-        :placeholder="field.placeholder"
-      >
-        <option v-for="(option, index) in field.options" :key="index" :value="option.value">
-          {{ option.label }}
-        </option>
-      </select>
-      <input
-        v-else-if="field.type === 'file'"
-        class="input-field"
-        :type="field.type"
-        @change="handleFile($event, field.model)"
-      />
-      <input
-        v-else
-        class="input-field"
-        v-model="formData[field.model]"
-        :type="field.type"
-        :id="field.model"
-        :placeholder="field.placeholder"
       />
     </div>
-    <CreateAnchor v-if="field.anchor" @emitEvent="reEmitEvent" :anchor="field.anchor" />
+
+    <CreateAnchor v-if="field?.anchor" @emitEvent="reEmitEvent" :anchor="field.anchor" />
   </div>
 </template>
 
 <script setup>
-import { computed, inject, ref, onMounted } from 'vue'
-import CreateAnchor from '@/components/elements/CreateAnchor.vue'
+import { ref, reactive, watch } from 'vue'
+import CreateButton from './CreateButton.vue'
+import CreateAnchor from './CreateAnchor.vue'
 
+const emits = defineEmits(['emitEvent', 'update:modelValue'])
 const props = defineProps({
-  fields: Array,
-  storeName: {
-    type: String,
-    default: 'global',
+  fields: {
+    type: Array,
+    default: () => [{}],
+  },
+  modelValue: {
+    type: Object,
+    default: () => ({}),
   },
 })
-const emits = defineEmits(['emitEvent'])
 
-const store = inject('stores')
-const activeStore = computed(() => store[props.storeName])
-const formData = ref(activeStore.value.getInputData)
+function updateValue(model, value) {
+  const updatedObject = { ...props.modelValue }
+  updatedObject[model] = value
+  emits('update:modelValue', updatedObject)
+}
 
-const customIcon = ref({ password: 'visibility' })
-
-onMounted(() => {
-  const inputContainer = document.querySelector('.input')
-  if (inputContainer) {
-    inputContainer.addEventListener('click', (e) => {
-      const inputField = e.currentTarget.querySelector('.input-field')
-      if (inputField) {
-        inputField.focus()
-      }
-    })
-  }
-})
+const allFields = ref(
+  Object.entries(props.fields || {}).map(([key, value]) => ({
+    ...value,
+    stepIndex: Number(key),
+  })),
+)
 
 function reEmitEvent(actions) {
   emits('emitEvent', actions)
 }
 
 function togglePassView(field) {
-  if (customIcon.value.password === 'visibility_off') {
-    customIcon.value.password = 'visibility'
-    field.type = 'password'
-  } else {
-    customIcon.value.password = 'visibility_off'
+  if (field.actionIcon === 'visibility' || field.actionIcon === undefined) {
+    field.actionIcon = 'visibility_off'
     field.type = 'password-view'
+  } else {
+    field.actionIcon = 'visibility'
+    field.type = 'password'
   }
 }
 
 function handleFile(event, field) {
   const file = event.target.files[0]
-  console.log('Handling file for field:', field, 'file: ', file)
   if (file) {
-    formData.value[field] = file
+    updateValue(field, file)
+  }
+}
+
+function getComponentType(type) {
+  switch (type) {
+    case 'select':
+      return 'select'
+
+    default:
+      return 'input'
   }
 }
 </script>
 
 <style scoped>
-.input-group {
+.input-container {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
 }
-@import url('/src/assets/css/components/c-form.css');
 </style>
