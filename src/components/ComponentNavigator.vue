@@ -163,7 +163,6 @@ const handleLogout = () => {
     buttons: [
       {
         text: 'Não',
-        action: () => dialog.close(),
       },
       {
         text: 'Sim',

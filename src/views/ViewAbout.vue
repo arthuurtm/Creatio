@@ -20,7 +20,6 @@ dialog.setDialog(DialogMessage, {
       class: 'confirm',
       action: () => {
         router.push({ name: 'Home' })
-        dialog.close()
       },
     },
   ],

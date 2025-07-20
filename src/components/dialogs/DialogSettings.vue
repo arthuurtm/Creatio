@@ -217,14 +217,12 @@ function disconnectAllDevices() {
     buttons: [
       {
         text: 'Não',
-        action: () => dialog.close(),
       },
       {
         text: 'Sim',
         class: 'confirm',
         action: () => {
           logoutAll()
-          dialog.close()
         },
       },
     ],

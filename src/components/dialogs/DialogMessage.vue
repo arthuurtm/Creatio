@@ -4,7 +4,7 @@
       <p>{{ params.message }}</p>
     </div>
     <div class="modal-buttons">
-      <CreateButton :buttons="params.buttons" />
+      <CreateButton :buttons="params.buttons" @emitEvent="$emit('close')" />
     </div>
   </div>
 </template>
@@ -15,6 +15,7 @@ import { useAppDynamicDialog } from '@/stores'
 
 const dialog = useAppDynamicDialog()
 const params = computed(() => dialog.getData || [{}])
+defineEmits('close')
 </script>
 
 <style scoped>
