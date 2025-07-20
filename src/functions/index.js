@@ -52,12 +52,12 @@ class FormError extends Error {
 const request = async (endpoint = {}, method = 'GET', body = null) => {
   const getHttpStatusMessage = (status) => {
     const messages = {
-      400: 'Requisição inválida',
-      401: 'Não autorizado',
-      403: 'Proibido',
-      404: 'Não encontrado',
-      500: 'Erro interno do servidor',
-      503: 'Serviço indisponível',
+      400: 'A requisição não pôde ser processada. Tente novamente.',
+      401: 'Sua sessão expirou ou você não está autenticado.',
+      403: 'Você não tem permissão para acessar este recurso.',
+      404: 'O recurso solicitado não foi encontrado.',
+      500: 'Estamos enfrentando um problema no servidor. Tente novamente mais tarde.',
+      503: 'O serviço está temporariamente indisponível. Por favor, tente mais tarde.',
     }
     return messages[status] || 'Erro desconhecido'
   }
@@ -80,7 +80,7 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      const serverMessage = errorData.message || `Erro ${response.status} na requisição`
+      const serverMessage = errorData.message || getHttpStatusMessage(response.status)
       throw new FormError(serverMessage, errorData.details)
     }
 
