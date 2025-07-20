@@ -1,22 +1,5 @@
 import { defineStore } from 'pinia'
 
-export const useGlobalStore = defineStore('global', {
-  state: () => ({
-    inputData: {},
-  }),
-  getters: {
-    getInputData: (state) => {
-      console.log('getInputData', state.inputData)
-      return state.inputData
-    },
-  },
-  actions: {
-    updateInputData(field, value) {
-      this.inputData[field] = value
-    },
-  },
-})
-
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
     sideBar: true,

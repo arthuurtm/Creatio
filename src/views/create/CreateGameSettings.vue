@@ -3,10 +3,9 @@ import { useRouter /*useRoute*/ } from 'vue-router'
 import { post } from '@/functions'
 import { showToast } from '@/plugins/toast'
 import ComponentFormPage from '@/layouts/AppFormPage.vue'
-import { useGlobalStore } from '@/stores'
+import { ref } from 'vue'
 
-const globalStore = useGlobalStore()
-const inputData = globalStore.getInputData
+const inputData = ref({})
 
 const router = useRouter()
 
@@ -89,20 +88,20 @@ const steps = {
 const functions = {
   handleGameCreate: async (images = false) => {
     try {
-      if (inputData.gameName === undefined || inputData.gameDescription === undefined) {
+      if (inputData.value.gameName === undefined || inputData.value.gameDescription === undefined) {
         showToast({ type: 'warning', message: 'Preencha o nome e a descrição do jogo.' })
         return
       }
 
       let result = await post(
         { type: 'database', route: 'setGame' },
-        { title: inputData.gameName, description: inputData.gameDescription },
+        { title: inputData.value.gameName, description: inputData.value.gameDescription },
       )
 
       if (images) {
         const gameData = new FormData()
-        gameData.append('gameImage', inputData.gameImage)
-        gameData.append('gameSound', inputData.gameSound)
+        gameData.append('gameImage', inputData.value.gameImage)
+        gameData.append('gameSound', inputData.value.gameSound)
         gameData.append('gameId', result.details.game.id)
 
         for (const pair of gameData.entries()) {
