@@ -219,20 +219,20 @@ function disconnectAllDevices() {
   dialog.setDialog(DialogMessage, {
     title: 'Desconectar outras sessões',
     message: 'Você tem certeza que deseja desconectar todas as outras sessões?',
-    btn1: {
-      text: 'Não',
-      action: () => {
-        close()
+    buttons: [
+      {
+        text: 'Não',
+        action: () => close(),
       },
-    },
-    btn2: {
-      text: 'Sim',
-      class: 'confirm',
-      action: () => {
-        close()
-        logoutAll()
+      {
+        text: 'Sim',
+        class: 'confirm',
+        action: () => {
+          close()
+          logoutAll()
+        },
       },
-    },
+    ],
   })
 }
 
