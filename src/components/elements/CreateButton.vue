@@ -7,17 +7,23 @@
       :class="[!button.tag && 'btn', button.class, button?.position]"
       :id="button.id || ''"
       :type="button.type || 'submit'"
+      :style="button?.style"
       @click="
-        typeof button.action === 'function'
+        (typeof button.action === 'function'
           ? button.action()
           : emitEvent(
               button.action?.name || '',
               button.action?.value || '',
               button.action?.type || '',
-            )
+            ),
+        $emit('click', $event))
       "
     >
-      <span v-if="button.icon" class="material-symbols-outlined notranslate">
+      <span
+        v-if="button.icon"
+        class="material-symbols-outlined notranslate"
+        :style="'text-align: center'"
+      >
         {{ button.icon }}
       </span>
       <img
@@ -45,11 +51,9 @@ const props = defineProps({
   },
 })
 
-const emits = defineEmits(['emitEvent'])
+const emits = defineEmits(['emitEvent', 'click'])
 
 const emitEvent = (action, value, type) => {
   emits('emitEvent', { action, value, type })
 }
 </script>
-
-<style scoped></style>
