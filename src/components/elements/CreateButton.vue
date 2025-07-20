@@ -10,7 +10,7 @@
       :style="button?.style"
       @click="
         (typeof button.action === 'function'
-          ? button.action()
+          ? handleAction(button)
           : emitEvent(
               button.action?.name || '',
               button.action?.value || '',
@@ -53,7 +53,12 @@ const props = defineProps({
 
 const emits = defineEmits(['emitEvent', 'click'])
 
-const emitEvent = (action, value, type) => {
+const emitEvent = (action = '', value = '', type = '') => {
   emits('emitEvent', { action, value, type })
+}
+
+const handleAction = async (func) => {
+  await func.action()
+  emitEvent(null, 'terminated', null)
 }
 </script>
