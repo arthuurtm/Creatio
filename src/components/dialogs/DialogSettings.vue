@@ -168,7 +168,6 @@ const router = useRouter()
 const user = useUserStore()
 const dialog = useAppDynamicDialog()
 const settings = useSettingsStore()
-const emit = defineEmits(['close'])
 
 const isAuth = computed(() => user.getIsAuth)
 const userId = computed(() => user.getId)
@@ -208,11 +207,7 @@ function handleExtLink(name, params) {
     name,
     params,
   })
-  close()
-}
-
-function close() {
-  emit('close', true)
+  dialog.close()
 }
 
 function disconnectAllDevices() {
@@ -222,14 +217,14 @@ function disconnectAllDevices() {
     buttons: [
       {
         text: 'Não',
-        action: () => close(),
+        action: () => dialog.close(),
       },
       {
         text: 'Sim',
         class: 'confirm',
         action: () => {
-          close()
           logoutAll()
+          dialog.close()
         },
       },
     ],
