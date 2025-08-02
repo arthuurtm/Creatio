@@ -2,7 +2,7 @@
   <div v-for="(field, index) in allFields" :key="index" class="input-container">
     <label v-if="field.label" :for="field.model">{{ field.label }}</label>
 
-    <div class="input" ref="inputWrapper" :class="[field.class]">
+    <div class="input" ref="inputWrapper" :class="[field.class, field.style]">
       <div v-if="field.icon" class="material-symbols-outlined notranslate">{{ field.icon }}</div>
 
       <component
