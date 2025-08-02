@@ -1,28 +1,34 @@
-/* color palette from <https://github.com/vuejs/theme> */
+/* ============================
+   Theme with Semantic Map and Glassy Modifier
+   File: theme.css
+   ============================ */
+
 @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('/src/assets/css/elements/e-_import.css');
 
+/* ---------- Base Theme Colors ---------- */
 :root {
   --form-field-text-hover: #1778fb;
   --font: 'Noto Sans';
-}
 
-/* Tema claro */
-:root {
+  /* Tema claro */
   --primary: #0b6a90;
   --primary-hover: rgb(51, 117, 248);
   --primary-back: #205fdc44;
+
   --secondary: #7e7e7e;
   --secondary-hover: #757575;
+
   --danger: #bb2a2a;
   --danger-hover: #a23333;
+
   --accent: #31a526;
 
   --text-color: #000;
   --background-color: #fff;
   --background-alt: #fafafa;
-  --border-color: #cecece;
+  --border-color: #a8a8a8;
   --primary-shadow: #d5dce340;
 
   --input-bg-neutral: #e9ecef;
@@ -34,23 +40,6 @@
 
   --element-focus: #ddddddf1;
   --element-hover: #c5c5c5a9;
-
-  --main-gradient: linear-gradient(135deg, #fdfbfb, #dce7ec, #c1d1e7);
-  --main-glass-background: rgba(255, 255, 255, 0.32);
-  --main-glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
-  --main-glass-border: 2px solid rgba(255, 255, 255, 0.24);
-
-  --btn-glass-default: rgba(255, 255, 255, 0.18);
-  --btn-glass-default-border: rgba(255, 255, 255, 0.24);
-
-  --btn-glass-confirm: linear-gradient(135deg, #0b6a90cc 0%, #1290c2cc 100%);
-  --btn-glass-confirm-border: rgba(11, 106, 144, 0.24);
-
-  --btn-glass-destructive: linear-gradient(135deg, #681d1dcc 0%, #b31313cc 100%);
-  --btn-glass-destructive-border: rgba(187, 42, 42, 0.24);
-
-  --btn-glass-cancel: rgba(255, 255, 255, 0.1);
-  --btn-glass-cancel-border: rgba(255, 255, 255, 0.18);
 }
 
 /* Tema escuro */
@@ -58,10 +47,13 @@
   --primary: #0d4b85;
   --primary-hover: #136dc2;
   --primary-back: #1060aa3d;
+
   --secondary: #7e7e7e;
   --secondary-hover: #999;
+
   --danger: #a20202;
   --danger-hover: #bb0b0b;
+
   --accent: #075500;
 
   --text-color: #f2f2f2;
@@ -79,84 +71,74 @@
 
   --element-focus: #7a7a7ad9;
   --element-hover: #777777aa;
-
-  --main-gradient: linear-gradient(135deg, #090909, #090b0e, #040c13);
-  --main-glass-background: rgba(40, 40, 60, 0.22);
-  --main-glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
-  --main-glass-border: 2px solid rgba(73, 67, 67, 0.1);
-
-  --btn-glass-default: rgba(40, 40, 60, 0.22);
-  --btn-glass-default-border: rgba(255, 255, 255, 0.08);
-
-  --btn-glass-confirm: linear-gradient(135deg, #1677d3cc 0%, #034380cc 100%);
-  --btn-glass-confirm-border: rgba(19, 109, 194, 0.18);
-
-  --btn-glass-destructive: linear-gradient(135deg, #e91616cc 0%, #a20202cc 100%);
-  --btn-glass-destructive-border: rgba(187, 11, 11, 0.18);
-
-  --btn-glass-cancel: rgba(60, 60, 80, 0.18);
-  --btn-glass-cancel-border: rgba(255, 255, 255, 0.08);
 }
 
 :root[data-modifier='glass'] {
-  --bg: var(--main-gradient);
-  --bg2: rgba(255, 255, 255, 0.2);
-  --border: rgba(200, 200, 200, 0.35);
-
-  --input-bg: rgba(255, 255, 255, 0.28);
-  --input-text: var(--input-text-neutral);
-
-  --default-button: rgba(126, 126, 126, 0.3);
-  --default-button-hover: rgba(117, 117, 117, 0.4);
-  --confirm-button: var(--btn-glass-confirm);
-  --confirm-button-hover: linear-gradient(135deg, #0b6a90dd, #1290c2dd);
-  --destructive-button: var(--btn-glass-destructive);
-  --destructive-button-hover: linear-gradient(135deg, #681d1ddd, #b31313dd);
-
-  --navigator: rgba(255, 255, 255, 0.25);
-  --navigator-li-hover: rgba(230, 230, 230, 0.5);
-  --navigator-li-focus: rgba(255, 255, 255, 0.4);
-
-  /* --overlay-bg: rgba(255, 255, 255, 0.08); */
-  --scroll-button: rgba(180, 180, 180, 0.35);
-  --scroll-button-hover: rgba(255, 255, 255, 0.55);
-
-  --form-critical-link: rgba(187, 42, 42, 0.85);
-  --form-normal-link: rgba(11, 106, 144, 0.85);
-  --form-normal-link-hover: rgba(51, 117, 248, 0.85);
-  --form-sub: rgba(126, 126, 126, 0.7);
+  --main-blur: blur(16px);
+  --main-saturate: saturate(180%);
 }
 
+/* ---------- Glassy Modifier (Light) ---------- */
+:root[data-modifier='glass'] {
+  --primary: linear-gradient(135deg, #0b6a90cc, #1290c2cc);
+  --primary-hover: linear-gradient(135deg, #0b6a90dd, #1290c2dd);
+  --secondary: rgba(126, 126, 126, 0.3);
+  --secondary-hover: rgba(117, 117, 117, 0.4);
+  --danger: linear-gradient(135deg, #681d1dcc, #b31313cc);
+  --danger-hover: linear-gradient(135deg, #681d1ddd, #b31313dd);
+  --accent: #31a526;
+
+  --text-color: #000;
+  --background-color: linear-gradient(135deg, #dce7ec, #c1d1e7, #aab5c4);
+  --background-alt: rgba(255, 255, 255, 0.32);
+  --border-color: rgba(200, 200, 200, 0.35);
+
+  --input-bg-neutral: rgba(255, 255, 255, 0.28);
+  --input-text-neutral: #737c85;
+
+  /* --overlay-neutral: rgba(255, 255, 255, 0.08); */
+  --scroll-btn: rgba(180, 180, 180, 0.35);
+  --scroll-btn-hover: rgba(255, 255, 255, 0.55);
+
+  --element-focus: rgba(94, 94, 104, 0.096);
+  --element-hover: #777777aa;
+
+  --primary-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+
+  --main-shadow: rgba(31, 38, 135, 0.1)
+}
+
+/* ---------- Glassy Modifier (Dark) ---------- */
 :root[data-theme='dark'][data-modifier='glass'] {
-  --bg: var(--main-gradient);
-  --bg2: rgba(10, 10, 15, 0.3);
-  --border: rgba(80, 80, 80, 0.2);
+  --primary: linear-gradient(135deg, #1677d3cc, #034380cc);
+  --primary-hover: linear-gradient(135deg, #1677d3dd, #034380dd);
+  --secondary: rgba(40, 40, 60, 0.22);
+  --secondary-hover: rgba(153, 153, 153, 0.35);
+  --danger: linear-gradient(135deg, #e91616cc, #a20202cc);
+  --danger-hover: linear-gradient(135deg, #e91616dd, #a20202dd);
+  --accent: #075500;
 
-  --input-bg: rgba(60, 60, 80, 0.25);
-  --input-text: var(--input-text-neutral);
+  --text-color: #f2f2f2;
+  --background-color: linear-gradient(135deg, #090909, #090b0e, #040c13);
+  --background-alt: rgba(40, 40, 60, 0.22);
+  --border-color: rgba(73, 67, 67, 0.1);
 
-  --default-button: rgba(126, 126, 126, 0.25);
-  --default-button-hover: rgba(153, 153, 153, 0.35);
-  --confirm-button: var(--btn-glass-confirm);
-  --confirm-button-hover: linear-gradient(135deg, #1677d3dd, #034380dd);
-  --destructive-button: var(--btn-glass-destructive);
-  --destructive-button-hover: linear-gradient(135deg, #e91616dd, #a20202dd);
+  --input-bg-neutral: rgba(60, 60, 80, 0.25);
+  --input-text-neutral: #f0f0f0;
 
-  --navigator: rgba(20, 20, 30, 0.25);
-  --navigator-li-hover: rgba(200, 200, 200, 0.1);
-  --navigator-li-focus: rgba(255, 255, 255, 0.12);
+  /* --overlay-neutral: rgba(0, 0, 0, 0.3); */
+  --scroll-btn: rgba(255, 255, 255, 0.2);
+  --scroll-btn-hover: rgba(255, 255, 255, 0.4);
 
-  /* --overlay-bg: rgba(0, 0, 0, 0.3); */
-  --scroll-button: rgba(255, 255, 255, 0.2);
-  --scroll-button-hover: rgba(255, 255, 255, 0.4);
+  --element-focus: rgba(94, 94, 104, 0.096);
+  --element-hover: #777777aa;
 
-  --form-critical-link: rgba(230, 30, 30, 0.85);
-  --form-normal-link: rgba(19, 109, 194, 0.85);
-  --form-normal-link-hover: rgba(51, 117, 248, 0.85);
-  --form-sub: rgba(180, 180, 180, 0.5);
+  --primary-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+
+  --main-shadow: rgba(0, 0, 0, 0.25);
 }
 
-/* Mapa semântico*/
+/* ---------- Semantic Map ---------- */
 :root {
   --text: var(--text-color);
   --bg: var(--background-color);
@@ -194,13 +176,6 @@
   --context-menu-bg: var(--secondary);
 }
 
-:root[data-modifier='glass'] {
-  --main-glass-blur: blur(16px);
-  --main-glass-saturate: saturate(180%);
-  --element-focus: rgba(94, 94, 104, 0.096);
-  --element-hover: #777777aa;
-}
-
 body {
   height: 100vh;
   width: 100vw;
@@ -229,14 +204,4 @@ body {
   -moz-osx-font-smoothing: grayscale;
   scrollbar-color: var(--border) transparent;
   scrollbar-width: thin;
-}
-
-.app {
-  display: flex;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }

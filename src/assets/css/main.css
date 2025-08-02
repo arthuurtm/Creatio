@@ -1,4 +1,5 @@
 @import './base.css';
+@import './deprecated.css';
 
 #app {
   display: flex;
