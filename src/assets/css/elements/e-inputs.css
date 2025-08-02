@@ -22,7 +22,9 @@
   height: 45px;
   font-size: 16px;
   border-radius: 30px;
-  transition: border 300ms ease-out;
+  transition:
+    border 0.3s ease-out,
+    background 0.1s ease;
   position: relative;
 }
 
@@ -93,6 +95,10 @@
 .input.onlyIcon {
   border: none !important;
   cursor: pointer;
+}
+
+.input.background:focus-within {
+  background: var(--background-color) !important;
 }
 
 .input-field[type='file'] {
