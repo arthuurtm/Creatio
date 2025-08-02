@@ -99,7 +99,7 @@ const { currentStep, nextStep, prevStep, pageRedirect } = useMultiStepForm({ tot
 const formData = ref({})
 
 // Funções do formulário
-const handleGoogleLogin = async (response) => {
+const handleGoogleLogin = async (response = {}) => {
   try {
     await gfunctions.post(
       {

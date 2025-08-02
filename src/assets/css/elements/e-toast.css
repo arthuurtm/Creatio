@@ -1,33 +1,38 @@
 :root {
-  --toastification-color-success: #27ae60;
-  --toastification-color-error: #c0392b;
-  --toastification-color-info: #2980b9;
-  --toastification-color-warning: #ffad29;
-  --toastification-color-success-lines: #187940;
-  --toastification-color-error-lines: #9b1c1c;
-  --toastification-color-info-lines: #1c4b9b;
-  --toastification-color-warning-lines: #9b6c1c;
+  --toastification-color-success: #27ae60; /* verde principal */
+  --toastification-color-error: #c0392b; /* vermelho principal */
+  --toastification-color-info: #2980b9; /* azul principal */
+  --toastification-color-warning: #ffad29; /* laranja principal */
+
+  /* Linhas mais escuras para contraste */
+  --toastification-color-success-lines: #1e874b;
+  --toastification-color-error-lines: #962d22;
+  --toastification-color-info-lines: #216494;
+  --toastification-color-warning-lines: #cc8800;
+
   --toastification-color-text: #000;
 }
 
 :root[data-theme='dark'] {
-  --toastification-color-success: #0f6e37;
-  --toastification-color-error: #8a2116;
-  --toastification-color-info: #12517a;
-  --toastification-color-warning: #b67206;
-  --toastification-color-success-lines: #003b19;
-  --toastification-color-error-lines: #5c0f0f;
-  --toastification-color-info-lines: #0f2b4d;
-  --toastification-color-warning-lines: #5c4d0f;
+  --toastification-color-success: #1d7a4a; /* Verde escuro */
+  --toastification-color-error: #b53428; /* Vermelho mais fechado */
+  --toastification-color-info: #216994; /* Azul fechado */
+  --toastification-color-warning: #d6820c; /* Laranja escuro */
+
+  /* Linhas mais escuras para destacar, mas não excessivamente claras */
+  --toastification-color-success-lines: #13452a;
+  --toastification-color-error-lines: #701b12;
+  --toastification-color-info-lines: #153a52;
+  --toastification-color-warning-lines: #7d4c09;
+
   --toastification-color-text: #fff;
 }
 
 /* Toast base */
 .Vue-Toastification__toast {
   padding: 10px !important;
-  border-radius: 12px;
+  border-radius: 30px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
   color: var(--toastification-color-text);
   min-height: 40px;
   font-weight: 800px;
@@ -102,8 +107,6 @@
     max-width: 90vw;
     margin: 0 auto;
     top: 30px;
-    backdrop-filter: unset;
-    border-radius: 30px;
   }
 
   .Vue-Toastification__close-button {

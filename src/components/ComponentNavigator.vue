@@ -30,72 +30,70 @@
           <div class="drag-handle" @click="updateMenuState()" @touchstart="onTouchStart"></div>
         </div>
 
-        <div class="center">
-          <ul>
-            <CreateButton
-              :rules="['noGroup']"
-              :buttons="[
-                {
-                  tag: 'nav-li',
-                  text: `@${user.getUsername}`,
-                  img: {
-                    src: user.getProfilePicture,
-                    alt: 'Foto de perfil',
-                    class: 'profile-picture',
-                  },
-                  class: `controller-index symbolic`,
-                  id: 'user-info',
-                  rules: [!isAuthenticated && 'hide'],
+        <ul>
+          <CreateButton
+            :rules="['noGroup']"
+            :buttons="[
+              {
+                tag: 'nav-li',
+                text: `@${user.getUsername}`,
+                img: {
+                  src: user.getProfilePicture,
+                  alt: 'Foto de perfil',
+                  class: 'profile-picture',
                 },
-                {
-                  tag: 'nav-li',
-                  text: 'Entrar',
-                  icon: 'login',
-                  class: `controller-index primary ${selectedPage === 'Login' && 'selected'}`,
-                  action: () => navigateTo('Login'),
-                  rules: [isAuthenticated && 'hide'],
-                },
-                {
-                  tag: 'nav-li',
-                  text: 'Início',
-                  icon: 'home',
-                  class: `controller-index primary ${selectedPage === 'Home' && 'selected'}`,
-                  action: () => navigateTo('Home'),
-                },
-                {
-                  tag: 'nav-li',
-                  text: 'Criar',
-                  icon: 'add_circle',
-                  class: `controller-index primary ${selectedPage === 'Create' && 'selected'}`,
-                  action: () => navigateTo('Create'),
-                  rules: [!isAuthenticated && 'hide'],
-                },
-                {
-                  tag: 'nav-li',
-                  text: 'Conversas',
-                  icon: 'chat',
-                  class: `controller-index primary ${selectedPage === 'Chat' && 'selected'}`,
-                  rules: [!isAuthenticated && 'hide'],
-                },
-                {
-                  tag: 'nav-li',
-                  text: 'Configurações',
-                  icon: 'settings',
-                  class: 'controller-index primary',
-                  action: handleSettingsBox,
-                },
-                {
-                  tag: 'nav-li',
-                  text: 'Sair',
-                  icon: 'logout',
-                  class: `controller-index primary ${isAuthenticated ? '' : 'hidden'}`,
-                  action: handleLogout,
-                  rules: [!isAuthenticated && 'hide'],
-                },
-              ]"
-            />
-          </ul>
-        </div>
+                class: `controller-index symbolic`,
+                id: 'user-info',
+                rules: [!isAuthenticated && 'hide'],
+              },
+              {
+                tag: 'nav-li',
+                text: 'Entrar',
+                icon: 'login',
+                class: `controller-index  ${selectedPage === 'Login' && 'selected'}`,
+                action: () => navigateTo('Login'),
+                rules: [isAuthenticated && 'hide'],
+              },
+              {
+                tag: 'nav-li',
+                text: 'Início',
+                icon: 'home',
+                class: `controller-index  ${selectedPage === 'Home' && 'selected'}`,
+                action: () => navigateTo('Home'),
+              },
+              {
+                tag: 'nav-li',
+                text: 'Criar',
+                icon: 'add_circle',
+                class: `controller-index  ${selectedPage === 'Create' && 'selected'}`,
+                action: () => navigateTo('Create'),
+                rules: [!isAuthenticated && 'hide'],
+              },
+              {
+                tag: 'nav-li',
+                text: 'Conversas',
+                icon: 'chat',
+                class: `controller-index  ${selectedPage === 'Chat' && 'selected'}`,
+                rules: [!isAuthenticated && 'hide'],
+              },
+              {
+                tag: 'nav-li',
+                text: 'Configurações',
+                icon: 'settings',
+                class: 'controller-index ',
+                action: handleSettingsBox,
+              },
+              {
+                tag: 'nav-li',
+                text: 'Sair',
+                icon: 'logout',
+                class: `controller-index  ${isAuthenticated ? '' : 'hidden'}`,
+                action: handleLogout,
+                rules: [!isAuthenticated && 'hide'],
+              },
+            ]"
+          />
+        </ul>
       </div>
     </div>
   </div>
@@ -240,5 +238,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '/src/assets/css/components/c-navigator.css';
+@import url('/src/assets/css/components/c-navigator.css');
 </style>
