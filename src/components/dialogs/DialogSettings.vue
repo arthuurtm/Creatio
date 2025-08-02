@@ -3,6 +3,7 @@
     <nav class="nav">
       <ul>
         <CreateButton
+          :globalStyle="'justify-start'"
           :rules="['noGroup']"
           :buttons="[
             {

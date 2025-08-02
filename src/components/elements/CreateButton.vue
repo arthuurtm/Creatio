@@ -4,13 +4,13 @@
     <component
       v-if="!button?.rules?.includes('hide')"
       :is="button.tag || 'button'"
-      :class="[!button.tag && 'btn', button.class, button?.position]"
+      :class="[!button.tag && 'btn', button.class, button?.position, globalStyle]"
       :id="button.id || ''"
       :type="button.type || 'submit'"
       :style="button?.style"
       @click="
         (typeof button.action === 'function'
-          ? handleAction(button)
+          ? handleAction(button, $event)
           : emitEvent(
               button.action?.name || '',
               button.action?.value || '',
@@ -33,6 +33,7 @@
         :class="button.img"
         :style="button.img?.style"
       />
+      <slot v-if="hasDefaultSlot" />
       <p v-if="button.text">{{ button.text }}</p>
     </component>
   </template>
@@ -40,6 +41,8 @@
 </template>
 
 <script setup>
+import { useSlots } from 'vue'
+
 const props = defineProps({
   buttons: {
     type: Array,
@@ -49,16 +52,22 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  globalStyle: {
+    type: String,
+    default: '',
+  },
 })
 
 const emits = defineEmits(['emitEvent', 'click'])
+const slots = useSlots()
+const hasDefaultSlot = !!slots.default
 
 const emitEvent = (action = '', value = '', type = '') => {
   emits('emitEvent', { action, value, type })
 }
 
-const handleAction = async (func) => {
-  await func.action()
+const handleAction = async (func, ...args) => {
+  await func.action(args)
   emitEvent(null, 'terminated', null)
 }
 </script>
