@@ -4,31 +4,39 @@ import ComponentCreateGamePage from '@/layouts/AppGamePage.vue'
 import CreateContextMenu from '@/components/elements/CreateContextMenu.vue'
 
 const contextMenuRef = ref(null)
-const pageContainer = document.querySelector('.page-wrapper') || window
+const pageContainer = ref({})
 
 const openContextMenu = (items, event) => {
   contextMenuRef.value.openContextMenu(items, event)
 }
 
-function handleMouseUp(e) {
-  if (e.button === 2) {
-    e.preventDefault()
-    openContextMenu(
-      [
-        {
-          items: [
-            { text: 'Ação', icon: 'folder_code' },
-            { text: 'Ligar', icon: 'diagonal_line' },
-          ],
-        },
-      ],
-      e,
-    )
-  }
+const gameFunction = {
+  addGameEvent: function (e) {},
 }
 
-onMounted(() => {pageContainer.addEventListener('mouseup', handleMouseUp))
-onUnmounted(() => pageContainer.removeEventListener('mouseup', handleMouseUp))
+function handleContextMenu(e) {
+  e.preventDefault()
+  openContextMenu(
+    [
+      {
+        items: [
+          { text: 'Ação', icon: 'folder_code' },
+          { text: 'Ligar', icon: 'diagonal_line' },
+        ],
+      },
+    ],
+    e,
+  )
+}
+
+onMounted(() => {
+  pageContainer.value = document.querySelector('.page-wrapper') || window
+  pageContainer.value.addEventListener('contextmenu', handleContextMenu)
+})
+
+onUnmounted(() => {
+  pageContainer.value.removeEventListener('contextmenu', handleContextMenu)
+})
 </script>
 
 <template>
@@ -36,30 +44,25 @@ onUnmounted(() => pageContainer.removeEventListener('mouseup', handleMouseUp))
     <div class="page-wrapper">
       <div class="checkerboard"></div>
 
-      <div class="main-floating-options">
-        <div class="main-options">
-          <CreateButton
-            :buttons="[
-              {
-                icon: 'add_circle',
-                class: 'symbolic no-padding no-scalling',
-                id: 'create-game-button',
-                action: (event) =>
-                  openContextMenu(
-                    [
+      <div style="position: absolute; bottom: 1rem; right: 1rem">
+        <CreateButton
+          :buttons="[{ icon: 'help', class: 'symbolic no-padding' }]"
+          @click="
+            (e) =>
+              openContextMenu(
+                [
+                  {
+                    items: [
                       {
-                        items: [
-                          { text: 'Ação', icon: 'folder_code' },
-                          { text: 'Ligar', icon: 'diagonal_line' },
-                        ],
+                        text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
                       },
                     ],
-                    event,
-                  ),
-              },
-            ]"
-          />
-        </div>
+                  },
+                ],
+                e,
+              )
+          "
+        />
       </div>
 
       <CreateContextMenu ref="contextMenuRef" />
