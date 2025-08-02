@@ -13,14 +13,9 @@ import jwt from 'jsonwebtoken'
 import validator from 'validator'
 import dotenv from 'dotenv'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import { OAuth2Client } from 'google-auth-library'
 import multer from 'multer'
 import * as Minio from 'minio'
-
-// Corrige __dirname para ES Modules
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 // Carrega variáveis de ambiente
 dotenv.config({ path: '../.env' })
