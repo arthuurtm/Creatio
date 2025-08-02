@@ -72,12 +72,7 @@ const pageName = computed(() => useRoute().name)
                     model: 'globalSearch',
                     placeholder: 'Pesquisar por...',
                     icon: 'search',
-                    style: {
-                      rounded: true,
-                      border: true,
-                      minimal: true,
-                      // color: 'sameText',
-                    },
+                    style: ['minimal', 'border', 'background'],
                   },
                 ]"
               />
@@ -112,7 +107,6 @@ const pageName = computed(() => useRoute().name)
         <ComponentNavigator
           :hidden="hiddenNavigator"
           :page="pageName"
-          :defaultHideButton="true"
           @navigatorStatus="updateNavStatus"
           ref="navigator"
         />
@@ -137,7 +131,7 @@ const pageName = computed(() => useRoute().name)
   height: 100%;
   width: 100%;
   position: relative;
-  background-color: var(--bg);
+  background: var(--bg2);
 }
 
 .app-header {
@@ -151,10 +145,7 @@ const pageName = computed(() => useRoute().name)
   border-bottom: 1px solid var(--border);
   box-shadow: 0 4px 6px var(--primary-shadow);
   position: relative;
-}
-
-.header-bar {
-  display: none;
+  border-bottom: 2px solid var(--border);
 }
 
 .util {
@@ -200,13 +191,14 @@ const pageName = computed(() => useRoute().name)
 
 .view-app {
   /* padding: 15px; */
-  padding: 1rem;
+  /* padding: 1rem; */
+  padding: 1rem 0 1rem 1rem;
   overflow-y: auto;
   flex-grow: 1;
   z-index: 1;
   grid-column: 2;
-  border-left: 2px solid var(--border);
   /* border-radius: 24px; */
+  background: var(--bg);
 }
 
 .view-app.no-rounded {
@@ -218,33 +210,8 @@ const pageName = computed(() => useRoute().name)
   margin-left: auto;
 }
 
-:root[data-modifier='glass'] .app-container {
-  background: var(--main-glass-background);
-}
-
-:root[data-modifier='glass'] .header-bar {
-  box-shadow: unset !important; /* 0 8px 32px 0 rgba(31, 38, 135, 0.1) */
-  border: none;
-  /* margin: 1rem 1rem 0.2rem 1rem; */
-}
-
-:root[data-modifier='glass'] .header-bar #toggleNavigator {
-  margin-left: 1rem;
-}
-
-:root[data-modifier='glass'] .view-app {
-  border-radius: 0;
-  border-radius: 24px 0 0 24px;
-  /* border: var(--main-glass-border); */
-  background: var(--main-gradient);
-}
-
-:root[data-modifier='glass'] .navigator-container {
-}
-
 @media (max-width: 600px) {
   .app-container {
-    background-color: var(--bg);
     grid-template-rows: 1fr auto;
   }
 
@@ -256,14 +223,19 @@ const pageName = computed(() => useRoute().name)
     right: 0;
     z-index: 2;
     max-height: 70px;
+    padding: 8px 16px;
+    border-radius: 24px;
   }
 
   .header-bar {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    background-color: var(--bg2);
     position: relative;
-    border-radius: 20px 20px 0 0;
+    border-radius: 24px;
+    background: var(--secondary);
+    backdrop-filter: var(--main-blur) var(--main-saturate);
+    -webkit-backdrop-filter: var(--main-blur) var(--main-saturate);
+    border: 2px solid var(--border);
   }
 
   .header-bar .util {
@@ -303,30 +275,6 @@ const pageName = computed(() => useRoute().name)
     transform: translate(-50%, -50%);
     z-index: 1;
     margin: 0;
-  }
-
-  :root[data-modifier='glass'] .app-header {
-    padding: 8px 16px;
-  }
-
-  :root[data-modifier='glass'] .header-bar {
-    margin: 0;
-    padding: 0.6rem;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-    background: var(--main-glass-background);
-    backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
-    -webkit-backdrop-filter: var(--main-glass-blur) var(--main-glass-saturate);
-    border-radius: 24px !important;
-  }
-
-  :root[data-modifier='glass'] .header-bar #toggleNavigator {
-    margin-left: 0;
-  }
-
-  :root[data-modifier='glass'] .app-container {
-    background: var(--main-glass-background);
-    backdrop-filter: unset;
-    -webkit-backdrop-filter: unset;
   }
 }
 </style>
