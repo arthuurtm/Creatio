@@ -7,6 +7,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  styleType: {
+    type: String,
+    default: 'medium',
+  },
 })
 
 const emits = defineEmits(['emitEvent'])
@@ -41,6 +45,7 @@ function handleMouseLeave(index) {
     v-for="(game, index) in props.card"
     :key="game.id"
     class="gameCard"
+    :class="styleType"
     @click="emitEvent({ id: game.id })"
     @mousemove="(e) => handleMouseMove(e, index)"
     @mouseleave="() => handleMouseLeave(index)"
@@ -59,7 +64,6 @@ function handleMouseLeave(index) {
 .gameCard {
   position: relative;
   overflow: hidden;
-  max-width: 250px;
   margin: 20px;
   background-color: var(--overlay-bg);
   border-radius: 15px;
@@ -72,6 +76,10 @@ function handleMouseLeave(index) {
     transform 0.1s ease,
     scale 0.1s ease;
   perspective: 1000px;
+}
+
+.gameCard.reduced {
+  height: 200px;
 }
 
 .gameCard .banner img {

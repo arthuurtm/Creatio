@@ -34,7 +34,7 @@ function playGame(args = {}) {
       </div>
     </div>
     <div class="sessions-show">
-      <ComponentLoadSessions styleType:="grade" @emitEvent="playGame" />
+      <ComponentLoadSessions :cardsType="'reduced'" :styleType="'grade'" @emitEvent="playGame" />
     </div>
   </div>
 </template>

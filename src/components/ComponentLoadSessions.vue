@@ -1,5 +1,5 @@
 <template>
-  <div class="ggrid" :class="gridType">
+  <div class="games-grid" :class="styleType">
     <div class="title">
       <b>
         <h3 class="upper">{{ props.title }}</h3>
@@ -7,8 +7,9 @@
     </div>
 
     <div class="content">
-      <div id="btn">
+      <div class="scroll-button" id="left">
         <CreateButton
+          v-if="isEnableScrollButton"
           @emitEvent="scrollLeft"
           :buttons="[
             {
@@ -21,10 +22,10 @@
         />
       </div>
 
-      <div v-if="loading"><CreateLoading /></div>
+      <CreateLoading v-if="loading" />
 
       <div v-else-if="games && games.length > 0" class="sliding" ref="scrollContainer">
-        <CreateCard :card="games" @emitEvent="reEmitEvent" />
+        <CreateCard :card="games" :styleType="cardsType" @emitEvent="reEmitEvent" />
       </div>
 
       <div v-else>
@@ -41,8 +42,9 @@
         />
       </div>
 
-      <div id="btn">
+      <div class="scroll-button" id="right">
         <CreateButton
+          v-if="isEnableScrollButton"
           @emitEvent="scrollRight"
           :buttons="[
             {
@@ -61,13 +63,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { get } from '@/functions'
-
-const games = ref([])
-const loading = ref(true)
-const scrollContainer = ref(null)
-const scrollAmount = 260
 
 const props = defineProps({
   url: {
@@ -80,23 +76,26 @@ const props = defineProps({
   },
   styleType: {
     type: String,
+    default: 'line',
+  },
+  cardsType: {
+    type: String,
   },
 })
-
 const emits = defineEmits(['emitEvent'])
-const router = useRouter()
-
-const gridType = computed(() => {
-  switch (props.styleType) {
-    case 'grade':
-      return 'grade'
-
-    case 'list':
-      return 'list'
-
-    default:
-      return 'line'
-  }
+const grids = ref({
+  big: ['grade', 'spaced'],
+  medium: ['line'],
+  small: ['reduced', 'list'],
+})
+const games = ref([])
+const loading = ref(true)
+const scrollContainer = ref(null)
+const scrollAmount = 260
+const isEnableScrollButton = computed(() => {
+  if (grids.value.big.includes(props.styleType) || grids.value.small.includes(props.styleType))
+    return false
+  return true
 })
 
 async function loadGames() {
@@ -132,5 +131,92 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url('/src/assets/css/components/c-loadSessions.css');
+::-webkit-scrollbar {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.games-grid {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* padding: 15px; */
+}
+
+.games-grid .content {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: 1fr;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  /* overflow-x: auto; */
+  scroll-behavior: smooth;
+}
+
+.sliding {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.games-grid.grade .content {
+  scroll-behavior: unset;
+}
+.games-grid.grade .sliding {
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  align-items: flex-start;
+}
+
+.btn#left {
+  display: grid;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.btn#right {
+  display: grid;
+  grid-column: 3;
+  grid-row: 1;
+}
+
+#play-button {
+  background-color: var(--discovery-play-button);
+  z-index: 1;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .content .group-button {
+    display: none;
+  }
+  #btn {
+    display: none;
+  }
+  .sliding {
+    gap: 0;
+  }
+}
 </style>
