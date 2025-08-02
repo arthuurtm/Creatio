@@ -1,8 +1,34 @@
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import ComponentCreateGamePage from '@/layouts/AppGamePage.vue'
 import CreateContextMenu from '@/components/elements/CreateContextMenu.vue'
 
-const openCreateContextMenu = () => {}
+const contextMenuRef = ref(null)
+const pageContainer = document.querySelector('.page-wrapper') || window
+
+const openContextMenu = (items, event) => {
+  contextMenuRef.value.openContextMenu(items, event)
+}
+
+function handleMouseUp(e) {
+  if (e.button === 2) {
+    e.preventDefault()
+    openContextMenu(
+      [
+        {
+          items: [
+            { text: 'Ação', icon: 'folder_code' },
+            { text: 'Ligar', icon: 'diagonal_line' },
+          ],
+        },
+      ],
+      e,
+    )
+  }
+}
+
+onMounted(() => {pageContainer.addEventListener('mouseup', handleMouseUp))
+onUnmounted(() => pageContainer.removeEventListener('mouseup', handleMouseUp))
 </script>
 
 <template>
@@ -18,14 +44,25 @@ const openCreateContextMenu = () => {}
                 icon: 'add_circle',
                 class: 'symbolic no-padding no-scalling',
                 id: 'create-game-button',
+                action: (event) =>
+                  openContextMenu(
+                    [
+                      {
+                        items: [
+                          { text: 'Ação', icon: 'folder_code' },
+                          { text: 'Ligar', icon: 'diagonal_line' },
+                        ],
+                      },
+                    ],
+                    event,
+                  ),
               },
             ]"
-            @emitEvent="openCreateContextMenu"
           />
         </div>
       </div>
 
-      <CreateContextMenu />
+      <CreateContextMenu ref="contextMenuRef" />
     </div>
   </ComponentCreateGamePage>
 </template>
