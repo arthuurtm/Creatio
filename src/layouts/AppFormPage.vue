@@ -24,12 +24,13 @@
         <h1>{{ title }}</h1>
         <h4>{{ subTitle }}</h4>
         <slot name="formInfo" />
+        <p>{{ slotKey }}</p>
       </div>
 
       <div class="right">
         <form class="form-container centered" @submit.prevent="submitForm">
           <transition name="slide-left" mode="out-in">
-            <div class="sepElements">
+            <div class="sepElements" :key="slotKey">
               <slot name="fields" />
             </div>
           </transition>
@@ -45,6 +46,13 @@
 </template>
 
 <script setup>
+import { useAppDynamicDialog } from '@/stores'
+import DialogSettings from '@/components/dialogs/DialogSettings.vue'
+import { computed } from 'vue'
+
+const dialog = useAppDynamicDialog()
+const slotKey = computed(() => Date.now())
+
 defineProps({
   title: {
     type: String,
@@ -55,6 +63,10 @@ defineProps({
     default: '',
   },
 })
+
+function handleSettingsBox() {
+  dialog.setDialog(DialogSettings, { title: 'Configurações' })
+}
 </script>
 
 <style scoped>
