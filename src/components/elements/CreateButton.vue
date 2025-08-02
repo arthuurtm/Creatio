@@ -1,77 +1,73 @@
-<!-- eslint-disable vue/no-mutating-props -->
 <template>
-  <div
-    v-for="(button, index) in buttons"
-    :key="index"
-    class="group-button"
-    :class="button.position || ''"
-  >
-    <button
-      v-if="!button.icon"
-      class="btn"
-      :class="button.class"
+  <!-- <component :is="rules?.includes('group') ? 'div' : 'fragment'" class="button-group"> -->
+  <template v-for="(button, index) in props.buttons" :key="index">
+    <component
+      v-if="!button?.rules?.includes('hide')"
+      :is="button.tag || 'button'"
+      :class="[!button.tag && 'btn', button.class, button?.position, globalStyle]"
       :id="button.id || ''"
       :type="button.type || 'submit'"
+      :style="button?.style"
       @click="
-        typeof button.action === 'function'
-          ? button.action()
+        (typeof button.action === 'function'
+          ? handleAction(button, $event)
           : emitEvent(
               button.action?.name || '',
               button.action?.value || '',
               button.action?.type || '',
-            )
+            ),
+        $emit('click', $event))
       "
     >
-      {{ button.text }}
-    </button>
-    <button
-      v-else
-      class="btn"
-      :class="button.class"
-      :id="button.id || ''"
-      :type="button.type || 'submit'"
-      @click="
-        typeof button.action === 'function'
-          ? button.action()
-          : emitEvent(
-              button.action?.name || '',
-              button.action?.value || '',
-              button.action?.type || '',
-            )
-      "
-    >
-      <span class="material-symbols-outlined notranslate">{{ button.icon }}</span>
-      <p>{{ button.text || '' }}</p>
-    </button>
-  </div>
+      <span
+        v-if="button.icon"
+        class="material-symbols-outlined notranslate"
+        :style="'text-align: center'"
+      >
+        {{ button.icon }}
+      </span>
+      <img
+        v-if="button.img"
+        :src="button.img.src"
+        :alt="button.img.alt"
+        :class="button.img"
+        :style="button.img?.style"
+      />
+      <slot v-if="hasDefaultSlot" />
+      <p v-if="button.text">{{ button.text }}</p>
+    </component>
+  </template>
+  <!-- </component> -->
 </template>
 
-<script>
-import { computed } from 'vue'
-export default {
-  name: 'CreateButton',
-  props: {
-    buttons: {
-      type: Array,
-      default: () => [{}],
-    },
-    modelValue: String,
-  },
-  emits: ['update:modelValue', 'emitEvent'],
-  setup(props, { emit }) {
-    const inputValue = computed({
-      get: () => props.modelValue,
-      set: (value) => emit('update:modelValue', value),
-    })
+<script setup>
+import { useSlots } from 'vue'
 
-    return { inputValue }
+const props = defineProps({
+  buttons: {
+    type: Array,
+    default: () => [{}],
   },
-  methods: {
-    emitEvent(action, value, type) {
-      this.$emit('emitEvent', { action, value, type })
-    },
+  rules: {
+    type: Array,
+    default: () => [],
   },
+  globalStyle: {
+    type: String,
+    default: '',
+  },
+})
+
+const emits = defineEmits(['emitEvent', 'click'])
+const slots = useSlots()
+const hasDefaultSlot = !!slots.default
+
+const emitEvent = (action = '', value = '', type = '') => {
+  emits('emitEvent', { action, value, type })
+}
+
+const handleAction = async (func, ...args) => {
+  await func.action(args)
+  emitEvent(null, 'terminated', null)
 }
 </script>
-
-<style scoped></style>

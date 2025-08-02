@@ -10,7 +10,7 @@ export function showToast({ type = 'default', message = '', timeout = 3000 }) {
     if (validTypes.includes(type) && typeof toast[type] === 'function') {
       toast[type](message, {
         timeout,
-        position: 'top-center',
+        position: 'top-right',
       })
     } else {
       toast.info(message || 'Notificação!', {

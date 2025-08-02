@@ -1,32 +1,61 @@
 <script setup>
-import { EventEmitter } from 'ws'
+import { ref, onMounted } from 'vue'
+import { handleImage } from '@/functions'
 
 const props = defineProps({
-  games: {
+  card: {
     type: Array,
     default: () => [],
+  },
+  styleType: {
+    type: String,
+    default: 'medium',
   },
 })
 
 const emits = defineEmits(['emitEvent'])
-
 function emitEvent(args = {}) {
   emits('emitEvent', args)
+}
+
+const cards = ref([])
+
+function handleMouseMove(e, index) {
+  const card = cards.value[index]
+  const rect = card.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+  const centerX = rect.width / 2
+  const centerY = rect.height / 2
+
+  const rotateX = -(y - centerY) / 10
+  const rotateY = (x - centerX) / 10
+
+  card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`
+}
+
+function handleMouseLeave(index) {
+  const card = cards.value[index]
+  card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)'
 }
 </script>
 
 <template>
   <div
-    v-for="game in props.games"
+    v-for="(game, index) in props.card"
     :key="game.id"
     class="gameCard"
+    :class="styleType"
     @click="emitEvent({ id: game.id })"
+    @mousemove="(e) => handleMouseMove(e, index)"
+    @mouseleave="() => handleMouseLeave(index)"
+    ref="cards"
   >
     <div class="title">
       <p>{{ game.title || 'Exemplo' }}</p>
     </div>
     <div class="banner">
-      <img id="banner" alt="Banner do jogo" :src="game.img || ''" />
+      <img id="banner" alt="Banner do jogo" :src="handleImage(game.banner)" />
     </div>
   </div>
 </template>
@@ -35,8 +64,6 @@ function emitEvent(args = {}) {
 .gameCard {
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease;
-  max-width: 250px;
   margin: 20px;
   background-color: var(--overlay-bg);
   border-radius: 15px;
@@ -44,6 +71,15 @@ function emitEvent(args = {}) {
   min-width: 200px;
   height: 340px;
   cursor: pointer;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.1s ease,
+    scale 0.1s ease;
+  perspective: 1000px;
+}
+
+.gameCard.reduced {
+  height: 200px;
 }
 
 .gameCard .banner img {

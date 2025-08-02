@@ -1,23 +1,21 @@
 <script setup>
-import { computed, ref, watch, resolveDynamicComponent, inject } from 'vue'
-import CreateLoading from './elements/CreateLoading.vue'
+import { computed, ref, watch } from 'vue'
+import { useAppDynamicDialog } from '@/stores'
 
 const props = defineProps({
-  component: String,
+  component: Object,
   title: String,
 })
 
-const asyncComponent = ref(CreateLoading)
-const store = inject('stores')
-
+const dialog = useAppDynamicDialog()
 function close() {
-  if (!store.dialog.getIsHistory) showDialogAnim.value = false
+  if (!dialog.getIsHistory) showDialogAnim.value = false
   setTimeout(() => {
-    store.dialog.close()
+    dialog.close()
   }, 300)
 }
 
-const showDialog = computed(() => store.dialog.getIsVisible)
+const showDialog = computed(() => dialog.getIsVisible)
 const showDialogAnim = ref(false)
 
 watch(showDialog, (newValue) => {
@@ -28,25 +26,51 @@ watch(showDialog, (newValue) => {
   }
 })
 
-watch(
-  () => props.component,
-  async (newComponent) => {
-    if (!newComponent) return
+//Eventos de Toque
+let touchTimeout = null
+const startY = ref(0)
+const currentY = ref(0)
+const isDragging = ref(false)
 
-    asyncComponent.value = CreateLoading
-    const resolved = resolveDynamicComponent(newComponent)
-    if (resolved) {
-      asyncComponent.value = resolved
-    }
-  },
-  { immediate: true },
-)
+const onTouchStart = (event) => {
+  startY.value = event.touches[0].clientY
+  isDragging.value = false
+  touchTimeout = setTimeout(() => {
+    isDragging.value = true
+  }, 100)
+}
+
+const onTouchMove = (event) => {
+  event.stopPropagation()
+  event.preventDefault()
+  if (!isDragging.value) return
+
+  currentY.value = event.touches[0].clientY
+}
+
+const onTouchEnd = () => {
+  if (!isDragging.value) return
+  isDragging.value = false
+  clearTimeout(touchTimeout)
+
+  const deltaY = currentY.value - startY.value
+  const activationThreshold = 50
+
+  if (deltaY > activationThreshold) {
+    close()
+  }
+}
 </script>
 
 <template>
   <div class="dialog-shadow" v-show="showDialog">
     <div class="dialog-main" :id="[]" :class="[showDialogAnim && 'active']">
-      <div class="title-bar">
+      <div
+        class="title-bar"
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+      >
         <div class="options">
           <div class="title">
             <p>{{ props.title }}</p>
@@ -60,7 +84,7 @@ watch(
       </div>
       <div class="content">
         <transition name="fastFade" mode="out-in">
-          <component :is="asyncComponent" :key="props.component" @close="close" />
+          <component :is="component" :key="props.component" @close="close" />
         </transition>
       </div>
     </div>

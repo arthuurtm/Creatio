@@ -1,14 +1,24 @@
 <template>
   <div class="container" :class="[isMenuActive && 'active']">
-    <a class="hide-nav" @click="updateMenuState(true)" v-if="defaultHideButton">
-      <span class="material-symbols-outlined notranslate">{{ navigatorIcon }}</span>
-    </a>
+    <div class="hide-nav">
+      <CreateButton
+        :buttons="[
+          {
+            icon: navigatorIcon,
+            class: 'symbolic no-padding no-scalling',
+            action: () => updateMenuState(true),
+            rules: [!defaultHideButton && 'hide'],
+          },
+        ]"
+      />
+    </div>
 
     <div
       class="nav"
       :class="[isMenuActive ? 'active' : 'minimized', hidden && 'hidden']"
       id="nav"
-      ref="menu"
+      ref="menuRef"
+      :style="defaultHideButton && { marginTop: '3rem' }"
     >
       <div class="nav-content">
         <div
@@ -20,83 +30,87 @@
           <div class="drag-handle" @click="updateMenuState()" @touchstart="onTouchStart"></div>
         </div>
 
-        <div class="center">
-          <ul>
-            <li v-if="isAuthenticated" id="user-info" class="user-info controller-index">
-              <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
-              <p class="nickname">@{{ user.getUsername }}</p>
-            </li>
-
-            <li
-              v-if="!isAuthenticated"
-              @click="navigateTo('Login')"
-              :class="[selectedPage === 'Login' && 'selected']"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">login</span>
-              <p>Entrar</p>
-            </li>
-
-            <li
-              @click="navigateTo('Home')"
-              :class="[selectedPage === 'Home' && 'selected']"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">home</span>
-              <p>Início</p>
-            </li>
-
-            <li
-              v-if="isAuthenticated"
-              @click="navigateTo('Create')"
-              :class="[selectedPage === 'Create' && 'selected']"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">add_circle</span>
-              <p>Criar</p>
-            </li>
-
-            <li
-              v-if="isAuthenticated"
-              @click="navigateTo('Chat')"
-              :class="[selectedPage === 'Chat' && 'selected']"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">chat</span>
-              <p>Conversas</p>
-            </li>
-
-            <li @click="handleSettingsBox" class="controller-index">
-              <span class="material-symbols-outlined notranslate">settings</span>
-              <p>Configurações</p>
-            </li>
-
-            <li
-              v-if="isAuthenticated"
-              @click="handleLogout"
-              id="logoutMenuButton"
-              class="controller-index"
-            >
-              <span class="material-symbols-outlined notranslate">logout</span>
-              <p>Sair</p>
-            </li>
-          </ul>
-        </div>
+        <ul>
+          <CreateButton
+            :rules="['noGroup']"
+            :buttons="[
+              {
+                tag: 'nav-li',
+                text: `@${user.getUsername}`,
+                img: {
+                  src: user.getProfilePicture,
+                  alt: 'Foto de perfil',
+                  class: 'profile-picture',
+                },
+                class: `controller-index symbolic`,
+                id: 'user-info',
+                rules: [!isAuthenticated && 'hide'],
+              },
+              {
+                tag: 'nav-li',
+                text: 'Entrar',
+                icon: 'login',
+                class: `controller-index  ${selectedPage === 'Login' && 'selected'}`,
+                action: () => navigateTo('Login'),
+                rules: [isAuthenticated && 'hide'],
+              },
+              {
+                tag: 'nav-li',
+                text: 'Início',
+                icon: 'home',
+                class: `controller-index  ${selectedPage === 'Home' && 'selected'}`,
+                action: () => navigateTo('Home'),
+              },
+              {
+                tag: 'nav-li',
+                text: 'Criar',
+                icon: 'add_circle',
+                class: `controller-index  ${selectedPage === 'Create' && 'selected'}`,
+                action: () => navigateTo('Create'),
+                rules: [!isAuthenticated && 'hide'],
+              },
+              {
+                tag: 'nav-li',
+                text: 'Conversas',
+                icon: 'chat',
+                class: `controller-index  ${selectedPage === 'Chat' && 'selected'}`,
+                rules: [!isAuthenticated && 'hide'],
+              },
+              {
+                tag: 'nav-li',
+                text: 'Configurações',
+                icon: 'settings',
+                class: 'controller-index ',
+                action: handleSettingsBox,
+              },
+              {
+                tag: 'nav-li',
+                text: 'Sair',
+                icon: 'logout',
+                class: `controller-index  ${isAuthenticated ? '' : 'hidden'}`,
+                action: handleLogout,
+                rules: [!isAuthenticated && 'hide'],
+              },
+            ]"
+          />
+        </ul>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, inject } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { logout } from '@/functions/auth'
+import DialogMessage from './dialogs/DialogMessage.vue'
+import DialogSettings from './dialogs/DialogSettings.vue'
+import { useUserStore, useAppDynamicDialog } from '@/stores'
 
 // Stores e Router
 const router = useRouter()
-const store = inject('stores')
-const user = store.user
-const dialog = store.dialog
+const user = useUserStore()
+const dialog = useAppDynamicDialog()
 
 // Props e Emits
 const props = defineProps({
@@ -124,12 +138,9 @@ const startY = ref(0)
 const currentY = ref(0)
 const isDragging = ref(false)
 const isMenuActive = ref(true)
-const profilePicture = computed(() => {
-  return user.getProfilePicture
-})
 const navigatorIcon = ref('menu')
 const selectedPage = computed(() => props.page)
-const hidden = ref(props.hidden)
+const hidden = computed(() => props.hidden)
 
 // Funções
 const handleIsMobile = () => {
@@ -139,27 +150,29 @@ const handleIsMobile = () => {
 const navigateTo = (page) => {
   console.log(`navigateTo() > page: ${page}`)
   router.push({ name: page })
-  selectedPage.value = page
+  // selectedPage.value = page
   updateMenuState()
 }
 
 const handleLogout = () => {
-  dialog.setDialog('DialogMessage', {
+  dialog.setDialog(DialogMessage, {
     title: 'Sair',
     message: 'Você quer mesmo sair?',
-    btn1: { text: 'Não' },
-    btn2: {
-      text: 'Sim',
-      class: 'confirm',
-      action: () => {
-        logout()
+    buttons: [
+      {
+        text: 'Não',
       },
-    },
+      {
+        text: 'Sim',
+        class: 'confirm',
+        action: () => logout(),
+      },
+    ],
   })
 }
 
 const handleSettingsBox = () => {
-  dialog.setDialog('DialogSettings', { title: 'Configurações' })
+  dialog.setDialog(DialogSettings, { title: 'Configurações' })
   // updateMenuState()
 }
 
@@ -225,5 +238,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '/src/assets/css/components/c-navigator.css';
+@import url('/src/assets/css/components/c-navigator.css');
 </style>

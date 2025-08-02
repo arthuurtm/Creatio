@@ -3,30 +3,25 @@
 </template>
 
 <script setup>
-import { onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAppDynamicDialog } from '@/stores'
+import DialogMessage from '@/components/dialogs/DialogMessage.vue'
 
-const router = useRouter() // <- Chama aqui uma vez
-const store = inject('stores')
-const dialog = store.dialog
+const router = useRouter()
+const dialog = useAppDynamicDialog()
 
-dialog.setDialog('DialogMessage', {
+dialog.setDialog(DialogMessage, {
   title: 'Demonstração',
   message:
     'Este site está em fase de desenvolvimento. Algumas funcionalidades podem não estar completas ou apresentar instabilidades durante o uso.',
-  btn1: {
-    text: 'Ok',
-    class: 'confirm',
-    action: () => {
-      router.push({ name: 'Login' })
+  buttons: [
+    {
+      text: 'Ok',
+      class: 'confirm',
+      action: () => {
+        router.push({ name: 'Home' })
+      },
     },
-  },
+  ],
 })
 </script>
-
-<style scoped>
-a {
-  color: blue;
-  cursor: pointer;
-}
-</style>

@@ -1,19 +1,15 @@
 <script setup>
 import ComponentNavigator from '@/components/ComponentNavigator.vue'
-import { computed, ref, inject } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-
-const store = inject('stores')
-const props = defineProps({
-  hiddenNavigator: Boolean,
-})
-const routeHidden = useRoute().meta.hiddenNavigator
-const sideBar = computed(() => store.settings.getSideBar)
+import { useSettingsStore } from '@/stores'
+const routeHidden = computed(() => useRoute().meta.hiddenNavigator)
+const sideBar = computed(() => useSettingsStore().getSideBar)
 const navigator = ref(null)
 
 const hiddenNavigator = computed(() => {
-  if (routeHidden === true) return true
-  return !(props.hiddenNavigator || sideBar.value)
+  if (routeHidden.value) return true
+  return !sideBar.value
 })
 
 const navElementStatus = ref(() => {
@@ -50,57 +46,59 @@ const pageName = computed(() => useRoute().name)
 
 <template>
   <div class="app-container">
-    <div class="header-bar">
-      <div id="toggleNavigator">
-        <CreateButton
-          @emitEvent="toggleNavigator"
-          :buttons="[
-            {
-              icon: 'menu',
-              class: 'symbolic no-padding no-scalling',
-              id: 'toggleNavigatorButton',
-              type: '',
-            },
-          ]"
-        />
-      </div>
-      <div class="search">
-        <div class="wrapper">
-          <CreateTextField
-            :fields="[
-              {
-                type: 'text',
-                name: 'globalSearch',
-                model: 'globalSearch',
-                placeholder: 'Pesquisar por...',
-                icon: 'search',
-                style: {
-                  rounded: true,
-                  border: true,
-                  // color: 'sameText',
+    <div class="app-header">
+      <div class="header-bar">
+        <div class="util">
+          <div id="toggleNavigator">
+            <CreateButton
+              @emitEvent="toggleNavigator"
+              :buttons="[
+                {
+                  icon: 'menu',
+                  class: 'symbolic no-padding no-scalling',
+                  id: 'toggleNavigatorButton',
+                  type: '',
                 },
-              },
-            ]"
-          />
+              ]"
+            />
+          </div>
+          <div class="search">
+            <div class="wrapper">
+              <CreateTextField
+                :fields="[
+                  {
+                    type: 'text',
+                    name: 'globalSearch',
+                    model: 'globalSearch',
+                    placeholder: 'Pesquisar por...',
+                    icon: 'search',
+                    style: ['minimal', 'border', 'background'],
+                  },
+                ]"
+              />
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="notifications">
-        <CreateButton
-          :buttons="[
-            {
-              position: 'right',
-              icon: 'notifications',
-              class: 'symbolic no-padding no-scalling no-brightness',
-              id: 'notificationsButton',
-              type: '',
-              action: {
-                name: '--',
-                value: '--',
-                type: '--',
-              },
-            },
-          ]"
-        />
+        <div class="notifications">
+          <div class="notification-wrapper">
+            <CreateButton
+              :buttons="[
+                {
+                  position: 'right',
+                  icon: 'notifications',
+                  class: 'symbolic no-padding no-scalling no-brightness',
+                  id: 'notificationsButton',
+                  type: '',
+                  action: {
+                    name: '--',
+                    value: '--',
+                    type: '--',
+                  },
+                },
+              ]"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -133,16 +131,26 @@ const pageName = computed(() => useRoute().name)
   height: 100%;
   width: 100%;
   position: relative;
-  background-color: var(--bg);
+  background: var(--bg2);
+}
+
+.app-header {
+  grid-row: 1;
 }
 
 .header-bar {
   display: flex;
   align-items: center;
   padding: 0.6rem;
-  grid-row: 1;
   border-bottom: 1px solid var(--border);
   box-shadow: 0 4px 6px var(--primary-shadow);
+  position: relative;
+  border-bottom: 2px solid var(--border);
+}
+
+.util {
+  display: flex;
+  justify-content: space-between;
 }
 
 .header-bar .search {
@@ -150,6 +158,10 @@ const pageName = computed(() => useRoute().name)
   flex-grow: 1;
   justify-content: center;
   align-items: center;
+  position: absolute;
+  left: 50%;
+  right: 50%;
+  top: 0.3rem;
 }
 
 .header-bar .search .wrapper {
@@ -172,40 +184,97 @@ const pageName = computed(() => useRoute().name)
 
 .navigator-container {
   display: grid;
+  position: sticky;
   grid-column: 1;
   z-index: 2;
-  background-color: var(--bg);
 }
 
 .view-app {
-  padding: 30px;
+  /* padding: 15px; */
+  /* padding: 1rem; */
+  padding: 1rem 0 1rem 1rem;
   overflow-y: auto;
   flex-grow: 1;
   z-index: 1;
   grid-column: 2;
+  /* border-radius: 24px; */
+  background: var(--bg);
 }
 
 .view-app.no-rounded {
-  border-radius: 0;
+  border-radius: 0 0 0 0 !important;
+  /* border-top-left-radius: 0 !important; */
 }
+
+.notifications {
+  margin-left: auto;
+}
+
 @media (max-width: 600px) {
   .app-container {
-    background-color: var(--bg);
+    grid-template-rows: 1fr auto;
+  }
+
+  .app-header {
+    grid-row: 2;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    max-height: 70px;
+    padding: 8px 16px;
+    border-radius: 24px;
+  }
+
+  .header-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    border-radius: 24px;
+    background: var(--secondary);
+    backdrop-filter: var(--main-blur) var(--main-saturate);
+    -webkit-backdrop-filter: var(--main-blur) var(--main-saturate);
+    border: 2px solid var(--border);
+  }
+
+  .header-bar .util {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+
+  .header-bar .notifications .notification-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .search {
+    margin-right: auto;
+    flex-grow: 0 !important;
+    z-index: 2;
+    position: static !important;
+  }
+
+  .main-content {
+    grid-row: 1;
+    z-index: 1;
   }
 
   .view-app {
     margin: 0;
-    border-radius: 0;
+    border-radius: 0 !important;
     padding: 5px;
-  }
-
-  .header-bar {
-    border-radius: 0 0 20px 20px;
-    background-color: var(--bg2);
+    border-left: none;
   }
 
   .header-bar #toggleNavigator {
-    margin-left: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    margin: 0;
   }
 }
 </style>

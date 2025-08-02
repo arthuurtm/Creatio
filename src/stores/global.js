@@ -1,21 +1,5 @@
 import { defineStore } from 'pinia'
-
-export const useGlobalStore = defineStore('global', {
-  state: () => ({
-    inputData: {},
-  }),
-  getters: {
-    getInputData: (state) => {
-      console.log('getInputData', state.inputData)
-      return state.inputData
-    },
-  },
-  actions: {
-    updateInputData(field, value) {
-      this.inputData[field] = value
-    },
-  },
-})
+import { markRaw } from 'vue'
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
@@ -44,7 +28,7 @@ export const useSettingsStore = defineStore('settings', {
 export const useAppDynamicDialog = defineStore('appDynamicDialog', {
   state: () => ({
     isVisible: false,
-    component: '',
+    component: null,
     title: 'Diálogo',
     data: {},
     history: [],
@@ -91,7 +75,7 @@ export const useAppDynamicDialog = defineStore('appDynamicDialog', {
         this.title = data.title
       }
 
-      this.component = component
+      this.component = markRaw(component)
 
       if (isFirst) {
         this.show()

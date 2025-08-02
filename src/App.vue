@@ -4,7 +4,7 @@ import ComponentDialog from '@/components/ComponentDialog.vue'
 import ComponentGamepad from '@/components/ComponentGamepad.vue'
 import { computed } from 'vue'
 import { useAppDynamicDialog } from '@/stores/global'
-import { appTheme } from '@/functions/functions'
+import { appTheme } from '@/functions'
 
 appTheme()
 const component = computed(() => useAppDynamicDialog().component)

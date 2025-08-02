@@ -10,16 +10,12 @@ import * as UAParser from 'ua-parser-js'
 import rateLimit from 'express-rate-limit'
 import fs from 'fs'
 import jwt from 'jsonwebtoken'
-import https from 'https'
 import validator from 'validator'
 import dotenv from 'dotenv'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import { OAuth2Client } from 'google-auth-library'
-
-// Corrige __dirname para ES Modules
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+import multer from 'multer'
+import * as Minio from 'minio'
 
 // Carrega variáveis de ambiente
 dotenv.config({ path: '../.env' })
@@ -27,13 +23,48 @@ dotenv.config({ path: '../.env' })
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args))
 
 const corsOptions = {
-  origin: ['http://localhost:5173', 'https://6021-138-0-82-55.ngrok-free.app'],
+  origin: ['http://localhost:5173'],
   credentials: true,
 }
 const app = express()
 app.use(cors(corsOptions))
 app.use(express.json())
 app.use(cookieParser())
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, '/tmp')
+  },
+  filename: (req, file, cb) => {
+    // para evitar conflito, cria um nome único, ex: timestamp + nome original
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+    const ext = path.extname(file.originalname)
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext)
+  },
+})
+
+const upload = multer({ storage })
+const bucketName = 'public'
+
+const minioClient = new Minio.Client({
+  endPoint: 'localhost',
+  port: 9000,
+  useSSL: process.env.NODE_ENV === 'production',
+  accessKey: process.env.MINIO_USER,
+  secretKey: process.env.MINIO_PASSWORD,
+})
+
+minioClient.bucketExists(bucketName, (err, exists) => {
+  if (err) return console.error(err)
+  if (!exists) {
+    minioClient.makeBucket(bucketName, 'us-east-1', (err) => {
+      if (err) return console.error('Erro ao criar bucket:', err)
+      console.log('Bucket criado com sucesso!')
+    })
+  } else {
+    console.log('Bucket já existe.')
+  }
+})
 
 const sequelize = new Sequelize(
   process.env.DATABASE,
@@ -59,7 +90,6 @@ const User = sequelize.define(
     username: { type: DataTypes.STRING, unique: true, allowNull: false },
     nickname: { type: DataTypes.STRING, allowNull: true },
     passwordHash: { type: DataTypes.STRING, allowNull: false },
-    gToken: { type: DataTypes.STRING, unique: true, allowNull: true },
     profilePic: { type: DataTypes.TEXT, allowNull: true },
   },
   { timestamps: true },
@@ -91,6 +121,7 @@ const Game = sequelize.define(
     title: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.TEXT },
     genre: { type: DataTypes.STRING },
+    banner: { type: DataTypes.TEXT },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -379,11 +410,85 @@ function checkIfUserIsValid(input) {
   }
 }
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: 'Muitas tentativas de login. Tente novamente mais tarde.',
-})
+function reqLimiter(max, timeout, message) {
+  max = max || 3
+  let windowMs = 60 * 60 * 1000 * timeout
+  message = message || 'Tente novamente mais tarde'
+  return rateLimit({
+    windowMs,
+    max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+      res.status(429).json({
+        success: false,
+        message,
+        retryAfter: Math.ceil(windowMs / 1000), // opcional
+      })
+    },
+  })
+}
+
+async function verifyAndRenewSession(req, res) {
+  try {
+    let { accessToken, refreshToken } = req.cookies
+
+    if (!accessToken) {
+      if (!refreshToken) {
+        return null
+      }
+
+      const tokens = await updateUserSession(refreshToken)
+      accessToken = tokens.accessToken
+      refreshToken = tokens.refreshToken
+
+      if (!accessToken || !refreshToken) {
+        return null
+      }
+
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 15 * 60 * 1000,
+      })
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+    }
+
+    const session = await Session.findOne({ where: { accessToken }, include: [{ model: User }] })
+    const user = session ? session.User : null
+
+    return { user, accessToken, refreshToken }
+  } catch (err) {
+    console.error('Erro ao processar função verifyAndRenewSession: ', err)
+    return null
+  }
+}
+
+// middleware de autenticação com renovação de token
+async function isAuthenticated(req, res, next) {
+  const session = await verifyAndRenewSession(req, res)
+
+  if (!session || !session.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Sessão inválida ou expirada',
+      details: { errCode: 'AUTH_EXPIRED' },
+    })
+  }
+
+  const secureData = { ...session.user.get({ plain: true }) }
+  delete secureData.passwordHash
+  req.user = secureData
+  req.accessToken = session.accessToken
+  req.refreshToken = session.refreshToken
+  next()
+}
 
 // Efetua o login do usuário
 app.post('/setLogin', async (req, res) => {
@@ -391,7 +496,6 @@ app.post('/setLogin', async (req, res) => {
   const userAgent = req.headers['user-agent']
   const parser = new UAParser.UAParser()
   const device = parser.setUA(userAgent).getResult()
-  // const isMobile = req.headers['sec-ch-ua-mobile'] === '?1';
 
   try {
     let user = null
@@ -459,15 +563,12 @@ app.delete('/logout', (req, res) => {
   res.status(200).json({ message: 'Usuário deslogado com sucesso' })
 })
 
-app.delete('/logoutAll', async (req, res) => {
+app.delete('/logoutAll', isAuthenticated, async (req, res) => {
   try {
-    const accessToken = req.cookies?.accessToken
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_SECRET)
-
     const sessions = await Session.findAll({
       where: {
-        userId: decoded.userId,
-        accessToken: { [Op.ne]: accessToken },
+        userId: req.user.id,
+        accessToken: { [Op.ne]: req.accessToken },
       },
     })
 
@@ -478,6 +579,11 @@ app.delete('/logoutAll', async (req, res) => {
     console.error('Erro ao processar solicitação de logoutAll:', error)
     res.status(500).json({ message: 'Erro interno no servidor' })
   }
+})
+
+// Busca por TODOS os dados do usuário
+app.get('/getUserData', isAuthenticated, async (req, res) => {
+  res.status(200).json(req.user)
 })
 
 // Buscar dados básicos do usuário
@@ -516,48 +622,6 @@ app.get('/getUserBasics', async (req, res) => {
   } catch (error) {
     console.error('Erro ao processar getUserBasics:', error)
     res.status(500).json({ message: 'Erro interno no servidor' })
-  }
-})
-
-// Verificar se a sessão é válida
-app.get('/getUserSession', async (req, res) => {
-  try {
-    let { accessToken, refreshToken } = req.cookies
-
-    if (!accessToken) {
-      if (!refreshToken) {
-        return res.status(401).json({ message: 'Nenhum token disponível.' })
-      }
-
-      ;({ accessToken, refreshToken } = await updateUserSession(refreshToken))
-
-      res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        maxAge: 15 * 60 * 1000, // 15 minutos
-      })
-
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
-      })
-    }
-
-    // Se já tem accessToken, verifica normalmente
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_SECRET)
-    console.log('decoded = ', decoded)
-    const user = await User.findByPk(decoded.userId)
-    if (!user) {
-      return res.status(401).json({ message: 'Usuário não encontrado.' })
-    }
-
-    res.status(200).json({ message: 'Sessão válida.' })
-  } catch (error) {
-    console.error('Erro ao processar solicitação de getUserSession:', error)
-    res.status(500).json({ message: 'Erro interno do servidor.' })
   }
 })
 
@@ -650,8 +714,8 @@ app.post('/setUser', async (req, res) => {
 })
 
 // Lista todas as sessões de um usuário
-app.post('/getAllUserSessions', async (req, res) => {
-  const { userId } = req.body
+app.get('/getAllUserSessions', isAuthenticated, async (req, res) => {
+  const userId = req.user.id
 
   try {
     const sessions = await Session.findAll({ where: { userId } })
@@ -668,7 +732,7 @@ app.post('/getAllUserSessions', async (req, res) => {
 })
 
 // Deleta uma sessão específica, desconectando a mesma
-app.delete('/deleteSession', async (req, res) => {
+app.delete('/deleteSession', isAuthenticated, async (req, res) => {
   const { sessionId } = req.body
 
   try {
@@ -688,8 +752,11 @@ app.delete('/deleteSession', async (req, res) => {
 
 // Retornar todos os jogos disponíveis no site
 app.get('/getGames', async (req, res) => {
+  const { filters } = req.query
   try {
-    const games = await Game.findAll()
+    const games = await Game.findAll({
+      where: filters ? JSON.parse(filters) : {},
+    })
     if (games.length === 0) return res.status(404).json({ message: 'Nenhum jogo encontrado' })
     res.status(200).json(games)
   } catch (error) {
@@ -698,24 +765,14 @@ app.get('/getGames', async (req, res) => {
   }
 })
 
-app.post('/setGame', async (req, res) => {
+app.post('/setGame', reqLimiter(1, 12), isAuthenticated, async (req, res) => {
   try {
-    const accessToken = req.cookies?.accessToken
     const { title, description } = req.body
-
-    const session = await Session.findOne({
-      where: { accessToken },
-      include: [{ model: User, attributes: ['id'] }],
-    })
-
-    if (!session || !session.User) {
-      res.status(404).json({ message: 'Sessão não encontrada ou usuário inválido.' })
-    }
 
     const game = await Game.create({
       title,
       description,
-      userId: session.User.id,
+      userId: req.user.id,
     })
 
     res.status(201).json({ message: 'Jogo criado com sucesso', game })
@@ -724,6 +781,7 @@ app.post('/setGame', async (req, res) => {
     res.status(500).json({ message: 'Erro interno no servidor' })
   }
 })
+
 // Gera um código de verificação e envia um e-mail para resetar a senha
 app.post('/setResetPassCode', async (req, res) => {
   const { userId } = req.body
@@ -816,51 +874,56 @@ app.post('/setUserPassword', async (req, res) => {
   }
 })
 
-// Autentica o usuário com a conta do Discord
-app.post('/setDiscord', async (req, res) => {
-  const { code } = req.body
-
-  try {
-    const params = new URLSearchParams({
-      client_id: process.env.VITE_DISCORD_CLIENT_ID,
-      client_secret: process.env.VITE_DISCORD_CLIENT_SECRET,
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: 'http://localhost:5173/account/connect/discord',
-      scope: 'identify email',
-    })
-
-    const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params,
-    })
-
-    const tokenData = await tokenRes.json()
-    console.log(tokenData)
-    if (!tokenRes.ok) {
-      return res.status(400).json({ message: tokenData })
-    }
-
-    const userRes = await fetch('https://discord.com/api/users/@me', {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${tokenData.access_token}` },
-    })
-
-    const userData = await userRes.json()
-    console.log(userData)
-    res.json(userData)
-  } catch (error) {
-    console.error('Erro ao processar solicitação de setDiscord: ', error)
-    res.status(500).json({ message: 'Erro ao autenticar com o Discord' })
+app.post('/setFileUpload', isAuthenticated, upload.any(), async (req, res) => {
+  const files = req.files || []
+  if (!files.length) {
+    return res.status(400).send({ message: 'Nenhum arquivo enviado.' })
   }
+
+  const body = req.body || {}
+
+  const uploadResults = []
+
+  for (const file of files) {
+    const minioFileName = uuidv4()
+    try {
+      await new Promise((resolve, reject) => {
+        minioClient.fPutObject(
+          bucketName,
+          minioFileName,
+          file.path, // caminho do arquivo temporário em /tmp
+          { 'Content-Type': file.mimetype },
+          (err, etag) => {
+            // Apaga o arquivo temporário depois do upload
+            fs.unlink(file.path, (unlinkErr) => {
+              if (unlinkErr) console.error('Erro ao apagar arquivo temporário:', unlinkErr)
+            })
+
+            if (err) return reject(err)
+            resolve(etag)
+          },
+        )
+      })
+
+      await Game.update({ banner: minioFileName }, { where: { id: body.gameId } })
+      uploadResults.push({
+        file: file.originalname,
+        status: 'sucesso',
+      })
+    } catch (err) {
+      console.error(`Erro ao enviar ${file.originalname}:`, err)
+      uploadResults.push({
+        file: file.originalname,
+        status: 'erro',
+        erro: err.message,
+      })
+    }
+  }
+
+  res.send({ message: 'Upload concluído.', resultados: uploadResults })
 })
 
 const port = 3000
 app.listen(port, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${port}`)
 })
-// https.createServer(httpsOptions, app).listen(port, () => {
-//   console.log('.::: DATABASE BACKEND :::.');
-//   console.log(`Servidor rodando na porta ${port}\n`)
-// });

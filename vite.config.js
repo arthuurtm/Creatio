@@ -7,7 +7,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), vueJsx() /*vueDevTools()*/],
+  plugins: [vue(), vueJsx(), vueDevTools()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -39,7 +39,7 @@ export default defineConfig({
 
       // API de Leitura e Escrita de Arquivos
       '/api/file': {
-        target: 'http://localhost:3003',
+        target: 'http://localhost:9000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/file/, ''),
       },

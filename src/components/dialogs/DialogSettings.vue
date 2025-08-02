@@ -2,24 +2,35 @@
   <div class="container">
     <nav class="nav">
       <ul>
-        <li @click="handleNavPage(1, 'Geral')" :id="1">
-          <a>
-            <span class="material-symbols-outlined notranslate">settings</span>
-            <p>Geral</p>
-          </a>
-        </li>
-        <li @click="handleNavPage(2, 'Conta')" v-if="isAuth" :id="2">
-          <a>
-            <span class="material-symbols-outlined notranslate">account_circle</span>
-            <p>Conta</p>
-          </a>
-        </li>
-        <li @click="handleNavPage(3, 'Segurança')" v-if="isAuth" :id="3">
-          <a>
-            <span class="material-symbols-outlined notranslate">Security</span>
-            <p>Segurança</p>
-          </a>
-        </li>
+        <CreateButton
+          :globalStyle="'justify-start'"
+          :rules="['noGroup']"
+          :buttons="[
+            {
+              id: 1,
+              text: 'Geral',
+              icon: 'settings',
+              class: 'symbolic',
+              action: () => handleNavPage(1, 'Geral'),
+            },
+            {
+              id: 2,
+              text: 'Conta',
+              icon: 'account_circle',
+              class: 'symbolic',
+              action: () => handleNavPage(2, 'Conta'),
+              rules: [!isAuth && 'hide'],
+            },
+            {
+              id: 3,
+              text: 'Segurança',
+              icon: 'security',
+              class: 'symbolic',
+              action: () => handleNavPage(3, 'Segurança'),
+              rules: [!isAuth && 'hide'],
+            },
+          ]"
+        />
       </ul>
     </nav>
     <div class="navPage">
@@ -27,20 +38,23 @@
         <div class="pageContainer" :class="actualPage == 1 && 'active'">
           <ul>
             <li>
-              <p>Tema Escuro</p>
+              <p>Tema escuro</p>
               <label class="switch">
-                <input type="checkbox" @change="toggleTheme" v-model="isDarkMode" />
+                <input type="checkbox" @change="toggleThemeColor" v-model="isDarkMode" />
                 <span class="slider"></span>
               </label>
             </li>
             <li>
-              <p>Menu Lateral</p>
+              <p>Tema moderno</p>
               <label class="switch">
-                <input
-                  type="checkbox"
-                  @change="toggleSideBar"
-                  v-model="store.settings.getSideBar"
-                />
+                <input type="checkbox" @change="toggleThemeGlassy" v-model="isGlassy" />
+                <span class="slider"></span>
+              </label>
+            </li>
+            <li>
+              <p>Menu lateral</p>
+              <label class="switch">
+                <input type="checkbox" @change="toggleSideBar" v-model="settings.getSideBar" />
                 <span class="slider"></span>
               </label>
             </li>
@@ -50,7 +64,7 @@
         <div class="pageContainer" :class="actualPage == 2 && 'active'">
           <ul>
             <li>
-              <p>Foto de Perfil</p>
+              <p>Foto de perfil</p>
               <a>
                 <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
               </a>
@@ -104,6 +118,10 @@
             @emitEvent="disconnectAllDevices"
           />
           <ul class="devices">
+            <li class="device">
+              <div><b>Nome do dispositivo</b></div>
+              <p><b>Online</b></p>
+            </li>
             <li v-for="(device, index) in connectedDevices" :key="index" class="device">
               <div>
                 <div
@@ -115,15 +133,17 @@
                 <div v-else class="material-symbols-outlined notranslate">computer</div>
                 <p>
                   {{ device.deviceNavigator }} no {{ device.deviceOS }}
-                  {{ itsMe(device) && '(Você)' }}
+                  <!-- {{ itsMe(device) && '(Você)' }} -->
                 </p>
               </div>
               <p>
                 {{
-                  new Date(device.updatedAt).toLocaleTimeString(undefined, {
+                  new Date(device.updatedAt).toLocaleString(undefined, {
                     hour: '2-digit',
                     minute: '2-digit',
-                    date: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
                   })
                 }}
               </p>
@@ -136,26 +156,31 @@
 </template>
 
 <script setup>
-import { appTheme, get, post } from '@/functions/functions'
+import { appTheme, get } from '@/functions'
 import { logoutAll } from '@/functions/auth'
-import { computed, ref, onMounted, inject } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import CreateButton from '../elements/CreateButton.vue'
+import { useAppDynamicDialog, useUserStore, useSettingsStore } from '@/stores'
+import DialogMessage from './DialogMessage.vue'
 
 // Stores e router
 const router = useRouter()
-const store = inject('stores')
-const emit = defineEmits(['close'])
+const user = useUserStore()
+const dialog = useAppDynamicDialog()
+const settings = useSettingsStore()
 
-const isAuth = computed(() => store.user.getIsAuth)
-const userId = computed(() => store.user.getId)
-const profilePicture = computed(() => store.user.getProfilePicture)
+const isAuth = computed(() => user.getIsAuth)
+const userId = computed(() => user.getId)
+const profilePicture = computed(() => user.getProfilePicture)
 const selectedOption = ref(null)
 const actualPage = ref(1)
 const isDarkMode = ref(false)
+const isGlassy = ref(false)
 const isGoogleConnected = ref(false)
 const isDiscordConnected = ref(false)
 const userData = ref({})
-const isSideBarEnable = computed(() => store.settings.getSideBar)
+const isSideBarEnable = computed(() => settings.getSideBar)
 
 function handleNavPage(value, name) {
   actualPage.value = value
@@ -165,12 +190,16 @@ function handleNavPage(value, name) {
 
 function handleAction() {}
 
-function toggleTheme() {
+function toggleThemeColor() {
   appTheme(true)
 }
 
+function toggleThemeGlassy() {
+  appTheme(false, true)
+}
+
 function toggleSideBar() {
-  store.settings.setSideBar(!isSideBarEnable.value)
+  settings.setSideBar(!isSideBarEnable.value)
 }
 
 function handleExtLink(name, params) {
@@ -179,31 +208,25 @@ function handleExtLink(name, params) {
     name,
     params,
   })
-  close()
-}
-
-function close() {
-  emit('close', true)
+  dialog.close()
 }
 
 function disconnectAllDevices() {
-  store.dialog.setDialog('DialogMessage', {
+  dialog.setDialog(DialogMessage, {
     title: 'Desconectar outras sessões',
     message: 'Você tem certeza que deseja desconectar todas as outras sessões?',
-    btn1: {
-      text: 'Não',
-      action: () => {
-        close()
+    buttons: [
+      {
+        text: 'Não',
       },
-    },
-    btn2: {
-      text: 'Sim',
-      class: 'confirm',
-      action: () => {
-        close()
-        logoutAll()
+      {
+        text: 'Sim',
+        class: 'confirm',
+        action: () => {
+          logoutAll()
+        },
       },
-    },
+    ],
   })
 }
 
@@ -219,6 +242,7 @@ const connectedDevices = ref([])
 onMounted(async () => {
   let theme = appTheme()
   isDarkMode.value = theme.isDark == true ? true : false
+  isGlassy.value = theme.isGlassy == true ? true : false
 
   const gToken = get({ type: 'database', route: 'getUserBasics' })
   if (gToken.ok) {
@@ -229,15 +253,7 @@ onMounted(async () => {
     }
   }
 
-  let result = await post(
-    {
-      type: 'database',
-      route: 'getAllUserSessions',
-    },
-    {
-      userId: userId.value,
-    },
-  )
+  let result = await get({ type: 'database', route: 'getAllUserSessions' })
   connectedDevices.value = result.details
 })
 </script>
@@ -248,11 +264,19 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: 0.5fr 2fr;
   max-height: 60vh;
+  overflow-x: hidden;
 }
 
 .nav {
   grid-column: 1;
   padding: 15px 20px;
+  border-right: 1px solid var(--border);
+}
+
+.nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 ul {
@@ -358,6 +382,7 @@ ul.devices li > div {
 
 ul.devices li > p {
   font-size: 16px;
+  text-align: end;
 }
 
 @media (max-width: 600px) {
@@ -388,6 +413,11 @@ ul.devices li > p {
     bottom: 0;
     width: 100%;
     background-color: var(--bg);
+  }
+
+  .nav ul {
+    gap: 0;
+    flex-direction: row;
   }
 
   ul {

@@ -1,7 +1,7 @@
 import express from 'express'
 import http from 'http'
 import { WebSocketServer } from 'ws'
-import * as request from '../src/functions/functions.js'
+import * as request from '../src/functions/index.js'
 
 const app = express()
 const server = http.createServer(app)
