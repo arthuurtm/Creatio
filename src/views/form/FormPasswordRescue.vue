@@ -1,5 +1,5 @@
 <template>
-  <AppFormPage :title="'Alterar senha'">
+  <AppFormPage :title="'Alterar senha'" :currentStep="currentStep">
     <template #fields>
       <template v-if="currentStep === 1">
         <CreateTextField

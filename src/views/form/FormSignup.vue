@@ -1,5 +1,5 @@
 <template>
-  <AppFormPage :title="'Crie sua conta'">
+  <AppFormPage :title="'Crie sua conta'" :currentStep="currentStep">
     <template #fields>
       <template v-if="currentStep === 1">
         <CreateTextField
