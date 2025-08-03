@@ -5,7 +5,6 @@ import App from './App.vue'
 import router from './router'
 
 import pinia from './plugins/pinia'
-import elements from './plugins/elements'
 import { showToast } from './plugins/toast'
 
 import * as globalFunc from './functions'
@@ -20,7 +19,6 @@ const app = createApp(App)
 app.use(router)
 app.use(pinia)
 app.use(Toast)
-app.use(elements)
 
 // Configura as funções globais
 app.config.globalProperties.$globalFunc = globalFunc
