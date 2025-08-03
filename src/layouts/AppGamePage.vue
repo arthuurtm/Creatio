@@ -17,5 +17,51 @@ const actualPage = ref(0)
 </script>
 
 <style scoped>
-@import url('/src/assets/css/components/c-createPage.css');
+#helpButton {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 10;
+}
+
+.main-container {
+  /* padding: 14px; */
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.steps {
+  height: 100%;
+  width: 100%;
+}
+
+/* Lista de jogos */
+.game-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+/* Créditos */
+.creditos-lista {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.creditos-lista input {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ddd;
+  flex: 1;
+}
+
+/* Preview */
+.step-preview img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
 </style>
