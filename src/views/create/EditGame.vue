@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import ComponentCreateGamePage from '@/layouts/AppGamePage.vue'
 import CreateContextMenu from '@/components/elements/CreateContextMenu.vue'
 
 const contextMenuRef = ref(null)
@@ -40,34 +39,32 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <ComponentCreateGamePage>
-    <div class="page-wrapper">
-      <div class="checkerboard"></div>
+  <div class="page-wrapper">
+    <div class="checkerboard"></div>
 
-      <div style="position: absolute; bottom: 1rem; right: 1rem">
-        <CreateButton
-          :buttons="[{ icon: 'help', class: 'symbolic no-padding' }]"
-          @click="
-            (e) =>
-              openContextMenu(
-                [
-                  {
-                    items: [
-                      {
-                        text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
-                      },
-                    ],
-                  },
-                ],
-                e,
-              )
-          "
-        />
-      </div>
-
-      <CreateContextMenu ref="contextMenuRef" />
+    <div style="position: absolute; bottom: 1rem; right: 1rem">
+      <CreateButton
+        :buttons="[{ icon: 'help', class: 'symbolic no-padding' }]"
+        @click="
+          (e) =>
+            openContextMenu(
+              [
+                {
+                  items: [
+                    {
+                      text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
+                    },
+                  ],
+                },
+              ],
+              e,
+            )
+        "
+      />
     </div>
-  </ComponentCreateGamePage>
+
+    <CreateContextMenu ref="contextMenuRef" />
+  </div>
 </template>
 
 <style scoped>

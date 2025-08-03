@@ -1,5 +1,5 @@
 <template>
-  <LayoutBase :showHeader="true" :navigatorDefaultHidden="false" />
+  <LayoutBase :showHeader="false" :navigatorDefaultHidden="true" />
 </template>
 
 <script setup>
