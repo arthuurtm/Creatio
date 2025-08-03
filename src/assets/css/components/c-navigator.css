@@ -121,9 +121,18 @@ ul {
     bottom: 70px;
   }
 
+  .nav.active.hidden {
+    bottom: 0px;
+  }
+
   .nav.minimized {
     transform: translateY(100%);
     margin: 0;
+    width: auto;
+  }
+
+  .nav.minimized.hidden {
+    transform: translateY(95%);
   }
 
   .nav {
@@ -185,10 +194,6 @@ ul {
     flex-direction: column;
     padding: 20px;
     margin-top: 0;
-  }
-
-  .nav.minimized {
-    width: auto;
   }
 
   .nav #user-info {

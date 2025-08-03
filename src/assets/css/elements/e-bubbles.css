@@ -22,5 +22,5 @@
   --_p: 100%;
   border-bottom-right-radius: 0 0;
   place-self: end;
-  background: var(--discovery-play-button) border-box;
+  background: var(--primary-back) border-box;
 }

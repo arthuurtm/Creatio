@@ -260,15 +260,13 @@ onMounted(async () => {
 
 <style scoped>
 .container {
-  grid-row: 2;
-  display: grid;
-  grid-template-columns: 0.5fr 2fr;
+  display: flex;
   max-height: 60vh;
   overflow-x: hidden;
+  flex-direction: row;
 }
 
 .nav {
-  grid-column: 1;
   padding: 15px 20px;
   border-right: 1px solid var(--border);
 }
@@ -308,7 +306,6 @@ ul {
 }
 
 .navPage {
-  grid-column: 2;
   height: auto;
   padding: 15px;
   color: var(--text);
@@ -316,6 +313,7 @@ ul {
   display: flex;
   justify-content: center;
   overflow-y: auto;
+  width: -webkit-fill-available;
   /* border-left: 1px solid var(--border); */
 }
 
@@ -385,29 +383,29 @@ ul.devices li > p {
   text-align: end;
 }
 
+@media (min-width: 601px) {
+  .container {
+    min-width: 500px;
+  }
+}
+
 @media (max-width: 600px) {
   .container {
-    display: grid;
-    grid-template-rows: 1fr auto;
-    grid-template-columns: 1fr;
     margin-bottom: 10px;
     height: auto;
     interpolate-size: allow-keywords;
     overflow-y: auto;
     max-height: 100%;
+    flex-direction: column;
   }
 
   .navPage {
-    grid-column: 1;
-    grid-row: 1;
     max-height: 70vh;
   }
 
   .nav {
     border-right: none;
-    border-top: 1px solid var(--border);
-    grid-column: 1;
-    grid-row: 2;
+    border-bottom: 1px solid var(--border);
     padding: 0;
     /* position: absolute; */
     bottom: 0;
