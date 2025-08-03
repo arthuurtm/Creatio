@@ -2,15 +2,11 @@
    Theme with Semantic Map and Glassy Modifier
    File: theme.css
    ============================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('/src/assets/css/elements/e-_import.css');
 
 /* ---------- Base Theme Colors ---------- */
 :root {
   --form-field-text-hover: #1778fb;
-  --font: 'Noto Sans';
 
   /* Tema claro */
   --primary: #0b6a90;
@@ -105,7 +101,7 @@
 
   --primary-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
 
-  --main-shadow: rgba(31, 38, 135, 0.1)
+  --main-shadow: rgba(31, 38, 135, 0.1);
 }
 
 /* ---------- Glassy Modifier (Dark) ---------- */
