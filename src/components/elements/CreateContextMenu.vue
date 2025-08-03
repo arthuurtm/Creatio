@@ -14,7 +14,7 @@ async function openContextMenu(items = [], event = null) {
 
   const menuHeight = contextMenu.value?.offsetHeight || 150
   const menuWidth = contextMenu.value?.offsetWidth || 200
-  const buttonRect = event?.currentTarget.getBoundingClientRect()
+  const buttonRect = event?.currentTarget.getBoundingClientRect() || null
 
   // Se tem clique, usa posição do clique, senão centraliza no botão
   let top =

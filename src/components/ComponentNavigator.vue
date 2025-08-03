@@ -66,7 +66,7 @@
                 text: 'Criar',
                 icon: 'add_circle',
                 class: `controller-index  ${selectedPage === 'Create' && 'selected'}`,
-                action: () => navigateTo('Create'),
+                action: () => navigateTo('CreateHome'),
                 rules: [!isAuthenticated && 'hide'],
               },
               {
