@@ -6,7 +6,7 @@ const contextMenuVisible = ref(false)
 const contextMenuPos = ref({ top: 50, left: 50 })
 const contextMenu = ref(null)
 
-async function openContextMenu(items = [], event = []) {
+async function openContextMenu(items = [], event = null) {
   menuContextItems.value = items
   contextMenuVisible.value = true
 
@@ -14,26 +14,24 @@ async function openContextMenu(items = [], event = []) {
 
   const menuHeight = contextMenu.value?.offsetHeight || 150
   const menuWidth = contextMenu.value?.offsetWidth || 200
+  const buttonRect = event?.currentTarget.getBoundingClientRect()
 
-  let top = event.clientY
-  let left = event.clientX
+  // Se tem clique, usa posição do clique, senão centraliza no botão
+  let top =
+    event?.clientY !== undefined
+      ? event.clientY
+      : buttonRect.top + buttonRect.height / 2 - menuHeight / 2
 
-  const buttonRect = event.currentTarget.getBoundingClientRect()
-
-  if (top < buttonRect.top || top > buttonRect.bottom) {
-    top = buttonRect.bottom // força abaixo do botão se clique estiver fora
-  }
-  if (left < buttonRect.left || left > buttonRect.right) {
-    left = buttonRect.left // força alinhado à esquerda do botão
-  }
+  let left =
+    event?.clientX !== undefined
+      ? event.clientX
+      : buttonRect.left + buttonRect.width / 2 - menuWidth / 2
 
   // Ajuste para não sair da tela
-  if (top + menuHeight > window.innerHeight) {
-    top = window.innerHeight - menuHeight
-  }
-  if (left + menuWidth > window.innerWidth) {
-    left = window.innerWidth - menuWidth
-  }
+  if (top + menuHeight > window.innerHeight) top = window.innerHeight - menuHeight
+  if (left + menuWidth > window.innerWidth) left = window.innerWidth - menuWidth
+  if (top < 0) top = 0
+  if (left < 0) left = 0
 
   contextMenuPos.value = { top, left }
 }
