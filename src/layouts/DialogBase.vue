@@ -5,6 +5,10 @@ import { useAppDynamicDialog } from '@/stores'
 const props = defineProps({
   component: Object,
   title: String,
+  settings: {
+    Object,
+    default: () => [],
+  },
 })
 
 const dialog = useAppDynamicDialog()
@@ -76,7 +80,7 @@ const onTouchEnd = () => {
             <p>{{ props.title }}</p>
           </div>
           <div>
-            <button id="close" @click="close">
+            <button v-if="!settings.noCloseButton" id="close" @click="close">
               <span class="material-symbols-outlined notranslate">close</span>
             </button>
           </div>
