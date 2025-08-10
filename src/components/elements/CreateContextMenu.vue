@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, Transition } from 'vue'
 
 const menuContextItems = ref([])
 const contextMenuVisible = ref(false)
@@ -40,39 +40,49 @@ function closeContextMenu() {
   contextMenuVisible.value = false
 }
 
+function handleMenuItemClick(action) {
+  const result = action?.()
+  if (result !== 'keep-open') {
+    closeContextMenu()
+  }
+}
+
 defineExpose({
   openContextMenu,
 })
 </script>
 
 <template>
-  <div v-if="contextMenuVisible" class="dialog-shadow" @click="closeContextMenu">
-    <div
-      class="context-menu"
-      :style="{
-        top: contextMenuPos.top + 'px',
-        left: contextMenuPos.left + 'px',
-        position: 'absolute',
-      }"
-      @click.stop
-      ref="contextMenu"
-    >
-      <div v-for="(subMenu, sIndex) in menuContextItems" :key="sIndex" class="sub-menu">
-        <hr v-if="sIndex > 0" />
-        <ul v-for="(item, iIndex) in subMenu.items" :key="iIndex" class="sub-menu-items">
-          <CreateButton
-            :buttons="[
-              {
-                icon: item.icon,
-                text: item.text,
-                class: 'symbolic no-padding no-scalling',
-              },
-            ]"
-          />
-        </ul>
+  <Transition name="fastFade" mode="out-in">
+    <div v-if="contextMenuVisible" class="dialog-shadow" @click="closeContextMenu">
+      <div
+        class="context-menu"
+        :style="{
+          top: contextMenuPos.top + 'px',
+          left: contextMenuPos.left + 'px',
+          position: 'absolute',
+        }"
+        @click.stop
+        ref="contextMenu"
+      >
+        <div v-for="(subMenu, sIndex) in menuContextItems" :key="sIndex" class="sub-menu">
+          <hr v-if="sIndex > 0" />
+          <ul v-for="(item, iIndex) in subMenu.items" :key="iIndex" class="sub-menu-items">
+            <CreateButton
+              :buttons="[
+                {
+                  icon: item.icon,
+                  text: item.text,
+                  class: 'symbolic no-padding no-scalling',
+                  action: () => handleMenuItemClick(item.action),
+                },
+              ]"
+            />
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style scoped>
@@ -85,12 +95,16 @@ defineExpose({
 
 .context-menu {
   display: inline-flex;
-  background: var(--bg2);
+  /* Override transparency by using an opaque color */
+  background: rgb(40, 40, 60);
   border-radius: 24px;
   width: auto;
   padding: 0 1rem;
 }
-
+/* Remove transparency from --bg2 without changing its value */
+.context-menu {
+  background: linear-gradient(rgba(40, 40, 60, 1), rgba(40, 40, 60, 1)), var(--bg2);
+}
 .sub-menu-items {
   padding: 2px;
 }
