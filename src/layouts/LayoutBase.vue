@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSettingsStore } from '@/stores'
-import ComponentNavigator from '@/components/ComponentNavigator.vue'
+import ComponentNavigator from '@/components/modules/ComponentNavigator.vue'
 
 const props = defineProps({
   showHeader: { type: Boolean, default: false },

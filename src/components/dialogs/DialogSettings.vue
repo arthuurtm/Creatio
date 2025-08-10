@@ -51,13 +51,13 @@
                 <span class="slider"></span>
               </label>
             </li>
-            <li>
+            <!-- <li>
               <p>Menu lateral</p>
               <label class="switch">
                 <input type="checkbox" @change="toggleSideBar" v-model="settings.getSideBar" />
                 <span class="slider"></span>
               </label>
-            </li>
+            </li> -->
           </ul>
         </div>
 

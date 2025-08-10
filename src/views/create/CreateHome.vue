@@ -18,7 +18,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import ComponentLoadSessions from '@/components/ComponentLoadSessions.vue'
+import ComponentLoadSessions from '@/components/modules/ComponentLoadSessions.vue'
 import { post } from '@/functions'
 import { showToast } from '@/plugins/toast'
 import { useUserStore } from '@/stores'

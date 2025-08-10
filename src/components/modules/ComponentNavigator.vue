@@ -103,8 +103,8 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { logout } from '@/functions/auth'
-import DialogMessage from './dialogs/DialogMessage.vue'
-import DialogSettings from './dialogs/DialogSettings.vue'
+import DialogMessage from '@/components/dialogs/DialogMessage.vue'
+import DialogSettings from '@/components/dialogs/DialogSettings.vue'
 import { useUserStore, useAppDynamicDialog } from '@/stores'
 
 // Stores e Router
