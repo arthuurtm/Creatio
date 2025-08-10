@@ -1,25 +1,37 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
 import { useAppDynamicDialog } from '@/stores'
 
 const props = defineProps({
   component: Object,
   title: String,
   settings: {
-    Object,
-    default: () => [],
+    type: Object,
+    default: () => ({}),
+  },
+  componentProps: {
+    type: Object,
+    default: () => ({}),
+  },
+  x: {
+    type: Number,
+    default: null,
+  },
+  y: {
+    type: Number,
+    default: null,
   },
 })
 
 const dialog = useAppDynamicDialog()
 function close() {
-  if (!dialog.getIsHistory) showDialogAnim.value = false
+  if (!dialog.getIsHistory || !props.settings.alwaysVisible) showDialogAnim.value = false
   setTimeout(() => {
     dialog.close()
   }, 300)
 }
 
-const showDialog = computed(() => dialog.getIsVisible)
+const showDialog = computed(() => dialog.getIsVisible || props.settings.alwaysVisible)
 const showDialogAnim = ref(false)
 
 watch(showDialog, (newValue) => {
@@ -64,16 +76,73 @@ const onTouchEnd = () => {
     close()
   }
 }
+
+const position = ref({
+  x: props.x,
+  y: props.y,
+})
+let offsetX = 0
+let offsetY = 0
+
+function onDrag(event) {
+  event.preventDefault()
+
+  position.value.x = event.clientX - offsetX
+  position.value.y = event.clientY - offsetY
+}
+
+function stopDrag() {
+  window.removeEventListener('mousemove', onDrag)
+  window.removeEventListener('mouseup', stopDrag)
+}
+
+function handleMouseDown(event) {
+  if (event.button !== 0) return
+  if (event.target.closest('button')) {
+    return
+  }
+
+  offsetX = event.clientX - position.value.x
+  offsetY = event.clientY - position.value.y
+
+  window.addEventListener('mousemove', onDrag)
+  window.addEventListener('mouseup', stopDrag)
+}
+
+const dialogStyle = computed(() => {
+  if (props.x !== null && props.y !== null) {
+    return {
+      position: 'absolute',
+      left: `${position.value.x}px`,
+      top: `${position.value.y}px`,
+      transform: 'none',
+    }
+  }
+  return {}
+})
+
+onUnmounted(() => {
+  stopDrag()
+})
 </script>
 
 <template>
-  <div class="dialog-shadow" v-show="showDialog">
-    <div class="dialog-main" :id="[]" :class="[showDialogAnim && 'active']">
+  <div
+    :class="!settings.noFocusWindow ? 'dialog-shadow focus' : 'dialog-shadow disabled'"
+    v-show="showDialog"
+  >
+    <div
+      class="dialog-main"
+      :id="[]"
+      :class="[showDialogAnim && 'active', settings.noInterpolateSize && 'noInterpolateSize']"
+      :style="dialogStyle"
+    >
       <div
         class="title-bar"
         @touchstart="onTouchStart"
         @touchmove="onTouchMove"
         @touchend="onTouchEnd"
+        @mousedown="handleMouseDown"
       >
         <div class="options">
           <div class="title">
@@ -88,7 +157,12 @@ const onTouchEnd = () => {
       </div>
       <div class="content">
         <transition name="fastFade" mode="out-in">
-          <component :is="component" :key="props.component" @close="close" />
+          <component
+            :is="component"
+            :key="props.component"
+            @close="close"
+            v-bind="componentProps"
+          />
         </transition>
       </div>
     </div>
@@ -96,5 +170,101 @@ const onTouchEnd = () => {
 </template>
 
 <style scoped>
-@import url('/src/assets/css/components/c-dynamicDialog.css');
+.dialog-shadow.focus {
+  position: fixed;
+  display: flex;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--overlay-bg);
+  z-index: 5;
+}
+
+.dialog-shadow.disabled {
+  display: flex;
+}
+
+.dialog-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 50px auto;
+  border-radius: 24px;
+  background: var(--bg);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: var(--text);
+  transition:
+    color 0.5s ease,
+    background-color 0.5s ease,
+    border-color 0.5s ease,
+    height 0.3s ease,
+    transform 0.3s ease;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  height: 0;
+  width: auto;
+  interpolate-size: allow-keywords;
+}
+
+.dialog-main.noInterpolateSize {
+  height: auto;
+}
+
+.dialog-shadow.disabled .dialog-main {
+  background: var(--secondary);
+}
+
+.dialog-main.active {
+  height: auto;
+}
+
+.title-bar {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 10px;
+  position: relative;
+}
+
+.content {
+  display: block;
+}
+
+.title-bar .options {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.title-bar .options p {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.title-bar .options #close {
+  all: unset;
+  font-weight: bold;
+  cursor: pointer;
+  position: absolute;
+  right: 1em;
+  top: 1em;
+}
+
+@media (max-width: 600px) {
+  .dialog-main {
+    position: fixed;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 80%;
+  }
+}
 </style>
