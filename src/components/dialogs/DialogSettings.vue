@@ -160,7 +160,6 @@ import { appTheme, get } from '@/functions'
 import { logoutAll } from '@/functions/auth'
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import CreateButton from '../elements/CreateButton.vue'
 import { useAppDynamicDialog, useUserStore, useSettingsStore } from '@/stores'
 import DialogMessage from './DialogMessage.vue'
 

@@ -39,9 +39,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
-import CreateButton from './CreateButton.vue'
-import CreateAnchor from './CreateAnchor.vue'
+import { ref } from 'vue'
 
 const emits = defineEmits(['emitEvent', 'update:modelValue'])
 const props = defineProps({
