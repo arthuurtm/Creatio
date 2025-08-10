@@ -80,13 +80,11 @@ defineExpose({
       :title="node.id"
       :component="CreateNode"
       :component-props="node"
-      :settings="{
-        alwaysVisible: true,
-        noCloseButton: true,
-        noFocusWindow: true,
-        isDraggable: true,
-        noInterpolateSize: true,
-      }"
+      :always-visible="true"
+      :no-close-button="true"
+      :no-focus-window="true"
+      :is-draggable="true"
+      :no-interpolate-size="true"
       v-bind:x="node.x"
       v-bind:y="node.y"
     />

@@ -13,25 +13,24 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
-  x: {
-    type: Number,
-    default: null,
-  },
-  y: {
-    type: Number,
-    default: null,
-  },
+  x: { type: Number, default: null },
+  y: { type: Number, default: null },
+  alwaysVisible: { type: Boolean, default: false },
+  noCloseButton: { type: Boolean, default: false },
+  noFocusWindow: { type: Boolean, default: false },
+  isDraggable: { type: Boolean, default: false },
+  noInterpolateSize: { type: Boolean, default: false },
 })
 
 const dialog = useAppDynamicDialog()
 function close() {
-  if (!dialog.getIsHistory || !props.settings.alwaysVisible) showDialogAnim.value = false
+  if (!dialog.getIsHistory || !props.alwaysVisible) showDialogAnim.value = false
   setTimeout(() => {
     dialog.close()
   }, 300)
 }
 
-const showDialog = computed(() => dialog.getIsVisible || props.settings.alwaysVisible)
+const showDialog = computed(() => dialog.getIsVisible || props.alwaysVisible)
 const showDialogAnim = ref(false)
 
 watch(showDialog, (newValue) => {
@@ -42,79 +41,87 @@ watch(showDialog, (newValue) => {
   }
 })
 
-//Eventos de Toque
-let touchTimeout = null
-const startY = ref(0)
-const currentY = ref(0)
-const isDragging = ref(false)
+const touchHandlers = (() => {
+  let touchTimeout = null
+  const startY = ref(0)
+  const currentY = ref(0)
+  const isDragging = ref(false)
 
-const onTouchStart = (event) => {
-  startY.value = event.touches[0].clientY
-  isDragging.value = false
-  touchTimeout = setTimeout(() => {
-    isDragging.value = true
-  }, 100)
-}
-
-const onTouchMove = (event) => {
-  event.stopPropagation()
-  event.preventDefault()
-  if (!isDragging.value) return
-
-  currentY.value = event.touches[0].clientY
-}
-
-const onTouchEnd = () => {
-  if (!isDragging.value) return
-  isDragging.value = false
-  clearTimeout(touchTimeout)
-
-  const deltaY = currentY.value - startY.value
-  const activationThreshold = 50
-
-  if (deltaY > activationThreshold) {
-    close()
-  }
-}
-
-const position = ref({
-  x: props.x,
-  y: props.y,
-})
-let offsetX = 0
-let offsetY = 0
-
-function onDrag(event) {
-  event.preventDefault()
-
-  position.value.x = event.clientX - offsetX
-  position.value.y = event.clientY - offsetY
-}
-
-function stopDrag() {
-  window.removeEventListener('mousemove', onDrag)
-  window.removeEventListener('mouseup', stopDrag)
-}
-
-function handleMouseDown(event) {
-  if (event.button !== 0) return
-  if (event.target.closest('button')) {
-    return
+  const onTouchStart = (event) => {
+    startY.value = event.touches[0].clientY
+    isDragging.value = false
+    touchTimeout = setTimeout(() => {
+      isDragging.value = true
+    }, 100)
   }
 
-  offsetX = event.clientX - position.value.x
-  offsetY = event.clientY - position.value.y
+  const onTouchMove = (event) => {
+    event.stopPropagation()
+    event.preventDefault()
+    if (!isDragging.value) return
 
-  window.addEventListener('mousemove', onDrag)
-  window.addEventListener('mouseup', stopDrag)
-}
+    currentY.value = event.touches[0].clientY
+  }
+
+  const onTouchEnd = () => {
+    if (!isDragging.value) return
+    isDragging.value = false
+    clearTimeout(touchTimeout)
+
+    const deltaY = currentY.value - startY.value
+    const activationThreshold = 50
+
+    if (deltaY > activationThreshold) {
+      close()
+    }
+  }
+
+  return [onTouchStart, onTouchMove, onTouchEnd]
+})()
+
+const [onTouchStart, onTouchMove, onTouchEnd] = touchHandlers
+
+const dragHandlers = (() => {
+  const position = ref({
+    x: props.x,
+    y: props.y,
+  })
+  let offsetX = 0
+  let offsetY = 0
+
+  function onDrag(event) {
+    event.preventDefault()
+    position.value.x = event.clientX - offsetX
+    position.value.y = event.clientY - offsetY
+  }
+
+  function stopDrag() {
+    window.removeEventListener('mousemove', onDrag)
+    window.removeEventListener('mouseup', stopDrag)
+  }
+
+  function handleMouseDown(event) {
+    if (!props.isDraggable) return
+    if (event.button !== 0) return
+    if (event.target.closest('button')) return
+
+    offsetX = event.clientX - position.value.x
+    offsetY = event.clientY - position.value.y
+    window.addEventListener('mousemove', onDrag)
+    window.addEventListener('mouseup', stopDrag)
+  }
+
+  return [position, stopDrag, handleMouseDown]
+})()
+
+const [position, stopDrag, handleMouseDown] = dragHandlers
 
 const dialogStyle = computed(() => {
   if (props.x !== null && props.y !== null) {
     return {
       position: 'absolute',
-      left: `${position.value.x}px`,
-      top: `${position.value.y}px`,
+      left: position.value.x + 'px',
+      top: position.value.y + 'px',
       transform: 'none',
     }
   }
@@ -128,13 +135,13 @@ onUnmounted(() => {
 
 <template>
   <div
-    :class="!settings.noFocusWindow ? 'dialog-shadow focus' : 'dialog-shadow disabled'"
+    :class="!noFocusWindow ? 'dialog-shadow focus' : 'dialog-shadow disabled'"
     v-show="showDialog"
   >
     <div
       class="dialog-main"
       :id="[]"
-      :class="[showDialogAnim && 'active', settings.noInterpolateSize && 'noInterpolateSize']"
+      :class="[showDialogAnim && 'active', noInterpolateSize && 'noInterpolateSize']"
       :style="dialogStyle"
     >
       <div
@@ -149,7 +156,7 @@ onUnmounted(() => {
             <p>{{ props.title }}</p>
           </div>
           <div>
-            <button v-if="!settings.noCloseButton" id="close" @click="close">
+            <button v-if="!noCloseButton" id="close" @click="close">
               <span class="material-symbols-outlined notranslate">close</span>
             </button>
           </div>
@@ -158,11 +165,13 @@ onUnmounted(() => {
       <div class="content">
         <transition name="fastFade" mode="out-in">
           <component
+            v-if="component"
             :is="component"
             :key="props.component"
             @close="close"
             v-bind="componentProps"
           />
+          <slot v-else />
         </transition>
       </div>
     </div>
