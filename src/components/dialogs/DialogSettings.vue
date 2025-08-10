@@ -69,24 +69,6 @@
                 <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
               </a>
             </li>
-            <li>
-              <p>Conta Google</p>
-              <a v-if="isGoogleConnected">
-                <p>{{ userData.email }}</p>
-              </a>
-              <a v-else class="btn symbolic">
-                <span class="material-symbols-outlined notranslate"> arrow_outward </span>
-              </a>
-            </li>
-            <li>
-              <p>Conta Discord</p>
-              <a v-if="isDiscordConnected">
-                <p>{{ userData.email }}</p>
-              </a>
-              <a v-else class="btn symbolic">
-                <span class="material-symbols-outlined notranslate"> arrow_outward </span>
-              </a>
-            </li>
           </ul>
         </div>
 
@@ -94,15 +76,27 @@
           <ul>
             <li>
               <p>Alterar senha</p>
-              <a class="btn symbolic" @click="handleExtLink('PasswordRescue')">
-                <span class="material-symbols-outlined notranslate"> arrow_outward </span>
-              </a>
+              <CreateButton
+                :buttons="[
+                  {
+                    icon: 'arrow_outward',
+                    class: 'symbolic',
+                    action: () => handleExtLink('PasswordRescue'),
+                  },
+                ]"
+              />
             </li>
             <li>
               <p>Dispositivos conectados</p>
-              <a class="btn symbolic" @click="handleNavPage(3.1, 'Dispositivos')">
-                <span class="material-symbols-outlined notranslate"> visibility </span>
-              </a>
+              <CreateButton
+                :buttons="[
+                  {
+                    icon: 'visibility',
+                    class: 'symbolic',
+                    action: () => handleNavPage(3.1, 'Dispositivos'),
+                  },
+                ]"
+              />
             </li>
           </ul>
         </div>
@@ -126,11 +120,11 @@
               <div>
                 <div
                   v-if="device.deviceOS === 'Android' || device.deviceOS === 'iOS'"
-                  class="material-symbols-outlined notranslate"
+                  class="material-symbols-rounded notranslate"
                 >
                   smartphone
                 </div>
-                <div v-else class="material-symbols-outlined notranslate">computer</div>
+                <div v-else class="material-symbols-rounded notranslate">computer</div>
                 <p>
                   {{ device.deviceNavigator }} no {{ device.deviceOS }}
                   <!-- {{ itsMe(device) && '(Você)' }} -->

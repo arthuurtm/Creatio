@@ -3,7 +3,15 @@
     <label v-if="field.label" :for="field.model">{{ field.label }}</label>
 
     <div class="input" ref="inputWrapper" :class="[field.class, field.style]">
-      <div v-if="field.icon" class="material-symbols-outlined notranslate">{{ field.icon }}</div>
+      <CreateButton
+        v-if="field.icon"
+        :buttons="[
+          {
+            icon: field.icon,
+            class: 'symbolic no-padding no-scale',
+          },
+        ]"
+      />
 
       <component
         :is="getComponentType(field.type)"

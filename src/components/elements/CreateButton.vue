@@ -26,7 +26,7 @@
     >
       <span
         v-if="button.icon"
-        class="material-symbols-outlined notranslate"
+        class="material-symbols-rounded notranslate"
         :style="'text-align: center'"
       >
         {{ button.icon }}

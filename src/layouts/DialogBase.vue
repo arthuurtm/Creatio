@@ -155,10 +155,18 @@ onUnmounted(() => {
           <div class="title">
             <p>{{ props.title }}</p>
           </div>
-          <div>
-            <button v-if="!noCloseButton" id="close" @click="close">
-              <span class="material-symbols-outlined notranslate">close</span>
-            </button>
+          <div id="close">
+            <create-button
+              v-if="!noCloseButton"
+              :buttons="[
+                {
+                  icon: 'close',
+                  class: 'symbolic no-padding no-scalling',
+                  id: 'close',
+                },
+              ]"
+              @click="close"
+            />
           </div>
         </div>
       </div>
@@ -261,8 +269,8 @@ onUnmounted(() => {
   font-weight: bold;
   cursor: pointer;
   position: absolute;
-  right: 1em;
-  top: 1em;
+  right: 1rem;
+  top: 0.5rem;
 }
 
 @media (max-width: 600px) {
