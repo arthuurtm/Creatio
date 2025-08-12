@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useFormStore } from '@/stores/form'
 import { isAuthenticated } from '@/functions/auth'
 
 // Errors
@@ -145,7 +144,6 @@ router.beforeEach(async (to, from, next) => {
 })
 
 router.beforeEach((to, from, next) => {
-  useFormStore().$reset()
   next()
 })
 
