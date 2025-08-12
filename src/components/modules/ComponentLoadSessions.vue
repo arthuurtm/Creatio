@@ -100,8 +100,7 @@ const isEnableScrollButton = computed(() => {
 
 async function loadGames() {
   try {
-    const data = await get({ type: 'database', route: props.url })
-    games.value = Array.isArray(data.details) ? data.details : []
+    games.value = Object.values(await get({ type: 'database', route: props.url }))
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
   } finally {

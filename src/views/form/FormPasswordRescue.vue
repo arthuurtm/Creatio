@@ -140,8 +140,8 @@ const prepareVerifyCode = async () => {
         route: `getUserBasics?identification=${encodeURIComponent(formData.value.identification)}`,
       })
 
-      if (res1.okay) {
-        userData.value = res1.details
+      if (res1) {
+        userData.value = res1
 
         await globalFunc.post(
           {

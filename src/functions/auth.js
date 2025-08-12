@@ -6,12 +6,12 @@ async function handleUserData() {
   try {
     const res = await get({ type: 'database', route: 'getUserData' })
 
-    if (res.details) {
+    if (res) {
       useUserStore().setUserData({
-        id: res.details.id,
-        name: res.details.nickname,
-        username: res.details.username,
-        email: res.details.email,
+        id: res.id,
+        name: res.nickname,
+        username: res.username,
+        email: res.email,
         profilePicture: null,
       })
       return true
@@ -30,7 +30,7 @@ export async function isAuthenticated() {
 
 export async function logout() {
   const res = await del({ type: 'database', route: 'logout' })
-  if (res.okay) {
+  if (res) {
     useUserStore().clearUserData()
     showToast({
       type: 'success',
@@ -47,7 +47,7 @@ export async function logout() {
 
 export async function logoutAll() {
   del({ type: 'database', route: 'logoutAll' }).then((result) => {
-    if (result.okay) {
+    if (result) {
       showToast({
         type: 'success',
         message: 'Você saiu de todas as outras sessões!',

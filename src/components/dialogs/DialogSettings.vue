@@ -247,7 +247,7 @@ onMounted(async () => {
   }
 
   let result = await get({ type: 'database', route: 'getAllUserSessions' })
-  connectedDevices.value = result.details
+  connectedDevices.value = result
 })
 </script>
 

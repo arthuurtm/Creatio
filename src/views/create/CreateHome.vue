@@ -35,8 +35,8 @@ async function criarNovoJogo() {
   try {
     result = await post({ type: 'database', route: 'setGame' }, { title: 'Novo Jogo' })
   } catch (error) {
-    showToast({ type: 'error', message: error.details.message })
+    showToast({ type: 'error', message: error.message })
   }
-  router.push({ name: 'EditGame', params: { id: result.details.game.id } })
+  router.push({ name: 'EditGame', params: { id: result.game.id } })
 }
 </script>

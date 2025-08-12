@@ -43,9 +43,7 @@ export function appTheme(toggle = false, glassy = false) {
 class FormError extends Error {
   constructor(message, details = {}) {
     super(message)
-    this.name = ''
-    this.okay = false
-    this.details = details
+    Object.assign(this, { ...details })
   }
 }
 
@@ -81,20 +79,20 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       const serverMessage = errorData.message || getHttpStatusMessage(response.status)
-      throw new FormError(serverMessage, errorData.details)
+      throw new FormError(serverMessage, errorData)
     }
 
     const res = response ? await response.json() : {}
 
     console.log(`Requisição para ${endpoint.route} efetuada com sucesso. `, res)
 
-    return { details: res, okay: true }
+    return { ...res }
   } catch (error) {
     console.error(`Erro na requisição para ${endpoint.route}:`, {
       endpoint: endpoint.route,
       method: config?.method || 'GET',
       error: error.message,
-      details: error.details || error,
+      details: error,
     })
 
     if (error instanceof FormError) {
