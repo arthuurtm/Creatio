@@ -15,6 +15,15 @@ import { useAppDynamicDialog } from '@/stores'
 
 const dialog = useAppDynamicDialog()
 const params = computed(() => dialog.getData || [{}])
+if (!params.value.buttons) {
+  params.value.buttons = [
+    {
+      text: 'OK',
+      class: 'confirm',
+      type: 'button',
+    },
+  ]
+}
 defineEmits('close')
 </script>
 
