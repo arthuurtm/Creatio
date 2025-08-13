@@ -128,7 +128,6 @@ const handleLogin = async () => {
       showToast({
         type: 'warning',
         message: 'Digite um nome de usuário ou e-mail!',
-        timeout: 2000,
       })
       return
     }
@@ -137,7 +136,6 @@ const handleLogin = async () => {
       showToast({
         type: 'warning',
         message: 'Digite uma senha!',
-        timeout: 2000,
       })
       return
     }

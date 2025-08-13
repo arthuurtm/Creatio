@@ -1,4 +1,11 @@
 @import './base.css';
+@import './elements/e-anim.css';
+@import './elements/e-bubbles.css';
+@import './elements/e-buttons.css';
+@import './elements/e-inputs.css';
+@import './elements/e-others.css';
+@import './elements/e-sliders.css';
+@import './elements/e-texts.css';
 
 #app {
   display: flex;

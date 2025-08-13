@@ -190,7 +190,6 @@ const resetPassword = async () => {
     showToast({
       type: 'success',
       message: 'Senha redefinida com sucesso!',
-      timeout: 5000,
     })
     setTimeout(() => {
       router.push({ name: 'Login' })

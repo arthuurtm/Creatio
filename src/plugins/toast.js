@@ -13,10 +13,7 @@ export function showToast({ type = 'default', message = '', timeout = 3000 }) {
         position: 'top-right',
       })
     } else {
-      toast.info(message || 'Notificação!', {
-        timeout,
-        position: 'top-center',
-      })
+      throw new Error('Tipo de toast inválido ou não suportado: ' + type)
     }
   } catch (error) {
     console.error('Erro ao exibir toast:', error)
