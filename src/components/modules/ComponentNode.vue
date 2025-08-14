@@ -79,7 +79,7 @@ defineExpose({
     <DialogBase
       :title="node.id"
       :component="CreateNode"
-      :component-props="node"
+      :component-props="{ node }"
       :always-visible="true"
       :no-close-button="true"
       :no-focus-window="true"

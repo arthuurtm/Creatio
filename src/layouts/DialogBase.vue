@@ -5,14 +5,8 @@ import { useAppDynamicDialog } from '@/stores'
 const props = defineProps({
   component: Object,
   title: String,
-  settings: {
-    type: Object,
-    default: () => ({}),
-  },
-  componentProps: {
-    type: Object,
-    default: () => ({}),
-  },
+  settings: { type: Object, default: () => ({}) },
+  componentProps: { type: Object, default: () => ({}) },
   x: { type: Number, default: null },
   y: { type: Number, default: null },
   alwaysVisible: { type: Boolean, default: false },
@@ -23,15 +17,15 @@ const props = defineProps({
 })
 
 const dialog = useAppDynamicDialog()
+const showDialog = computed(() => dialog.getIsVisible || props.alwaysVisible)
+const showDialogAnim = ref(false)
+
 function close() {
-  if (!dialog.getIsHistory || !props.alwaysVisible) showDialogAnim.value = false
+  if (!dialog.getIsHistory) showDialogAnim.value = false
   setTimeout(() => {
     dialog.close()
   }, 300)
 }
-
-const showDialog = computed(() => dialog.getIsVisible || props.alwaysVisible)
-const showDialogAnim = ref(false)
 
 watch(showDialog, (newValue) => {
   if (newValue) {
