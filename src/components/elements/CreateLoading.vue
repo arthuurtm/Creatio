@@ -1,6 +1,6 @@
 <template>
   <div class="loading-overlay" :class="[isFull && 'full']">
-    <div class="spinner center">
+    <div class="spinner center" :style="{ fontSize: size }">
       <div v-for="n in 12" :key="n" class="spinner-blade"></div>
     </div>
   </div>
@@ -13,6 +13,9 @@ const props = defineProps({
   full: {
     type: Boolean,
     default: false,
+  },
+  size: {
+    type: String,
   },
 })
 
