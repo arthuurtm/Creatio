@@ -131,12 +131,14 @@ onUnmounted(() => {
   <div
     :class="!noFocusWindow ? 'dialog-shadow focus' : 'dialog-shadow disabled'"
     v-show="showDialog"
+    @click="!noFocusWindow && close()"
   >
     <div
       class="dialog-main"
       :id="[]"
       :class="[showDialogAnim && 'active', noInterpolateSize && 'noInterpolateSize']"
       :style="dialogStyle"
+      @click.stop
     >
       <div
         class="title-bar"
@@ -217,6 +219,7 @@ onUnmounted(() => {
   height: 0;
   width: auto;
   interpolate-size: allow-keywords;
+  z-index: 6;
 }
 
 .dialog-main.noInterpolateSize {
@@ -270,8 +273,7 @@ onUnmounted(() => {
 @media (max-width: 600px) {
   .dialog-main {
     position: fixed;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
+    border-radius: 24px 24px 0 0;
     bottom: 0;
     left: 0;
     right: 0;
