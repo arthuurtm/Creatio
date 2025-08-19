@@ -1,31 +1,50 @@
-import { User, Session } from '../models'
+import { User, Session } from '../models/index.js'
+import { setUserDatabaseQuery } from '../helpers/query.js'
+import bcrypt from 'bcrypt'
+import { v4 as uuidv4 } from 'uuid'
 
-async function getUserBasics(query) {
+async function getBasicUserData(query) {
   if (!query) {
     throw new Error('Parâmetros insuficientes')
   }
+  query = setUserDatabaseQuery(query)
 
-  let user = null
+  const user = await User.findOne({
+    where: { query },
+    include: [{ model: Session }],
+  })
+  if (!user) return false
 
-  if (accessToken) {
-    const session = await Session.findOne({
-      where: { accessToken },
-      include: [{ model: User }],
-    })
-    user = session ? session.User : null
-  } else if (userId) {
-    user = await User.findOne({ where: { id: userId } })
-  } else if (identification) {
-    user = await User.findOne({ where: checkIfUserIsValid(identification) })
-  }
-
-  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' })
-
-  res.status(200).json({
+  return {
     id: user.id,
     username: user.username,
     nickname: user.nickname,
     profilePic: user.profilePic,
     exists: true,
-  })
+  }
 }
+
+async function signupUser(data = {}) {
+  const { nickname, username, email, birthdate, password } = data
+
+  const currentDate = new Date()
+  const birthDateObj = new Date(birthdate)
+  if (isNaN(birthDateObj.getTime()) > currentDate) {
+    throw new Error('Data de nascimento inválida')
+  }
+
+  const [passwordHash, sessionToken] = await Promise.all([bcrypt.hash(password, 10), uuidv4()])
+
+  const user = await User.create({
+    nickname,
+    username,
+    email,
+    birthdate,
+    passwordHash,
+    sessionToken,
+  })
+
+  return user
+}
+
+export { getBasicUserData, signupUser }

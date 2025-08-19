@@ -1,4 +1,4 @@
-import { verifyAndRenewSession } from '../services/SessionService.js'
+import { verifyAndRenewSession } from '../services/UserSessionService.js'
 
 async function isAuthenticated(req, res, next) {
   const { accessToken, refreshToken } = req.cookies

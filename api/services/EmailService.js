@@ -1,25 +1,27 @@
-import { google } from 'googleapis';
-import nodemailer from 'nodemailer';
-import fs from 'fs';
-import path from 'path';
-import open from 'open';
-import dotenv from 'dotenv';
-dotenv.config();
+import { google } from 'googleapis'
+import nodemailer from 'nodemailer'
+import fs from 'fs'
+import path from 'path'
+import open from 'open'
+import dotenv from 'dotenv'
+dotenv.config({ path: '../../.env' })
 
-let accessToken = null;
-let refreshToken = null;
-let codeVerifier = null;
+let accessToken = null
+let refreshToken = null
+let codeVerifier = null
 
-const SCOPES = ['https://mail.google.com/'];
+const SCOPES = ['https://mail.google.com/']
 
 // Função para abrir o navegador e autenticar
-export async function authenticateService() {
-  const credentials = JSON.parse(fs.readFileSync(path.join(process.cwd(), './auth/credentials.json')));
-  const { client_secret, client_id, redirect_uris } = credentials.web;
-  const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+async function authenticateService() {
+  const credentials = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), './auth/credentials.json')),
+  )
+  const { client_secret, client_id, redirect_uris } = credentials.web
+  const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
 
-  const { codeVerifier: cv, codeChallenge } = await oAuth2Client.generateCodeVerifierAsync();
-  codeVerifier = cv;
+  const { codeVerifier: cv, codeChallenge } = await oAuth2Client.generateCodeVerifierAsync()
+  codeVerifier = cv
 
   const url = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -27,20 +29,20 @@ export async function authenticateService() {
     prompt: 'consent',
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
-  });
+  })
 
-  await open(url);
-  return url;
+  await open(url)
+  return url
 }
 
 // Função para enviar e-mail
-export async function sendEmailService(variables) {
-  if (!accessToken) throw new Error('Não autenticado');
+async function sendEmailService({ template, to, subject, ...templateData }) {
+  if (!accessToken) throw new Error('Não autenticado')
 
-  const html = fs.readFileSync(path.join(process.cwd(), 'templates', `${variables.structure_name}.html`), 'utf8');
-
-  // substitui variáveis no template
-  for (const key in variables) html.replace(`{{${key}}}`, variables[key]);
+  let html = template
+  for (const key in templateData) {
+    html = html.replace(new RegExp(`{{${key}}}`, 'g'), templateData[key])
+  }
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -52,14 +54,16 @@ export async function sendEmailService(variables) {
       refreshToken,
       accessToken,
     },
-  });
+  })
 
   const result = await transporter.sendMail({
     from: process.env.EMAIL_FROM,
-    to: variables.to,
-    subject: variables.subject,
+    to: to,
+    subject: subject,
     html,
-  });
+  })
 
-  return { success: true, message: 'E-mail enviado', result };
+  return { success: true, message: 'E-mail enviado', result }
 }
+
+export { authenticateService, sendEmailService }

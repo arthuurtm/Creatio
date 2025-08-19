@@ -1,7 +1,7 @@
-import User from "./User";
-import Session from "./Session";
-import Game from "./Game";
-import GameState from "./GameState";
+import User from './User.js'
+import Session from './Session.js'
+import Game from './Game.js'
+import GameState from './GameState.js'
 
 User.hasMany(Session, {
   foreignKey: 'userId',

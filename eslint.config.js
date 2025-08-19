@@ -13,6 +13,15 @@ export default [
         ...globals.node, // variáveis globais do Node.js
       },
     },
+    rules: {
+      'import/extensions': [
+        'error',
+        'always',
+        {
+          ignorePackages: true,
+        },
+      ],
+    },
   },
 
   {

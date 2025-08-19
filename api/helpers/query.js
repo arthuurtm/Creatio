@@ -1,7 +1,12 @@
 import validator from 'validator'
 
-export function checkIfUserIsValid(input) {
+function setUserDatabaseQuery(input) {
   try {
+    if (validator.isNumeric(input) && Number.isInteger(Number(input))) {
+      const query = { id: Number(input) }
+      console.log('checkIfUserIsValid.query = ', query)
+      return query
+    }
     const isEmail = validator.isEmail(input)
     const query = isEmail ? { email: input } : { username: input }
     console.log('checkIfUserIsValid.query = ', query)
@@ -11,3 +16,5 @@ export function checkIfUserIsValid(input) {
     return false
   }
 }
+
+export { setUserDatabaseQuery }

@@ -1,36 +1,11 @@
 /* eslint-disable no-undef */
-import express from 'express'
-import { Sequelize, DataTypes, Op } from 'sequelize'
-import cors from 'cors'
 import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 import { v4 as uuidv4 } from 'uuid'
-import cookieParser from 'cookie-parser'
-import * as UAParser from 'ua-parser-js'
-import rateLimit from 'express-rate-limit'
 import fs from 'fs'
-import jwt from 'jsonwebtoken'
-import validator from 'validator'
-import dotenv from 'dotenv'
 import path from 'path'
-import { OAuth2Client } from 'google-auth-library'
 import multer from 'multer'
 import * as Minio from 'minio'
-
-// Carrega variáveis de ambiente
-dotenv.config({ path: '../.env' })
-
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args))
-
-const corsOptions = {
-  origin: ['http://localhost:5173'],
-  credentials: true,
-}
-const app = express()
-app.use(cors(corsOptions))
-app.use(express.json())
-app.use(cookieParser())
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, '/tmp')
@@ -138,204 +113,23 @@ async function sendEmail(type, data = {}) {
 app.post('/setLogin', async (req, res) => {})
 app.delete('/logout', (req, res) => {})
 app.delete('/logoutAll', isAuthenticated, async (req, res) => {})
-app.get('/getUserData', isAuthenticated, async (req, res) => {
-  res.status(200).json(req.user)
-})
-
-app.get('/getUserBasics', async (req, res) => {
-  try {
-    const { userId, identification } = req.query
-    const accessToken = req.cookies?.accessToken
-
-    if (!userId && !accessToken && !identification) {
-      return res.status(400).json({ message: 'Solicitação inválida.' })
-    }
-
-    let user = null
-
-    if (accessToken) {
-      const session = await Session.findOne({
-        where: { accessToken },
-        include: [{ model: User }],
-      })
-      user = session ? session.User : null
-    } else if (userId) {
-      user = await User.findOne({ where: { id: userId } })
-    } else if (identification) {
-      user = await User.findOne({ where: checkIfUserIsValid(identification) })
-    }
-
-    if (!user) return res.status(404).json({ message: 'Usuário não encontrado' })
-
-    res.status(200).json({
-      id: user.id,
-      username: user.username,
-      nickname: user.nickname,
-      profilePic: user.profilePic,
-      exists: true,
-    })
-  } catch (error) {
-    console.error('Erro ao processar getUserBasics:', error)
-    res.status(500).json({ message: 'Erro interno no servidor' })
-  }
-})
-
+app.get('/getUserData', isAuthenticated, async (req, res) => {})
+app.get('/getUserBasics', async (req, res) => {})
 // Gerar e enviar código de verificação no e-mail para criação da conta
-app.post('/setSignupCode', async (req, res) => {
-  const { email } = req.body
-
-  try {
-    const user = await User.findOne({ where: { email } })
-    if (user) {
-      return res
-        .status(400)
-        .json({ message: 'Este e-mail já foi usado.', details: { errCode: 'emailInUse' } })
-    }
-
-    const data = {
-      email: email,
-      verificationCode: generateRandomNumbers(),
-      expiresAt: new Date(Date.now() + 3600000),
-    }
-    const emailSent = await sendEmail('signupSendCode', data)
-
-    if (!emailSent) {
-      return res.status(500).json({
-        message: 'Ocorreu um erro interno no servidor',
-        details: { errCode: 'emailSendError' },
-      })
-    } else {
-      return res.status(200).json({ message: 'seu pai' })
-    }
-  } catch (error) {
-    console.error('Erro ao processar solicitação de setSignupCode:', error)
-    return res.status(500).json({ message: 'Erro interno do servidor.', error: error.message })
-  }
-})
-
+app.post('/setSignupCode', async (req, res) => {})
 // Cadastrar novo usuário no Banco de Dados
-app.post('/setUser', async (req, res) => {
-  try {
-    const { nickname, username, email, birthdate, password, verificationCode } = req.body
-
-    const currentDate = new Date()
-    const birthDateObj = new Date(birthdate)
-    if (isNaN(birthDateObj.getTime()) > currentDate) {
-      return res.status(400).json({
-        message: 'A data de nascimento deve ser válida.',
-        details: { errCode: 'invalidDatebirth' },
-      })
-    }
-
-    const [verifyEntry, usernameExists] = await Promise.all([
-      EmailCodeVerify.findOne({ where: { type: 2, token: verificationCode } }),
-      User.findOne({ where: { username } }),
-    ])
-
-    if (!verifyEntry) {
-      return res
-        .status(400)
-        .json({ message: 'Código de verificação inválido.', details: { errCode: 'invalidCode' } })
-    } else if (new Date() > verifyEntry.expiresAt) {
-      return res
-        .status(400)
-        .json({ message: 'Código de verificação expirado.', details: { errCode: 'invalidCode' } })
-    }
-
-    if (usernameExists) {
-      return res
-        .status(400)
-        .json({ message: 'Nome de usuário já usado.', details: { errCode: 'usernameExists' } })
-    }
-
-    const [passwordHash, sessionToken] = await Promise.all([bcrypt.hash(password, 10), uuidv4()])
-
-    const user = await User.create({
-      nickname,
-      username,
-      email,
-      birthdate,
-      passwordHash,
-      sessionToken,
-    })
-
-    return res.status(201).json({ message: 'Usuário criado com sucesso', user })
-  } catch (error) {
-    console.error('Erro ao processar solicitação de setUser:', error)
-    return res
-      .status(500)
-      .json({ message: 'Erro ao criar o usuário', details: { errCode: 'internalError' } })
-  }
-})
+app.post('/setUser', async (req, res) => {})
 
 // Lista todas as sessões de um usuário
-app.get('/getAllUserSessions', isAuthenticated, async (req, res) => {
-  const userId = req.user.id
-
-  try {
-    const sessions = await Session.findAll({ where: { userId } })
-
-    if (!sessions.length) {
-      return res.status(404).json({ message: 'Nenhuma sessão encontrada.' })
-    }
-
-    res.status(200).json(sessions)
-  } catch (error) {
-    console.error('Erro ao listar sessões:', error)
-    res.status(500).json({ message: 'Erro interno do servidor.' })
-  }
-})
+app.get('/getAllUserSessions', isAuthenticated, async (req, res) => {})
 
 // Deleta uma sessão específica, desconectando a mesma
-app.delete('/deleteSession', isAuthenticated, async (req, res) => {
-  const { sessionId } = req.body
-
-  try {
-    const session = await Session.findOne({ where: { sessionId } })
-
-    if (!session) {
-      return res.status(404).json({ message: 'Sessão não encontrada.' })
-    }
-
-    await session.destroy()
-    res.status(200).json({ message: 'Sessão deletada com sucesso.' })
-  } catch (error) {
-    console.error('Erro ao deletar sessão:', error)
-    res.status(500).json({ message: 'Erro interno no servidor.' })
-  }
-})
+app.delete('/deleteSession', isAuthenticated, async (req, res) => {})
 
 // Retornar todos os jogos disponíveis no site
-app.get('/getGames', async (req, res) => {
-  const { filters } = req.query
-  try {
-    const games = await Game.findAll({
-      where: filters ? JSON.parse(filters) : {},
-    })
-    if (games.length === 0) return res.status(404).json({ message: 'Nenhum jogo encontrado' })
-    res.status(200).json(games)
-  } catch (error) {
-    console.error('Erro ao processar solicitação de getGames: ', error)
-    res.status(500).json({ message: 'Erro interno no servidor' })
-  }
-})
+app.get('/getGames', async (req, res) => {})
 
-app.post('/setGame', reqLimiter(1, 12), isAuthenticated, async (req, res) => {
-  try {
-    const { title, description } = req.body
-
-    const game = await Game.create({
-      title,
-      description,
-      userId: req.user.id,
-    })
-
-    res.status(201).json({ message: 'Jogo criado com sucesso', game })
-  } catch (error) {
-    console.error('Erro ao processar solicitação de setGames: ', error)
-    res.status(500).json({ message: 'Erro interno no servidor' })
-  }
-})
+app.post('/setGame', reqLimiter(1, 12), isAuthenticated, async (req, res) => {})
 
 // Gera um código de verificação e envia um e-mail para resetar a senha
 app.post('/setResetPassCode', async (req, res) => {
@@ -476,9 +270,4 @@ app.post('/setFileUpload', isAuthenticated, upload.any(), async (req, res) => {
   }
 
   res.send({ message: 'Upload concluído.', resultados: uploadResults })
-})
-
-const port = 3000
-app.listen(port, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${port}`)
 })
