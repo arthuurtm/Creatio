@@ -2,6 +2,7 @@ import User from './User.js'
 import Session from './Session.js'
 import Game from './Game.js'
 import GameState from './GameState.js'
+import sequelize from '../config/db.js'
 
 User.hasMany(Session, {
   foreignKey: 'userId',
@@ -38,5 +39,7 @@ GameState.belongsTo(Game, {
   foreignKey: 'gameId',
   as: 'game',
 })
+
+sequelize.sync()
 
 export { User, Session, Game, GameState }

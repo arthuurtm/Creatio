@@ -60,7 +60,7 @@ async function updateUserSession(oldRefreshToken) {
 }
 
 async function verifyAndRenewSession(req, res) {
-  let { accessToken, refreshToken } = req.cookies
+  let { accessToken, refreshToken } = req?.cookies
 
   if (!accessToken) {
     if (!refreshToken) {

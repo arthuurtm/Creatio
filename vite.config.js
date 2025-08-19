@@ -26,32 +26,9 @@ export default defineConfig({
   server: {
     allowedHosts: [],
     proxy: {
-      // API de Leitura do Banco de Dados
-      '/api/database': {
+      '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/database/, ''),
-      },
-
-      // API de Envio de E-mails
-      '/api/email': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/email/, ''),
-      },
-
-      // API de Comunicação em tempo real
-      '/api/websocket': {
-        target: 'http://localhost:3002',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/websocket/, ''),
-      },
-
-      // API de Leitura e Escrita de Arquivos
-      '/api/file': {
-        target: 'http://localhost:9000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/file/, ''),
       },
     },
   },

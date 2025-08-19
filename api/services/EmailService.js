@@ -3,8 +3,6 @@ import nodemailer from 'nodemailer'
 import fs from 'fs'
 import path from 'path'
 import open from 'open'
-import dotenv from 'dotenv'
-dotenv.config({ path: '../../.env' })
 
 let accessToken = null
 let refreshToken = null
