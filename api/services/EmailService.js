@@ -9,12 +9,12 @@ let refreshToken = null
 let codeVerifier = null
 
 const SCOPES = ['https://mail.google.com/']
+const credentials = JSON.parse(
+  fs.readFileSync(path.join(process.cwd(), './config/credentials.json')),
+)
 
 // Função para abrir o navegador e autenticar
 async function authenticateService() {
-  const credentials = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), './auth/credentials.json')),
-  )
   const { client_secret, client_id, redirect_uris } = credentials.web
   const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
 
@@ -36,6 +36,7 @@ async function authenticateService() {
 // Função para enviar e-mail
 async function sendEmailService({ template, to, subject, ...templateData }) {
   if (!accessToken) throw new Error('Não autenticado')
+  const { client_secret, client_id } = credentials.web
 
   let html = template
   for (const key in templateData) {
@@ -47,8 +48,8 @@ async function sendEmailService({ template, to, subject, ...templateData }) {
     auth: {
       type: 'OAuth2',
       user: process.env.EMAIL_FROM,
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
+      clientId: client_id,
+      clientSecret: client_secret,
       refreshToken,
       accessToken,
     },

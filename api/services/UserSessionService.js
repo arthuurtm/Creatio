@@ -123,7 +123,7 @@ async function handleLogin(res, type, identification, password, userAgent) {
 
   switch (type) {
     case 'traditional': {
-      user = await User.findOne({ where: checkIfUserIsValid(identification) })
+      user = await User.findOne({ where: setUserDatabaseQuery(identification) })
       if (!user) throw new Error('Usuário não encontrado.')
 
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash)

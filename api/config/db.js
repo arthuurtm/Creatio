@@ -1,6 +1,8 @@
 import { Sequelize } from 'sequelize'
 import mariadb from 'mariadb'
+import dotenv from 'dotenv'
 import log from '../helpers/console.js'
+dotenv.config({ path: '../../.env' })
 
 const pool = mariadb.createPool({
   host: process.env.DB_HOST || 'localhost',
@@ -14,11 +16,11 @@ const pool = mariadb.createPool({
   try {
     conn = await pool.getConnection()
     await conn.query(
-      `CREATE DATABASE IF NOT EXISTS \`${process.env.DATABASE}\`;`, //CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci
+      `CREATE DATABASE IF NOT EXISTS \`${process.env.DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci;`,
     )
     log.info('Database verificado/criado com sucesso!')
-  } catch(error) {
-    log.error("Erro ao carregar o banco de dados: ", error)
+  } catch (error) {
+    log.error('Erro ao verificar/criar o banco de dados:', error)
   } finally {
     if (conn) conn.release()
   }

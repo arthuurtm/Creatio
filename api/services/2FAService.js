@@ -1,22 +1,22 @@
+import { generateRandomNumbers } from '../helpers/numbers.js'
 let verificationCodesDB = []
 
 /**
  * Salva um novo código de verificação para um email.
  * Remove qualquer código antigo para o mesmo email antes de adicionar o novo.
- * @param {any} id - A identificação do código.
- * @param {string} code - O código de verificação gerado.
  * @param {number} [timeout=5] - O tempo em minutos até o código expirar (padrão é 5 minutos).
  * @returns {Promise<object>} O registro do código que foi salvo.
  */
-async function setVerificationCode(id, code, timeout = 5) {
+async function setVerificationCode(timeout = 5) {
+  const id = crypto.randomUUID()
   verificationCodesDB = verificationCodesDB.filter((entry) => entry.id !== id)
 
   const expirationDate = new Date()
   expirationDate.setMinutes(expirationDate.getMinutes() + timeout)
 
   const newCodeEntry = {
-    id,
-    code,
+    id: id,
+    code: generateRandomNumbers(),
     expiresAt: expirationDate,
   }
 

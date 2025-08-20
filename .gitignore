@@ -29,7 +29,7 @@ coverage
 
 # critical files and folders
 *.env
-/api/auth
+*credentials.json
 *.venv
 
 *.tsbuildinfo

@@ -3,10 +3,13 @@ import { setUserDatabaseQuery } from '../helpers/query.js'
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid'
 
-async function getBasicUserData(query) {
-  if (!query) {
+async function getBasicUserData(req) {
+  const { userId, identification } = req.query
+  if (!req || (!userId && !identification)) {
     throw new Error('Parâmetros insuficientes')
   }
+
+  let query = userId || identification
   query = setUserDatabaseQuery(query)
 
   const user = await User.findOne({
