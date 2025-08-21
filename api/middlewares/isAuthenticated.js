@@ -1,14 +1,18 @@
 import { verifyAndRenewSession } from '../services/UserSessionService.js'
 import log from '../helpers/console.js'
+import { createClientCookie } from '../services/ClientSessionService.js'
 
 async function isAuthenticated(req, res, next) {
   try {
     //const { accessToken, refreshToken } = req?.cookies || {}
-    const session = await verifyAndRenewSession(req, res)
+    const { user, accessToken, refreshToken, renewNeeded } =
+      (await verifyAndRenewSession(req, res)) || {}
 
-    if (!session || !session.user) {
+    if (!refreshToken || !user) {
       return res.status(401).json({ error: 'Não autorizado' })
     }
+
+    if (renewNeeded) createClientCookie(res, accessToken, refreshToken)
 
     const secureData = { ...session.user.get({ plain: true }) }
     delete secureData.passwordHash
@@ -18,7 +22,7 @@ async function isAuthenticated(req, res, next) {
     req.refreshToken = session.refreshToken
 
     next()
-  } catch(error) {
+  } catch (error) {
     log.error("Erro grave no middleware 'isAuthenticated': ", error)
   }
 }

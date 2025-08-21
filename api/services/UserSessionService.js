@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { User, Session } from '../models/index.js'
-import { createClientSession, createClientCookie } from './ClientSessionService.js'
+import { createClientSession } from './ClientSessionService.js'
 import { Op } from 'sequelize'
 import { setUserDatabaseQuery } from '../helpers/query.js'
 import bcrypt from 'bcrypt'
@@ -59,29 +59,26 @@ async function updateUserSession(oldRefreshToken) {
   return { accessToken, refreshToken }
 }
 
-async function verifyAndRenewSession(req, res) {
-  let { accessToken, refreshToken } = req?.cookies
-
+async function verifyAndRenewSession({ accessToken, refreshToken }) {
+  let renewNeeded
   if (!accessToken) {
     if (!refreshToken) {
       return null
     }
 
-    const tokens = await updateUserSession(refreshToken)
-    accessToken = tokens.accessToken
-    refreshToken = tokens.refreshToken
+    ;({ accessToken, refreshToken } = await updateUserSession(refreshToken))
 
     if (!accessToken || !refreshToken) {
       return null
     }
 
-    createClientCookie(res, accessToken, refreshToken)
+    renewNeeded = true
   }
 
   const session = await Session.findOne({ where: { accessToken }, include: [{ model: User }] })
   const user = session ? session.User : null
 
-  return { user, accessToken, refreshToken }
+  return { user, accessToken, refreshToken, renewNeeded }
 }
 
 async function logoutAllSessions(userId, accessToken) {
@@ -116,7 +113,7 @@ async function deleteUserSession(accessToken) {
   await session.destroy()
 }
 
-async function handleLogin(res, type, identification, password, userAgent) {
+async function handleLogin(type, identification, password, userAgent) {
   const parser = new UAParser()
   const device = parser.setUA(userAgent).getResult()
   let user
@@ -148,7 +145,6 @@ async function handleLogin(res, type, identification, password, userAgent) {
   }
 
   const { accessToken, refreshToken } = await createUserSession(user.id, device)
-  createClientCookie(res, accessToken, refreshToken)
   return { accessToken, refreshToken }
 }
 

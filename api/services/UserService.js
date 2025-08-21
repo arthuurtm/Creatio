@@ -2,21 +2,19 @@ import { User, Session } from '../models/index.js'
 import { setUserDatabaseQuery } from '../helpers/query.js'
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid'
+import { setVerificationCode, getVerifyCode } from '../services/2FAService.js'
+import { sendEmailService } from '../services/EmailService.js'
+import log from '../helpers/console.js'
 
-async function getBasicUserData(req) {
-  const { userId, identification } = req.query
-  if (!req || (!userId && !identification)) {
-    throw new Error('Parâmetros insuficientes')
-  }
+async function getBasicUserData(id) {
+  if (!id) throw new Error('Parâmetros insuficientes')
 
-  let query = userId || identification
-  query = setUserDatabaseQuery(query)
-
+  const query = setUserDatabaseQuery(id)
   const user = await User.findOne({
-    where: { query },
+    where: query,
     include: [{ model: Session }],
   })
-  if (!user) return false
+  if (!user) return null
 
   return {
     id: user.id,
@@ -27,16 +25,22 @@ async function getBasicUserData(req) {
   }
 }
 
-async function signupUser(data = {}) {
-  const { nickname, username, email, birthdate, password } = data
+async function signupUser({
+  nickname,
+  username,
+  email,
+  birthdate,
+  password,
+  verificationCode,
+  codeId,
+}) {
+  const { valid } = getVerifyCode(codeId, verificationCode)
+  if (!valid) throw new Error('Código inválido.')
 
-  const currentDate = new Date()
   const birthDateObj = new Date(birthdate)
-  if (isNaN(birthDateObj.getTime()) > currentDate) {
-    throw new Error('Data de nascimento inválida')
-  }
+  if (isNaN(birthDateObj.getTime())) throw new Error('Data de nascimento inválida')
 
-  const [passwordHash, sessionToken] = await Promise.all([bcrypt.hash(password, 10), uuidv4()])
+  const passwordHash = await bcrypt.hash(password, 10)
 
   const user = await User.create({
     nickname,
@@ -44,10 +48,22 @@ async function signupUser(data = {}) {
     email,
     birthdate,
     passwordHash,
-    sessionToken,
   })
 
   return user
 }
 
-export { getBasicUserData, signupUser }
+async function setSignupCode(email) {
+  if (!email) throw new Error('Digite um e-mail!')
+
+  const { id, code } = setVerificationCode(15)
+  await sendEmailService({
+    template: 'signupVerify',
+    to: email,
+    subject: 'Verifique seu e-mail',
+    verificationCode: code,
+  })
+  return { id, code }
+}
+
+export { getBasicUserData, signupUser, setSignupCode }

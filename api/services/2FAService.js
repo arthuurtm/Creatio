@@ -5,10 +5,11 @@ let verificationCodesDB = []
  * Salva um novo código de verificação para um email.
  * Remove qualquer código antigo para o mesmo email antes de adicionar o novo.
  * @param {number} [timeout=5] - O tempo em minutos até o código expirar (padrão é 5 minutos).
+ * @param {any} [id=null] - Parâmetro para identificar o código de outra maneira
  * @returns {Promise<object>} O registro do código que foi salvo.
  */
-async function setVerificationCode(timeout = 5) {
-  const id = crypto.randomUUID()
+async function setVerificationCode(timeout = 5, customId = null) {
+  const id = customId || crypto.randomUUID()
   verificationCodesDB = verificationCodesDB.filter((entry) => entry.id !== id)
 
   const expirationDate = new Date()
