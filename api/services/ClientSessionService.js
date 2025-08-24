@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import log from '../helpers/console.js'
 
 async function createClientSession(userId, device) {
   const accessToken = jwt.sign({ userId, device }, process.env.ACCESS_TOKEN_SECRET, {
@@ -11,7 +12,7 @@ async function createClientSession(userId, device) {
   return { accessToken, refreshToken }
 }
 
-function createClientCookie(res, accessToken, refreshToken) {
+async function createClientCookie(res, accessToken, refreshToken) {
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

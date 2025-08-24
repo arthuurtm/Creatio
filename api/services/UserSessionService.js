@@ -8,13 +8,12 @@ import { OAuth2Client } from 'google-auth-library'
 import { UAParser } from 'ua-parser-js'
 
 async function createUserSession(userId, deviceData) {
-  const { accessToken, refreshToken } = createClientSession(userId, deviceData)
+  const { accessToken, refreshToken } = await createClientSession(userId, deviceData)
 
   await Session.create({
     accessToken: accessToken,
     refreshToken: refreshToken,
     userId: userId,
-    createdAt: new Date(),
   })
 
   if (deviceData) {
@@ -41,9 +40,10 @@ async function updateUserSession(oldRefreshToken) {
     throw new Error('Refresh token não encontrado ou usuário inválido')
   }
 
-  jwt.verify(oldRefreshToken, process.env.REFRESH_SECRET)
+  jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET)
 
-  const { accessToken, refreshToken } = createClientSession(
+  // erro aqui puta que pariu vontade de se matar do caralho vVAI SE FUDEEEEEEEEEEEEEE PORRA
+  const { accessToken, refreshToken } = await createClientSession(
     storedToken.User.id,
     storedToken.deviceGenerics,
   )
@@ -52,7 +52,6 @@ async function updateUserSession(oldRefreshToken) {
     {
       accessToken: accessToken,
       refreshToken: refreshToken,
-      updatedAt: new Date(),
     },
     { where: { id: storedToken.id } },
   )
@@ -60,25 +59,27 @@ async function updateUserSession(oldRefreshToken) {
 }
 
 async function verifyAndRenewSession({ accessToken, refreshToken }) {
-  let renewNeeded
+  let renewNeeded = false
+
   if (!accessToken) {
-    if (!refreshToken) {
-      return null
-    }
-
+    if (!refreshToken) return null
     ;({ accessToken, refreshToken } = await updateUserSession(refreshToken))
-
-    if (!accessToken || !refreshToken) {
-      return null
-    }
-
     renewNeeded = true
   }
 
-  const session = await Session.findOne({ where: { accessToken }, include: [{ model: User }] })
-  const user = session ? session.User : null
+  const session = await Session.findOne({
+    where: { accessToken },
+    include: [{ model: User }],
+  })
 
-  return { user, accessToken, refreshToken, renewNeeded }
+  if (!session || !session.User) return null
+
+  return {
+    user: session.User,
+    newAccessToken: accessToken,
+    newRefreshToken: refreshToken,
+    renewNeeded,
+  }
 }
 
 async function logoutAllSessions(userId, accessToken) {
@@ -93,9 +94,7 @@ async function logoutAllSessions(userId, accessToken) {
 }
 
 async function getAnyUserSession(userId) {
-  userId = setUserDatabaseQuery(userId)
-
-  const sessions = await Session.findAll({ where: { userId } })
+  const sessions = await Session.findAll({ where: userId })
   if (!sessions.length) {
     throw new Error('Nenhuma sessão encontrada para o usuário')
   }
@@ -120,7 +119,7 @@ async function handleLogin(type, identification, password, userAgent) {
 
   switch (type) {
     case 'traditional': {
-      user = await User.findOne({ where: setUserDatabaseQuery(identification) })
+      user = await User.findOne({ where: setUserDatabaseQuery({ value: identification }) })
       if (!user) throw new Error('Usuário não encontrado.')
 
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash)

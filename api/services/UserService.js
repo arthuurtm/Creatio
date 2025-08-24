@@ -1,15 +1,13 @@
 import { User, Session } from '../models/index.js'
 import { setUserDatabaseQuery } from '../helpers/query.js'
 import bcrypt from 'bcrypt'
-import { v4 as uuidv4 } from 'uuid'
-import { setVerificationCode, getVerifyCode } from '../services/2FAService.js'
+import { consumeVerificationUUID, createVerificationCode } from '../services/2FAService.js'
 import { sendEmailService } from '../services/EmailService.js'
-import log from '../helpers/console.js'
 
 async function getBasicUserData(id) {
   if (!id) throw new Error('Parâmetros insuficientes')
 
-  const query = setUserDatabaseQuery(id)
+  const query = setUserDatabaseQuery({ value: id })
   const user = await User.findOne({
     where: query,
     include: [{ model: Session }],
@@ -25,18 +23,28 @@ async function getBasicUserData(id) {
   }
 }
 
-async function signupUser({
-  nickname,
-  username,
-  email,
-  birthdate,
-  password,
-  verificationCode,
-  codeId,
+async function setVerificationCodeAndSendEmail({
+  email = null,
+  template,
+  subject,
+  timeout,
+  extraData = {},
 }) {
-  const { valid } = getVerifyCode(codeId, verificationCode)
-  if (!valid) throw new Error('Código inválido.')
+  const { id, code, expiresAt } = await createVerificationCode(timeout, email)
+  extraData.verificationCode = code
 
+  await sendEmailService({
+    template,
+    to: email,
+    subject,
+    ...extraData,
+  })
+
+  return { id, code, expiresAt }
+}
+
+async function signupUser({ nickname, username, email, birthdate, password, sessionUUID }) {
+  await consumeVerificationUUID(sessionUUID)
   const birthDateObj = new Date(birthdate)
   if (isNaN(birthDateObj.getTime())) throw new Error('Data de nascimento inválida')
 
@@ -53,17 +61,20 @@ async function signupUser({
   return user
 }
 
-async function setSignupCode(email) {
-  if (!email) throw new Error('Digite um e-mail!')
+async function resetUserPassword({ newPassword, sessionUUID }) {
+  const { id: email } = await consumeVerificationUUID(sessionUUID)
 
-  const { id, code } = setVerificationCode(15)
+  const user = await User.findOne({ where: { email } })
+  const passwordHash = await bcrypt.hash(newPassword, 10)
+  user.passwordHash = passwordHash
+  await user.save()
+
   await sendEmailService({
-    template: 'signupVerify',
+    template: 'resetedPassword',
     to: email,
-    subject: 'Verifique seu e-mail',
-    verificationCode: code,
+    subject: 'A senha da sua conta foi redefinida!',
+    username: user.nickname,
   })
-  return { id, code }
 }
 
-export { getBasicUserData, signupUser, setSignupCode }
+export { getBasicUserData, signupUser, setVerificationCodeAndSendEmail, resetUserPassword }

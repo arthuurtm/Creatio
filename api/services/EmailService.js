@@ -74,8 +74,8 @@ async function sendEmailService({ template, to, subject, ...templateData }) {
     html: loadTemplate(template, templateData),
     attachments: [
       {
-        filename: 'bitmap.svg',
-        path: path.join(process.cwd(), 'templates', 'bitmap.svg'),
+        filename: 'bitmap.png',
+        path: path.join(process.cwd(), 'templates', 'bitmap.png'),
         cid: 'unique@cid',
       },
     ],
