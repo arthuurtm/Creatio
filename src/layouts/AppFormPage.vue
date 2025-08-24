@@ -1,19 +1,17 @@
 <template>
   <div class="page">
-    <CreateButton
-      :buttons="[
-        {
-          icon: 'settings',
-          class: 'symbolic no-padding no-scalling',
-          action: () => handleSettingsBox(),
-          style: `
+    <CreateButton :buttons="[
+      {
+        icon: 'settings',
+        class: 'symbolic no-padding no-scalling',
+        action: () => handleSettingsBox(),
+        style: `
           position: absolute;
           top: 0.5rem;
           right: 0.5rem;
           `,
-        },
-      ]"
-    />
+      },
+    ]" />
 
     <div class="main-form-container">
       <div class="left">
@@ -29,13 +27,15 @@
         <form class="form-container centered" @submit.prevent="submitForm">
           <transition name="slide-left" mode="out-in">
             <div class="sepElements" :key="currentStep">
-              <slot name="fields" />
+              <slot v-if="!errorController" name="fields" />
+              <p v-if="errorController" v-for="msg in errorController.messages">{{ msg.text }}</p>
             </div>
           </transition>
 
-          <slot name="anchors" />
+          <slot v-if="!errorController" name="anchors" />
           <div class="sepButtons">
-            <slot name="buttons" />
+            <slot v-if="!errorController" name="buttons" />
+            <CreateButton v-if="errorController" :buttons="errorController.buttons" />
           </div>
         </form>
       </div>
@@ -44,10 +44,12 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useAppDynamicDialog } from '@/stores'
 import DialogSettings from '@/components/dialogs/DialogSettings.vue'
 
 const dialog = useAppDynamicDialog()
+const errorController = ref(false)
 
 defineProps({
   title: {
@@ -67,6 +69,20 @@ defineProps({
 function handleSettingsBox() {
   dialog.setDialog(DialogSettings, { title: 'Configurações' })
 }
+
+function handleError({ title, messages, buttons }) {
+  errorController.value = {
+    title: title ?? 'Erro',
+    messages: messages ?? [
+      { text: 'Ocorreu um erro e não foi possível continuar. Tente reiniciar as etapas.' }
+    ],
+    buttons: buttons ?? [
+      { text: 'Reiniciar', action: () => window.location.reload() }
+    ]
+  }
+}
+
+defineExpose({ handleError })
 </script>
 
 <style scoped>
@@ -75,6 +91,7 @@ function handleSettingsBox() {
     overflow-x: hidden !important;
     overflow: hidden;
   }
+
   .centered {
     align-items: unset !important;
   }
@@ -237,7 +254,7 @@ function handleSettingsBox() {
   width: 100%;
 }
 
-.centered > div {
+.centered>div {
   width: 100%;
   box-sizing: border-box;
 }
