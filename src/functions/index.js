@@ -5,12 +5,17 @@ function getApiUrl(type, route, querys = null) {
     return null
   }
   let url = `${origin}/api/${type}/${route}`
-  const queryString = buildQuery(querys)
-  if (queryString) url += `?${queryString}`
+  if (querys) {
+    const queryString = buildQuery(querys)
+    url += `?${queryString}`
+  }
   return url
 }
 
 function buildQuery(params = {}) {
+  if (!params) {
+    return ''
+  }
   const query = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {
