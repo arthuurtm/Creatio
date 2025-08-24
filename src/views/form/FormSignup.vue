@@ -121,7 +121,7 @@
             text: 'Avançar',
             class: 'confirm',
             type: 'submit',
-            action: () => nextStep(),
+            action: () => verifySecureCode(),
           },
         ]" />
       </template>
@@ -170,22 +170,27 @@ watch(nicknameValue, (newNickname) => {
 })
 
 const verifyIfUserExists = async () => {
-  const users = await get({
-    type: 'database',
-    route: `getUserBasics?identification=${encodeURIComponent(formData.value.username)}`
-  })
-
-  if (users.length > 0) {
+  try {
+    await get({
+      type: 'database',
+      route: 'getUserBasics',
+      querys: { identification: formData.value.username }
+    })
     showToast({ type: 'error', message: 'O usuário já existe' })
-  } else {
-    nextStep()
+  } catch (err) {
+    if (err?.status === 404) {
+      nextStep()
+    } else {
+      showToast({ type: 'error', message: err.message })
+    }
   }
 }
 
 const prepareVerifyCode = async () => {
+
   if (!sentCode.value) {
     try {
-      const { id } = await post(
+      await post(
         {
           type: 'database',
           route: 'setSignupCode',
@@ -195,7 +200,6 @@ const prepareVerifyCode = async () => {
         },
       )
 
-      id && (formData.value.codeId = id)
       sentCode.value = true
       nextStep()
     } catch (error) {
@@ -206,6 +210,25 @@ const prepareVerifyCode = async () => {
     }
   } else {
     nextStep()
+  }
+}
+
+const verifySecureCode = async () => {
+  try {
+    const { sessionUUID } = await post(
+      {
+        type: 'database',
+        route: 'validateSecureSession',
+      },
+      {
+        secureToken: formData.value.verifyCode,
+        tokenId: formData.value.email
+      },
+    )
+    formData.value.sessionUUID = sessionUUID
+    nextStep()
+  } catch (err) {
+    showToast({ type: 'error', message: err.message })
   }
 }
 
@@ -230,8 +253,7 @@ const signupUser = async () => {
         email: formData.value.email,
         birthdate: formData.value.birthdate,
         password: formData.value.passwd1,
-        verificationCode: formData.value.verifyCode,
-        codeId: formData.value.codeId
+        sessionUUID: formData.value.sessionUUID
       },
     )
 
