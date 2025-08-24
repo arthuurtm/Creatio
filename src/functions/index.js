@@ -1,10 +1,31 @@
-function getApiUrl(type, route) {
+function getApiUrl(type, route, querys = null) {
   const origin = window.location.origin
   if (!type || !route) {
     console.error('Tipo ou rota não fornecidos.')
     return null
   }
-  return `${origin}/api/${type}/${route}`
+  let url = `${origin}/api/${type}/${route}`
+  const queryString = buildQuery(querys)
+  if (queryString) url += `?${queryString}`
+  return url
+}
+
+function buildQuery(params = {}) {
+  const query = new URLSearchParams()
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      // envia array como ?tags=a&tags=b&tags=c
+      value.forEach((v) => query.append(key, v))
+    } else if (typeof value === 'object' && value !== null) {
+      // envia objeto como JSON string
+      query.append(key, JSON.stringify(value))
+    } else if (value !== undefined && value !== null) {
+      query.append(key, value)
+    }
+  })
+
+  return query.toString()
 }
 
 export function appTheme(toggle = false, glassy = false) {
@@ -74,12 +95,12 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
   }
 
   try {
-    const response = await fetch(getApiUrl(endpoint.type, endpoint.route), config)
+    const response = await fetch(getApiUrl(endpoint.type, endpoint.route, endpoint.querys), config)
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       const serverMessage = errorData.message || getHttpStatusMessage(response.status)
-      throw new FormError(serverMessage, errorData)
+      throw new FormError(serverMessage, { ...errorData, status: response.status })
     }
 
     const res = response ? await response.json() : {}
