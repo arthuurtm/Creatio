@@ -1,5 +1,5 @@
 import './config/env.js'
-import http from './config/http.js'
+import server from './config/index.js'
 import log from './helpers/console.js'
 import { authenticateService } from './services/EmailService.js'
 
@@ -11,7 +11,7 @@ const startServer = async () => {
     log.info(`Abrindo no navegador [${authUrl}]`)
 
     // Inicia o servidor
-    http.listen(PORT, () => {
+    server.listen(PORT, () => {
       log.info(`Servidor rodando em http://localhost:${PORT}`)
     })
   } catch (error) {
