@@ -1,4 +1,5 @@
 <script setup>
+import { TransitionGroup } from 'vue'
 import { ref, nextTick, Transition } from 'vue'
 
 const menuContextItems = ref([])
@@ -53,36 +54,39 @@ defineExpose({
 </script>
 
 <template>
-  <Transition name="fastFade" mode="out-in">
-    <div v-if="contextMenuVisible" class="dialog-shadow" @click="closeContextMenu">
-      <div
-        class="context-menu"
-        :style="{
-          top: contextMenuPos.top + 'px',
-          left: contextMenuPos.left + 'px',
-          position: 'absolute',
-        }"
-        @click.stop
-        ref="contextMenu"
-      >
-        <div v-for="(subMenu, sIndex) in menuContextItems" :key="sIndex" class="sub-menu">
+  <div v-if="contextMenuVisible" class="dialog-shadow" @click="closeContextMenu">
+    <div
+      class="context-menu"
+      :style="{
+        top: contextMenuPos.top + 'px',
+        left: contextMenuPos.left + 'px',
+        position: 'absolute',
+      }"
+      @click.stop
+      ref="contextMenu"
+    >
+      <TransitionGroup name="fastFade" mode="out-in">
+        <template v-for="(subMenu, sIndex) in menuContextItems" :key="sIndex">
           <hr v-if="sIndex > 0" />
-          <ul v-for="(item, iIndex) in subMenu.items" :key="iIndex" class="sub-menu-items">
-            <CreateButton
-              :buttons="[
-                {
-                  icon: item.icon,
-                  text: item.text,
-                  class: 'symbolic no-padding no-scalling',
-                  action: () => handleMenuItemClick(item.action),
-                },
-              ]"
-            />
-          </ul>
-        </div>
-      </div>
+          <div class="sub-menu" :style="subMenu?.style">
+            <div v-for="(item, iIndex) in subMenu.items" :key="iIndex" class="sub-menu-items">
+              <CreateButton
+                :buttons="[
+                  {
+                    icon: item.icon,
+                    text: item.text,
+                    class: 'symbolic no-padding no-scalling',
+                    action: () => handleMenuItemClick(item.action),
+                  },
+                ]"
+              />
+              <p>{{ item.shortcut }}</p>
+            </div>
+          </div>
+        </template>
+      </TransitionGroup>
     </div>
-  </Transition>
+  </div>
 </template>
 
 <style scoped>
@@ -90,26 +94,44 @@ defineExpose({
   position: fixed;
   inset: 0;
   background: transparent;
-  z-index: auto;
+  z-index: 7;
 }
 
 .context-menu {
   display: inline-flex;
-  /* Override transparency by using an opaque color */
-  background: rgb(40, 40, 60);
+  background: var(--bg2);
   border-radius: 24px;
   width: auto;
-  padding: 0 1rem;
+  z-index: 999;
+  flex-direction: column;
+  backdrop-filter: var(--main-blur);
+  border: 0.5px solid var(--border);
 }
-/* Remove transparency from --bg2 without changing its value */
-.context-menu {
-  background: linear-gradient(rgba(40, 40, 60, 1), rgba(40, 40, 60, 1)), var(--bg2);
+
+.sub-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  padding: 0.5rem 1rem;
 }
+
 .sub-menu-items {
+  display: flex;
   padding: 2px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+hr {
+  width: -webkit-fill-available;
+  border-top-style: none;
 }
 
 ul {
   list-style: none;
+}
+
+p {
+  margin: 0;
 }
 </style>

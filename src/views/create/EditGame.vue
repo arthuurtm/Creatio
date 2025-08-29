@@ -1,9 +1,8 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import ComponentNode from '@/components/modules/ComponentNode.vue'
 
 const contextMenuRef = ref(null)
-const pageContainer = ref({})
 const componentNodeRef = ref(null)
 
 function openContextMenu(items, event) {
@@ -17,7 +16,23 @@ function handleContextMenu(e) {
       {
         items: [
           {
-            text: 'Adicionar Ação',
+            text: 'Voltar',
+            icon: 'arrow_back_ios',
+            shortcut: 'Ctrl + Z',
+            action: () => componentNodeRef.value.undo(),
+          },
+          {
+            text: 'Avançar',
+            icon: 'arrow_forward_ios',
+            shortcut: 'Ctrl + Y',
+            action: () => componentNodeRef.value.redo(),
+          },
+        ],
+      },
+      {
+        items: [
+          {
+            text: 'Adicionar bloco de ação',
             icon: 'folder_code',
             action: () => {
               openContextMenu([
@@ -41,7 +56,7 @@ function handleContextMenu(e) {
             },
           },
           {
-            text: 'Criar Ligação',
+            text: 'Criar ligação',
             icon: 'diagonal_line',
           },
         ],
@@ -50,19 +65,10 @@ function handleContextMenu(e) {
     e,
   )
 }
-
-onMounted(() => {
-  pageContainer.value = document.querySelector('.page-wrapper') || window
-  pageContainer.value.addEventListener('contextmenu', handleContextMenu)
-})
-
-onUnmounted(() => {
-  pageContainer.value.removeEventListener('contextmenu', handleContextMenu)
-})
 </script>
 
 <template>
-  <div class="page-wrapper">
+  <div class="page-wrapper" @contextmenu="handleContextMenu">
     <div class="checkerboard"></div>
     <ComponentNode ref="componentNodeRef" />
     <CreateButton
