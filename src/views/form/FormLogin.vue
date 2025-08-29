@@ -2,86 +2,75 @@
   <AppFormPage :title="'Entre em sua conta'" :currentStep="currentStep">
     <template #fields>
       <template v-if="currentStep === 1">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'text',
-              name: 'identification',
-              model: 'identification',
-              label: 'Usuário ou e-mail',
-              placeholder: 'Digite seu nome de usuário ou e-mail',
-              required: true,
-            },
-          ]"
-          v-model="formData"
-        />
+        <CreateTextField :fields="[
+          {
+            type: 'text',
+            name: 'identification',
+            model: 'identification',
+            label: 'Usuário ou e-mail',
+            placeholder: 'Digite seu nome de usuário ou e-mail',
+            required: true,
+          },
+        ]" v-model="formData" />
       </template>
 
       <template v-if="currentStep === 2">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'password',
-              model: 'password',
-              label: 'Senha',
-              placeholder: 'Digite sua senha',
-              required: true,
-              anchor: {
-                text: 'Esqueci minha senha',
-                class: 'critical',
-                model: 'forgotPassword',
-                action: () => pageRedirect('PasswordRescue'),
-              },
+        <CreateTextField :fields="[
+          {
+            type: 'password',
+            model: 'password',
+            label: 'Senha',
+            placeholder: 'Digite sua senha',
+            required: true,
+            anchor: {
+              text: 'Esqueci minha senha',
+              class: 'critical',
+              model: 'forgotPassword',
+              action: () => pageRedirect('PasswordRescue'),
             },
-          ]"
-          v-model="formData"
-        />
+          },
+        ]" v-model="formData" />
       </template>
     </template>
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <CreateButton
-          :buttons="[
-            {
-              position: 'left',
-              text: 'Criar conta',
-              class: 'symbolic no-padding normal no-scalling',
-              id: 'createAnAccountButton',
-              action: () => pageRedirect('Signup'),
-            },
-            {
-              class: 'symbolic no-padding',
-              id: 'googleButton',
-              action: () => handleGoogleLogin(),
-            },
-            {
-              text: 'Avançar',
-              class: 'confirm',
-              id: 'loginButton',
-              action: () => nextStep(),
-            },
-          ]"
-        />
+        <CreateButton :buttons="[
+          {
+            position: 'left',
+            text: 'Criar conta',
+            class: 'symbolic no-padding normal no-scalling',
+            id: 'createAnAccountButton',
+            action: () => pageRedirect('Signup'),
+          },
+          {
+            class: 'symbolic no-padding',
+            id: 'googleButton',
+          },
+          {
+            text: 'Avançar',
+            class: 'confirm',
+            id: 'loginButton',
+            action: () => nextStep(),
+          },
+        ]" />
       </template>
 
       <template v-if="currentStep === 2">
-        <CreateButton
-          :buttons="[
-            {
-              text: 'Voltar',
-              type: 'submit',
-              action: () => prevStep(),
-            },
-            {
-              text: 'Entrar',
-              class: 'confirm',
-              id: 'loginButton',
-              type: 'submit',
-              action: () => handleLogin(),
-            },
-          ]"
-        />
+        <CreateButton :buttons="[
+          {
+            text: 'Voltar',
+            type: 'submit',
+            action: () => prevStep(),
+          },
+          {
+            text: 'Entrar',
+            class: 'confirm',
+            id: 'loginButton',
+            type: 'submit',
+            action: () => handleLogin(),
+          },
+        ]" />
       </template>
     </template>
   </AppFormPage>
