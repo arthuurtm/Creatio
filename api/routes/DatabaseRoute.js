@@ -10,13 +10,16 @@ import {
   setResetPasswordCodeController,
   validateSecureSession,
   resetUserPasswordController,
-} from '../controllers/UserController.js'
-import { getAnyGameController, setGameOnDatabaseController } from '../controllers/GameController.js'
+} from '../controllers/http/UserController.js'
+import {
+  getAnyGameController,
+  setGameOnDatabaseController,
+} from '../controllers/http/GameController.js'
 import {
   getAnyUserSessionController,
   logoutAllSessionsController,
   logoutUserController,
-} from '../controllers/UserSessionController.js'
+} from '../controllers/http/UserSessionController.js'
 
 const router = Router()
 // precisa de autenticação

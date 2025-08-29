@@ -1,5 +1,5 @@
-import log from '../helpers/console.js'
-import { getAnyUserSession, logoutAllSessions } from '../services/UserSessionService.js'
+import log from '../../helpers/console.js'
+import { getAnyUserSession, logoutAllSessions } from '../../services/UserSessionService.js'
 
 async function logoutAllSessionsController(req, res, next) {
   try {

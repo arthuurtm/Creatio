@@ -3,10 +3,10 @@ import {
   setVerificationCodeAndSendEmail,
   resetUserPassword,
   getBasicUserData,
-} from '../services/UserService.js'
-import { handleLogin } from '../services/UserSessionService.js'
-import { createClientCookie } from '../services/ClientSessionService.js'
-import { validateCodeAndGetUUID } from '../services/2FAService.js'
+} from '../../services/UserService.js'
+import { handleLogin } from '../../services/UserSessionService.js'
+import { createClientCookie } from '../../services/ClientSessionService.js'
+import { validateCodeAndGetUUID } from '../../services/2FAService.js'
 
 async function getBasicUserDataController(req, res, next) {
   try {

@@ -1,4 +1,4 @@
-import { getFile, uploadFiles } from '../services/FileService.js'
+import { getFile, uploadFiles } from '../../services/FileService.js'
 
 async function getFileController(req, res, next) {
   try {

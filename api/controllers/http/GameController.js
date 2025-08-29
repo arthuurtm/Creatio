@@ -1,4 +1,4 @@
-import { getAnyGame, setGameOnDatabase } from '../services/GameService.js'
+import { getAnyGame, setGameOnDatabase } from '../../services/GameService.js'
 
 async function getAnyGameController(req, res, next) {
   try {

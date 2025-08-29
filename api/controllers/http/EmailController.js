@@ -1,5 +1,5 @@
-import { sendEmailService, authenticateService } from '../services/EmailService.js'
-import log from '../helpers/console.js'
+import { sendEmailService, authenticateService } from '../../services/EmailService.js'
+import log from '../../helpers/console.js'
 
 async function sendEmail(req) {
   try {
