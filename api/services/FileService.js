@@ -1,41 +1,59 @@
-import Minio from 'minio'
+import * as Minio from 'minio'
 import fs from 'fs'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
+import log from '../helpers/console.js'
 
 const bucketName = 'public'
+const minioClient = new Minio.Client({
+  endPoint: 'localhost',
+  port: 9000,
+  useSSL: process.env.NODE_ENV === 'production',
+  accessKey: process.env.MINIO_USER,
+  secretKey: process.env.MINIO_PASSWORD,
+})
 
-function getMinioClient() {
-  const minioClient = new Minio.Client({
-    endPoint: 'localhost',
-    port: 9000,
-    useSSL: process.env.NODE_ENV === 'production',
-    accessKey: process.env.MINIO_USER,
-    secretKey: process.env.MINIO_PASSWORD,
+async function ensureBucket(bucket) {
+  log.info('Entrei.....', bucket)
+  return new Promise((resolve, reject) => {
+    minioClient.bucketExists(bucket, (err, exists) => {
+      if (err) return reject(err)
+      if (!exists) {
+        minioClient.makeBucket(bucket, 'us-east-1', (err) => {
+          if (err) return reject(err)
+          console.log(`Bucket ${bucket} criado.`)
+          resolve()
+        })
+      } else {
+        resolve()
+      }
+    })
   })
-
-  // Garante que o bucket exista
-  minioClient.bucketExists(bucketName, (err, exists) => {
-    if (err) return console.error('Erro ao verificar bucket:', err)
-    if (!exists) {
-      minioClient.makeBucket(bucketName, 'us-east-1', (err) => {
-        if (err) return console.error('Erro ao criar bucket:', err)
-        console.log('Bucket criado com sucesso!')
-      })
-    } else {
-      console.log('Bucket já existe.')
-    }
-  })
-
-  return minioClient
 }
 
-async function uploadFilesToMinio(files, gameId) {
+async function getFile(fileName, type = 'public') {
+  const bucket = type === 'private' ? 'private' : 'public'
+
+  await ensureBucket(bucket)
+
+  if (type === 'public') {
+    return `${minioClient.protocol}//${minioClient.host}:${minioClient.port}/${bucket}/${fileName}`
+  } else {
+    // Para arquivos privados → gera URL temporária
+    return new Promise((resolve, reject) => {
+      minioClient.presignedGetObject(bucket, fileName, 60 * 60, (err, url) => {
+        if (err) return reject(err)
+        resolve(url)
+      })
+    })
+  }
+}
+
+async function uploadFiles(files, gameId) {
   if (!files || !files.length) {
     throw new Error('Nenhum arquivo enviado.')
   }
 
-  const minioClient = getMinioClient()
   const uploadResults = []
 
   for (const file of files) {
@@ -73,4 +91,4 @@ async function uploadFilesToMinio(files, gameId) {
   return uploadResults
 }
 
-export { uploadFilesToMinio }
+export { uploadFiles, getFile }

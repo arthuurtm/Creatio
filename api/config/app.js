@@ -1,6 +1,6 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
-import { DatabaseRouter, RootRoute } from '../routes/index.js'
+import { DatabaseRouter, FilesRoute, RootRoute } from '../routes/index.js'
 import { requestLogger } from '../middlewares/requestLogger.js'
 import { errorHandler } from '../middlewares/errorHandler.js'
 
@@ -12,6 +12,7 @@ app.use(requestLogger)
 // Rotas
 app.use('/api/database', DatabaseRouter)
 app.use('/api', RootRoute)
+app.use('/api/file', FilesRoute)
 // Erros
 app.use(errorHandler)
 
