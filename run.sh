@@ -1,18 +1,3 @@
-cd api
-
-# Função para verificar se um serviço está em execução
-check_service() {
-  service_name=$1
-  if ! pgrep -x "$service_name" > /dev/null; then
-    echo "Erro: O serviço $service_name não está em execução. Por favor, inicie o serviço."
-  else
-    echo "$service_name está em execução."
-  fi
-}
-
-# Verificar se os serviços estão em execução
-check_service "mariadb"
-
 # Função para matar os processos em segundo plano
 cleanup() {
   echo "Interrompendo todos os processos em segundo plano..."
@@ -33,15 +18,9 @@ pids=()
 # Executa o servidor de arquivos
 docker start minio
 
-# Procurar por todos os arquivos .py **somente na raiz**, ignorando os que começam com "f_"
-for file in $(find . -maxdepth 1 -type f -name "*.py" | grep -v '/f_'); do
-  echo "Executando $file com Python..."
-  python "$file" &
-  pids+=($!)  # Armazenar o PID do processo em segundo plano
-done
-
-# Procurar por todos os arquivos .mjs **somente na raiz**, ignorando os que começam com "f_"
-for file in $(find . -maxdepth 1 -type f -name "*.mjs" | grep -v '/f_'); do
+# Procurar por todos os arquivos .mjs **somente na raiz**
+cd api
+for file in $(find . -maxdepth 1 -type f -name "*.mjs"); do
   echo "Executando $file com Node.js..."
   node "$file" &
   pids+=($!)  # Armazenar o PID do processo em segundo plano
