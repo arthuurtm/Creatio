@@ -63,7 +63,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { get } from '@/functions'
+import { http } from '@/functions'
 
 const props = defineProps({
   url: {
@@ -100,7 +100,7 @@ const isEnableScrollButton = computed(() => {
 
 async function loadGames() {
   try {
-    games.value = Object.values(await get({ type: 'database', route: props.url }))
+    games.value = Object.values(await http.get({ type: 'database', route: props.url }))
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
   } finally {

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { handleImage } from '@/functions'
+import { util } from '@/functions'
 
 const props = defineProps({
   card: {
@@ -55,7 +55,7 @@ function handleMouseLeave(index) {
       <p>{{ game.title || 'Exemplo' }}</p>
     </div>
     <div class="banner">
-      <img id="banner" alt="Banner do jogo" :src="handleImage(game.banner)" />
+      <img id="banner" alt="Banner do jogo" :src="util.handleImage(game.banner)" />
     </div>
   </div>
 </template>

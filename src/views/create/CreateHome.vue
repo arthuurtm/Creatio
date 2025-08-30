@@ -19,7 +19,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import ComponentLoadSessions from '@/components/modules/ComponentLoadSessions.vue'
-import { post } from '@/functions'
+import { http } from '@/functions'
 import { showToast } from '@/plugins/toast'
 import { useUserStore } from '@/stores'
 
@@ -33,7 +33,7 @@ function loadEditTool(event) {
 async function criarNovoJogo() {
   let result
   try {
-    result = await post({ type: 'database', route: 'setGame' }, { title: 'Novo Jogo' })
+    result = await http.post({ type: 'database', route: 'setGame' }, { title: 'Novo Jogo' })
   } catch (error) {
     showToast({ type: 'error', message: error.message })
   }

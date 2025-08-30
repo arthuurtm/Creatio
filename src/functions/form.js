@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
  * @param {number} options.initialStep - O passo inicial do formulário (padrão: 1).
  * @param {number} options.totalSteps - O número total de passos (opcional, para validação).
  */
-export function useMultiStepForm(options = {}) {
+export default function useMultiStepForm(options = {}) {
   const currentStep = ref(options.initialStep || 1)
   const redirectWrapper = useRouter()
 

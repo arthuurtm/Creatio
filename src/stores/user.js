@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { handleImage } from '@/functions'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -26,7 +25,7 @@ export const useUserStore = defineStore('user', {
       this.name = userData.name
       this.username = userData.username
       this.email = userData.email
-      this.profilePicture = userData.profilePicture || handleImage('profile-3.png')
+      this.profilePicture = userData.profilePicture
       this.additionalData = userData.additionalData || {}
       this.isAuth = true
     },

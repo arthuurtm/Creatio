@@ -102,7 +102,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { logout } from '@/functions/auth'
+import { http } from '@/functions/'
 import DialogMessage from '@/components/dialogs/DialogMessage.vue'
 import DialogSettings from '@/components/dialogs/DialogSettings.vue'
 import { useUserStore, useAppDynamicDialog } from '@/stores'
@@ -165,7 +165,7 @@ const handleLogout = () => {
       {
         text: 'Sim',
         class: 'confirm',
-        action: () => logout(),
+        action: () => http.auth.logout(),
       },
     ],
   })

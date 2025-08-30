@@ -150,8 +150,7 @@
 </template>
 
 <script setup>
-import { appTheme, get } from '@/functions'
-import { logoutAll } from '@/functions/auth'
+import { http, util } from '@/functions/'
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppDynamicDialog, useUserStore, useSettingsStore } from '@/stores'
@@ -164,14 +163,12 @@ const dialog = useAppDynamicDialog()
 const settings = useSettingsStore()
 
 const isAuth = computed(() => user.getIsAuth)
-const userId = computed(() => user.getId)
 const profilePicture = computed(() => user.getProfilePicture)
 const selectedOption = ref(null)
 const actualPage = ref(1)
 const isDarkMode = ref(false)
 const isGlassy = ref(false)
 const isGoogleConnected = ref(false)
-const isDiscordConnected = ref(false)
 const userData = ref({})
 const isSideBarEnable = computed(() => settings.getSideBar)
 
@@ -184,11 +181,11 @@ function handleNavPage(value, name) {
 function handleAction() {}
 
 function toggleThemeColor() {
-  appTheme(true)
+  util.appTheme(true)
 }
 
 function toggleThemeGlassy() {
-  appTheme(false, true)
+  util.appTheme(false, true)
 }
 
 function toggleSideBar() {
@@ -216,28 +213,21 @@ function disconnectAllDevices() {
         text: 'Sim',
         class: 'confirm',
         action: () => {
-          logoutAll()
+          http.auth.logoutAll()
         },
       },
     ],
   })
 }
 
-const itsMe = (device) => {
-  if (userId.value === device.userId) {
-    return true
-  }
-  return false
-}
-
 const connectedDevices = ref([])
 
 onMounted(async () => {
-  let theme = appTheme()
+  let theme = util.appTheme()
   isDarkMode.value = theme.isDark == true ? true : false
   isGlassy.value = theme.isGlassy == true ? true : false
 
-  const gToken = get({ type: 'database', route: 'getUserBasics' })
+  const gToken = http.get({ type: 'database', route: 'getUserBasics' })
   if (gToken.ok) {
     let data = gToken.json()
     if (data.gToken != '' || data.gToken != null) {
@@ -246,7 +236,7 @@ onMounted(async () => {
     }
   }
 
-  let result = await get({ type: 'database', route: 'getAllUserSessions' })
+  let result = await http.get({ type: 'database', route: 'getAllUserSessions' })
   connectedDevices.value = result
 })
 </script>

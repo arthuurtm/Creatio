@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated } from '@/functions/auth'
+import { http } from '@/functions/'
 
 // Errors
 import ErrNotFound from '@/layouts/ErrNotFound.vue'
@@ -132,7 +132,7 @@ const router = createRouter({
 
 // Router Guard
 router.beforeEach(async (to, from, next) => {
-  const isLoggedIn = await isAuthenticated()
+  const isLoggedIn = await http.auth.isAuthenticated()
 
   if (to.meta.requiresAuth && !isLoggedIn) {
     next({ name: 'Login', query: { redirect: to.name } })

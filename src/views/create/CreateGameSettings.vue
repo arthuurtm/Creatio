@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter /*useRoute*/ } from 'vue-router'
-import { post } from '@/functions'
+import { http } from '@/functions'
 import { showToast } from '@/plugins/toast'
 import ComponentFormPage from '@/layouts/AppFormPage.vue'
 import { ref } from 'vue'
@@ -93,7 +93,7 @@ const functions = {
         return
       }
 
-      let result = await post(
+      let result = await http.post(
         { type: 'database', route: 'setGame' },
         { title: inputData.value.gameName, description: inputData.value.gameDescription },
       )
@@ -107,7 +107,7 @@ const functions = {
         for (const pair of gameData.entries()) {
           console.log(pair[0], pair[1])
         }
-        post(
+        http.post(
           { type: 'database', route: 'setFileUpload', contentType: 'multipart/form-data' },
           gameData,
         )
