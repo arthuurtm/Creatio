@@ -1,12 +1,12 @@
 import log from '../helpers/console.js'
+import GameLabController from '../controllers/ws/GameLabController.js'
 
 const routes = {
-  'game:create:init': null,
-  'game:create:update': null,
-  'game:create:save': null,
+  'game:lab:get': GameLabController.get,
+  'game:lab:update': GameLabController.update,
+  'game:lab:upgrade': null,
   'game:join': null,
   'game:leave': null,
-  'game:state:sync': null,
 }
 
 const handleConnection = (ws, wss) => {
