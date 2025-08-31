@@ -10,11 +10,19 @@ class FormError extends Error {
 
 function getApiUrl(type, route, querys = null) {
   const origin = window.location.origin
-  if (!type || !route) {
+  const handleRoute = {
+    ws: () => {
+      return `${origin.replace(/^(https?:\/\/)/, 'ws://')}/ws`
+    },
+    default: () => {
+      return `${origin}/api/${type}/${route}`
+    },
+  }
+  if (type != 'ws' && (!type || !route)) {
     console.error('Tipo ou rota não fornecidos.')
     return null
   }
-  let url = `${origin}/api/${type}/${route}`
+  let url = (handleRoute[type] || handleRoute.default)()
   if (querys) {
     const queryString = buildQuery(querys)
     url += `?${queryString}`
@@ -155,4 +163,4 @@ async function logoutAll() {
 }
 const auth = { isAuthenticated, logout, logoutAll }
 
-export default { get, post, put, del, auth }
+export default { get, post, put, del, getApiUrl, auth }

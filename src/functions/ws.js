@@ -3,7 +3,12 @@ import { ref, watch } from 'vue'
 export default function useWebSocket(url) {
   // Estado da conexão
   const data = ref(null)
-  const status = ref('CLOSED') // Pode ser: CONNECTING, OPEN, CLOSED, ERROR
+  /**
+   * Controla o estado atual da conexão WebSocket.
+   * O valor é reativo, encapsulado por um `ref` do Vue.
+   * @type {import('vue').Ref<'CONNECTING' | 'OPEN' | 'CLOSED' | 'ERROR'>}
+   */
+  const status = ref('CLOSED')
   const ws = ref(null)
 
   let explicitClose = false // Flag para saber se fechamos a conexão de propósito
@@ -54,13 +59,22 @@ export default function useWebSocket(url) {
   }
 
   // Função para enviar dados
-  const send = (message) => {
-    if (ws.value && status.value === 'OPEN') {
+  /**
+   * Envia uma mensagem para o servidor WebSocket através de uma rota específica.
+   * @param {object} payload - O objeto contendo os dados para enviar.
+   * @param {string} payload.route - A rota ou evento de destino no servidor.
+   * @param {*} payload.message - A mensagem ou dados a serem enviados (pode ser qualquer tipo serializável).
+   * @returns {object | null}
+   */
+  const send = ({ route, message = {} }) => {
+    if (ws.value && status.value === 'OPEN' && route) {
       // Converte para string JSON se for um objeto
       const dataToSend = typeof message === 'object' ? JSON.stringify(message) : message
-      ws.value.send(dataToSend)
+      const result = ws.value.send({ event: route, data: dataToSend })
+      return result
     } else {
       console.warn('Não é possível enviar mensagem. WebSocket não está conectado.')
+      return null
     }
   }
 

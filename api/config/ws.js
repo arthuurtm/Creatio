@@ -8,7 +8,7 @@ import log from '../helpers/console.js'
  * @returns {WebSocketServer} A instância do servidor WebSocket criada.
  */
 function initializeWebSocket(server) {
-  const wss = new WebSocketServer({ server })
+  const wss = new WebSocketServer({ server: server, path: '/ws' })
 
   wss.on('connection', (ws, req) => {
     log.success('Cliente WebSocket conectado!')
