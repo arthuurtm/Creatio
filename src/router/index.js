@@ -15,7 +15,7 @@ import ViewUserProfile from '@/views/ViewUserProfile.vue'
 import ViewGameRun from '@/views/ViewGameRun.vue'
 import CreateHome from '@/views/create/CreateHome.vue'
 import CreateGameSettings from '@/views/create/CreateGameSettings.vue'
-import EditGame from '@/views/create/EditGame.vue'
+import GameEdit from '@/views/create/GameEdit.vue'
 
 // Layouts
 import AppHome from '@/layouts/AppHome.vue'
@@ -110,7 +110,7 @@ const router = createRouter({
         {
           path: ':id',
           name: 'EditGame',
-          component: EditGame,
+          component: GameEdit,
           props: true,
           meta: { hiddenNavigator: true },
         },

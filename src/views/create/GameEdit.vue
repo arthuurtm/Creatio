@@ -1,9 +1,11 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import ComponentNode from '@/components/modules/ComponentNode.vue'
+import { ws, http } from '@/functions'
 
 const contextMenuRef = ref(null)
 const componentNodeRef = ref(null)
+const { data, status, connect, send, disconnect } = ws(http.getApiUrl('ws'))
 
 function openContextMenu(items, event) {
   contextMenuRef.value.openContextMenu(items, event)
@@ -65,6 +67,10 @@ function handleContextMenu(e) {
     e,
   )
 }
+onMounted(() => {
+  connect()
+  console.log(send({ route: 'game:lab:get' }))
+})
 </script>
 
 <template>
