@@ -26,6 +26,7 @@
     "google-auth-library": "^9.15.1",
     "googleapis": "^150.0.1",
     "jsonwebtoken": "^9.0.2",
+    "lodash-es": "^4.17.21",
     "mariadb": "^3.4.0",
     "minio": "^8.0.5",
     "multer": "^2.0.0",
