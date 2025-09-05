@@ -1,5 +1,6 @@
 import { showToast } from '@/plugins/toast'
 import { useUserStore } from '@/stores/user'
+import { debounce } from 'lodash-es'
 
 class FormError extends Error {
   constructor(message, details = {}) {
@@ -108,6 +109,7 @@ const get = (endpoint) => request(endpoint, 'GET')
 const post = (endpoint, body) => request(endpoint, 'POST', body)
 const put = (endpoint, body) => request(endpoint, 'PUT', body)
 const del = (endpoint) => request(endpoint, 'DELETE')
+get.slow = debounce((endpoint) => request(endpoint, 'GET'), 500)
 
 async function handleUserData() {
   try {
@@ -119,7 +121,7 @@ async function handleUserData() {
         name: res.nickname,
         username: res.username,
         email: res.email,
-        profilePicture: null,
+        profilePicture: res.profilePic,
       })
       return true
     }
