@@ -4,8 +4,9 @@ import { getFileController } from '../controllers/http/FileController.js'
 
 const router = Router()
 
-router.post('/public/*', getFileController)
 router.get('/public/:filename', getFileController)
+router.get('/public/*', getFileController)
+router.get('/public', getFileController)
 
-const FilesRoute = router
+let FilesRoute = router
 export default FilesRoute

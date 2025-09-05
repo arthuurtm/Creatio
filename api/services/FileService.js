@@ -4,8 +4,10 @@ import fscb from 'fs'
 import path from 'path'
 import os from 'os'
 import { v4 as uuidv4 } from 'uuid'
+import log from '../helpers/console.js'
 
 const DEFAULT_BUCKET = process.env.MINIO_BUCKET || 'public'
+const REGION = 'us-east-1'
 const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT || 'localhost'
 const MINIO_PORT = parseInt(process.env.MINIO_PORT || '9000', 10)
 const MINIO_USE_SSL = process.env.NODE_ENV === 'production'
@@ -62,28 +64,52 @@ function tmpFilePath(pref = 'file') {
 /**
  * ensureBucket - cria bucket se não existir (chamar na inicialização idealmente)
  */
-export async function ensureBucket(bucket = DEFAULT_BUCKET) {
-  return new Promise((resolve, reject) => {
-    minioClient.bucketExists(bucket, (err, exists) => {
-      if (err) return reject(err)
-      if (!exists) {
-        minioClient.makeBucket(bucket, 'us-east-1', (err2) => {
-          if (err2) return reject(err2)
+async function ensureBucket(bucket = DEFAULT_BUCKET) {
+  try {
+    const exists = await new Promise((resolve, reject) => {
+      minioClient.bucketExists(bucket, (err, exists) => {
+        if (err) return reject(err)
+        resolve(exists)
+      })
+    })
+
+    if (!exists) {
+      await new Promise((resolve, reject) => {
+        minioClient.makeBucket(bucket, REGION, (err) => {
+          if (err) return reject(err)
           resolve()
         })
-      } else {
-        resolve()
+      })
+
+      // Se for bucket "public", aplica policy de leitura
+      if (bucket === 'public') {
+        const policy = {
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Effect: 'Allow',
+              Principal: '*',
+              Action: ['s3:GetObject'],
+              Resource: [`arn:aws:s3:::${bucket}/*`],
+            },
+          ],
+        }
+        await minioClient.setBucketPolicy(bucket, JSON.stringify(policy))
+        log.success('Sucesso ao criar bucket: ', bucket)
       }
-    })
-  })
+    }
+  } catch (err) {
+    log.error('Erro ao criar/verificar bucket:', err)
+    throw err
+  }
 }
 
 /**
  * utility: cria uma URL pública simples (se necessário)
  */
-export function buildPublicUrl(bucket = DEFAULT_BUCKET, objectName) {
+function buildPublicUrl(bucket = DEFAULT_BUCKET, objectName) {
   const protocol = MINIO_USE_SSL ? 'https' : 'http'
-  return `${minioClient.protocol}//${minioClient.host}:${minioClient.port}/${bucket}/${objectName}`
+  return `http://localhost:5173/assets/${bucket}/${objectName}`
 }
 
 const write = {
@@ -205,7 +231,7 @@ const write = {
           flushQueue().catch((e) => {
             // log simples, não quebrou a aplicação
             // eslint-disable-next-line no-console
-            console.error('Erro em flushQueue:', e)
+            log.error('Erro em flushQueue:', e)
           }),
         debounceMs,
       )
@@ -275,21 +301,20 @@ const write = {
 }
 
 const read = {
-  getFilePath: async (fileName, type = 'public') => {
-    const bucket = type === 'private' ? 'private' : 'public'
-
+  getFile: async (bucket = 'public', fileName) => {
     await ensureBucket(bucket)
 
-    if (type === 'public') {
-      return buildPublicUrl(bucket, fileName)
+    if (bucket === 'public') {
+      const stream = await minioClient.getObject(bucket, fileName)
+      return { type: 'stream', file: stream }
     } else {
-      // Para arquivos privados → gera URL temporária
-      return new Promise((resolve, reject) => {
+      const url = await new Promise((resolve, reject) => {
         minioClient.presignedGetObject(bucket, fileName, 60 * 60, (err, url) => {
           if (err) return reject(err)
           resolve(url)
         })
       })
+      return { type: 'url', file: url }
     }
   },
 
