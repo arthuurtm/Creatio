@@ -10,17 +10,18 @@ const routes = {
 }
 
 const handleConnection = (ws, wss) => {
-  ws.on('message', (message) => {
+  ws.on('message', async (message) => {
     try {
       const data = JSON.parse(message)
+      log.info('Evento WebSocket recebido: ', data.event)
 
       // Encontra a função do controller baseada no evento
       const handler = routes[data.event]
 
       if (handler) {
         // Cria um objeto de contexto para passar informações úteis
-        const context = { ws, wss, payload: data.payload }
-        handler(context)
+        const context = { ws, wss, data: data.payload }
+        await handler(context)
       } else {
         log.warn(`Nenhum handler encontrado para o evento: ${data.event}`)
         ws.send(JSON.stringify({ error: `Evento '${data.event}' desconhecido.` }))
