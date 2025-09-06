@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 export default function useWebSocket(url) {
   // Estado da conexão
@@ -14,7 +14,7 @@ export default function useWebSocket(url) {
   let explicitClose = false // Flag para saber se fechamos a conexão de propósito
 
   // Função para conectar
-  const connect = () => {
+  const connect = async () => {
     if (ws.value && status.value === 'OPEN') {
       console.log('WebSocket já está conectado.')
       return
@@ -25,53 +25,52 @@ export default function useWebSocket(url) {
     status.value = 'CONNECTING'
     ws.value = new WebSocket(url)
 
-    ws.value.onopen = () => {
-      console.log('WebSocket conectado com sucesso! ✅')
-      status.value = 'OPEN'
-    }
-
-    ws.value.onmessage = (event) => {
-      try {
-        // Tentamos fazer o parse do dado, assumindo que é um JSON
-        data.value = JSON.parse(event.data)
-      } catch (e) {
-        // Se não for JSON, usamos o dado bruto
-        data.value = event.data
+    return new Promise((resolve, reject) => {
+      ws.value.onopen = () => {
+        console.log('WebSocket conectado com sucesso! ✅')
+        status.value = 'OPEN'
+        resolve()
       }
-    }
 
-    ws.value.onclose = () => {
-      console.log('WebSocket desconectado.')
-      status.value = 'CLOSED'
-      ws.value = null
-
-      // Tenta reconectar se não foi um fechamento explícito
-      if (!explicitClose) {
-        console.log('Tentando reconectar em 5 segundos...')
-        setTimeout(() => connect(), 5000)
+      ws.value.onmessage = (event) => {
+        try {
+          data.value = JSON.parse(event.data)
+        } catch (e) {
+          data.value = event.data
+        }
       }
-    }
 
-    ws.value.onerror = (error) => {
-      console.error('Erro no WebSocket:', error)
-      status.value = 'ERROR'
-    }
+      ws.value.onclose = () => {
+        console.log('WebSocket desconectado.')
+        status.value = 'CLOSED'
+        ws.value = null
+
+        if (!explicitClose) {
+          console.log('Tentando reconectar em 5 segundos...')
+          setTimeout(() => connect(), 5000)
+        }
+      }
+
+      ws.value.onerror = (error) => {
+        console.error('Erro no WebSocket:', error)
+        status.value = 'ERROR'
+        reject(error)
+      }
+    })
   }
 
   // Função para enviar dados
   /**
    * Envia uma mensagem para o servidor WebSocket através de uma rota específica.
-   * @param {object} payload - O objeto contendo os dados para enviar.
-   * @param {string} payload.route - A rota ou evento de destino no servidor.
-   * @param {*} payload.message - A mensagem ou dados a serem enviados (pode ser qualquer tipo serializável).
+   * @param {string} event - A rota ou evento de destino no servidor.
+   * @param {*} payload - A mensagem ou dados a serem enviados (pode ser qualquer tipo serializável).
    * @returns {object | null}
    */
-  const send = ({ route, message = {} }) => {
-    if (ws.value && status.value === 'OPEN' && route) {
-      // Converte para string JSON se for um objeto
-      const dataToSend = typeof message === 'object' ? JSON.stringify(message) : message
-      const result = ws.value.send({ event: route, data: dataToSend })
-      return result
+  const send = ({ event, payload = {} }) => {
+    if (ws.value && status.value === 'OPEN' && event) {
+      const objectPayload = typeof payload === 'object' ? JSON.stringify(payload) : payload
+      const dataToSend = { event, payload: objectPayload }
+      return ws.value.send(JSON.stringify(dataToSend))
     } else {
       console.warn('Não é possível enviar mensagem. WebSocket não está conectado.')
       return null
