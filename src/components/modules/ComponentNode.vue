@@ -31,31 +31,33 @@ const handleNodeRightClick = (e) => {
             text: 'Adicionar mídia',
             icon: 'add_circle',
             action: () => {
-              openContextMenu([{
-                items: [
-                  {
-                    text: 'Imagem',
-                    icon: 'image',
-                    action: () => setBackgroundImage()
-                  },
-                  {
-                    text: 'Áudio',
-                    icon: 'volume_down_alt',
-                    action: () => setMusic()
-                  },
-                  {
-                    text: 'Vídeo',
-                    icon: 'play_arrow'
-                  }
-                ]
-              }])
+              openContextMenu([
+                {
+                  items: [
+                    {
+                      text: 'Imagem',
+                      icon: 'image',
+                      action: () => setBackgroundImage(),
+                    },
+                    {
+                      text: 'Áudio',
+                      icon: 'volume_down_alt',
+                      action: () => setMusic(),
+                    },
+                    {
+                      text: 'Vídeo',
+                      icon: 'play_arrow',
+                    },
+                  ],
+                },
+              ])
               return 'keep-open'
-            }
+            },
           },
         ],
       },
     ],
-    e
+    e,
   )
 }
 
@@ -72,6 +74,7 @@ const createNode = (x, y, ...params) => {
     links: params.links || [],
   }
   editorStore.nodes.push(node)
+  return node
 }
 
 const addActionToNode = (nodeId, action) => {
@@ -118,6 +121,37 @@ const setSoundEffect = (nodeId, url) => {
   if (node) {
     commitState()
     node.content.soundEffect = url
+  }
+}
+
+function getEditorState() {
+  return {
+    nodes: editorStore.nodes,
+    connections: editorStore.connections,
+  }
+}
+
+function isLocalStateNewer(remoteState) {
+  // Considera que o estado mais recente é o que tiver o maior timestamp de modificação
+  // Adiciona um campo 'updatedAt' em cada node e connection ao criar/modificar
+  const getLatestTimestamp = (arr) =>
+    arr && arr.length ? Math.max(...arr.map((item) => item.updatedAt || 0)) : 0
+
+  const localNodesTs = getLatestTimestamp(editorStore.nodes)
+  const localConnsTs = getLatestTimestamp(editorStore.connections)
+  const remoteNodesTs = getLatestTimestamp(remoteState.nodes)
+  const remoteConnsTs = getLatestTimestamp(remoteState.connections)
+
+  // Se algum local for mais recente que o remoto, retorna true
+  return localNodesTs > remoteNodesTs || localConnsTs > remoteConnsTs
+}
+
+// Exemplo de uso: isLocalStateNewer(remoteState)
+
+function setEditorState(state) {
+  if (!isLocalStateNewer(state)) {
+    editorStore.nodes.splice(0, editorStore.nodes.length, ...state.nodes)
+    editorStore.connections.splice(0, editorStore.connections.length, ...state.connections)
   }
 }
 
@@ -169,15 +203,28 @@ defineExpose({
   setMusic,
   setSoundEffect,
   undo,
-  redo
+  redo,
+  getEditorState,
+  setEditorState,
 })
 </script>
 
 <template>
   <template v-for="node in editorStore.nodes" :key="node.id">
-    <DialogBase v-on:contextmenu.stop="handleNodeRightClick" v-on:contextmenu.prevent :title="node.id"
-      :component="CreateNode" :component-props="{ node }" :always-visible="true" :no-close-button="true"
-      :no-focus-window="true" :is-draggable="true" :no-interpolate-size="true" v-bind:x="node.x" v-bind:y="node.y" />
+    <DialogBase
+      v-on:contextmenu.stop="handleNodeRightClick"
+      v-on:contextmenu.prevent
+      :title="node.id"
+      :component="CreateNode"
+      :component-props="{ node }"
+      :always-visible="true"
+      :no-close-button="true"
+      :no-focus-window="true"
+      :is-draggable="true"
+      :no-interpolate-size="true"
+      v-bind:x="node.x"
+      v-bind:y="node.y"
+    />
   </template>
   <CreateContextMenu ref="contextMenu" />
 </template>

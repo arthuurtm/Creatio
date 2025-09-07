@@ -1,11 +1,47 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import ComponentNode from '@/components/modules/ComponentNode.vue'
 import { ws, http } from '@/functions'
 
+const route = useRoute()
 const contextMenuRef = ref(null)
 const componentNodeRef = ref(null)
 const { data, status, connect, send, disconnect } = ws(http.getApiUrl('ws'))
+
+const gameBasicData = ref({
+  gameId: route.params.id,
+  version: 1,
+})
+
+onMounted(async () => {
+  try {
+    await connect()
+
+    send({
+      event: 'game:lab:get',
+      payload: {
+        gameId: gameBasicData.value.gameId,
+        version: gameBasicData.value.version,
+      },
+    })
+  } catch (error) {
+    console.error('Falha ao conectar ao WebSocket:', error)
+  }
+})
+
+watch(data, (newMessage) => {
+  if (newMessage && newMessage.event === 'game:lab:get:success') {
+    console.log('Dados iniciais do jogo recebidos!', newMessage.data)
+    componentNodeRef.value.setEditorState(newMessage.data)
+  }
+})
+
+function updateGameData() {
+  const state = componentNodeRef.value.getEditorState()
+  const dataToSend = { state, ...gameBasicData.value }
+  send({ event: 'game:lab:update', payload: dataToSend })
+}
 
 function openContextMenu(items, event) {
   contextMenuRef.value.openContextMenu(items, event)
@@ -43,13 +79,18 @@ function handleContextMenu(e) {
                     {
                       text: 'Ação de diálogo',
                       icon: 'code',
-                      action: () => componentNodeRef.value.createNode(e.pageX, e.pageY),
+                      action: () => {
+                        componentNodeRef.value.createNode(e.pageX, e.pageY)
+                        updateGameData()
+                      },
                     },
                     {
                       text: 'Ação de configuração',
                       icon: 'settings_applications',
-                      action: () =>
-                        componentNodeRef.value.createNode(e.pageX, e.pageY, { type: 'config' }),
+                      action: () => {
+                        componentNodeRef.value.createNode(e.pageX, e.pageY, { type: 'config' })
+                        updateGameData()
+                      },
                     },
                   ],
                 },
@@ -67,10 +108,6 @@ function handleContextMenu(e) {
     e,
   )
 }
-onMounted(() => {
-  connect()
-  console.log(send({ route: 'game:lab:get' }))
-})
 </script>
 
 <template>
