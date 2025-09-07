@@ -1,7 +1,6 @@
 import { ref } from 'vue'
 
 export default function useWebSocket(url) {
-  // Estado da conexão
   const data = ref(null)
   /**
    * Controla o estado atual da conexão WebSocket.
@@ -10,7 +9,6 @@ export default function useWebSocket(url) {
    */
   const status = ref('CLOSED')
   const ws = ref(null)
-
   let explicitClose = false // Flag para saber se fechamos a conexão de propósito
 
   // Função para conectar
@@ -34,9 +32,24 @@ export default function useWebSocket(url) {
 
       ws.value.onmessage = (event) => {
         try {
-          data.value = JSON.parse(event.data)
-        } catch (e) {
-          data.value = event.data
+          const result = JSON.parse(event.data)
+          data.value = result
+
+          if (result.event === 'error' || result.event.endsWith(':error')) {
+            console.error(
+              `Erro reportado pelo servidor websocket no evento (${result.event}):`,
+              result.data.message,
+            )
+          } else {
+            console.log(`Evento websocket (${result.event}) recebido com sucesso:`, result.data)
+          }
+        } catch (err) {
+          console.error('Erro ao processar mensagem do WebSocket:', event.data, err)
+
+          data.value = {
+            event: 'internal:error',
+            data: { message: 'A mensagem recebida do servidor era inválida.' },
+          }
         }
       }
 
@@ -64,15 +77,14 @@ export default function useWebSocket(url) {
    * Envia uma mensagem para o servidor WebSocket através de uma rota específica.
    * @param {string} event - A rota ou evento de destino no servidor.
    * @param {*} payload - A mensagem ou dados a serem enviados (pode ser qualquer tipo serializável).
-   * @returns {object | null}
+   * @returns {object|null}
    */
   const send = ({ event, payload = {} }) => {
     if (ws.value && status.value === 'OPEN' && event) {
-      const objectPayload = typeof payload === 'object' ? JSON.stringify(payload) : payload
-      const dataToSend = { event, payload: objectPayload }
-      return ws.value.send(JSON.stringify(dataToSend))
+      const dataToSend = { event, payload } // manda o objeto direto
+      ws.value.send(JSON.stringify(dataToSend))
+      return dataToSend
     } else {
-      console.warn('Não é possível enviar mensagem. WebSocket não está conectado.')
       return null
     }
   }
@@ -86,7 +98,6 @@ export default function useWebSocket(url) {
     }
   }
 
-  // Retornamos o estado reativo e as funções de controle
   return {
     data, // A última mensagem recebida do servidor
     status, // O status atual da conexão (OPEN, CLOSED, etc)
