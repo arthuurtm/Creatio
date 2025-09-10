@@ -19,6 +19,7 @@ const props = defineProps({
 const dialog = useAppDynamicDialog()
 const showDialog = computed(() => dialog.getIsVisible || props.alwaysVisible)
 const showDialogAnim = ref(false)
+const emit = defineEmits(['update:x', 'update:y'])
 
 function close() {
   if (!dialog.getIsHistory) showDialogAnim.value = false
@@ -92,6 +93,8 @@ const dragHandlers = (() => {
   function stopDrag() {
     window.removeEventListener('mousemove', onDrag)
     window.removeEventListener('mouseup', stopDrag)
+    emit('update:x', position.value.x)
+    emit('update:y', position.value.y)
   }
 
   function handleMouseDown(event) {
