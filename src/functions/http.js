@@ -52,6 +52,16 @@ function buildQuery(params = {}) {
   return query.toString()
 }
 
+/**
+ *
+ * @param {*} endpoint
+ * @param {string} endpoint.type tipo de endpoint
+ * @param {string} endpoint.route rota do endpoint
+ * @param {string} endpoint.query querys adicionais (opcional)
+ * @param {string} endpoint.contentType content-type do endpoint (opcional, padrão: application/json)
+ * @param {*} body corpo da requisição (opcional)
+ * @returns
+ */
 const request = async (endpoint = {}, method = 'GET', body = null) => {
   const getHttpStatusMessage = (status) => {
     const messages = {
@@ -70,11 +80,11 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
   const config = {
     credentials: 'include',
     method,
-    headers: isFormData
-      ? undefined
-      : {
-          'Content-Type': endpoint.contentType || 'application/json',
-        },
+    // headers: isFormData
+    //   ? undefined
+    //   : {
+    //       'Content-Type': endpoint.contentType || 'application/json',
+    //     },
     body: isFormData ? body : body ? JSON.stringify(body) : null,
   }
 
