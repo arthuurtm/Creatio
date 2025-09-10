@@ -2,8 +2,8 @@ import log from '../helpers/console.js'
 import GameLabController from '../controllers/ws/GameLabController.js'
 
 const routes = {
-  'game:lab:get': GameLabController.get,
-  'game:lab:update': GameLabController.update,
+  'game:lab:get:json': GameLabController.getJson,
+  'game:lab:update:json': GameLabController.updateJson,
   'game:lab:upgrade': null,
   'game:join': null,
   'game:leave': null,
