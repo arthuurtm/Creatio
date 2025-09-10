@@ -1,20 +1,60 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { ws, http, util } from '@/functions'
 import DialogBase from '@/layouts/DialogBase.vue'
 import CreateNode from '@/components/elements/CreateNode.vue'
 import CreateContextMenu from '../elements/CreateContextMenu.vue'
 
+const route = useRoute()
+const { data, status, connect, send, disconnect } = ws(http.getApiUrl('ws'))
 const contextMenu = ref({})
-const editorStore = reactive({
-  nodes: [],
-  connections: [],
+const editorStore = reactive({ nodes: [], connections: [] })
+const gameBasicData = ref({ gameId: route.params.id, version: 1 })
+
+onMounted(async () => {
+  try {
+    await connect()
+
+    send({
+      event: 'game:lab:get:json',
+      payload: {
+        gameId: gameBasicData.value.gameId,
+        version: gameBasicData.value.version,
+      },
+    })
+  } catch (error) {
+    console.error('Falha ao conectar ao WebSocket:', error)
+  }
 })
+
+watch(data, (newMessage) => {
+  if (newMessage && newMessage.event === 'game:lab:get:json:success') {
+    console.log('Dados iniciais do jogo recebidos!', newMessage.data)
+    setEditorState(newMessage.data)
+  }
+})
+
+watch(
+  () => [editorStore],
+  () => {
+    updateGameData()
+  },
+  { deep: true },
+)
+
+function updateGameData() {
+  const state = getEditorState()
+  const dataToSend = { state, ...gameBasicData.value }
+  send({ event: 'game:lab:update:json', payload: dataToSend })
+}
 
 function openContextMenu(items, event) {
   contextMenu.value.openContextMenu(items, event)
 }
 
-const handleNodeRightClick = (e) => {
+const handleNodeRightClick = (e, node) => {
+  const selectedNode = editorStore.nodes.find((n) => n.id === node.id)
   openContextMenu(
     [
       {
@@ -23,26 +63,28 @@ const handleNodeRightClick = (e) => {
             text: 'Adicionar ação',
             icon: 'wb_incandescent',
             action: () => {
-              addActionToNode()
-              return 'keep-open'
-            },
-          },
-          {
-            text: 'Adicionar mídia',
-            icon: 'add_circle',
-            action: () => {
               openContextMenu([
                 {
                   items: [
                     {
                       text: 'Imagem',
                       icon: 'image',
-                      action: () => setBackgroundImage(),
+                      action: async () => {
+                        const selectedFile = await util.selectFile('image/*')
+                        const reqBody = new FormData()
+                        reqBody.append('gameId', gameBasicData.value.gameId)
+                        reqBody.append('version', gameBasicData.value.version)
+                        reqBody.append('files', selectedFile.file)
+                        const { urls } = await http.post({ type: 'file', route: 'upload' }, reqBody)
+                        setBackgroundImage(selectedNode, urls)
+                      },
                     },
                     {
                       text: 'Áudio',
                       icon: 'volume_down_alt',
-                      action: () => setMusic(),
+                      action: () => {
+                        setMusic()
+                      },
                     },
                     {
                       text: 'Vídeo',
@@ -69,16 +111,17 @@ const createNode = (x, y, ...params) => {
     x,
     y,
     type: params.type || 'default',
-    content: params.content || [],
-    actions: params.actions || [],
+    content: {
+      actions: [...(params.actions || [])],
+      choices: [],
+    },
     links: params.links || [],
   }
   editorStore.nodes.push(node)
   return node
 }
 
-const addActionToNode = (nodeId, action) => {
-  const node = editorStore.nodes.find((n) => n.id === nodeId)
+const addActionToNode = (node, action) => {
   if (node) {
     commitState()
     node.content.actions.push({
@@ -89,8 +132,7 @@ const addActionToNode = (nodeId, action) => {
   }
 }
 
-const addChoiceToNode = (nodeId, text) => {
-  const node = editorStore.nodes.find((n) => n.id === nodeId)
+const addChoiceToNode = (node, text) => {
   if (node) {
     commitState()
     node.content.choices.push({
@@ -100,27 +142,36 @@ const addChoiceToNode = (nodeId, text) => {
   }
 }
 
-const setBackgroundImage = (nodeId, url) => {
-  const node = editorStore.nodes.find((n) => n.id === nodeId)
+const setBackgroundImage = (node, url) => {
   if (node) {
     commitState()
-    node.content.backgroundImage = url
+    node.content.actions.push({
+      id: 'action_bg_' + Date.now(),
+      name: 'Definir imagem de fundo',
+      effect: { type: 'setBackgroundImage', url },
+    })
   }
 }
 
-const setMusic = (nodeId, url) => {
-  const node = editorStore.nodes.find((n) => n.id === nodeId)
+const setMusic = (node, url) => {
   if (node) {
     commitState()
-    node.content.music = url
+    node.content.actions.push({
+      id: 'action_music_' + Date.now(),
+      name: 'Tocar música',
+      effect: { type: 'setMusic', url },
+    })
   }
 }
 
-const setSoundEffect = (nodeId, url) => {
-  const node = editorStore.nodes.find((n) => n.id === nodeId)
+const setSoundEffect = (node, url) => {
   if (node) {
     commitState()
-    node.content.soundEffect = url
+    node.content.actions.push({
+      id: 'action_sfx_' + Date.now(),
+      name: 'Efeito sonoro',
+      effect: { type: 'setSoundEffect', url },
+    })
   }
 }
 
@@ -212,7 +263,7 @@ defineExpose({
 <template>
   <template v-for="node in editorStore.nodes" :key="node.id">
     <DialogBase
-      v-on:contextmenu.stop="handleNodeRightClick"
+      v-on:contextmenu.stop="handleNodeRightClick($event, node)"
       v-on:contextmenu.prevent
       :title="node.id"
       :component="CreateNode"
@@ -222,8 +273,8 @@ defineExpose({
       :no-focus-window="true"
       :is-draggable="true"
       :no-interpolate-size="true"
-      v-bind:x="node.x"
-      v-bind:y="node.y"
+      v-model:x="node.x"
+      v-model:y="node.y"
     />
   </template>
   <CreateContextMenu ref="contextMenu" />
