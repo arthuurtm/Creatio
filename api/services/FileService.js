@@ -133,7 +133,6 @@ async function _flushQueue() {
   queue.clear()
 
   const promises = entries.map(async ([key, entry]) => {
-    log.success('Processando fila para key:', { key, entry })
     const { payload, opts = {} } = entry
     const objectName =
       opts.objectNameGenerator && typeof opts.objectNameGenerator === 'function'
