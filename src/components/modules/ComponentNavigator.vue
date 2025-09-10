@@ -32,20 +32,7 @@
 
         <ul>
           <CreateButton
-            :rules="['noGroup']"
             :buttons="[
-              {
-                tag: 'nav-li',
-                text: `@${user.getUsername}`,
-                img: {
-                  src: user.getProfilePicture,
-                  alt: 'Foto de perfil',
-                  class: 'profile-picture',
-                },
-                class: `controller-index symbolic`,
-                id: 'user-info',
-                rules: [!isAuthenticated && 'hide'],
-              },
               {
                 tag: 'nav-li',
                 text: 'Entrar',
@@ -60,6 +47,12 @@
                 icon: 'home',
                 class: `controller-index  ${selectedPage === 'Home' && 'selected'}`,
                 action: () => navigateTo('Home'),
+              },
+              {
+                tag: 'nav-li',
+                text: 'Pesquisar',
+                icon: 'search',
+                action: () => null,
               },
               {
                 tag: 'nav-li',
@@ -78,17 +71,35 @@
               },
               {
                 tag: 'nav-li',
-                text: 'Configurações',
-                icon: 'settings',
+                text: 'Notificações',
+                icon: 'notifications',
                 class: 'controller-index ',
-                action: handleSettingsBox,
+                action: null,
               },
               {
                 tag: 'nav-li',
-                text: 'Sair',
-                icon: 'logout',
-                class: `controller-index  ${isAuthenticated ? '' : 'hidden'}`,
-                action: handleLogout,
+                text: `@${user.getUsername}`,
+                img: {
+                  src: user.getProfilePicture,
+                  alt: 'Foto de perfil',
+                  class: 'profile-picture',
+                },
+                class: `controller-index symbolic`,
+                id: 'user-info',
+                rules: [!isAuthenticated && 'hide'],
+              },
+            ]"
+          />
+        </ul>
+
+        <ul>
+          <CreateButton
+            :buttons="[
+              {
+                tag: 'nav-li',
+                text: 'Mais',
+                icon: 'view_cozy',
+                action: openMoreOptions,
                 rules: [!isAuthenticated && 'hide'],
               },
             ]"
@@ -97,6 +108,7 @@
       </div>
     </div>
   </div>
+  <CreateContextMenu ref="contextMenuRef" />
 </template>
 
 <script setup>
@@ -110,7 +122,9 @@ import { useUserStore, useAppDynamicDialog } from '@/stores'
 // Stores e Router
 const router = useRouter()
 const user = useUserStore()
+console.log(user)
 const dialog = useAppDynamicDialog()
+const contextMenuRef = ref(null)
 
 // Props e Emits
 const props = defineProps({
@@ -176,6 +190,30 @@ const handleSettingsBox = () => {
   // updateMenuState()
 }
 
+const openMoreOptions = (event) => {
+  event.preventDefault()
+  contextMenuRef.value.openContextMenu(
+    [
+      {
+        items: [
+          {
+            text: 'Configurações',
+            icon: 'settings',
+            action: handleSettingsBox,
+          },
+          {
+            text: 'Sair',
+            icon: 'logout',
+            class: 'confirm',
+            action: handleLogout,
+          },
+        ],
+      },
+    ],
+    event,
+  )
+}
+
 // Eventos de Toque
 const onTouchStart = (event) => {
   startY.value = event.touches[0].clientY
@@ -233,6 +271,7 @@ watch(isMenuActive, (value) => {
 
 // Montagem do Componente
 onMounted(() => {
+  console.log('Dados do usuário:', user.$state)
   updateMenuState(!handleIsMobile())
 })
 </script>

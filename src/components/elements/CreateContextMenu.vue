@@ -1,6 +1,5 @@
 <script setup>
-import { TransitionGroup } from 'vue'
-import { ref, nextTick, Transition } from 'vue'
+import { ref, nextTick } from 'vue'
 
 const menuContextItems = ref([])
 const contextMenuVisible = ref(false)
@@ -8,6 +7,7 @@ const contextMenuPos = ref({ top: 50, left: 50 })
 const contextMenu = ref(null)
 
 async function openContextMenu(items = [], event = null) {
+  console.log('Abrindo menu de contexto com itens:', items, 'e evento:', event)
   menuContextItems.value = items
   contextMenuVisible.value = true
 
@@ -55,17 +55,18 @@ defineExpose({
 
 <template>
   <div v-if="contextMenuVisible" class="dialog-shadow" @click="closeContextMenu">
-    <div
-      class="context-menu"
-      :style="{
-        top: contextMenuPos.top + 'px',
-        left: contextMenuPos.left + 'px',
-        position: 'absolute',
-      }"
-      @click.stop
-      ref="contextMenu"
-    >
-      <TransitionGroup name="fastFade" mode="out-in">
+    <Transition name="fastFade" mode="out-in">
+      <div
+        class="context-menu"
+        :style="{
+          top: contextMenuPos.top + 'px',
+          left: contextMenuPos.left + 'px',
+          position: 'absolute',
+        }"
+        @click.stop
+        ref="contextMenu"
+        :key="contextMenuVisible"
+      >
         <template v-for="(subMenu, sIndex) in menuContextItems" :key="sIndex">
           <hr v-if="sIndex > 0" />
           <div class="sub-menu" :style="subMenu?.style">
@@ -84,8 +85,8 @@ defineExpose({
             </div>
           </div>
         </template>
-      </TransitionGroup>
-    </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
