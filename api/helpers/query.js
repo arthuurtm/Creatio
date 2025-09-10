@@ -23,4 +23,13 @@ function setUserDatabaseQuery(...inputs) {
   }
 }
 
-export { setUserDatabaseQuery }
+function gamePathGenerator(gameId, version) {
+  return `games/${gameId}/v${version}`
+}
+
+function getFileExtension(filename) {
+  const parts = filename.split('.')
+  return parts.length > 1 ? parts.pop().toLowerCase() : ''
+}
+
+export { setUserDatabaseQuery, gamePathGenerator, getFileExtension }
