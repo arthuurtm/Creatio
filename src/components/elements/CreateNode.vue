@@ -9,6 +9,12 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['dot-click'])
+
+function handleDotClick(socketId, event) {
+  emit('dot-click', { nodeId: props.node.id, socketId, event })
+}
+
 // Computeds para simplificar o template e garantir reatividade
 const content = computed(() => props.node.content || {})
 const choices = computed(() => content.value.choices || [])
@@ -34,6 +40,13 @@ const hasMeta = computed(() => {
       top: (node.y ?? 0) + 'px',
     }"
   >
+    <div class="connection-points">
+      <div class="dot dot-top" :data-port="`${node.id}:in`"></div>
+      <div class="dot dot-left" :data-port="`${node.id}:left`"></div>
+      <div class="dot dot-right" :data-port="`${node.id}:right`"></div>
+      <div class="dot dot-bottom" :data-port="`${node.id}:out`"></div>
+    </div>
+
     <header class="node-header">
       <span class="node-type">{{ node.type || 'default' }}</span>
       <span class="node-id">#{{ node.id }}</span>
@@ -203,5 +216,41 @@ const hasMeta = computed(() => {
   border-radius: 50%;
   border: 2px solid #f0f0f0;
   box-shadow: 0 0 5px #4caf50;
+}
+
+.connection-points {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary, #4caf50);
+  border: 2px solid #fff;
+  pointer-events: auto;
+  cursor: crosshair;
+}
+.dot-top {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.dot-bottom {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.dot-left {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.dot-right {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 </style>
