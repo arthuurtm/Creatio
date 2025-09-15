@@ -52,8 +52,11 @@ ul {
   }
 
   .nav .nav-content {
-    /* margin-top: 60px; */
+    display: flex;
+    flex-direction: column;
     padding: 15px;
+    gap: 1em;
+    justify-content: space-around;
   }
 
   .nav.minimized {

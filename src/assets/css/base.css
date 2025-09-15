@@ -102,7 +102,7 @@
 :root[data-theme='dark'][data-modifier='glass'] {
   --primary: linear-gradient(135deg, #1677d3cc, #034380cc);
   --primary-hover: linear-gradient(135deg, #1677d3dd, #034380dd);
-  --secondary: rgba(40, 40, 60, 0.22);
+  --secondary: rgba(40, 40, 60, 0.37);
   --secondary-hover: rgba(153, 153, 153, 0.35);
   --danger: linear-gradient(135deg, #e91616cc, #a20202cc);
   --danger-hover: linear-gradient(135deg, #e91616dd, #a20202dd);
