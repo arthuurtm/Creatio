@@ -9,7 +9,24 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['dot-click'])
+const emit = defineEmits(['dot-click', 'emit-event'])
+
+function handleDotMouseDown(socketId, event) {
+  event.stopPropagation()
+  // pega posição inicial
+  const start = { x: event.clientX, y: event.clientY }
+
+  // emite para o pai (ComponentNode) que começou um arraste
+  console.log('Iniciando conexão do nó', props.node.id, 'ponto', socketId)
+  emit('emit-event', {
+    name: 'start-connection',
+    data: {
+      nodeId: props.node.id,
+      socketId,
+      start,
+    },
+  })
+}
 
 function handleDotClick(socketId, event) {
   emit('dot-click', { nodeId: props.node.id, socketId, event })
@@ -41,10 +58,26 @@ const hasMeta = computed(() => {
     }"
   >
     <div class="connection-points">
-      <div class="dot dot-top" :data-port="`${node.id}:in`"></div>
-      <div class="dot dot-left" :data-port="`${node.id}:left`"></div>
-      <div class="dot dot-right" :data-port="`${node.id}:right`"></div>
-      <div class="dot dot-bottom" :data-port="`${node.id}:out`"></div>
+      <div
+        class="dot dot-top"
+        :data-port="`${node.id}:in`"
+        @click="handleDotMouseDown('in', $event)"
+      ></div>
+      <div
+        class="dot dot-left"
+        :data-port="`${node.id}:left`"
+        @click="handleDotMouseDown('left', $event)"
+      ></div>
+      <div
+        class="dot dot-right"
+        :data-port="`${node.id}:right`"
+        @click="handleDotMouseDown('right', $event)"
+      ></div>
+      <div
+        class="dot dot-bottom"
+        :data-port="`${node.id}:out`"
+        @click="handleDotMouseDown('out', $event)"
+      ></div>
     </div>
 
     <header class="node-header">

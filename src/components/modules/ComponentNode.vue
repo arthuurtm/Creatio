@@ -1,16 +1,18 @@
 <script setup>
-import { reactive, ref, watch, onMounted, computed } from 'vue'
+import { reactive, ref, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ws, http, util } from '@/functions'
 import DialogBase from '@/layouts/DialogBase.vue'
 import CreateNode from '@/components/elements/CreateNode.vue'
 import CreateContextMenu from '../elements/CreateContextMenu.vue'
+import { useConnections } from '@/composables/useDotConnection'
 
 const route = useRoute()
 const { data, status, connect, send, disconnect } = ws(http.getApiUrl('ws'))
 const contextMenu = ref({})
 const editorStore = reactive({ nodes: [], connections: [] })
 const gameBasicData = ref({ gameId: route.params.id, version: 1 })
+const { handleStartConnection, paths, forceUpdatePaths } = useConnections(editorStore)
 
 onMounted(async () => {
   try {
@@ -32,6 +34,9 @@ watch(data, (newMessage) => {
   if (newMessage && newMessage.event === 'game:lab:get:json:success') {
     console.log('Dados iniciais do jogo recebidos!', newMessage.data)
     setEditorState(newMessage.data)
+    nextTick(() => {
+      forceUpdatePaths()
+    })
   }
 })
 
@@ -201,52 +206,6 @@ const setSoundEffect = (node, url) => {
   }
 }
 
-// Gerar caminhos SVG para cada conexão
-function getPortPosition(nodeId, port) {
-  const selector = port ? `[data-port="${nodeId}:${port}"]` : `[data-port="${nodeId}:in"]`
-  const el = document.querySelector(selector)
-
-  if (el) {
-    const rect = el.getBoundingClientRect()
-    const svgRect = document.querySelector('.connections-layer').getBoundingClientRect()
-    return {
-      x: rect.left + rect.width / 2 - svgRect.left,
-      y: rect.top + rect.height / 2 - svgRect.top,
-    }
-  }
-
-  // Fallback: centro do nó
-  const node = editorStore.nodes.find((n) => n.id === nodeId)
-  if (!node) return null
-  return {
-    x: node.x + 140, // largura/2
-    y: node.y + 40, // altura/2
-  }
-}
-
-const paths = computed(() => {
-  return editorStore.connections
-    .map((conn) => {
-      const [fromNodeId, fromPort = 'out'] = conn.from.split(':')
-      const [toNodeId, toPort = 'in'] = conn.to.split(':')
-
-      const from = getPortPosition(fromNodeId, fromPort)
-      const to = getPortPosition(toNodeId, toPort)
-
-      if (!from || !to) return null
-
-      const dx = (to.x - from.x) / 2
-      const d = `
-      M ${from.x} ${from.y}
-      C ${from.x + dx} ${from.y},
-        ${to.x - dx} ${to.y},
-        ${to.x} ${to.y}
-    `
-      return { id: conn.from + '_' + conn.to, d }
-    })
-    .filter(Boolean)
-})
-
 function getEditorState() {
   return {
     nodes: editorStore.nodes,
@@ -268,8 +227,6 @@ function isLocalStateNewer(remoteState) {
   // Se algum local for mais recente que o remoto, retorna true
   return localNodesTs > remoteNodesTs || localConnsTs > remoteConnsTs
 }
-
-// Exemplo de uso: isLocalStateNewer(remoteState)
 
 function setEditorState(state) {
   if (!isLocalStateNewer(state)) {
@@ -318,6 +275,12 @@ function redo() {
   editorStore.connections.splice(0, editorStore.connections.length, ...next.connections)
 }
 
+function emitEventHandler(e) {
+  if (e.name === 'start-connection') {
+    handleStartConnection(e.data)
+  }
+}
+
 defineExpose({
   createNode,
   addActionToNode,
@@ -337,12 +300,12 @@ defineExpose({
     <svg class="connections-layer">
       <path
         v-for="p in paths"
-        :key="p.id"
-        :d="p.d"
+        :key="p?.id"
+        :d="p?.d"
         fill="none"
         stroke="var(--text)"
         stroke-width="2"
-        :stroke-dasharray="p.isLoop ? '6,3' : '0'"
+        :stroke-dasharray="p?.isLoop ? '6,3' : '0'"
       />
     </svg>
 
@@ -363,6 +326,7 @@ defineExpose({
         :no-interpolate-size="true"
         v-model:x="node.x"
         v-model:y="node.y"
+        @emit-event="emitEventHandler"
       />
     </div>
 
