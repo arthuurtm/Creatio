@@ -19,7 +19,7 @@ const props = defineProps({
 const dialog = useAppDynamicDialog()
 const showDialog = computed(() => dialog.getIsVisible || props.alwaysVisible)
 const showDialogAnim = ref(false)
-const emit = defineEmits(['update:x', 'update:y'])
+const emit = defineEmits(['update:x', 'update:y', 'emit-event'])
 
 function close() {
   if (!dialog.getIsHistory) showDialogAnim.value = false
@@ -176,6 +176,7 @@ onUnmounted(() => {
             :is="component"
             :key="props.component"
             @close="close"
+            @emit-event="(e) => emit('emit-event', e)"
             v-bind="componentProps"
           />
           <slot v-else />
