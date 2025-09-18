@@ -24,7 +24,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { get } from '@/functions'
+import { http } from '@/functions'
 
 const route = useRoute()
 const gameData = ref(null)
@@ -34,7 +34,7 @@ const error = ref(null)
 onMounted(async () => {
   try {
     const id = route.params.id
-    const res = await get({
+    const res = await http.get({
       type: 'database',
       route: `getGames?filters=${encodeURIComponent(JSON.stringify({ id }))}`,
     })

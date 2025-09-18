@@ -6,7 +6,8 @@ const contextMenuVisible = ref(false)
 const contextMenuPos = ref({ top: 50, left: 50 })
 const contextMenu = ref(null)
 
-async function openContextMenu(items = [], event = []) {
+async function openContextMenu(items = [], event = null) {
+  console.log('Abrindo menu de contexto com itens:', items, 'e evento:', event)
   menuContextItems.value = items
   contextMenuVisible.value = true
 
@@ -14,32 +15,37 @@ async function openContextMenu(items = [], event = []) {
 
   const menuHeight = contextMenu.value?.offsetHeight || 150
   const menuWidth = contextMenu.value?.offsetWidth || 200
+  const buttonRect = event?.currentTarget.getBoundingClientRect() || null
 
-  let top = event.clientY
-  let left = event.clientX
+  // Se tem clique, usa posição do clique, senão centraliza no botão
+  let top =
+    event?.clientY !== undefined
+      ? event.clientY
+      : buttonRect.top + buttonRect.height / 2 - menuHeight / 2
 
-  const buttonRect = event.currentTarget.getBoundingClientRect()
-
-  if (top < buttonRect.top || top > buttonRect.bottom) {
-    top = buttonRect.bottom // força abaixo do botão se clique estiver fora
-  }
-  if (left < buttonRect.left || left > buttonRect.right) {
-    left = buttonRect.left // força alinhado à esquerda do botão
-  }
+  let left =
+    event?.clientX !== undefined
+      ? event.clientX
+      : buttonRect.left + buttonRect.width / 2 - menuWidth / 2
 
   // Ajuste para não sair da tela
-  if (top + menuHeight > window.innerHeight) {
-    top = window.innerHeight - menuHeight
-  }
-  if (left + menuWidth > window.innerWidth) {
-    left = window.innerWidth - menuWidth
-  }
+  if (top + menuHeight > window.innerHeight) top = window.innerHeight - menuHeight
+  if (left + menuWidth > window.innerWidth) left = window.innerWidth - menuWidth
+  if (top < 0) top = 0
+  if (left < 0) left = 0
 
   contextMenuPos.value = { top, left }
 }
 
 function closeContextMenu() {
   contextMenuVisible.value = false
+}
+
+function handleMenuItemClick(action) {
+  const result = action?.()
+  if (result !== 'keep-open') {
+    closeContextMenu()
+  }
 }
 
 defineExpose({
@@ -49,31 +55,38 @@ defineExpose({
 
 <template>
   <div v-if="contextMenuVisible" class="dialog-shadow" @click="closeContextMenu">
-    <div
-      class="context-menu"
-      :style="{
-        top: contextMenuPos.top + 'px',
-        left: contextMenuPos.left + 'px',
-        position: 'absolute',
-      }"
-      @click.stop
-      ref="contextMenu"
-    >
-      <div v-for="(subMenu, sIndex) in menuContextItems" :key="sIndex" class="sub-menu">
-        <hr v-if="sIndex > 0" />
-        <ul v-for="(item, iIndex) in subMenu.items" :key="iIndex" class="sub-menu-items">
-          <CreateButton
-            :buttons="[
-              {
-                icon: item.icon,
-                text: item.text,
-                class: 'symbolic no-padding no-scalling',
-              },
-            ]"
-          />
-        </ul>
+    <Transition name="fastFade" mode="out-in">
+      <div
+        class="context-menu"
+        :style="{
+          top: contextMenuPos.top + 'px',
+          left: contextMenuPos.left + 'px',
+          position: 'absolute',
+        }"
+        @click.stop
+        ref="contextMenu"
+        :key="contextMenuVisible"
+      >
+        <template v-for="(subMenu, sIndex) in menuContextItems" :key="sIndex">
+          <hr v-if="sIndex > 0" />
+          <div class="sub-menu" :style="subMenu?.style">
+            <div v-for="(item, iIndex) in subMenu.items" :key="iIndex" class="sub-menu-items">
+              <CreateButton
+                :buttons="[
+                  {
+                    icon: item.icon,
+                    text: item.text,
+                    class: 'symbolic no-padding no-scalling',
+                    action: () => handleMenuItemClick(item.action),
+                  },
+                ]"
+              />
+              <p>{{ item.shortcut }}</p>
+            </div>
+          </div>
+        </template>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -82,7 +95,7 @@ defineExpose({
   position: fixed;
   inset: 0;
   background: transparent;
-  z-index: auto;
+  z-index: 7;
 }
 
 .context-menu {
@@ -90,14 +103,36 @@ defineExpose({
   background: var(--bg2);
   border-radius: 24px;
   width: auto;
-  padding: 0 1rem;
+  z-index: 999;
+  flex-direction: column;
+  backdrop-filter: var(--main-blur);
+  border: 0.5px solid var(--border);
+}
+
+.sub-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  padding: 0.5rem 1rem;
 }
 
 .sub-menu-items {
+  display: flex;
   padding: 2px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+hr {
+  width: -webkit-fill-available;
+  border-top-style: none;
 }
 
 ul {
   list-style: none;
+}
+
+p {
+  margin: 0;
 }
 </style>

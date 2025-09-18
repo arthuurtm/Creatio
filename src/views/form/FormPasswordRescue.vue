@@ -1,15 +1,15 @@
 <template>
-  <AppFormPage :title="'Alterar senha'">
+  <AppFormPage :title="'Alterar senha'" :currentStep="currentStep" ref="form">
     <template #fields>
       <template v-if="currentStep === 1">
         <CreateTextField
           :fields="[
             {
               type: 'text',
-              name: 'identification',
-              model: 'identification',
-              label: 'Usuário ou e-mail',
-              placeholder: 'Digite seu nome de usuário ou e-mail',
+              name: 'email',
+              model: 'email',
+              label: 'E-mail',
+              placeholder: 'Digite seu e-mail',
               required: true,
             },
           ]"
@@ -90,7 +90,7 @@
               text: 'Avançar',
               class: 'confirm',
               type: 'submit',
-              action: () => nextStep(),
+              action: () => verifySecureCode(),
             },
           ]"
         />
@@ -120,48 +120,63 @@
 <script setup>
 import AppFormPage from '@/layouts/AppFormPage.vue'
 import { ref } from 'vue'
-import * as globalFunc from '@/functions'
+import { http, form as stepForm } from '@/functions'
 import { useRouter } from 'vue-router'
 import { showToast } from '@/plugins/toast'
-import { useMultiStepForm } from '@/functions/form'
 
 const formData = ref({})
 const router = useRouter()
-
-const { currentStep, nextStep, prevStep, pageRedirect } = useMultiStepForm({ totalSteps: 3 })
+const form = ref({})
+const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 3 })
 const sentCode = ref(false)
-let userData = ref({})
 
 const prepareVerifyCode = async () => {
   if (!sentCode.value) {
     try {
-      const res1 = await globalFunc.get({
+      await http.get({
         type: 'database',
-        route: `getUserBasics?identification=${encodeURIComponent(formData.value.identification)}`,
+        route: 'getUserBasics',
+        querys: { identification: formData.value.email },
       })
+      await http.post(
+        {
+          type: 'database',
+          route: 'setResetPassCode',
+        },
+        {
+          email: formData.value.email,
+        },
+      )
 
-      if (res1.okay) {
-        userData.value = res1.details
-
-        await globalFunc.post(
-          {
-            type: 'database',
-            route: 'setResetPassCode',
-          },
-          {
-            userId: userData.value.id,
-          },
-        )
-
-        sentCode.value = true
-        nextStep()
-      }
+      sentCode.value = true
+      nextStep()
     } catch (error) {
       showToast({
         type: 'error',
         message: error.message,
       })
     }
+  } else {
+    nextStep()
+  }
+}
+
+const verifySecureCode = async () => {
+  try {
+    const { sessionUUID } = await http.post(
+      {
+        type: 'database',
+        route: 'validateSecureSession',
+      },
+      {
+        secureToken: formData.value.verifyCode,
+        tokenId: formData.value.email,
+      },
+    )
+    formData.value.sessionUUID = sessionUUID
+    nextStep()
+  } catch (err) {
+    showToast({ type: 'error', message: err.message })
   }
 }
 
@@ -175,22 +190,20 @@ const resetPassword = async () => {
       return
     }
 
-    await globalFunc.post(
+    await http.post(
       {
         type: 'database',
         route: 'setUserPassword',
       },
       {
-        userId: userData.value.id,
-        resetToken: formData.value.verifyCode,
         newPassword: formData.value.passwd1,
+        sessionUUID: formData.value.sessionUUID,
       },
     )
 
     showToast({
       type: 'success',
       message: 'Senha redefinida com sucesso!',
-      timeout: 5000,
     })
     setTimeout(() => {
       router.push({ name: 'Login' })

@@ -35,30 +35,32 @@
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
   color: var(--toastification-color-text);
   min-height: 40px;
-  font-weight: 800px;
+  font-weight: 1200px;
 }
 
 /* Tipos */
 .Vue-Toastification__toast--success {
-  background-color: var(--toastification-color-success);
+  background: var(--toastification-color-success);
 }
 
 .Vue-Toastification__toast--error {
-  background-color: var(--toastification-color-error);
+  background: var(--toastification-color-error);
 }
 
 .Vue-Toastification__toast--info {
-  background-color: var(--toastification-color-info);
+  background: var(--toastification-color-info);
 }
 
 .Vue-Toastification__toast--warning {
-  background-color: var(--toastification-color-warning);
+  background: var(--toastification-color-warning);
 }
 
 /* Corpo */
 .Vue-Toastification__toast-body {
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
 /* Barra de progresso */
@@ -71,34 +73,41 @@
 .Vue-Toastification__close-button {
   opacity: 1;
   transition: opacity 0.3s;
-  background-color: transparent !important;
+  background: transparent !important;
+}
+
+.Vue-Toastification__toast .Vue-Toastification__progress-bar {
+  object-fit: cover;
+  height: 100%;
+  opacity: 0.5 !important;
+  z-index: 1;
+}
+
+.Vue-Toastification__toast .Vue-Toastification__close-button {
+  display: none;
 }
 
 /* Sucesso */
-.Vue-Toastification__toast--success .Vue-Toastification__progress-bar,
-.Vue-Toastification__toast--success .Vue-Toastification__close-button {
-  background-color: var(--toastification-color-success-lines);
+.Vue-Toastification__toast--success .Vue-Toastification__progress-bar {
+  background: var(--toastification-color-success-lines);
   color: var(--toastification-color-success-lines);
 }
 
 /* Error */
-.Vue-Toastification__toast--error .Vue-Toastification__progress-bar,
-.Vue-Toastification__toast--error .Vue-Toastification__close-button {
-  background-color: var(--toastification-color-error-lines);
+.Vue-Toastification__toast--error .Vue-Toastification__progress-bar {
+  background: var(--toastification-color-error-lines);
   color: var(--toastification-color-error-lines);
 }
 
 /* Info */
-.Vue-Toastification__toast--info .Vue-Toastification__progress-bar,
-.Vue-Toastification__toast--info .Vue-Toastification__close-button {
-  background-color: var(--toastification-color-info-lines);
+.Vue-Toastification__toast--info .Vue-Toastification__progress-bar {
+  background: var(--toastification-color-info-lines);
   color: var(--toastification-color-info-lines);
 }
 
 /* Warning */
-.Vue-Toastification__toast--warning .Vue-Toastification__progress-bar,
-.Vue-Toastification__toast--warning .Vue-Toastification__close-button {
-  background-color: var(--toastification-color-warning-lines);
+.Vue-Toastification__toast--warning .Vue-Toastification__progress-bar {
+  background: var(--toastification-color-warning-lines);
   color: var(--toastification-color-warning-lines);
 }
 
@@ -107,9 +116,5 @@
     max-width: 90vw;
     margin: 0 auto;
     top: 30px;
-  }
-
-  .Vue-Toastification__close-button {
-    display: none;
   }
 }

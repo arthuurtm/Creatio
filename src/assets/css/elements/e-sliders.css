@@ -39,7 +39,7 @@
 }
 
 input:checked + .slider::before {
-  background-color: var(--primary-hover);
+  background-color: var(--text);
 }
 
 input:checked + .slider {

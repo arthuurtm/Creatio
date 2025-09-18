@@ -1,5 +1,5 @@
 <template>
-  <AppFormPage :title="'Crie sua conta'">
+  <AppFormPage :title="'Crie sua conta'" :currentStep="currentStep">
     <template #fields>
       <template v-if="currentStep === 1">
         <CreateTextField
@@ -102,7 +102,7 @@
               text: 'Avançar',
               class: 'confirm',
               type: 'submit',
-              action: () => nextStep(),
+              action: () => verifyIfUserExists(),
             },
           ]"
         />
@@ -138,7 +138,7 @@
               text: 'Avançar',
               class: 'confirm',
               type: 'submit',
-              action: () => nextStep(),
+              action: () => verifySecureCode(),
             },
           ]"
         />
@@ -168,16 +168,15 @@
 <script setup>
 import AppFormPage from '@/layouts/AppFormPage.vue'
 import { computed, watch, ref } from 'vue'
-import * as globalFunc from '@/functions'
+import { http, form as stepForm } from '@/functions'
 import { useRouter } from 'vue-router'
 import { showToast } from '@/plugins/toast'
-import { useMultiStepForm } from '@/functions/form'
 
 const formData = ref({})
 const nicknameValue = computed(() => formData.value.nickname)
 const router = useRouter()
 
-const { currentStep, nextStep, prevStep, pageRedirect } = useMultiStepForm({ totalSteps: 4 })
+const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 4 })
 const sentCode = ref(false)
 
 watch(nicknameValue, (newNickname) => {
@@ -189,10 +188,27 @@ watch(nicknameValue, (newNickname) => {
   }
 })
 
+const verifyIfUserExists = async () => {
+  try {
+    await http.get({
+      type: 'database',
+      route: 'getUserBasics',
+      querys: { identification: formData.value.username },
+    })
+    showToast({ type: 'error', message: 'O usuário já existe' })
+  } catch (err) {
+    if (err?.status === 404) {
+      nextStep()
+    } else {
+      showToast({ type: 'error', message: err.message })
+    }
+  }
+}
+
 const prepareVerifyCode = async () => {
   if (!sentCode.value) {
     try {
-      await globalFunc.post(
+      await http.post(
         {
           type: 'database',
           route: 'setSignupCode',
@@ -215,6 +231,25 @@ const prepareVerifyCode = async () => {
   }
 }
 
+const verifySecureCode = async () => {
+  try {
+    const { sessionUUID } = await http.post(
+      {
+        type: 'database',
+        route: 'validateSecureSession',
+      },
+      {
+        secureToken: formData.value.verifyCode,
+        tokenId: formData.value.email,
+      },
+    )
+    formData.value.sessionUUID = sessionUUID
+    nextStep()
+  } catch (err) {
+    showToast({ type: 'error', message: err.message })
+  }
+}
+
 const signupUser = async () => {
   try {
     if (formData.value.passwd1 !== formData.value.passwd2) {
@@ -225,7 +260,7 @@ const signupUser = async () => {
       return
     }
 
-    await globalFunc.post(
+    await http.post(
       {
         type: 'database',
         route: 'setUser',
@@ -236,7 +271,7 @@ const signupUser = async () => {
         email: formData.value.email,
         birthdate: formData.value.birthdate,
         password: formData.value.passwd1,
-        verificationCode: formData.value.verifyCode,
+        sessionUUID: formData.value.sessionUUID,
       },
     )
 
@@ -245,7 +280,7 @@ const signupUser = async () => {
       message: 'Conta criada com sucesso! Aguarde um momento...',
     })
 
-    await globalFunc.post(
+    await http.post(
       {
         type: 'database',
         route: 'setLogin',

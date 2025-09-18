@@ -10,7 +10,10 @@
           <h1>Algo de errado parece não estar certo... <i>Erro 404</i></h1>
           <h2>Essa página não existe</h2>
           <form method="POST" @submit.prevent>
-            <CreateButton :buttons="[{ text: 'Voltar', position: 'right' }]" @emitEvent="back" />
+            <CreateButton
+              :buttons="[{ text: 'Voltar', position: 'right', class: 'primary' }]"
+              @emitEvent="back"
+            />
           </form>
         </div>
       </div>

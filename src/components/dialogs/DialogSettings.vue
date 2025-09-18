@@ -51,13 +51,13 @@
                 <span class="slider"></span>
               </label>
             </li>
-            <li>
+            <!-- <li>
               <p>Menu lateral</p>
               <label class="switch">
                 <input type="checkbox" @change="toggleSideBar" v-model="settings.getSideBar" />
                 <span class="slider"></span>
               </label>
-            </li>
+            </li> -->
           </ul>
         </div>
 
@@ -69,24 +69,6 @@
                 <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
               </a>
             </li>
-            <li>
-              <p>Conta Google</p>
-              <a v-if="isGoogleConnected">
-                <p>{{ userData.email }}</p>
-              </a>
-              <a v-else class="btn symbolic">
-                <span class="material-symbols-outlined notranslate"> arrow_outward </span>
-              </a>
-            </li>
-            <li>
-              <p>Conta Discord</p>
-              <a v-if="isDiscordConnected">
-                <p>{{ userData.email }}</p>
-              </a>
-              <a v-else class="btn symbolic">
-                <span class="material-symbols-outlined notranslate"> arrow_outward </span>
-              </a>
-            </li>
           </ul>
         </div>
 
@@ -94,15 +76,27 @@
           <ul>
             <li>
               <p>Alterar senha</p>
-              <a class="btn symbolic" @click="handleExtLink('PasswordRescue')">
-                <span class="material-symbols-outlined notranslate"> arrow_outward </span>
-              </a>
+              <CreateButton
+                :buttons="[
+                  {
+                    icon: 'arrow_outward',
+                    class: 'symbolic',
+                    action: () => handleExtLink('PasswordRescue'),
+                  },
+                ]"
+              />
             </li>
             <li>
               <p>Dispositivos conectados</p>
-              <a class="btn symbolic" @click="handleNavPage(3.1, 'Dispositivos')">
-                <span class="material-symbols-outlined notranslate"> visibility </span>
-              </a>
+              <CreateButton
+                :buttons="[
+                  {
+                    icon: 'visibility',
+                    class: 'symbolic',
+                    action: () => handleNavPage(3.1, 'Dispositivos'),
+                  },
+                ]"
+              />
             </li>
           </ul>
         </div>
@@ -126,11 +120,11 @@
               <div>
                 <div
                   v-if="device.deviceOS === 'Android' || device.deviceOS === 'iOS'"
-                  class="material-symbols-outlined notranslate"
+                  class="material-symbols-rounded notranslate"
                 >
                   smartphone
                 </div>
-                <div v-else class="material-symbols-outlined notranslate">computer</div>
+                <div v-else class="material-symbols-rounded notranslate">computer</div>
                 <p>
                   {{ device.deviceNavigator }} no {{ device.deviceOS }}
                   <!-- {{ itsMe(device) && '(Você)' }} -->
@@ -156,11 +150,9 @@
 </template>
 
 <script setup>
-import { appTheme, get } from '@/functions'
-import { logoutAll } from '@/functions/auth'
+import { http, util } from '@/functions/'
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import CreateButton from '../elements/CreateButton.vue'
 import { useAppDynamicDialog, useUserStore, useSettingsStore } from '@/stores'
 import DialogMessage from './DialogMessage.vue'
 
@@ -171,14 +163,12 @@ const dialog = useAppDynamicDialog()
 const settings = useSettingsStore()
 
 const isAuth = computed(() => user.getIsAuth)
-const userId = computed(() => user.getId)
 const profilePicture = computed(() => user.getProfilePicture)
 const selectedOption = ref(null)
 const actualPage = ref(1)
 const isDarkMode = ref(false)
 const isGlassy = ref(false)
 const isGoogleConnected = ref(false)
-const isDiscordConnected = ref(false)
 const userData = ref({})
 const isSideBarEnable = computed(() => settings.getSideBar)
 
@@ -191,11 +181,11 @@ function handleNavPage(value, name) {
 function handleAction() {}
 
 function toggleThemeColor() {
-  appTheme(true)
+  util.appTheme(true)
 }
 
 function toggleThemeGlassy() {
-  appTheme(false, true)
+  util.appTheme(false, true)
 }
 
 function toggleSideBar() {
@@ -223,28 +213,21 @@ function disconnectAllDevices() {
         text: 'Sim',
         class: 'confirm',
         action: () => {
-          logoutAll()
+          http.auth.logoutAll()
         },
       },
     ],
   })
 }
 
-const itsMe = (device) => {
-  if (userId.value === device.userId) {
-    return true
-  }
-  return false
-}
-
 const connectedDevices = ref([])
 
 onMounted(async () => {
-  let theme = appTheme()
+  let theme = util.appTheme()
   isDarkMode.value = theme.isDark == true ? true : false
   isGlassy.value = theme.isGlassy == true ? true : false
 
-  const gToken = get({ type: 'database', route: 'getUserBasics' })
+  const gToken = http.get({ type: 'database', route: 'getUserBasics' })
   if (gToken.ok) {
     let data = gToken.json()
     if (data.gToken != '' || data.gToken != null) {
@@ -253,22 +236,20 @@ onMounted(async () => {
     }
   }
 
-  let result = await get({ type: 'database', route: 'getAllUserSessions' })
-  connectedDevices.value = result.details
+  let result = await http.get({ type: 'database', route: 'getAllUserSessions' })
+  connectedDevices.value = result
 })
 </script>
 
 <style scoped>
 .container {
-  grid-row: 2;
-  display: grid;
-  grid-template-columns: 0.5fr 2fr;
+  display: flex;
   max-height: 60vh;
   overflow-x: hidden;
+  flex-direction: row;
 }
 
 .nav {
-  grid-column: 1;
   padding: 15px 20px;
   border-right: 1px solid var(--border);
 }
@@ -308,7 +289,6 @@ ul {
 }
 
 .navPage {
-  grid-column: 2;
   height: auto;
   padding: 15px;
   color: var(--text);
@@ -316,6 +296,7 @@ ul {
   display: flex;
   justify-content: center;
   overflow-y: auto;
+  width: -webkit-fill-available;
   /* border-left: 1px solid var(--border); */
 }
 
@@ -385,29 +366,29 @@ ul.devices li > p {
   text-align: end;
 }
 
+@media (min-width: 601px) {
+  .container {
+    min-width: 500px;
+  }
+}
+
 @media (max-width: 600px) {
   .container {
-    display: grid;
-    grid-template-rows: 1fr auto;
-    grid-template-columns: 1fr;
     margin-bottom: 10px;
     height: auto;
     interpolate-size: allow-keywords;
     overflow-y: auto;
     max-height: 100%;
+    flex-direction: column;
   }
 
   .navPage {
-    grid-column: 1;
-    grid-row: 1;
     max-height: 70vh;
   }
 
   .nav {
     border-right: none;
-    border-top: 1px solid var(--border);
-    grid-column: 1;
-    grid-row: 2;
+    border-bottom: 1px solid var(--border);
     padding: 0;
     /* position: absolute; */
     bottom: 0;

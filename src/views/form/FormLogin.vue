@@ -1,5 +1,5 @@
 <template>
-  <AppFormPage :title="'Entre em sua conta'">
+  <AppFormPage :title="'Entre em sua conta'" :currentStep="currentStep">
     <template #fields>
       <template v-if="currentStep === 1">
         <CreateTextField
@@ -53,7 +53,6 @@
             {
               class: 'symbolic no-padding',
               id: 'googleButton',
-              action: () => handleGoogleLogin(),
             },
             {
               text: 'Avançar',
@@ -89,11 +88,10 @@
 
 <script setup>
 import AppFormPage from '@/layouts/AppFormPage.vue'
-import { useMultiStepForm } from '@/functions/form'
 import { onMounted, ref } from 'vue'
-import * as gfunctions from '@/functions'
+import { http, form as stepForm } from '@/functions'
 import { showToast } from '@/plugins/toast'
-const { currentStep, nextStep, prevStep, pageRedirect } = useMultiStepForm({ totalSteps: 2 })
+const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 2 })
 
 // Dados do formulário
 const formData = ref({})
@@ -101,7 +99,7 @@ const formData = ref({})
 // Funções do formulário
 const handleGoogleLogin = async (response = {}) => {
   try {
-    await gfunctions.post(
+    await http.post(
       {
         type: 'database',
         route: 'setLogin',
@@ -128,7 +126,6 @@ const handleLogin = async () => {
       showToast({
         type: 'warning',
         message: 'Digite um nome de usuário ou e-mail!',
-        timeout: 2000,
       })
       return
     }
@@ -137,12 +134,11 @@ const handleLogin = async () => {
       showToast({
         type: 'warning',
         message: 'Digite uma senha!',
-        timeout: 2000,
       })
       return
     }
 
-    await gfunctions.post(
+    await http.post(
       {
         type: 'database',
         route: 'setLogin',

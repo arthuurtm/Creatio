@@ -1,28 +1,25 @@
 <template>
-  <ComponentCreateGamePage>
-    <h2>Suas Criações</h2>
-    <ComponentLoadSessions
-      :url="`getGames?filters=${encodeURIComponent(JSON.stringify({ userId: userStore.getId }))}`"
-      @emitEvent="loadEditTool"
-    />
-    <CreateButton
-      :buttons="[
-        {
-          text: 'Criar',
-          icon: 'add',
-          class: 'symbolic no-padding no-scalling',
-        },
-      ]"
-      @emitEvent="criarNovoJogo"
-    />
-  </ComponentCreateGamePage>
+  <h2>Suas Criações</h2>
+  <ComponentLoadSessions
+    :url="`getGames?filters=${encodeURIComponent(JSON.stringify({ userId: userStore.getId }))}`"
+    @emitEvent="loadEditTool"
+  />
+  <CreateButton
+    :buttons="[
+      {
+        text: 'Criar',
+        icon: 'add',
+        class: 'symbolic no-padding no-scalling',
+      },
+    ]"
+    @emitEvent="criarNovoJogo"
+  />
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
-import ComponentLoadSessions from '@/components/ComponentLoadSessions.vue'
-import ComponentCreateGamePage from '@/layouts/AppGamePage.vue'
-import { post } from '@/functions'
+import ComponentLoadSessions from '@/components/modules/ComponentLoadSessions.vue'
+import { http } from '@/functions'
 import { showToast } from '@/plugins/toast'
 import { useUserStore } from '@/stores'
 
@@ -36,10 +33,10 @@ function loadEditTool(event) {
 async function criarNovoJogo() {
   let result
   try {
-    result = await post({ type: 'database', route: 'setGame' }, { title: 'Novo Jogo' })
+    result = await http.post({ type: 'database', route: 'setGame' }, { title: 'Novo Jogo' })
   } catch (error) {
-    showToast({ type: 'error', message: error.details.message })
+    showToast({ type: 'error', message: error.message })
   }
-  router.push({ name: 'EditGame', params: { id: result.details.game.id } })
+  router.push({ name: 'EditGame', params: { id: result.game.id } })
 }
 </script>

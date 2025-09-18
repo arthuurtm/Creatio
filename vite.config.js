@@ -3,45 +3,38 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import vueDevTools from 'vite-plugin-vue-devtools'
+// import vueDevTools from 'vite-plugin-vue-devtools'
+import Components from 'unplugin-vue-components/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), vueJsx(), vueDevTools()],
+  plugins: [
+    vue(),
+    vueJsx(),
+    Components({
+      dirs: ['src/components/elements'],
+      extensions: ['vue'],
+      deep: true,
+      dts: true,
+    }),
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '#': fileURLToPath(new URL('./api', import.meta.url)),
     },
   },
   server: {
     allowedHosts: [],
     proxy: {
-      // API de Leitura do Banco de Dados
-      '/api/database': {
+      '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/database/, ''),
       },
-
-      // API de Envio de E-mails
-      '/api/email': {
-        target: 'http://localhost:3001',
+      '/ws': {
+        target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/email/, ''),
-      },
-
-      // API de Comunicação em tempo real
-      '/api/websocket': {
-        target: 'http://localhost:3002',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/websocket/, ''),
-      },
-
-      // API de Leitura e Escrita de Arquivos
-      '/api/file': {
-        target: 'http://localhost:9000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/file/, ''),
+        ws: true,
       },
     },
   },

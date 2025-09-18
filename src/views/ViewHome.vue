@@ -1,5 +1,5 @@
 <script setup>
-import ComponentLoadSessions from '@/components/ComponentLoadSessions.vue'
+import ComponentLoadSessions from '@/components/modules/ComponentLoadSessions.vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 
