@@ -147,6 +147,15 @@ async function handleLogin(type, identification, password, userAgent) {
   return { accessToken, refreshToken }
 }
 
+function getUserIDFromSessionToken(token) {
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+    return decoded.userId
+  } catch (err) {
+    throw new Error('Token inválido ou expirado')
+  }
+}
+
 export {
   createUserSession,
   verifyAndRenewSession,
@@ -154,4 +163,5 @@ export {
   getAnyUserSession,
   deleteUserSession,
   handleLogin,
+  getUserIDFromSessionToken,
 }
