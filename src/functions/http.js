@@ -80,11 +80,11 @@ const request = async (endpoint = {}, method = 'GET', body = null) => {
   const config = {
     credentials: 'include',
     method,
-    // headers: isFormData
-    //   ? undefined
-    //   : {
-    //       'Content-Type': endpoint.contentType || 'application/json',
-    //     },
+    headers: isFormData
+      ? undefined
+      : {
+          'Content-Type': endpoint.contentType || 'application/json',
+        },
     body: isFormData ? body : body ? JSON.stringify(body) : null,
   }
 

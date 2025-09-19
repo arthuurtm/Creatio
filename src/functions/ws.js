@@ -40,12 +40,14 @@ export default function useWebSocket(url) {
               `Erro reportado pelo servidor websocket no evento (${result.event}):`,
               result.data.message,
             )
+            status.value = 'ERROR'
           } else {
+            status.value = 'OPEN'
             console.log(`Evento websocket (${result.event}) recebido com sucesso:`, result.data)
           }
         } catch (err) {
           console.error('Erro ao processar mensagem do WebSocket:', event.data, err)
-
+          status.value = 'ERROR'
           data.value = {
             event: 'internal:error',
             data: { message: 'A mensagem recebida do servidor era inválida.' },
