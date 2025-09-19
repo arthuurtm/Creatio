@@ -1,7 +1,7 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../config/db.js';
-import User from './User.js';
-import Game from './Game.js';
+import { DataTypes } from 'sequelize'
+import sequelize from '../config/db.js'
+import User from './User.js'
+import Game from './Game.js'
 
 const GameState = sequelize.define(
   'GameState',
@@ -15,7 +15,7 @@ const GameState = sequelize.define(
       onDelete: 'CASCADE',
     },
     gameId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
       references: { model: Game, key: 'id' },
       onDelete: 'CASCADE',
