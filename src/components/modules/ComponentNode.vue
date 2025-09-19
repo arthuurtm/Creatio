@@ -6,6 +6,7 @@ import DialogBase from '@/layouts/DialogBase.vue'
 import CreateNode from '@/components/elements/CreateNode.vue'
 import CreateContextMenu from '../elements/CreateContextMenu.vue'
 import { useConnections } from '@/composables/useDotConnection'
+import { showToast } from '@/plugins/toast'
 
 const route = useRoute()
 const { data, status, connect, send, disconnect } = ws(http.getApiUrl('ws'))
@@ -25,8 +26,9 @@ onMounted(async () => {
         version: gameBasicData.value.version,
       },
     })
-  } catch (error) {
-    console.error('Falha ao conectar ao WebSocket:', error)
+  } catch (err) {
+    showToast({ type: 'error', message: err.message, timeout: 5000 })
+    console.error('Falha ao conectar ao WebSocket:', err)
   }
 })
 
@@ -49,9 +51,13 @@ watch(
 )
 
 function updateGameData() {
-  const state = getEditorState()
-  const dataToSend = { state, ...gameBasicData.value }
-  send({ event: 'game:lab:update:json', payload: dataToSend })
+  try {
+    const state = getEditorState()
+    const dataToSend = { state, ...gameBasicData.value }
+    send({ event: 'game:lab:update:json', payload: dataToSend })
+  } catch (err) {
+    showToast({ type: 'error', message: err.message, timeout: 5000 })
+  }
 }
 
 function openContextMenu(items, event) {
@@ -281,6 +287,21 @@ function emitEventHandler(e) {
   }
 }
 
+const connectionMap = {
+  icon: {
+    CONNECTING: 'cloud_sync',
+    OPEN: 'cloud',
+    CLOSED: 'cloud_alert',
+    ERROR: 'cloud_alert',
+  },
+  message: {
+    CONNECTING: 'Conectando...',
+    OPEN: null,
+    CLOSED: 'Desconectado.',
+    ERROR: 'Alterações não salvas ou carregadas.',
+  },
+}
+
 defineExpose({
   createNode,
   addActionToNode,
@@ -297,6 +318,18 @@ defineExpose({
 
 <template>
   <div class="editor-canvas">
+    <div style="position: absolute; top: 0; right: 0.5rem; z-index: 3">
+      <CreateButton
+        :buttons="[
+          {
+            icon: connectionMap.icon[status],
+            text: connectionMap.message[status],
+            class: 'symbolic no-padding no-scalling',
+          },
+        ]"
+      />
+    </div>
+
     <svg class="connections-layer">
       <path
         v-for="p in paths"
