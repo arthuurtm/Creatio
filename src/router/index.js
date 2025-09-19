@@ -27,92 +27,88 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'About',
-      component: ViewAbout,
-    },
-
-    {
-      path: '/home',
-      component: AppHome,
       children: [
         {
           path: '',
-          name: 'Home',
-          component: ViewHome,
+          name: 'About',
+          component: ViewAbout,
         },
-      ],
-    },
+        {
+          path: 'home',
+          component: AppHome,
+          children: [
+            {
+              path: '',
+              name: 'Home',
+              component: ViewHome,
+            },
+          ],
+        },
+        {
+          path: '/auth',
+          children: [
+            {
+              path: 'login',
+              name: 'Login',
+              meta: { requiresAuth: false },
+              component: FormLogin,
+            },
+            {
+              path: 'signup',
+              name: 'Signup',
+              meta: { requiresAuth: false },
+              component: FormSignup,
+            },
+            {
+              path: 'password/rescue',
+              name: 'PasswordRescue',
+              component: FormPasswordRescue,
+            },
+          ],
+        },
 
-    {
-      path: '/auth',
-      children: [
         {
-          path: 'login',
-          name: 'Login',
-          meta: { requiresAuth: false },
-          component: FormLogin,
-        },
-        {
-          path: 'signup',
-          name: 'Signup',
-          meta: { requiresAuth: false },
-          component: FormSignup,
-        },
-        {
-          path: 'password/rescue',
-          name: 'PasswordRescue',
-          component: FormPasswordRescue,
-        },
-      ],
-    },
-
-    {
-      path: '/u/:username',
-      name: 'UserProfile',
-      component: ViewUserProfile,
-      props: true,
-    },
-
-    {
-      path: '/games',
-      component: AppGame,
-      children: [
-        {
-          path: ':id',
-          name: 'GameDetails',
-          component: ViewGameDetails,
+          path: '/u/:username',
+          name: 'UserProfile',
+          component: ViewUserProfile,
           props: true,
         },
-        {
-          path: ':id/run',
-          name: 'GameRun',
-          component: ViewGameRun,
-          props: true,
-        },
-      ],
-    },
 
-    {
-      path: '/games/create',
-      component: AppCreateGame,
-      meta: { requiresAuth: true },
-      children: [
         {
-          path: '',
-          name: 'CreateHome',
-          component: CreateHome,
-        },
-        {
-          path: 'init',
-          name: 'CreateGame',
-          component: CreateGameSettings,
-        },
-        {
-          path: ':id',
-          name: 'EditGame',
-          component: GameEdit,
-          props: true,
-          meta: { hiddenNavigator: true },
+          path: '/games',
+          component: AppGame,
+          children: [
+            {
+              path: 'init',
+              name: 'CreateGame',
+              component: CreateGameSettings,
+            },
+            {
+              path: 'create',
+              name: 'CreateHome',
+              component: CreateHome,
+            },
+            {
+              path: ':id',
+              name: 'GameDetails',
+              component: ViewGameDetails,
+              meta: { fullscreen: true, hiddenNavigator: true },
+              props: true,
+            },
+            {
+              path: ':id/run',
+              name: 'GameRun',
+              component: ViewGameRun,
+              props: true,
+            },
+            {
+              path: ':id/edit',
+              name: 'EditGame',
+              component: GameEdit,
+              props: true,
+              meta: { hiddenNavigator: true },
+            },
+          ],
         },
       ],
     },
@@ -141,10 +137,6 @@ router.beforeEach(async (to, from, next) => {
   } else {
     next()
   }
-})
-
-router.beforeEach((to, from, next) => {
-  next()
 })
 
 export default router
