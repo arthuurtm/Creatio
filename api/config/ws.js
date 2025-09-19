@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws'
 import { WebsocketRoute as handleConnection } from '../routes/index.js'
 import log from '../helpers/console.js'
+import cookie from 'cookie'
 
 /**
  * Inicializa e anexa o servidor WebSocket a um servidor HTTP existente.
@@ -13,7 +14,8 @@ function initializeWebSocket(server) {
   wss.on('connection', (ws, req) => {
     log.success('Cliente WebSocket conectado!')
 
-    handleConnection(ws, wss)
+    const cookies = cookie.parse(req.headers.cookie || '')
+    handleConnection(ws, wss, cookies)
 
     ws.on('error', (error) => {
       log.error('Erro no WebSocket: ', error)
