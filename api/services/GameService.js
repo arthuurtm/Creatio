@@ -1,4 +1,5 @@
 import { Game } from '../models/index.js'
+import { getUserIDFromSessionToken } from './UserSessionService.js'
 
 async function getAnyGame(filters = {}) {
   let where = {}
@@ -22,6 +23,7 @@ async function getAnyGame(filters = {}) {
 
 async function setGameOnDatabase({ title, description, userId }) {
   const game = await Game.create({
+    id: crypto.randomUUID(),
     title,
     description,
     userId,
@@ -31,4 +33,11 @@ async function setGameOnDatabase({ title, description, userId }) {
   return game
 }
 
-export { getAnyGame, setGameOnDatabase }
+async function validateGameOwnership(gameId, accessToken) {
+  const userId = getUserIDFromSessionToken(accessToken)
+  const game = await Game.findOne({ where: { id: gameId, userId } })
+  if (!game) throw new Error('Jogo não encontrado ou você não tem permissão para acessá-lo')
+  return game
+}
+
+export { getAnyGame, setGameOnDatabase, validateGameOwnership }
