@@ -100,7 +100,6 @@
                 text: 'Mais',
                 icon: 'view_cozy',
                 action: openMoreOptions,
-                rules: [!isAuthenticated && 'hide'],
               },
             ]"
           />

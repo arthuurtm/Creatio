@@ -7,6 +7,7 @@ import ComponentNavigator from '@/components/modules/ComponentNavigator.vue'
 const props = defineProps({
   showHeader: { type: Boolean, default: false },
   navigatorDefaultHidden: { type: Boolean, default: false },
+  fullscreen: { type: Boolean, default: false },
 })
 
 const route = useRoute()
@@ -40,7 +41,7 @@ const pageName = computed(() => route?.name)
 
 <template>
   <div class="app-container">
-    <div class="app-content">
+    <div class="app-content" :class="[routeHidden && 'overlay-nav']">
       <div class="app-navigator">
         <ComponentNavigator
           :hidden="hiddenNavigator"
@@ -51,7 +52,7 @@ const pageName = computed(() => route?.name)
         />
       </div>
 
-      <div class="app-view">
+      <div class="app-view" :class="[fullscreen && 'full']">
         <router-view v-slot="{ Component }">
           <transition name="fastFade" mode="out-in">
             <div :key="route.path" style="width: 100%; height: 100%">
@@ -98,6 +99,28 @@ const pageName = computed(() => route?.name)
   z-index: 1;
   grid-column: 2;
   height: 100%;
+}
+
+.app-view.full {
+  padding: 0;
+}
+
+/* --- MODO OVERLAY (QUANDO a classe .overlay-nav está presente) --- */
+.app-content.overlay-nav {
+  grid-template-columns: 1fr;
+  position: relative;
+}
+
+.app-content.overlay-nav .app-navigator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--navigator);
+}
+
+.app-content.overlay-nav .app-view {
+  grid-column: 1;
 }
 
 .app-view.no-rounded {
