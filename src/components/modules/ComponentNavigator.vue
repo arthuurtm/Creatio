@@ -121,7 +121,6 @@ import { useUserStore, useAppDynamicDialog } from '@/stores'
 // Stores e Router
 const router = useRouter()
 const user = useUserStore()
-console.log(user)
 const dialog = useAppDynamicDialog()
 const contextMenuRef = ref(null)
 
@@ -270,7 +269,6 @@ watch(isMenuActive, (value) => {
 
 // Montagem do Componente
 onMounted(() => {
-  console.log('Dados do usuário:', user.$state)
   updateMenuState(!handleIsMobile())
 })
 </script>

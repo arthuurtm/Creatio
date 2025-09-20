@@ -102,12 +102,7 @@ export function useConnections(editorStore) {
       })
       .filter(Boolean)
 
-    const tempPath = tempConnection.value
-      ? buildTempPath(tempConnection.value.from, {
-          x: tempConnection.value.x,
-          y: tempConnection.value.y,
-        })
-      : null
+    const tempPath = tempConnection.value ? buildTempPath(tempConnection.value) : null
     if (tempPath) realPaths.push(tempPath)
 
     return realPaths
