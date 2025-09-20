@@ -16,7 +16,7 @@ trap cleanup SIGINT
 pids=()
 
 # Executa o servidor de arquivos
-docker start minio
+podman start minio
 
 # Procurar por todos os arquivos .mjs **somente na raiz**
 cd api
