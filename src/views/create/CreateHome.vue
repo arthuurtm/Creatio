@@ -37,6 +37,6 @@ async function criarNovoJogo() {
   } catch (error) {
     showToast({ type: 'error', message: error.message })
   }
-  router.push({ name: 'EditGame', params: { id: result.game.id } })
+  router.push({ name: 'EditGame', params: { id: result.id } })
 }
 </script>
