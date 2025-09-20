@@ -31,8 +31,10 @@ export default function useMultiStepForm(options = {}) {
     }
   }
 
-  async function pageRedirect(name, params = {}) {
+  async function pageRedirect({ name = null, path = null, params = {} }) {
+    if (path && name) name = null
     redirectWrapper.push({
+      path,
       name,
       params,
     })
