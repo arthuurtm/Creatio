@@ -87,26 +87,29 @@ const router = createRouter({
               path: 'create',
               name: 'CreateHome',
               component: CreateHome,
+              props: true,
+              meta: { requiresAuth: true },
             },
             {
               path: ':id',
               name: 'GameDetails',
               component: ViewGameDetails,
-              meta: { fullscreen: true, hiddenNavigator: true },
               props: true,
+              meta: { fullscreen: true, hiddenNavigator: true },
             },
             {
               path: ':id/run',
               name: 'GameRun',
               component: ViewGameRun,
               props: true,
+              meta: { hiddenNavigator: true, requiresAuth: true, fullscreen: true },
             },
             {
               path: ':id/edit',
               name: 'EditGame',
               component: GameEdit,
               props: true,
-              meta: { hiddenNavigator: true },
+              meta: { hiddenNavigator: true, requiresAuth: true },
             },
           ],
         },
@@ -131,7 +134,7 @@ router.beforeEach(async (to, from, next) => {
   const isLoggedIn = await http.auth.isAuthenticated()
 
   if (to.meta.requiresAuth && !isLoggedIn) {
-    next({ name: 'Login', query: { redirect: to.name } })
+    next({ name: 'Login', query: { redirect: to.fullPath } })
   } else if ((to.name === 'Login' || to.name === 'About') && isLoggedIn) {
     next({ name: 'Home' })
   } else {
