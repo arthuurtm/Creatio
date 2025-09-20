@@ -54,8 +54,13 @@ defineExpose({
 </script>
 
 <template>
-  <div v-if="contextMenuVisible" class="dialog-shadow" @click="closeContextMenu">
-    <Transition name="fastFade" mode="out-in">
+  <Transition name="fastFade" mode="out-in">
+    <div
+      v-if="contextMenuVisible"
+      class="dialog-shadow"
+      @click="closeContextMenu"
+      @click.right="closeContextMenu"
+    >
       <div
         class="context-menu"
         :style="{
@@ -86,8 +91,8 @@ defineExpose({
           </div>
         </template>
       </div>
-    </Transition>
-  </div>
+    </div>
+  </Transition>
 </template>
 
 <style scoped>
