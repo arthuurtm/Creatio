@@ -6,7 +6,6 @@ import DialogBase from '@/layouts/DialogBase.vue'
 import CreateNode from '@/components/elements/CreateNode.vue'
 import CreateContextMenu from '../elements/CreateContextMenu.vue'
 import { useConnections } from '@/composables/useDotConnection'
-import { showToast } from '@/plugins/toast'
 
 const route = useRoute()
 const { data, status, connect, send, disconnect } = ws(http.getApiUrl('ws'))
@@ -15,10 +14,13 @@ const editorStore = reactive({ nodes: [], connections: [] })
 const gameBasicData = ref({ gameId: route.params.id, version: 1 })
 const { handleStartConnection, paths, forceUpdatePaths } = useConnections(editorStore)
 
-onMounted(async () => {
-  try {
-    await connect()
+onMounted(() => {
+  connect()
+})
 
+// Este watcher será o responsável por carregar os dados iniciais
+const stopWatch = watch(status, (newStatus) => {
+  if (newStatus === 'OPEN') {
     send({
       event: 'game:lab:get:json',
       payload: {
@@ -26,15 +28,14 @@ onMounted(async () => {
         version: gameBasicData.value.version,
       },
     })
-  } catch (err) {
-    showToast({ type: 'error', message: err.message, timeout: 5000 })
-    console.error('Falha ao conectar ao WebSocket:', err)
+    stopWatch()
   }
 })
 
+// Este watcher continua como estava, ele ouve TODAS as mensagens
 watch(data, (newMessage) => {
-  if (newMessage && newMessage.event === 'game:lab:get:json:success') {
-    console.log('Dados iniciais do jogo recebidos!', newMessage.data)
+  if (!newMessage || !newMessage.event) return
+  if (newMessage.event === 'game:lab:get:json:success') {
     setEditorState(newMessage.data)
     nextTick(() => {
       forceUpdatePaths()
@@ -42,22 +43,21 @@ watch(data, (newMessage) => {
   }
 })
 
+// Este watcher para enviar updates continua igual, pois está correto.
 watch(
-  () => [editorStore],
+  () => editorStore,
   () => {
-    updateGameData()
+    if (status.value === 'OPEN') {
+      updateGameData()
+    }
   },
   { deep: true },
 )
 
 function updateGameData() {
-  try {
-    const state = getEditorState()
-    const dataToSend = { state, ...gameBasicData.value }
-    send({ event: 'game:lab:update:json', payload: dataToSend })
-  } catch (err) {
-    showToast({ type: 'error', message: err.message, timeout: 5000 })
-  }
+  const state = getEditorState()
+  const dataToSend = { state, ...gameBasicData.value }
+  send({ event: 'game:lab:update:json', payload: dataToSend })
 }
 
 function openContextMenu(items, event) {
@@ -290,15 +290,17 @@ function emitEventHandler(e) {
 const connectionMap = {
   icon: {
     CONNECTING: 'cloud_sync',
-    OPEN: 'cloud',
+    OPEN: 'cloud_done',
+    CLOSING: 'cloud_off',
     CLOSED: 'cloud_alert',
-    ERROR: 'cloud_alert',
+    RECONNECTING: 'autorenew',
   },
   message: {
     CONNECTING: 'Conectando...',
     OPEN: null,
-    CLOSED: 'Desconectado.',
-    ERROR: 'Alterações não salvas ou carregadas.',
+    CLOSING: 'Desconectando...',
+    CLOSED: 'Você está offline. As alterações não serão salvas.',
+    RECONNECTING: 'Conexão perdida. Tentando reconectar...',
   },
 }
 
