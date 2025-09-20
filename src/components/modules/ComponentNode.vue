@@ -8,7 +8,7 @@ import CreateContextMenu from '../elements/CreateContextMenu.vue'
 import { useConnections } from '@/composables/useDotConnection'
 
 const route = useRoute()
-const { data, status, connect, send, disconnect } = ws(http.getApiUrl('ws'))
+const { data, status, error, requestStatus, connect, send, disconnect } = ws(http.getApiUrl('ws'))
 const contextMenu = ref({})
 const editorStore = reactive({ nodes: [], connections: [] })
 const gameBasicData = ref({ gameId: route.params.id, version: 1 })
@@ -31,6 +31,10 @@ const stopWatch = watch(status, (newStatus) => {
     stopWatch()
   }
 })
+
+watch(requestStatus, (newRequestStatus) =>
+  console.log('Estado da requisição atualizado: ', newRequestStatus),
+)
 
 // Este watcher continua como estava, ele ouve TODAS as mensagens
 watch(data, (newMessage) => {
@@ -289,18 +293,18 @@ function emitEventHandler(e) {
 
 const connectionMap = {
   icon: {
-    CONNECTING: 'cloud_sync',
-    OPEN: 'cloud_done',
-    CLOSING: 'cloud_off',
-    CLOSED: 'cloud_alert',
-    RECONNECTING: 'autorenew',
+    IDLE: 'cloud',
+    SENDING: 'cloud_sync',
+    ERROR: 'cloud_alert',
+    WAITING: 'cloud_sync',
+    SUCCESS: 'cloud_done',
   },
   message: {
-    CONNECTING: 'Conectando...',
-    OPEN: null,
-    CLOSING: 'Desconectando...',
-    CLOSED: 'Você está offline. As alterações não serão salvas.',
-    RECONNECTING: 'Conexão perdida. Tentando reconectar...',
+    IDLE: null,
+    SENDING: 'Salvando...',
+    ERROR: error || 'Ocorreu um erro.',
+    WAITING: null,
+    SUCCESS: null,
   },
 }
 
@@ -324,8 +328,8 @@ defineExpose({
       <CreateButton
         :buttons="[
           {
-            icon: connectionMap.icon[status],
-            text: connectionMap.message[status],
+            icon: connectionMap.icon[requestStatus],
+            text: connectionMap.message[requestStatus],
             class: 'symbolic no-padding no-scalling',
           },
         ]"
