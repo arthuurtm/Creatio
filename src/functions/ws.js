@@ -19,8 +19,16 @@ export default function useWebSocket(url, options = {}) {
 
   // --- Estado Reativo ---
   const data = ref(null)
-  /** @type {import('vue').Ref<"CONNECTING" | "OPEN" | "CLOSING" | "CLOSED" | "RECONNECTING">} */
+  /**
+   * Mostra a saúde do WebSocket
+   * @type {import('vue').Ref<"CONNECTING" | "OPEN" | "CLOSING" | "CLOSED" | "RECONNECTING">('CLOSED')}
+   * */
   const status = ref('CLOSED')
+  /**
+   * Mostra o estado das requisições com o websocket
+   * @type {import('vue').Ref<'IDLE' | 'SENDING' | 'ERROR' | 'WAITING' | 'SUCCESS'>('IDLE')}
+   */
+  const requestStatus = ref('IDLE')
   const ws = shallowRef(null)
   const error = ref(null)
   const retryCount = ref(0)
@@ -42,18 +50,24 @@ export default function useWebSocket(url, options = {}) {
         const message = JSON.parse(event.data)
         data.value = message
         if (message.event && (message.event === 'error' || message.event.endsWith(':error'))) {
-          console.error(
-            `Erro reportado pelo servidor (${message.event}):`,
-            message.data?.message || 'Nenhuma mensagem de erro provida.',
-          )
-          error.value = new Error(
-            `Server error on event ${message.event}: ${message.data?.message}`,
-          )
+          const err = new Error(message.data?.message || 'Erro reportado pelo servidor')
+          Object.assign(err, {
+            event: message.event,
+            data: message.data,
+            raw: { ...event },
+          })
+          throw err
         }
         console.log(`Requisição para ${message.event} efetuada com sucesso.`, message)
+        requestStatus.value = 'SUCCESS'
       } catch (err) {
-        console.error('Erro ao processar mensagem (JSON inválido):', event.data, err)
-        error.value = err
+        console.error(
+          `Erro reportado pelo servidor (${err.event}):`,
+          err.data?.message || 'Nenhuma mensagem de erro provida.',
+          `\nDetalhes: ${err.raw}`,
+        )
+        error.value = err.message
+        requestStatus.value = 'ERROR'
       }
     }
 
@@ -131,14 +145,19 @@ export default function useWebSocket(url, options = {}) {
    */
   const send = ({ event, payload = {} }) => {
     if (ws.value && status.value === 'OPEN' && event) {
+      requestStatus.value = 'SENDING'
       try {
         const dataToSend = JSON.stringify({ event, payload })
         ws.value.send(dataToSend)
+        requestStatus.value = 'WAITING'
       } catch (e) {
+        requestStatus.value = 'ERROR'
         console.error('Falha ao enviar mensagem:', e)
         error.value = e
       }
     } else {
+      requestStatus.value = 'ERROR'
+      error.value = 'Não conectado ao servidor.'
       console.warn('Não foi possível enviar a mensagem. WebSocket não está aberto.', {
         status: status.value,
       })
@@ -165,6 +184,7 @@ export default function useWebSocket(url, options = {}) {
     status,
     error,
     retryCount,
+    requestStatus,
     connect,
     send,
     disconnect,
