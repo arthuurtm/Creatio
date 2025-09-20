@@ -96,7 +96,7 @@
               text: 'Cancelar',
               class: 'left symbolic critical no-padding no-scalling',
               type: 'button',
-              action: () => pageRedirect('Login'),
+              action: () => pageRedirect({ name: 'Login' }),
             },
             {
               text: 'Avançar',

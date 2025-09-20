@@ -89,12 +89,15 @@
 <script setup>
 import AppFormPage from '@/layouts/AppFormPage.vue'
 import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { http, form as stepForm } from '@/functions'
 import { showToast } from '@/plugins/toast'
 const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 2 })
 
 // Dados do formulário
 const formData = ref({})
+const route = useRoute()
+const redirect = route.query.redirect || false
 
 // Funções do formulário
 const handleGoogleLogin = async (response = {}) => {
@@ -110,7 +113,8 @@ const handleGoogleLogin = async (response = {}) => {
       },
     )
 
-    pageRedirect('Home')
+    const query = redirect ? { path: redirect } : { name: 'Home' }
+    pageRedirect(query)
   } catch (error) {
     console.error('Erro: ', error.message)
     showToast({
@@ -150,7 +154,8 @@ const handleLogin = async () => {
       },
     )
 
-    pageRedirect('Home')
+    const query = redirect ? { path: redirect } : { name: 'Home' }
+    pageRedirect(query)
   } catch (error) {
     showToast({
       type: 'error',

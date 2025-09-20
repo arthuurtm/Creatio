@@ -66,7 +66,7 @@
               text: 'Cancelar',
               class: '',
               type: 'button',
-              action: () => pageRedirect('Login'),
+              action: () => pageRedirect({ name: 'Login' }),
             },
             {
               text: 'Avançar',
