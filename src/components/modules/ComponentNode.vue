@@ -14,8 +14,8 @@ const editorStore = reactive({ nodes: [], connections: [] })
 const gameBasicData = ref({ gameId: route.params.id, version: 1 })
 const { handleStartConnection, paths, forceUpdatePaths } = useConnections(editorStore)
 
-onMounted(() => {
-  connect()
+onMounted(async () => {
+  await connect()
 })
 
 // Este watcher será o responsável por carregar os dados iniciais
@@ -32,10 +32,6 @@ const stopWatch = watch(status, (newStatus) => {
   }
 })
 
-watch(requestStatus, (newRequestStatus) =>
-  console.log('Estado da requisição atualizado: ', newRequestStatus),
-)
-
 // Este watcher continua como estava, ele ouve TODAS as mensagens
 watch(data, (newMessage) => {
   if (!newMessage || !newMessage.event) return
@@ -51,6 +47,8 @@ watch(data, (newMessage) => {
 watch(
   () => editorStore,
   () => {
+    console.log('Anistia já!')
+    commitState()
     if (status.value === 'OPEN') {
       updateGameData()
     }
@@ -144,8 +142,6 @@ const handleNodeRightClick = (e, node) => {
 }
 
 const createNode = (x, y, params = {}) => {
-  console.log('Creating node at', x, y, params)
-  commitState()
   const id = 'node' + Date.now()
   const node = {
     id,
@@ -164,7 +160,6 @@ const createNode = (x, y, params = {}) => {
 
 const addActionToNode = (node, action) => {
   if (node) {
-    commitState()
     node.content.actions.push({
       id: 'action' + Date.now(),
       name: action.name,
@@ -175,7 +170,6 @@ const addActionToNode = (node, action) => {
 
 const addChoiceToNode = (node, text) => {
   if (node) {
-    commitState()
     node.content.choices.push({
       id: 'choice' + Date.now(),
       text,
@@ -185,7 +179,6 @@ const addChoiceToNode = (node, text) => {
 
 const setBackgroundImage = (node, url) => {
   if (node) {
-    commitState()
     node.content.actions.push({
       id: 'actionBG' + Date.now(),
       name: 'Definir imagem de fundo',
@@ -196,7 +189,6 @@ const setBackgroundImage = (node, url) => {
 
 const setMusic = (node, url) => {
   if (node) {
-    commitState()
     node.content.actions.push({
       id: 'actionMusic' + Date.now(),
       name: 'Tocar música',
@@ -207,7 +199,6 @@ const setMusic = (node, url) => {
 
 const setSoundEffect = (node, url) => {
   if (node) {
-    commitState()
     node.content.actions.push({
       id: 'actionSFX' + Date.now(),
       name: 'Efeito sonoro',
@@ -224,8 +215,6 @@ function getEditorState() {
 }
 
 function isLocalStateNewer(remoteState) {
-  // Considera que o estado mais recente é o que tiver o maior timestamp de modificação
-  // Adiciona um campo 'updatedAt' em cada node e connection ao criar/modificar
   const getLatestTimestamp = (arr) =>
     arr && arr.length ? Math.max(...arr.map((item) => item.updatedAt || 0)) : 0
 
@@ -249,7 +238,6 @@ const undoStack = []
 const redoStack = []
 
 function commitState() {
-  // cria uma cópia pura do estado atual
   const snapshot = {
     nodes: JSON.parse(JSON.stringify(editorStore.nodes)),
     connections: JSON.parse(JSON.stringify(editorStore.connections)),
@@ -324,28 +312,42 @@ defineExpose({
 
 <template>
   <div class="editor-canvas">
-    <div style="position: absolute; top: 0; right: 0.5rem; z-index: 3">
+    <div style="position: absolute; top: 0; right: 0.5rem; z-index: 3; display: flex">
       <CreateButton
         :buttons="[
+          {
+            icon: 'help',
+            class: 'symbolic no-padding',
+            action: (e) => {
+              openContextMenu(
+                [
+                  {
+                    items: [
+                      {
+                        text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
+                      },
+                    ],
+                  },
+                ],
+                e,
+              )
+            },
+          },
           {
             icon: connectionMap.icon[requestStatus],
             text: connectionMap.message[requestStatus],
             class: 'symbolic no-padding no-scalling',
+            style: {
+              cursor: requestStatus != 'ERROR' ? 'inherit' : 'pointer',
+            },
+            action: requestStatus === 'ERROR' && (async () => await connect()),
           },
         ]"
       />
     </div>
 
     <svg class="connections-layer">
-      <path
-        v-for="p in paths"
-        :key="p?.id"
-        :d="p?.d"
-        fill="none"
-        stroke="var(--text)"
-        stroke-width="2"
-        :stroke-dasharray="p?.isLoop ? '6,3' : '0'"
-      />
+      <path v-for="p in paths" :key="p?.id" :d="p?.d" :stroke-dasharray="p?.isLoop ? '6,3' : '0'" />
     </svg>
 
     <!-- Camada de nodes -->
@@ -387,8 +389,6 @@ defineExpose({
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
-  z-index: 1;
 }
 
 /* Nodes ficam na frente */
@@ -400,15 +400,16 @@ defineExpose({
   height: 100%;
   z-index: 2;
 }
-</style>
 
-<style scoped>
-.connections-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none; /* não bloqueia clique */
+path {
+  pointer-events: stroke;
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+}
+
+path:hover {
+  stroke: aqua;
+  stroke-width: 4 !important;
 }
 </style>

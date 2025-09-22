@@ -1,17 +1,19 @@
 <template>
   <div class="page">
-    <CreateButton :buttons="[
-      {
-        icon: 'settings',
-        class: 'symbolic no-padding no-scalling',
-        action: () => handleSettingsBox(),
-        style: `
+    <CreateButton
+      :buttons="[
+        {
+          icon: 'settings',
+          class: 'symbolic no-padding no-scalling',
+          action: () => handleSettingsBox(),
+          style: `
           position: absolute;
           top: 0.5rem;
           right: 0.5rem;
           `,
-      },
-    ]" />
+        },
+      ]"
+    />
 
     <div class="main-form-container">
       <div class="left">
@@ -28,14 +30,16 @@
           <transition name="slide-left" mode="out-in">
             <div class="sepElements" :key="currentStep">
               <slot v-if="!errorController" name="fields" />
-              <p v-if="errorController" v-for="msg in errorController.messages">{{ msg.text }}</p>
+              <p v-else v-for="msg in errorController.messages" :key="msg">
+                {{ msg.text }}
+              </p>
             </div>
           </transition>
 
           <slot v-if="!errorController" name="anchors" />
           <div class="sepButtons">
             <slot v-if="!errorController" name="buttons" />
-            <CreateButton v-if="errorController" :buttons="errorController.buttons" />
+            <CreateButton v-else :buttons="errorController.buttons" />
           </div>
         </form>
       </div>
@@ -74,11 +78,9 @@ function handleError({ title, messages, buttons }) {
   errorController.value = {
     title: title ?? 'Erro',
     messages: messages ?? [
-      { text: 'Ocorreu um erro e não foi possível continuar. Tente reiniciar as etapas.' }
+      { text: 'Ocorreu um erro e não foi possível continuar. Tente reiniciar as etapas.' },
     ],
-    buttons: buttons ?? [
-      { text: 'Reiniciar', action: () => window.location.reload() }
-    ]
+    buttons: buttons ?? [{ text: 'Reiniciar', action: () => window.location.reload() }],
   }
 }
 
@@ -254,7 +256,7 @@ defineExpose({ handleError })
   width: 100%;
 }
 
-.centered>div {
+.centered > div {
   width: 100%;
   box-sizing: border-box;
 }

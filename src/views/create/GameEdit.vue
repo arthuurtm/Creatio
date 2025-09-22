@@ -74,35 +74,6 @@ function handleContextMenu(e) {
   <div class="page-wrapper" @contextmenu="handleContextMenu">
     <div class="checkerboard"></div>
     <ComponentNode ref="componentNodeRef" />
-    <CreateButton
-      :buttons="[
-        {
-          icon: 'help',
-          class: 'symbolic no-padding',
-          position: {
-            position: 'absolute',
-            bottom: '1rem',
-            right: '1rem',
-          },
-        },
-      ]"
-      @click="
-        (e) =>
-          openContextMenu(
-            [
-              {
-                items: [
-                  {
-                    text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
-                  },
-                ],
-              },
-            ],
-            e,
-          )
-      "
-    />
-
     <CreateContextMenu ref="contextMenuRef" />
   </div>
 </template>
