@@ -107,7 +107,7 @@ defineExpose({ handleError })
   align-self: center;
   height: 100%;
   width: 100%;
-  background: var(--bg2);
+  background: var(--bg);
   box-sizing: border-box;
 }
 
@@ -129,7 +129,6 @@ defineExpose({ handleError })
   padding: 1.5rem;
   border: none;
   box-shadow: none;
-  background: var(--bg2);
   padding: 0;
 }
 
@@ -151,10 +150,10 @@ defineExpose({ handleError })
   border-radius: 30px;
   padding: 35px;
   gap: 5px;
-  width: 830px;
+  width: 840px;
   height: auto;
-  border: 1px solid var(--border);
-  background: var(--bg);
+  /* border: 1px solid var(--border); */
+  background: var(--bg2);
   transition: border 300ms ease-out;
   overflow: hidden;
   min-height: 350px;
@@ -162,8 +161,8 @@ defineExpose({ handleError })
   scrollbar-color: var(--bg) var(--bg);
   scrollbar-width: thin;
   box-shadow: 0 3px 6px var(--primary-shadow);
-  backdrop-filter: var(--main-saturate);
-  -webkit-backdrop-filter: var(--main-saturate);
+  /* backdrop-filter: var(--main-saturate); */
+  /* -webkit-backdrop-filter: var(--main-blur); */
   box-shadow: 0 8px 32px 0 var(--main-shadow);
 }
 
@@ -200,6 +199,7 @@ defineExpose({ handleError })
 
 .main-form-container h1 {
   margin: 0 0 1rem 0;
+  font-weight: bold;
 }
 
 .main-form-container a {

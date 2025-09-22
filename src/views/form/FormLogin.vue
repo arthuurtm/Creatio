@@ -45,14 +45,14 @@
           :buttons="[
             {
               position: 'left',
-              text: 'Criar conta',
-              class: 'symbolic no-padding normal no-scalling',
-              id: 'createAnAccountButton',
-              action: () => pageRedirect({ name: 'Signup' }),
-            },
-            {
               class: 'symbolic no-padding',
               id: 'googleButton',
+            },
+            {
+              text: 'Criar conta',
+              class: 'symbolic normal no-scalling',
+              id: 'createAnAccountButton',
+              action: () => pageRedirect({ name: 'Signup' }),
             },
             {
               text: 'Avançar',

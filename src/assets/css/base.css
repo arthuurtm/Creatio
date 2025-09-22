@@ -110,8 +110,8 @@
 
   --text-color: #f2f2f2;
   --background-color: linear-gradient(135deg, #090909, #090b0e, #040c13);
-  --background-alt: rgba(40, 40, 60, 0.22);
-  --border-color: rgba(73, 67, 67, 0.1);
+  --background-alt: rgb(16, 17, 23);
+  --border-color: rgb(41, 37, 37);
 
   --input-bg-neutral: rgba(60, 60, 80, 0.25);
   --input-text-neutral: #f0f0f0;
