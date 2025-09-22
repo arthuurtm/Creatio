@@ -30,7 +30,7 @@
                 text: 'Esqueci minha senha',
                 class: 'critical',
                 model: 'forgotPassword',
-                action: () => pageRedirect('PasswordRescue'),
+                action: () => pageRedirect({ name: 'PasswordRescue' }),
               },
             },
           ]"
@@ -48,7 +48,7 @@
               text: 'Criar conta',
               class: 'symbolic no-padding normal no-scalling',
               id: 'createAnAccountButton',
-              action: () => pageRedirect('Signup'),
+              action: () => pageRedirect({ name: 'Signup' }),
             },
             {
               class: 'symbolic no-padding',
