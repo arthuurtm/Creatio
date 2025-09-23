@@ -31,6 +31,11 @@ ul {
     height: 100%;
     display: grid;
     grid-template-rows: min-content auto;
+    border-right: 2px solid var(--border);
+  }
+
+  .container:has(> .nav.minimized.hidden) {
+    border: none;
   }
 
   .hide-nav {
@@ -48,7 +53,6 @@ ul {
     interpolate-size: allow-keywords;
     width: 0;
     background: transparent;
-    border-right: 2px solid var(--border);
   }
 
   .nav .nav-content {
@@ -69,7 +73,6 @@ ul {
 
   .nav.minimized.hidden {
     width: 0px;
-    border: none;
   }
 
   .nav ul {

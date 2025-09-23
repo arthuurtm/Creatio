@@ -1,7 +1,5 @@
 <template>
-  <div v-for="(field, index) in allFields" :key="index" class="input-container">
-    <label v-if="field.label" :for="field.model">{{ field.label }}</label>
-
+  <template v-for="(field, index) in allFields" :key="index">
     <div class="input" ref="inputWrapper" :class="[field.class, field.style]">
       <CreateButton
         v-if="field.icon"
@@ -18,7 +16,7 @@
         class="input-field"
         :type="field.type"
         :id="field.model"
-        :placeholder="field.placeholder"
+        :placeholder="!field.label ? field.placeholder : ''"
         @change="field.type === 'file' && handleFile($event, field.model)"
         @input="updateValue(field.model, $event.target.value)"
         :value="props.modelValue[field.model]"
@@ -29,6 +27,8 @@
           </option>
         </template>
       </component>
+
+      <label v-if="field.label" :for="field.model">{{ field.label }}</label>
 
       <CreateButton
         v-if="field.type === 'password' || field.type === 'password-view'"
@@ -43,7 +43,7 @@
     </div>
 
     <CreateAnchor v-if="field?.anchor" @emitEvent="reEmitEvent" :anchor="field.anchor" />
-  </div>
+  </template>
 </template>
 
 <script setup>
@@ -106,10 +106,4 @@ function getComponentType(type) {
 }
 </script>
 
-<style scoped>
-.input-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-</style>
+<style scoped></style>
