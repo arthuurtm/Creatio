@@ -76,6 +76,7 @@ defineExpose({
           <hr v-if="sIndex > 0" />
           <div class="sub-menu" :style="subMenu?.style">
             <div v-for="(item, iIndex) in subMenu.items" :key="iIndex" class="sub-menu-items">
+              <component v-bind:is="item.component" v-bind="item?.componentProps" />
               <CreateButton
                 :buttons="[
                   {
