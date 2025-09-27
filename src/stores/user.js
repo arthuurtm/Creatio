@@ -27,6 +27,9 @@ export const useUserStore = defineStore('user', {
       this.email = userData.email
       this.additionalData = userData.additionalData || {}
       this.profilePicture = userData.profilePicture
+        ? userData.profilePicture
+        : `${window.location.origin}/api/file/public/default-profile-pic.png`
+
       this.isAuth = true
     },
     clearUserData() {
