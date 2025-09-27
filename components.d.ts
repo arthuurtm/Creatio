@@ -12,6 +12,7 @@ declare module 'vue' {
     CreateButton: typeof import('./src/components/elements/CreateButton.vue')['default']
     CreateCard: typeof import('./src/components/elements/CreateCard.vue')['default']
     CreateContextMenu: typeof import('./src/components/elements/CreateContextMenu.vue')['default']
+    CreateDynamicParams: typeof import('./src/components/elements/CreateDynamicParams.vue')['default']
     CreateLoading: typeof import('./src/components/elements/CreateLoading.vue')['default']
     CreateLogo: typeof import('./src/components/elements/CreateLogo.vue')['default']
     CreateNode: typeof import('./src/components/elements/CreateNode.vue')['default']
