@@ -27,33 +27,62 @@ export function useConnections(editorStore) {
       }
     }
 
-    // fallback: usa posição do node, se existir
     const node = editorStore.nodes.find((n) => n.id === nodeId)
     if (!node) return null
     return { x: node.x + 140, y: node.y + 40 }
   }
 
   function handleStartConnection({ nodeId, socketId }) {
+    // guard: não iniciar outro drag se já existe um
+    if (tempConnection.value) return
+
     const from = `${nodeId}:${socketId}`
     const startPos = getPortPosition(nodeId, socketId)
     if (!startPos) return
 
     tempConnection.value = { from, x: startPos.x, y: startPos.y }
 
-    function onMouseMove(e) {
+    const onMouseMove = (e) => {
       const svgRect = document.querySelector('.connections-layer').getBoundingClientRect()
       tempConnection.value.x = e.clientX - svgRect.left
       tempConnection.value.y = e.clientY - svgRect.top
     }
 
     function onMouseUp(e) {
-      const target = e.target.closest('.dot')
-      if (target) {
-        const to = target.dataset.port
-        if (to && to !== tempConnection.value.from) {
-          editorStore.connections.push({ from: tempConnection.value.from, to })
+      const els = document.elementsFromPoint(e.clientX, e.clientY) || []
+      const dot = els.find((el) => el.dataset && el.dataset.port)
+      const to = dot?.dataset?.port
+
+      if (to && to !== tempConnection.value.from) {
+        const from = tempConnection.value.from
+
+        const fromNode = normalizeNode(from)
+        const toNode = normalizeNode(to)
+
+        // não permitir loop para o mesmo node
+        if (fromNode === toNode) return cleanup()
+
+        const alreadyExists = editorStore.connections.some((c) => {
+          const cFrom = normalizeNode(c.from)
+          const cTo = normalizeNode(c.to)
+          return (cFrom === fromNode && cTo === toNode) || (cFrom === toNode && cTo === fromNode)
+        })
+
+        if (!alreadyExists) {
+          editorStore.connections.push({ from, to })
+        } else {
+          console.debug('Conexão já existe entre', fromNode, 'e', toNode)
         }
       }
+
+      cleanup()
+    }
+
+    function normalizeNode(portStr) {
+      return String(portStr).split(':')[0]
+    }
+
+    function cleanup() {
       tempConnection.value = null
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onMouseUp)
