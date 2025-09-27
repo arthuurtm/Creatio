@@ -18,13 +18,17 @@ function handleDotMouseDown(socketId, event) {
 
   // emite para o pai (ComponentNode) que começou um arraste
   console.log('Iniciando conexão do nó', props.node.id, 'ponto', socketId)
+  reEmitEvent('start-connection', {
+    nodeId: props.node.id,
+    socketId,
+    start,
+  })
+}
+
+function reEmitEvent(name, data = {}) {
   emit('emit-event', {
-    name: 'start-connection',
-    data: {
-      nodeId: props.node.id,
-      socketId,
-      start,
-    },
+    name,
+    data,
   })
 }
 
@@ -145,14 +149,11 @@ const hasMeta = computed(() => {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background-color: rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid var(--border, #444);
 }
 .node-type {
   font-weight: bold;
   text-transform: capitalize;
-  background-color: var(--primary, #007acc);
-  color: white;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
@@ -177,7 +178,6 @@ const hasMeta = computed(() => {
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-accent, #a2a2a2);
 }
 .section-title span {
   font-size: 18px;
@@ -196,7 +196,6 @@ const hasMeta = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
   padding: 8px 10px;
   border-radius: 4px;
 }
@@ -218,11 +217,8 @@ const hasMeta = computed(() => {
   display: flex;
   flex-direction: column;
 }
-.effect-prop {
-  color: #bbb;
-}
+
 .code-value {
-  background-color: #1e1e1e;
   padding: 2px 4px;
   border-radius: 3px;
   font-family: 'Courier New', Courier, monospace;
