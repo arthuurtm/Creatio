@@ -80,4 +80,20 @@ const selectFile = (type) => {
   })
 }
 
-export default { appTheme, handleImage, selectFile }
+function deepFindById(data, id) {
+  if (Array.isArray(data)) {
+    for (const item of data) {
+      const result = deepFindById(item, id)
+      if (result) return result
+    }
+  } else if (data && typeof data === 'object') {
+    if (data.id === id) return data
+    for (const key in data) {
+      const result = deepFindById(data[key], id)
+      if (result) return result
+    }
+  }
+  return null
+}
+
+export default { appTheme, handleImage, selectFile, deepFindById }
