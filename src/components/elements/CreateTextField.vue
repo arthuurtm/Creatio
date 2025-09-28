@@ -38,7 +38,7 @@
             class: 'symbolic no-padding no-scale center',
           },
         ]"
-        @click="togglePassView(field)"
+        @emit-event="togglePassView(field)"
       />
     </div>
 
