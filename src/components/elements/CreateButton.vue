@@ -1,18 +1,13 @@
 <template>
   <template v-for="(button, index) in normalizedButtons" :key="index">
     <template v-if="!button?.rules?.includes('hide')">
-      <select
+      <div
         v-if="button.tag === 'select'"
         :id="button.id || ''"
         :class="['btn', button.class, globalStyle]"
         :style="[button?.style, typeof button?.position === 'object' && button.position]"
-        @change="handleClick(button, index, $event.target.value)"
-      >
-        <option disabled selected>Selecione uma opção...</option>
-        <option v-for="(option, i) in button.options" :key="i" :value="option.value || option">
-          {{ option.text || option }}
-        </option>
-      </select>
+        @click.capture="openContextMenu(button.options)"
+      ></div>
 
       <component
         v-else
@@ -53,6 +48,7 @@
       </component>
     </template>
   </template>
+  <create-context-menu ref="contextMenu" @emit-event="emitEvent" />
 </template>
 
 <script setup>
@@ -78,11 +74,17 @@ const slots = useSlots()
 const hasDefaultSlot = !!slots.default
 const normalizedButtons = computed(() => normalizeButtons(props.buttons))
 const loadingStates = ref(normalizedButtons.value.map(() => false))
+/**@type {import('@/components/elements/CreateContextMenu.vue').default} */
+const contextMenu = ref({})
 
 function normalizeButtons(value) {
   if (Array.isArray(value)) return value
   if (value && typeof value === 'object') return Object.values(value)
   return [{}]
+}
+
+function openContextMenu(items, e) {
+  contextMenu.value.openContextMenu(items, e)
 }
 
 function handleClick(button, index, e) {
@@ -92,28 +94,25 @@ function handleClick(button, index, e) {
     return
   }
 
-  if (typeof button.action === 'function') {
+  if (typeof button?.action === 'function') {
     handleAction(button, index, e)
-  } else {
-    emitEvent(button.action?.name, button.action?.value, button.action?.type)
   }
-  emits('click', e)
+  emitEvent({ ...e, ...button })
 }
-const emitEvent = (action = '', value = '', type = '') => {
-  emits('emitEvent', { action, value, type })
+const emitEvent = (e = {}) => {
+  emits('emitEvent', { ...e })
 }
 
 const handleAction = async (button, index, event, next = null) => {
   try {
     loadingStates.value[index] = true
     await button.action(event)
-    emitEvent(null, 'terminated', null)
   } catch (error) {
     console.error('Erro ao executar função: ', error)
-    emitEvent(null, 'error', null)
     if (next) next(error)
     else throw error
   } finally {
+    emitEvent(event)
     loadingStates.value[index] = false
   }
 }
