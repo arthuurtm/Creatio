@@ -1,5 +1,6 @@
 <script setup>
 import { reactive, watch } from 'vue'
+import { util } from '@/functions'
 
 const emit = defineEmits(['update:modelValue'])
 const props = defineProps({
@@ -33,21 +34,25 @@ watch(
 )
 
 function addParam(e) {
-  if (e) {
-    selectedParams.push(e)
+  if (e.id) {
+    selectedParams.push(e.id)
   }
 }
 
 function removeParam(key) {
   delete params[key]
 }
+
+function findName(id) {
+  const { text } = util.deepFindById(props.data, id)
+  return text
+}
 </script>
 
 <template>
   <div class="inline-params">
-    <p v-for="value in selectedParams" :key="value">{{ value }}</p>
-    <create-button :buttons="params" @click="addParam" />
-    <button class="inline-btn add-btn" @click="addParam">+</button>
+    <p v-for="value in selectedParams" :key="value">{{ findName(value) }}</p>
+    <create-button :buttons="params" @emit-event="addParam" />
   </div>
 </template>
 
