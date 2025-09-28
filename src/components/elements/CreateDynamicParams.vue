@@ -13,20 +13,29 @@ const props = defineProps({
   },
 })
 
-// cópia reativa do objeto vindo
-const params = reactive({ ...props.modelValue, ...props.data })
+const params = reactive(
+  Object.entries(props.data || {}).map(([key, value]) => ({
+    tag: 'select',
+    key,
+    options: value,
+  })),
+)
+
+const selectedParams = reactive([])
 
 watch(
-  () => params,
+  () => selectedParams,
   () => {
-    emit('update:modelValue', { ...params })
+    console.log(selectedParams)
+    emit('update:modelValue', selectedParams)
   },
   { deep: true },
 )
 
-function addParam() {
-  const newKey = `obj${Object.keys(params).length + 1}`
-  params[newKey] = {}
+function addParam(e) {
+  if (e) {
+    selectedParams.push(e)
+  }
 }
 
 function removeParam(key) {
@@ -36,25 +45,8 @@ function removeParam(key) {
 
 <template>
   <div class="inline-params">
-    <template v-for="(value, key) in params" :key="key">
-      <input
-        :value="key"
-        @input="
-          (e) => {
-            const newKey = e.target.value
-            if (newKey && newKey !== key) {
-              params[newKey] = params[key]
-              delete params[key]
-            }
-          }
-        "
-        placeholder="chave"
-        class="inline-input"
-      />
-      <input v-model="params[key]" placeholder="valor" class="inline-input" />
-      <button class="inline-btn" @click="removeParam(key)">×</button>
-    </template>
-
+    <p v-for="value in selectedParams" :key="value">{{ value }}</p>
+    <create-button :buttons="params" @click="addParam" />
     <button class="inline-btn add-btn" @click="addParam">+</button>
   </div>
 </template>
