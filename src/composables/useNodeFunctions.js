@@ -4,7 +4,11 @@ import { reactive, shallowRef } from 'vue'
 const editorStore = reactive({
   nodes: [],
   connections: [],
-  objects: [],
+  objects: [
+    { label: 'teste1', id: crypto.randomUUID() },
+    { label: 'teste2', id: crypto.randomUUID() },
+    { label: 'teste3', id: crypto.randomUUID() },
+  ],
   players: [],
 })
 
@@ -39,11 +43,12 @@ const menuItemsConstructor = (obj) => {
   return [
     {
       items: obj.map((def) => ({
+        ...def,
         component: def.component,
         componentProps: def.componentProps,
-        text: def.text,
-        icon: 'code',
-        action: () => def.action() ?? obj.addHas(...def.params),
+        text: def.text || def.label,
+        icon: def.icon,
+        action: def.action ? () => def.action() : null,
       })),
     },
   ]
@@ -101,14 +106,16 @@ const nodeOps = ({ openContextMenu }) => {
       const definitions = [
         {
           text: 'Adicionar Condição',
+          icon: 'exclamation',
           action: () => {
             use.openConditionMenu(e)
             return 'keep-open'
           },
         },
-        { text: 'Adicionar Consequência' },
+        { text: 'Adicionar Consequência', icon: 'info' },
         {
           text: 'Adicionar ação',
+          icon: 'bolt',
           action: (e) => {
             openContextMenu(
               [
@@ -163,11 +170,12 @@ const nodeOps = ({ openContextMenu }) => {
               menuItemsConstructor([
                 {
                   component: shallowRef(CreateDynamicParams),
-                  componentProps: { data: { objects: editorStore.objects } },
+                  componentProps: { data: { objects: menuItemsConstructor(editorStore.objects) } },
                 },
               ]),
               e,
             )
+            return 'keep-open'
           },
         },
         { text: 'Não ter item', params: ['no_item', 'key_sword'] },
