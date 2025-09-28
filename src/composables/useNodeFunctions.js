@@ -162,7 +162,7 @@ const nodeOps = ({ openContextMenu }) => {
             openContextMenu(
               menuItemsConstructor([
                 {
-                  component: CreateDynamicParams,
+                  component: shallowRef(CreateDynamicParams),
                   componentProps: { data: { objects: editorStore.objects } },
                 },
               ]),
