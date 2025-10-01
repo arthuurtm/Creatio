@@ -32,13 +32,6 @@ const createNode = (x, y, params = {}) => {
   return node
 }
 
-const conditionControllers = () => {
-  function addHas() {}
-
-  function has(key, ...values) {}
-  return { addHas, has }
-}
-
 const menuItemsConstructor = (obj) => {
   return [
     {
@@ -102,13 +95,13 @@ const nodeOps = ({ openContextMenu }) => {
    *
    */
   const get = {
-    nodeMenu: (e) => {
+    nodeMenu: (e, node) => {
       const definitions = [
         {
           text: 'Adicionar Condição',
           icon: 'exclamation',
           action: () => {
-            use.openConditionMenu(e)
+            use.openConditionMenu(e, node)
             return 'keep-open'
           },
         },
@@ -116,7 +109,7 @@ const nodeOps = ({ openContextMenu }) => {
         {
           text: 'Adicionar ação',
           icon: 'bolt',
-          action: (e) => {
+          action: () => {
             openContextMenu(
               [
                 {
@@ -160,17 +153,21 @@ const nodeOps = ({ openContextMenu }) => {
       return menuItemsConstructor(definitions)
     },
 
-    conditionsMenu: () => {
-      const controller = conditionControllers()
+    conditionsMenu: (e, node) => {
       const definitions = [
         {
           text: 'Ter item',
-          action: (e) => {
+          action: () => {
             openContextMenu(
               menuItemsConstructor([
                 {
                   component: shallowRef(CreateDynamicParams),
-                  componentProps: { data: { objects: menuItemsConstructor(editorStore.objects) } },
+                  componentProps: {
+                    data: { objects: menuItemsConstructor(editorStore.objects) },
+                    listener: (values) => {
+                      add.condition(node, values)
+                    },
+                  },
                 },
               ]),
               e,
@@ -210,15 +207,15 @@ const nodeOps = ({ openContextMenu }) => {
   }
 
   const use = {
-    openNodeMenu(e) {
-      openContextMenu(get.nodeMenu(), e)
+    openNodeMenu(e, node) {
+      openContextMenu(get.nodeMenu(e, node), e)
     },
-    openConditionMenu(e) {
-      openContextMenu(get.conditionsMenu(), e)
+    openConditionMenu(e, node) {
+      openContextMenu(get.conditionsMenu(e, node), e)
     },
   }
 
-  return { add, get, set, use }
+  return { get, use }
 }
 
 export { editorStore, createNode, nodeOps }
