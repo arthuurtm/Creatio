@@ -2,15 +2,15 @@
 import { reactive, watch } from 'vue'
 import { util } from '@/functions'
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:emit-event'])
 const props = defineProps({
-  modelValue: {
-    type: Object,
-    default: () => ({}),
-  },
   data: {
     type: Object,
     default: () => ({}),
+  },
+  listener: {
+    type: Function,
+    default: () => null,
   },
 })
 
@@ -24,19 +24,11 @@ const params = reactive(
 
 const selectedParams = reactive([])
 
-watch(
-  () => selectedParams,
-  () => {
-    console.log(selectedParams)
-    emit('update:modelValue', selectedParams)
-  },
-  { deep: true },
-)
-
 function addParam(e) {
   if (e.id) {
     selectedParams.push(e.id)
   }
+  props.listener(selectedParams)
 }
 
 function removeParam(key) {
