@@ -87,7 +87,7 @@
 </template>
 
 <script setup>
-import AppFormPage from '@/layouts/AppFormPage.vue'
+import AppFormPage from '@/layouts/LayoutForm.vue'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { http, form as stepForm } from '@/functions'

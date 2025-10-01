@@ -2,25 +2,24 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { http } from '@/functions/'
 
 // Errors
-import ErrNotFound from '@/layouts/ErrNotFound.vue'
+import ErrNotFound from '@/views/err/NotFoundView.vue'
 
 // Pages
-import FormLogin from '@/views/form/FormLogin.vue'
-import FormSignup from '@/views/form/FormSignup.vue'
-import FormPasswordRescue from '@/views/form/FormPasswordRescue.vue'
-import ViewAbout from '@/views/ViewAbout.vue'
-import ViewGameDetails from '@/views/ViewGameDetails.vue'
-import ViewHome from '@/views/ViewHome.vue'
-import ViewUserProfile from '@/views/ViewUserProfile.vue'
-import ViewGameRun from '@/views/ViewGameRun.vue'
-import CreateHome from '@/views/create/CreateHome.vue'
-import CreateGameSettings from '@/views/create/CreateGameSettings.vue'
-import GameEdit from '@/views/create/GameEdit.vue'
+import FormLogin from '@/views/auth/FormLoginView.vue'
+import FormSignup from '@/views/auth/FormSignupView.vue'
+import FormPasswordRescue from '@/views/auth/FormPasswordRescueView.vue'
+import ViewAbout from '@/views/about/AboutView.vue'
+import ViewGameDetails from '@/views/game/general/GameDetailsView.vue'
+import ViewHome from '@/views/user/HomeView.vue'
+import ViewUserProfile from '@/views/user/UserProfileView.vue'
+import ViewGameRun from '@/views/game/general/GameRunView.vue'
+import CreateHome from '@/views/game/edit/HomeView.vue'
+import CreateGameSettings from '@/views/game/edit/GameSettingsView.vue'
+import GameEdit from '@/views/game/edit/GameEditView.vue'
 
 // Layouts
-import AppHome from '@/layouts/AppHome.vue'
-import AppCreateGame from '@/layouts/AppCreateGame.vue'
-import AppGame from '@/layouts/AppGame.vue'
+import AppHome from '@/views/user/AppHomeView.vue'
+import AppGame from '@/views/game/general/AppGameView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

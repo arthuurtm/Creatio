@@ -1,15 +1,22 @@
 <template>
-  <AppFormPage :title="'Alterar senha'" :currentStep="currentStep" ref="form">
+  <AppFormPage :title="'Crie sua conta'" :currentStep="currentStep">
     <template #fields>
       <template v-if="currentStep === 1">
         <CreateTextField
           :fields="[
             {
               type: 'text',
-              name: 'email',
-              model: 'email',
-              label: 'E-mail',
-              placeholder: 'Digite seu e-mail',
+              name: 'nickname',
+              model: 'nickname',
+              label: 'Nome de Exibição',
+              placeholder: 'Um nome criativo',
+            },
+            {
+              type: 'text',
+              name: 'username',
+              model: 'username',
+              label: 'Nome de Usuário',
+              placeholder: 'Seu nome de usuário',
               required: true,
             },
           ]"
@@ -17,6 +24,29 @@
         />
       </template>
       <template v-if="currentStep === 2">
+        <CreateTextField
+          :fields="[
+            {
+              type: 'email',
+              model: 'email',
+              label: 'Seu e-mail',
+              placeholder: 'Seu e-mail',
+              required: true,
+            },
+            {
+              type: 'date',
+              name: 'birthdate',
+              model: 'birthdate',
+              label: 'Data de nascimento',
+              placeholder: '',
+              required: true,
+              class: 'date',
+            },
+          ]"
+          v-model="formData"
+        />
+      </template>
+      <template v-if="currentStep === 3">
         <CreateTextField
           :fields="[
             {
@@ -31,14 +61,14 @@
           v-model="formData"
         />
       </template>
-      <template v-if="currentStep === 3">
+      <template v-if="currentStep === 4">
         <CreateTextField
           :fields="[
             {
               type: 'password',
               name: 'password',
               model: 'passwd1',
-              id: 'psswd1',
+              id: 'passwd1',
               label: 'Sua senha',
               placeholder: 'Digite uma senha BEM segura!',
               required: true,
@@ -47,7 +77,7 @@
               type: 'password',
               name: 'passwordConfirm',
               model: 'passwd2',
-              id: 'psswd2',
+              id: 'passwd2',
               label: 'Confirme sua senha',
               placeholder: 'Re-digite sua senha!',
               required: true,
@@ -64,9 +94,27 @@
           :buttons="[
             {
               text: 'Cancelar',
-              class: '',
+              class: 'left symbolic critical no-padding no-scalling',
               type: 'button',
               action: () => pageRedirect({ name: 'Login' }),
+            },
+            {
+              text: 'Avançar',
+              class: 'confirm',
+              type: 'submit',
+              action: () => verifyIfUserExists(),
+            },
+          ]"
+        />
+      </template>
+      <template v-if="currentStep === 2">
+        <CreateButton
+          :buttons="[
+            {
+              text: 'Voltar',
+              class: '',
+              type: 'button',
+              action: () => prevStep(),
             },
             {
               text: 'Avançar',
@@ -77,7 +125,7 @@
           ]"
         />
       </template>
-      <template v-if="currentStep === 2">
+      <template v-if="currentStep === 3">
         <CreateButton
           :buttons="[
             {
@@ -95,7 +143,7 @@
           ]"
         />
       </template>
-      <template v-if="currentStep === 3">
+      <template v-if="currentStep === 4">
         <CreateButton
           :buttons="[
             {
@@ -105,10 +153,10 @@
               action: () => prevStep(),
             },
             {
-              text: 'Confirmar',
+              text: 'Cadastrar',
               class: 'confirm',
               type: 'submit',
-              action: () => resetPassword(),
+              action: () => signupUser(),
             },
           ]"
         />
@@ -118,30 +166,52 @@
 </template>
 
 <script setup>
-import AppFormPage from '@/layouts/AppFormPage.vue'
-import { ref } from 'vue'
+import AppFormPage from '@/layouts/LayoutForm.vue'
+import { computed, watch, ref } from 'vue'
 import { http, form as stepForm } from '@/functions'
 import { useRouter } from 'vue-router'
 import { showToast } from '@/plugins/toast'
 
 const formData = ref({})
+const nicknameValue = computed(() => formData.value.nickname)
 const router = useRouter()
-const form = ref({})
-const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 3 })
+
+const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 4 })
 const sentCode = ref(false)
+
+watch(nicknameValue, (newNickname) => {
+  if (newNickname !== undefined) {
+    formData.value.username = newNickname
+      .toLowerCase()
+      .replace(/[^a-z0-9_.]/g, '')
+      .replace(/\s+/g, '')
+  }
+})
+
+const verifyIfUserExists = async () => {
+  try {
+    await http.get({
+      type: 'database',
+      route: 'getUserBasics',
+      querys: { identification: formData.value.username },
+    })
+    showToast({ type: 'error', message: 'O usuário já existe' })
+  } catch (err) {
+    if (err?.status === 404) {
+      nextStep()
+    } else {
+      showToast({ type: 'error', message: err.message })
+    }
+  }
+}
 
 const prepareVerifyCode = async () => {
   if (!sentCode.value) {
     try {
-      await http.get({
-        type: 'database',
-        route: 'getUserBasics',
-        querys: { identification: formData.value.email },
-      })
       await http.post(
         {
           type: 'database',
-          route: 'setResetPassCode',
+          route: 'setSignupCode',
         },
         {
           email: formData.value.email,
@@ -180,7 +250,7 @@ const verifySecureCode = async () => {
   }
 }
 
-const resetPassword = async () => {
+const signupUser = async () => {
   try {
     if (formData.value.passwd1 !== formData.value.passwd2) {
       showToast({
@@ -193,25 +263,39 @@ const resetPassword = async () => {
     await http.post(
       {
         type: 'database',
-        route: 'setUserPassword',
+        route: 'setUser',
       },
       {
-        newPassword: formData.value.passwd1,
+        nickname: formData.value.nickname,
+        username: formData.value.username,
+        email: formData.value.email,
+        birthdate: formData.value.birthdate,
+        password: formData.value.passwd1,
         sessionUUID: formData.value.sessionUUID,
       },
     )
 
     showToast({
       type: 'success',
-      message: 'Senha redefinida com sucesso!',
+      message: 'Conta criada com sucesso! Aguarde um momento...',
     })
-    setTimeout(() => {
-      router.push({ name: 'Login' })
-    }, 2000)
+
+    await http.post(
+      {
+        type: 'database',
+        route: 'setLogin',
+      },
+      {
+        type: 'traditional',
+        identification: formData.value.username,
+        password: formData.value.passwd1,
+      },
+    )
+    router.push({ name: 'Home' })
   } catch (error) {
     showToast({
       type: 'error',
-      message: error.message || 'Erro ao redefinir a senha.',
+      message: error.message,
     })
   }
 }

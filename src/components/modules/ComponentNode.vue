@@ -2,7 +2,7 @@
 import { ref, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ws, http, util } from '@/functions'
-import DialogBase from '@/layouts/DialogBase.vue'
+import DialogBase from '@/components/modules/ComponentDialog.vue'
 import CreateNode from '@/components/elements/CreateNode.vue'
 import CreateContextMenu from '../elements/CreateContextMenu.vue'
 import { useConnections } from '@/composables/useDotConnection'
