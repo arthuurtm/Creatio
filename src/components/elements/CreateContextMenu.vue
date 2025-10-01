@@ -5,7 +5,7 @@ const menuContextItems = ref([])
 const contextMenuVisible = ref(false)
 const contextMenuPos = ref({ top: 50, left: 50 })
 const contextMenu = ref(null)
-const emit = defineEmits(['emitEvent'])
+const emit = defineEmits(['emit-event'])
 
 async function openContextMenu(items = [], event = null) {
   console.log('Abrindo menu de contexto com itens:', items, 'e evento:', event)
@@ -51,7 +51,7 @@ function handleMenuItemClick(action) {
 }
 
 function emitEvent(e) {
-  emit('emitEvent', e)
+  emit('emit-event', e)
 }
 
 defineExpose({
@@ -82,7 +82,12 @@ defineExpose({
           <hr v-if="sIndex > 0" />
           <div class="sub-menu" :style="subMenu?.style">
             <div v-for="(item, iIndex) in subMenu.items" :key="iIndex" class="sub-menu-items">
-              <component v-bind:is="item.component" v-bind="item?.componentProps" />
+              <component
+                v-bind:is="item?.component"
+                v-bind="item?.componentProps"
+                v-on="item?.listeners"
+                @emit-event="emitEvent"
+              />
               <create-button
                 :buttons="[
                   {
