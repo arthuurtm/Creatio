@@ -66,7 +66,7 @@ function openContextMenu(items, event) {
 
 const handleNodeRightClick = (e, node) => {
   const selectedNode = editorStore.nodes.find((n) => n.id === node.id)
-  nodeUtils.use.openNodeMenu(e)
+  nodeUtils.use.openNodeMenu(e, selectedNode)
 }
 
 function isLocalStateNewer(remoteState) {
@@ -168,6 +168,11 @@ defineExpose({
     <div style="position: absolute; top: 0; right: 0.5rem; z-index: 3; display: flex">
       <CreateButton
         :buttons="[
+          {
+            icon: 'developer_mode_tv',
+            class: 'symbolic no-padding',
+            action: () => openContextMenu([{ items: [{ text: editorStore }] }]),
+          },
           {
             icon: 'help',
             class: 'symbolic no-padding',
