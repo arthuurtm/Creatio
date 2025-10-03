@@ -71,29 +71,18 @@ function handleContextMenu(e) {
 </script>
 
 <template>
-  <div class="page-wrapper" @contextmenu="handleContextMenu">
-    <div class="checkerboard"></div>
+  <div class="editor-wrapper" @contextmenu="handleContextMenu">
     <ComponentNode ref="componentNodeRef" />
     <CreateContextMenu ref="contextMenuRef" />
   </div>
 </template>
 
 <style scoped>
-.page-wrapper {
+.editor-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
   background: var(--bg);
-}
-
-.checkerboard {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-size: 20px 20px;
-  z-index: 0;
 }
 </style>
