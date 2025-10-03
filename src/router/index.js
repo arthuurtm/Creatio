@@ -14,81 +14,32 @@ import ViewHome from '@/views/user/HomeView.vue'
 import ViewUserProfile from '@/views/user/UserProfileView.vue'
 import ViewGameRun from '@/views/game/general/GameRunView.vue'
 import CreateHome from '@/views/game/edit/HomeView.vue'
-import CreateGameSettings from '@/views/game/edit/GameSettingsView.vue'
 import GameEdit from '@/views/game/edit/GameEditView.vue'
 
 // Layouts
-import AppHome from '@/views/user/AppHomeView.vue'
-import AppGame from '@/views/game/general/AppGameView.vue'
+import LayoutBase from '@/layouts/LayoutBase.vue'
+import LayoutForm from '@/layouts/LayoutForm.vue'
+
+/**
+ * @typedef {Object} RouteMeta
+ * @property {boolean} [requiresAuth]
+ * @property {boolean} [hiddenNavigator]
+ * @property {boolean} [fullscreen]
+ */
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
+      component: LayoutBase, // layout principal
       children: [
+        { path: '', name: 'About', component: ViewAbout },
+        { path: 'home', name: 'Home', component: ViewHome },
+        { path: 'user/:username', name: 'UserProfile', component: ViewUserProfile, props: true },
         {
-          path: '',
-          name: 'About',
-          component: ViewAbout,
-        },
-        {
-          path: 'home',
-          component: AppHome,
+          path: 'games',
           children: [
-            {
-              path: '',
-              name: 'Home',
-              component: ViewHome,
-            },
-          ],
-        },
-        {
-          path: '/auth',
-          children: [
-            {
-              path: 'login',
-              name: 'Login',
-              meta: { requiresAuth: false },
-              component: FormLogin,
-            },
-            {
-              path: 'signup',
-              name: 'Signup',
-              meta: { requiresAuth: false },
-              component: FormSignup,
-            },
-            {
-              path: 'password/rescue',
-              name: 'PasswordRescue',
-              component: FormPasswordRescue,
-            },
-          ],
-        },
-
-        {
-          path: '/u/:username',
-          name: 'UserProfile',
-          component: ViewUserProfile,
-          props: true,
-        },
-
-        {
-          path: '/games',
-          component: AppGame,
-          children: [
-            {
-              path: 'init',
-              name: 'CreateGame',
-              component: CreateGameSettings,
-            },
-            {
-              path: 'create',
-              name: 'CreateHome',
-              component: CreateHome,
-              props: true,
-              meta: { requiresAuth: true },
-            },
             {
               path: ':id',
               name: 'GameDetails',
@@ -96,35 +47,50 @@ const router = createRouter({
               props: true,
               meta: { fullscreen: true, hiddenNavigator: true },
             },
-            {
-              path: ':id/run',
-              name: 'GameRun',
-              component: ViewGameRun,
-              props: true,
-              meta: { hiddenNavigator: true, requiresAuth: true, fullscreen: true },
-            },
+          ],
+        },
+        {
+          path: 'lab',
+          children: [
+            { path: '', name: 'CreateHome', component: CreateHome, meta: { requiresAuth: true } },
             {
               path: ':id/edit',
               name: 'EditGame',
               component: GameEdit,
               props: true,
-              meta: { hiddenNavigator: true, requiresAuth: true },
+              meta: { requiresAuth: true, hiddenNavigator: true },
             },
           ],
         },
       ],
     },
 
-    // Redirecionamentos e erros
     {
-      path: '/login',
-      redirect: { name: 'Login' },
+      path: '/auth',
+      component: LayoutForm, // layout de formulários
+      children: [
+        { path: 'login', name: 'Login', component: FormLogin, meta: { requiresAuth: false } },
+        { path: 'signup', name: 'Signup', component: FormSignup, meta: { requiresAuth: false } },
+        { path: 'password/rescue', name: 'PasswordRescue', component: FormPasswordRescue },
+      ],
     },
-    {
-      path: '/:pathMatch(.*)*',
-      name: 'ErrNotFound',
-      component: ErrNotFound,
-    },
+
+    // {
+    //   path: '/games/:id/run',
+    //   component: LayoutGame, // layout fullscreen especial
+    //   children: [
+    //     {
+    //       path: '',
+    //       name: 'GameRun',
+    //       component: ViewGameRun,
+    //       props: true,
+    //       meta: { requiresAuth: true },
+    //     },
+    //   ],
+    // },
+
+    { path: '/login', redirect: { name: 'Login' } },
+    { path: '/:pathMatch(.*)*', name: 'ErrNotFound', component: ErrNotFound },
   ],
 })
 

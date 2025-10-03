@@ -1,50 +1,20 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { useSettingsStore } from '@/stores'
 import ComponentNavigator from '@/components/modules/ComponentNavigator.vue'
 
-const props = defineProps({
-  showHeader: { type: Boolean, default: false },
-  navigatorDefaultHidden: { type: Boolean, default: false },
-  fullscreen: { type: Boolean, default: false },
-})
-
 const route = useRoute()
-const routeHidden = computed(() => route?.meta?.hiddenNavigator)
-const sideBar = computed(() => useSettingsStore().getSideBar)
+const pageMeta = computed(() => route?.meta)
 const navigator = ref(null)
-
-const hiddenNavigator = computed(() => {
-  if (routeHidden.value) return true
-  return !sideBar.value && props.navigatorDefaultHidden
-})
-
-const navElementStatus = ref(() => hiddenNavigator.value)
-
-const navStatus = computed({
-  get() {
-    return navElementStatus.value ?? hiddenNavigator.value
-  },
-  set(newStatus) {
-    if (!hiddenNavigator.value) return
-    navElementStatus.value = newStatus
-  },
-})
-
-const updateNavStatus = (status) => {
-  navStatus.value = status
-}
-
 const pageName = computed(() => route?.name)
 </script>
 
 <template>
   <div class="app-container">
-    <div class="app-content" :class="[routeHidden && 'overlay-nav']">
+    <div class="app-content" :class="[pageMeta.hiddenNavigator && 'overlay-nav']">
       <div class="app-navigator">
         <ComponentNavigator
-          :hidden="hiddenNavigator"
+          :hidden="pageMeta.hiddenNavigator"
           :page="pageName"
           :defaultHideButton="true"
           @navigatorStatus="updateNavStatus"
@@ -52,7 +22,7 @@ const pageName = computed(() => route?.name)
         />
       </div>
 
-      <div class="app-view" :class="[fullscreen && 'full']">
+      <div class="app-view" :class="[pageMeta.fullscreen && 'full']">
         <router-view v-slot="{ Component }">
           <transition name="fastFade" mode="out-in">
             <div :key="route.path" style="width: 100%; height: 100%">
@@ -89,7 +59,7 @@ const pageName = computed(() => route?.name)
   position: sticky;
   grid-column: 1;
   z-index: 2;
-  background: var(--bg2);
+  background: var(--navigator);
 }
 
 .app-view {
@@ -105,7 +75,7 @@ const pageName = computed(() => route?.name)
   padding: 0;
 }
 
-/* --- MODO OVERLAY (QUANDO a classe .overlay-nav está presente) --- */
+/* --- MODO MENU ESCONDIDO (QUANDO hidden é ativo) --- */
 .app-content.overlay-nav {
   grid-template-columns: 1fr;
   position: relative;
@@ -116,15 +86,10 @@ const pageName = computed(() => route?.name)
   top: 0;
   left: 0;
   height: 100%;
-  background: var(--navigator);
 }
 
 .app-content.overlay-nav .app-view {
   grid-column: 1;
-}
-
-.app-view.no-rounded {
-  border-radius: 0 0 0 0 !important;
 }
 
 @media (max-width: 600px) {
