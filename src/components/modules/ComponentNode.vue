@@ -1,22 +1,26 @@
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { ref, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ws, http, util } from '@/functions'
 import DialogBase from '@/components/modules/ComponentDialog.vue'
 import CreateNode from '@/components/elements/CreateNode.vue'
 import CreateContextMenu from '../elements/CreateContextMenu.vue'
 import { useConnections } from '@/composables/useDotConnection'
-import { editorStore, nodeOps, createNode } from '@/composables/useNodeFunctions'
+import { editorStore, nodeOps, createNode, resetEditorStore } from '@/composables/useNodeFunctions'
 
 const route = useRoute()
 const contextMenu = ref({})
 const gameBasicData = ref({ gameId: route.params.id, version: 1 })
-const { data, status, error, requestStatus, connect, send } = ws(http.getApiUrl('ws'))
+const { data, status, error, requestStatus, connect, send, disconnect } = ws(http.getApiUrl('ws'))
 const nodeUtils = nodeOps({ openContextMenu })
 const { handleStartConnection, paths, forceUpdatePaths } = useConnections(editorStore)
 
 onMounted(async () => {
   await connect()
+})
+onUnmounted(() => {
+  disconnect()
+  resetEditorStore()
 })
 
 const stopWatch = watch(status, (newStatus) => {
