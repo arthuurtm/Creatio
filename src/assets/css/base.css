@@ -147,7 +147,7 @@
   --destructive-button: var(--danger);
   --destructive-button-hover: var(--danger-hover);
 
-  --navigator: var(--bg);
+  --navigator: var(--bg2);
   --navigator-li-hover: var(--element-hover);
   --navigator-li-focus: var(--element-focus);
 

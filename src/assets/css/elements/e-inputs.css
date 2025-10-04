@@ -89,6 +89,10 @@
   border: none;
 }
 
+.input.fill {
+  background-color: var(--global-input-focus);
+}
+
 .input.flex-reverse {
   flex-direction: row-reverse;
 }
