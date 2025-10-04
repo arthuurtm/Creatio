@@ -1,11 +1,5 @@
 <template>
   <div class="games-grid" :class="styleType">
-    <div class="title">
-      <b>
-        <h3 class="upper">{{ props.title }}</h3>
-      </b>
-    </div>
-
     <div class="content">
       <div class="scroll-button" id="left">
         <CreateButton
@@ -16,30 +10,13 @@
               icon: 'arrow_back_ios',
               class: 'symbolic no-padding no-scalling',
               id: 'left',
-              type: '',
             },
           ]"
         />
       </div>
 
-      <CreateLoading v-if="loading" />
-
-      <div v-else-if="games && games.length > 0" class="sliding" ref="scrollContainer">
-        <CreateCard :card="games" :styleType="cardsType" @emitEvent="reEmitEvent" />
-      </div>
-
-      <div v-else>
-        <CreateButton
-          :buttons="[
-            {
-              text: '🤔💭 nada por aqui...',
-              position: 'center',
-              class: 'symbolic no-padding no-scalling no-brightness',
-              id: 'noGameFound',
-              type: '',
-            },
-          ]"
-        />
+      <div v-if="items && items.length > 0" class="sliding" ref="scrollContainer">
+        <CreateCard :card="items" :styleType="cardsType" @emitEvent="reEmitEvent" />
       </div>
 
       <div class="scroll-button" id="right">
@@ -52,7 +29,6 @@
               icon: 'arrow_forward_ios',
               class: 'symbolic no-padding no-scalling',
               id: 'right',
-              type: '',
             },
           ]"
         />
@@ -62,17 +38,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { http } from '@/functions'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
-  url: {
-    type: String,
-    default: 'getGames',
-  },
-  title: {
-    type: String,
-    default: 'Jogos',
+  items: {
+    type: Array,
+    required: true,
   },
   styleType: {
     type: String,
@@ -83,30 +54,20 @@ const props = defineProps({
   },
 })
 const emits = defineEmits(['emitEvent'])
+
 const grids = ref({
   big: ['grade', 'spaced'],
   medium: ['line'],
   small: ['reduced', 'list'],
 })
-const games = ref([])
-const loading = ref(true)
 const scrollContainer = ref(null)
 const scrollAmount = 260
+
 const isEnableScrollButton = computed(() => {
   if (grids.value.big.includes(props.styleType) || grids.value.small.includes(props.styleType))
     return false
   return true
 })
-
-async function loadGames() {
-  try {
-    games.value = Object.values(await http.get({ type: 'database', route: props.url }))
-  } catch (error) {
-    console.error('Erro ao carregar dados:', error)
-  } finally {
-    loading.value = false
-  }
-}
 
 function scrollLeft() {
   if (scrollContainer.value) {
@@ -123,30 +84,13 @@ function scrollRight() {
 function reEmitEvent(args = {}) {
   emits('emitEvent', args)
 }
-
-onMounted(() => {
-  loadGames()
-})
 </script>
 
 <style scoped>
-::-webkit-scrollbar {
-  background-color: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: transparent;
-}
-
-::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-
 .games-grid {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* padding: 15px; */
 }
 
 .games-grid .content {
