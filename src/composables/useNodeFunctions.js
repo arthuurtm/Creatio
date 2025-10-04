@@ -12,6 +12,17 @@ const editorStore = reactive({
   players: [],
 })
 
+// reseta editorStore
+function resetEditorStore() {
+  for (const key in editorStore) {
+    if (Array.isArray(editorStore[key])) {
+      editorStore[key].splice(0) // limpa array reativo
+    } else {
+      editorStore[key] = null // ou valor inicial
+    }
+  }
+}
+
 // fábrica de nodes
 const createNode = (x, y, params = {}) => {
   const id = 'node' + Date.now()
@@ -218,4 +229,4 @@ const nodeOps = ({ openContextMenu }) => {
   return { get, use }
 }
 
-export { editorStore, createNode, nodeOps }
+export { editorStore, createNode, nodeOps, resetEditorStore }
