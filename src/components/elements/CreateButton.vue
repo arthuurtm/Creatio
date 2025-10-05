@@ -11,11 +11,11 @@
 
       <component
         v-else
-        :is="button.tag || 'button'"
+        :is="'button'"
         :id="button.id || ''"
         :type="button.type || 'submit'"
         :class="[
-          !button.tag && 'btn',
+          'btn',
           button.class,
           typeof button?.position === 'string' && button.position,
           globalStyle,
@@ -55,33 +55,45 @@
 import { useSlots, ref, computed } from 'vue'
 
 const props = defineProps({
-  buttons: {
-    type: Array,
-    default: () => [{}],
-  },
-  rules: {
-    type: Array,
-    default: () => [],
-  },
-  globalStyle: {
-    type: String,
-    default: '',
-  },
+  buttons: { type: Array, default: () => [{}] },
+  globalStyle: { type: String, default: '' },
+  text: String,
+  icon: String,
+  img: Object,
+  type: { type: String, default: 'button' },
+  class: [String, Array],
+  style: [String, Object],
+  action: Function,
+  rules: { Array, default: () => [] },
+  position: [String, Object],
+  id: String,
 })
 
 const emits = defineEmits(['emitEvent', 'click'])
 const slots = useSlots()
 const hasDefaultSlot = !!slots.default
-const normalizedButtons = computed(() => normalizeButtons(props.buttons))
-const loadingStates = ref(normalizedButtons.value.map(() => false))
 /**@type {import('@/components/elements/CreateContextMenu.vue').default} */
 const contextMenu = ref({})
+const normalizedButtons = computed(() => {
+  if (props.buttons && props.buttons.length > 0 && Object.keys(props.buttons[0]).length > 0)
+    return props.buttons
 
-function normalizeButtons(value) {
-  if (Array.isArray(value)) return value
-  if (value && typeof value === 'object') return Object.values(value)
-  return [{}]
-}
+  return [
+    {
+      text: props.text,
+      icon: props.icon,
+      img: props.img,
+      type: props.type,
+      class: props.class,
+      style: props.style,
+      action: props.action,
+      rules: props.rules,
+      position: props.position,
+      id: props.id,
+    },
+  ]
+})
+const loadingStates = ref(normalizedButtons.value.map(() => false))
 
 function openContextMenu(items, e) {
   contextMenu.value.openContextMenu(items, e)
