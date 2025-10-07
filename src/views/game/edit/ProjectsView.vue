@@ -151,7 +151,6 @@ onMounted(fetchMyCreations)
 
 <style scoped>
 .creations-container {
-  padding: 2rem 3rem;
   max-width: 1400px;
   margin: 0 auto;
 }

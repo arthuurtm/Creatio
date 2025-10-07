@@ -9,7 +9,7 @@ const props = defineProps({
 
 <template>
   <!-- <img src="/src/assets/img/min-logo.png" :style="props.style" /> -->
-  <div class="gradient logo-text">Creatio</div>
+  <div class="gradient logo-text" :style="style">Creatio</div>
 </template>
 
 <style scoped>
@@ -24,8 +24,7 @@ const props = defineProps({
   font-family: 'Poseidon', sans-serif;
   font-size: 4rem;
   font-weight: bold;
-  /* background: var(--logo-gradient); */
-  margin: 0.2rem 0.2rem 1rem 0.2rem;
   cursor: default;
+  line-height: normal;
 }
 </style>

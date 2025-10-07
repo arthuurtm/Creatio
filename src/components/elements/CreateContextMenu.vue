@@ -120,7 +120,6 @@ defineExpose({
   background: var(--bg2);
   border-radius: 24px;
   width: auto;
-  z-index: 999;
   flex-direction: column;
   backdrop-filter: var(--main-blur);
   border: 0.5px solid var(--border);
@@ -129,20 +128,26 @@ defineExpose({
 .sub-menu {
   display: flex;
   flex-direction: column;
-  gap: 1em;
-  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+  padding: 1rem 1rem;
 }
 
 .sub-menu-items {
   display: flex;
-  padding: 2px;
+  padding: 0.5rem;
   align-items: center;
   justify-content: space-between;
+  border-radius: 24px;
+}
+
+.sub-menu-items:hover {
+  background: var(--input-bg);
 }
 
 hr {
   width: -webkit-fill-available;
-  border-top-style: none;
+  border-style: none;
+  border-bottom: 0.5px solid var(--border);
 }
 
 ul {

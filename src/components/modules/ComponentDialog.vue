@@ -242,7 +242,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--border);
-  padding: 10px;
+  padding: 20px;
   position: relative;
 }
 
