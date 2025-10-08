@@ -3,27 +3,40 @@
     <div class="header-container" v-if="!hidden">
       <header class="header" id="header">
         <div class="header-left">
-          <CreateLogo
-            :style="['font-size: 2.5rem', 'cursor: pointer']"
-            @click="navigateTo('Home')"
-          />
+          <div class="header-info">
+            <CreateLogo
+              :style="['font-size: 2.5rem', 'cursor: pointer']"
+              @click="router.push({ name: 'Home' })"
+            />
+            <template v-if="title">
+              <p>x</p>
+              <p>
+                <b>{{ title }}</b>
+              </p>
+            </template>
+          </div>
+          <div class="separator"></div>
           <nav class="main-nav">
-            <a
-              v-for="link in navLinks"
-              :key="link.routeName"
-              class="nav-link"
-              :class="{ active: selectedPage === link.routeName }"
-              @click="navigateTo(link.routeName)"
-            >
-              {{ link.text }}
-            </a>
+            <CreateButton
+              v-for="(button, index) in finalNavLinks.left"
+              :key="'left-' + index"
+              :buttons="[
+                {
+                  ...button,
+                  class: [
+                    ...(Array.isArray(button.class) ? button.class : [button.class]),
+                    'symbolic upper',
+                  ],
+                },
+              ]"
+            />
           </nav>
         </div>
 
         <div class="header-right">
           <CreateButton
-            v-for="(button, index) in uiButtons.right"
-            :key="index"
+            v-for="(button, index) in finalNavLinks.right"
+            :key="'right-' + index"
             :buttons="[
               {
                 ...button,
@@ -43,19 +56,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { http } from '@/functions/'
 import DialogMessage from '@/components/dialogs/DialogMessage.vue'
 import DialogSettings from '@/components/dialogs/DialogSettings.vue'
 import { useUserStore, useAppDynamicDialog } from '@/stores'
-
-// Lembre-se de importar seus componentes CreateLogo e CreateButton se ainda não forem globais
-// import CreateLogo from '@/components/CreateLogo.vue'
-// import CreateButton from '@/components/CreateButton.vue'
-// import CreateContextMenu from '@/components/CreateContextMenu.vue'
+import router from '@/router'
 
 // Stores e Router
-const router = useRouter()
 const user = useUserStore()
 const dialog = useAppDynamicDialog()
 const contextMenuRef = ref(null)
@@ -66,31 +73,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  page: {
-    type: String,
-    default: '',
+  navLinks: {
+    type: Object,
+    default: () => ({ left: [], right: [] }),
   },
+  title: String,
 })
 
 // Estado Reativo
 const isAuthenticated = computed(() => user.getIsAuth)
-const selectedPage = computed(() => props.page)
-
-// --- NOVO: Links de Navegação Principal ---
-const navLinks = ref([
-  { text: 'HOME', routeName: 'Home' },
-  { text: 'JOGOS', routeName: 'Games' }, // Exemplo, use os nomes das suas rotas
-  { text: 'PROJETOS', routeName: 'CreateHome' }, // Reutilizando a rota que já existia
-  { text: 'SOBRE', routeName: 'About' }, // Exemplo
-])
 
 // Funções
-const navigateTo = (routeName) => {
-  if (routeName) {
-    router.push({ name: routeName })
-  }
-}
-
 const handleLogout = () => {
   dialog.setDialog(DialogMessage, {
     title: 'Sair',
@@ -109,7 +102,11 @@ const openMoreOptions = (event) => {
     [
       {
         items: [
-          { text: 'Meu Perfil', icon: 'account_circle', action: () => navigateTo('UserProfile') },
+          {
+            text: 'Meu Perfil',
+            icon: 'account_circle',
+            action: () => router.push({ name: 'UserProfile' }),
+          },
         ],
       },
       {
@@ -123,15 +120,13 @@ const openMoreOptions = (event) => {
   )
 }
 
-// Botões da UI (agora apenas para a direita)
-const uiButtons = computed(() => ({
-  right: [
-    // O botão de "inventory_2" foi movido para os navLinks como "PROJETOS"
+const finalNavLinks = computed(() => {
+  const defaultRightButtons = [
     {
       icon: 'inbox',
-      text: 'Notificações', // Adicionar texto para acessibilidade é uma boa prática
-      action: null, // Adicionar ação para notificações
-      rules: [!isAuthenticated.value && 'hide'],
+      text: 'Notificações',
+      action: () => console.log('Abrir notificações'),
+      hidden: !isAuthenticated.value,
     },
     {
       img: {
@@ -141,10 +136,18 @@ const uiButtons = computed(() => ({
       },
       id: 'user-info',
       action: openMoreOptions,
-      rules: [!isAuthenticated.value && 'hide'],
+      hidden: !isAuthenticated.value,
     },
-  ],
-}))
+  ]
+
+  return {
+    left: props.navLinks?.left,
+    right: [
+      ...(props.navLinks && Array.isArray(props.navLinks.right) ? props.navLinks.right : []),
+      ...defaultRightButtons.filter((btn) => !btn.hidden),
+    ],
+  }
+})
 </script>
 
 <style scoped>
@@ -173,6 +176,18 @@ const uiButtons = computed(() => ({
   transform: translateY(-100%);
 }
 
+.header-info {
+  display: flex;
+  gap: 1rem;
+}
+
+.separator {
+  width: 1px;
+  height: -webkit-fill-available;
+  background: var(--border);
+  margin: 0 1rem;
+}
+
 /* --- SEÇÃO ESQUERDA --- */
 .header-left {
   display: flex;
@@ -188,39 +203,10 @@ const uiButtons = computed(() => ({
   height: 100%;
 }
 
-.nav-link {
-  color: var(--steam-text);
-  text-transform: uppercase;
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  transition: color 0.2s ease-in-out;
-  padding: 0.5rem 0;
-  border-bottom: 2px solid transparent; /* Espaço para o highlight */
-}
-
-.nav-link:hover {
-  color: var(--text);
-}
-
-.nav-link.active {
-  color: var(--text);
-  border-bottom-color: var(--text);
-}
-
 /* --- SEÇÃO DIREITA --- */
 .header-right {
   display: flex;
   align-items: center;
   gap: 1rem;
-}
-
-:deep(.profile-picture) {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  object-fit: cover;
 }
 </style>
