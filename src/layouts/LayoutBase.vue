@@ -1,23 +1,27 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ComponentNavigator from '@/components/modules/ComponentHeader.vue'
 
 const route = useRoute()
+const router = useRouter()
 const pageMeta = computed(() => route?.meta)
-const navigator = ref(null)
-const pageName = computed(() => route?.name)
+const navLinks = computed(() => {
+  return {
+    left: [
+      { text: 'HOME', action: () => router.push({ name: 'Home' }) },
+      { text: 'JOGOS', action: () => router.push({ name: 'GamesView' }) },
+      { text: 'PROJETOS', action: () => router.push({ name: 'CreateHome' }) },
+      { text: 'SOBRE', action: () => router.push({ name: 'About' }) },
+    ],
+    right: [],
+  }
+})
 </script>
 
 <template>
   <div class="app-container">
-    <ComponentNavigator
-      :hidden="pageMeta.hiddenNavigator"
-      :page="pageName"
-      :defaultHideButton="true"
-      @navigatorStatus="updateNavStatus"
-      ref="navigator"
-    />
+    <ComponentNavigator :hidden="pageMeta.hiddenNavigator" :nav-links="navLinks" />
     <div
       class="app-content"
       :class="[pageMeta.hiddenNavigator && 'overlay-nav', pageMeta.fullscreen && 'full']"
