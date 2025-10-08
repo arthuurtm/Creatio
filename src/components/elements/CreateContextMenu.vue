@@ -138,6 +138,7 @@ defineExpose({
   align-items: center;
   justify-content: space-between;
   border-radius: 24px;
+  line-break: auto;
 }
 
 .sub-menu-items:hover {

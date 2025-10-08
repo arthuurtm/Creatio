@@ -168,82 +168,74 @@ defineExpose({
 </script>
 
 <template>
-  <div class="editor-canvas">
-    <div style="position: absolute; top: 0; right: 0.5rem; z-index: 3; display: flex">
-      <CreateButton
-        :buttons="[
-          {
-            icon: 'developer_mode_tv',
-            class: 'symbolic no-padding',
-            action: () => openContextMenu([{ items: [{ text: editorStore }] }]),
+  <div style="position: absolute; top: 0; right: 0.5rem; z-index: 3; display: flex">
+    <CreateButton
+      :buttons="[
+        {
+          icon: 'developer_mode_tv',
+          class: 'symbolic no-padding',
+          action: () => openContextMenu([{ items: [{ text: editorStore }] }]),
+        },
+        {
+          icon: 'help',
+          class: 'symbolic no-padding',
+          action: (e) => {
+            openContextMenu(
+              [
+                {
+                  items: [
+                    {
+                      text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
+                    },
+                  ],
+                },
+              ],
+              e,
+            )
           },
-          {
-            icon: 'help',
-            class: 'symbolic no-padding',
-            action: (e) => {
-              openContextMenu(
-                [
-                  {
-                    items: [
-                      {
-                        text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
-                      },
-                    ],
-                  },
-                ],
-                e,
-              )
-            },
+        },
+        {
+          icon: connectionMap.icon[requestStatus],
+          text: connectionMap.message[requestStatus],
+          class: 'symbolic no-padding no-scalling',
+          style: {
+            cursor: requestStatus != 'ERROR' ? 'inherit' : 'pointer',
           },
-          {
-            icon: connectionMap.icon[requestStatus],
-            text: connectionMap.message[requestStatus],
-            class: 'symbolic no-padding no-scalling',
-            style: {
-              cursor: requestStatus != 'ERROR' ? 'inherit' : 'pointer',
-            },
-            action: requestStatus === 'ERROR' && (async () => await connect()),
-          },
-        ]"
-      />
-    </div>
-
-    <svg class="connections-layer">
-      <path v-for="p in paths" :key="p?.id" :d="p?.d" :stroke-dasharray="p?.isLoop ? '6,3' : '0'" />
-    </svg>
-
-    <!-- Camada de nodes -->
-    <div class="nodes-layer">
-      <DialogBase
-        v-for="node in editorStore.nodes"
-        :key="node.id"
-        v-on:contextmenu.stop="handleNodeRightClick($event, node)"
-        v-on:contextmenu.prevent
-        :title="node.id"
-        :component="CreateNode"
-        :component-props="{ node }"
-        :always-visible="true"
-        :no-close-button="true"
-        :no-focus-window="true"
-        :is-draggable="true"
-        :no-interpolate-size="true"
-        v-model:x="node.x"
-        v-model:y="node.y"
-        @emit-event="emitEventHandler"
-      />
-    </div>
-
-    <CreateContextMenu ref="contextMenu" />
+          action: requestStatus === 'ERROR' && (async () => await connect()),
+        },
+      ]"
+    />
   </div>
+
+  <svg class="connections-layer">
+    <path v-for="p in paths" :key="p?.id" :d="p?.d" :stroke-dasharray="p?.isLoop ? '6,3' : '0'" />
+  </svg>
+
+  <!-- Camada de nodes -->
+  <div class="nodes-layer">
+    <DialogBase
+      v-for="node in editorStore.nodes"
+      :key="node.id"
+      v-on:contextmenu.stop="handleNodeRightClick($event, node)"
+      v-on:contextmenu.prevent
+      :title="node.id"
+      :component="CreateNode"
+      :component-props="{ node }"
+      :always-visible="true"
+      :no-close-button="true"
+      :no-focus-window="true"
+      :is-draggable="true"
+      :no-interpolate-size="true"
+      v-model:x="node.x"
+      v-model:y="node.y"
+      @emit-event="emitEventHandler"
+    />
+  </div>
+
+  <CreateContextMenu ref="contextMenu" />
 </template>
 
 <style scoped>
-.editor-canvas {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
 /* Conexões ficam atrás */
 .connections-layer {
   position: absolute;
