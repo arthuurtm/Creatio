@@ -9,22 +9,24 @@ const props = defineProps({
   componentProps: { type: Object, default: () => ({}) },
   x: { type: Number, default: null },
   y: { type: Number, default: null },
-  alwaysVisible: { type: Boolean, default: false },
+  isVisible: { type: Boolean, default: false },
   noCloseButton: { type: Boolean, default: false },
   noFocusWindow: { type: Boolean, default: false },
   isDraggable: { type: Boolean, default: false },
   noInterpolateSize: { type: Boolean, default: false },
+  fullscreen: { type: Boolean, default: false },
 })
 
 const dialog = useAppDynamicDialog()
-const showDialog = computed(() => dialog.getIsVisible || props.alwaysVisible)
+const showDialog = computed(() => dialog.getIsVisible || props.isVisible)
 const showDialogAnim = ref(false)
-const emit = defineEmits(['update:x', 'update:y', 'emit-event'])
+const emit = defineEmits(['update:x', 'update:y', 'emit-event', 'close'])
 
 function close() {
   if (!dialog.getIsHistory) showDialogAnim.value = false
   setTimeout(() => {
     dialog.close()
+    emit('close')
   }, 300)
 }
 
@@ -139,34 +141,35 @@ onUnmounted(() => {
     <div
       class="dialog-main"
       :id="[]"
-      :class="[showDialogAnim && 'active', noInterpolateSize && 'noInterpolateSize']"
+      :class="{
+        active: showDialogAnim,
+        noInterpolateSize,
+        fullscreen,
+      }"
       :style="dialogStyle"
       @click.stop
     >
       <div
         class="title-bar"
+        :class="{ left: fullscreen }"
         @touchstart="onTouchStart"
         @touchmove="onTouchMove"
         @touchend="onTouchEnd"
         @mousedown="handleMouseDown"
       >
-        <div class="options">
-          <div class="title">
-            <p>{{ props.title }}</p>
-          </div>
-          <div id="close">
-            <create-button
-              v-if="!noCloseButton"
-              :buttons="[
-                {
-                  icon: 'close',
-                  class: 'symbolic no-padding no-scalling',
-                  id: 'close',
-                },
-              ]"
-              @click="close"
-            />
-          </div>
+        <p>{{ props.title }}</p>
+        <div id="close">
+          <create-button
+            v-if="!noCloseButton"
+            :buttons="[
+              {
+                icon: 'close',
+                class: 'symbolic no-padding no-scalling',
+                id: 'close',
+              },
+            ]"
+            @emit-event="close()"
+          />
         </div>
       </div>
       <div class="content">
@@ -209,7 +212,7 @@ onUnmounted(() => {
   grid-template-columns: 1fr;
   grid-template-rows: 50px auto;
   border-radius: 24px;
-  background: var(--background-alt);
+  background: var(--bg2);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   color: var(--text);
   transition:
@@ -230,48 +233,53 @@ onUnmounted(() => {
   height: auto;
 }
 
-.dialog-shadow.disabled .dialog-main {
-  background: var(--secondary);
-}
-
 .dialog-main.active {
   height: auto;
+}
+
+.dialog-main.fullscreen,
+.dialog-shadow:has(> .dialog-main.fullscreen) {
+  width: 100%;
+  height: 100%;
+}
+
+.dialog-main.fullscreen .title-bar,
+.dialog-main.fullscreen {
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid var(--border);
 }
 
 .title-bar {
   display: flex;
   align-items: center;
+  justify-content: center;
   border-bottom: 1px solid var(--border);
-  padding: 20px;
+  padding: 10px 20px;
   position: relative;
 }
 
-.content {
-  display: block;
-}
-
-.title-bar .options {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.title-bar .options p {
+.title-bar p {
   margin: 0;
   font-size: 18px;
   font-weight: bold;
   color: var(--text);
+  text-align: center;
+  flex: 1;
 }
 
-.title-bar .options #close {
+/* botão de fechar */
+.title-bar #close {
   all: unset;
   font-weight: bold;
   cursor: pointer;
-  position: absolute;
-  right: 1rem;
-  top: 0.5rem;
+  margin-left: auto;
+}
+
+.title-bar.left #close {
+  order: -1;
+  margin-left: 0;
+  margin-right: auto;
 }
 
 @media (max-width: 600px) {
