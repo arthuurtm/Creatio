@@ -22,24 +22,22 @@
         </div>
         <h1>{{ title }}</h1>
         <h4>{{ subTitle }}</h4>
-        <slot name="formInfo" />
+        <slot v-if="hasSlot('formInfo')" name="formInfo" />
       </div>
 
       <div class="right">
         <form class="form-container centered" @submit.prevent="submitForm">
           <transition name="slide-left" mode="out-in">
             <div class="sepElements" :key="currentStep">
-              <slot v-if="!errorController" name="fields" />
-              <p v-else v-for="msg in errorController.messages" :key="msg">
-                {{ msg.text }}
-              </p>
+              <slot v-if="hasSlot('fields')" name="fields" />
+              <p v-else>Ocorreu um erro e não foi possível carregar o formulário.</p>
             </div>
           </transition>
 
-          <slot v-if="!errorController" name="anchors" />
+          <slot v-if="hasSlot('anchors')" name="anchors" />
           <div class="sepButtons">
-            <slot v-if="!errorController" name="buttons" />
-            <CreateButton v-else :buttons="errorController.buttons" />
+            <slot v-if="hasSlot('buttons')" name="buttons" />
+            <CreateButton v-else text="Reiniciar" :action="() => router.go()" />
           </div>
         </form>
       </div>
@@ -48,12 +46,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { useSlots } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAppDynamicDialog } from '@/stores'
 import DialogSettings from '@/components/dialogs/DialogSettings.vue'
 
 const dialog = useAppDynamicDialog()
-const errorController = ref(false)
+const slots = useSlots()
+const router = useRouter()
 
 defineProps({
   title: {
@@ -70,21 +70,13 @@ defineProps({
   },
 })
 
+function hasSlot(name) {
+  return !!slots[name]
+}
+
 function handleSettingsBox() {
   dialog.setDialog(DialogSettings, { title: 'Configurações' })
 }
-
-function handleError({ title, messages, buttons }) {
-  errorController.value = {
-    title: title ?? 'Erro',
-    messages: messages ?? [
-      { text: 'Ocorreu um erro e não foi possível continuar. Tente reiniciar as etapas.' },
-    ],
-    buttons: buttons ?? [{ text: 'Reiniciar', action: () => window.location.reload() }],
-  }
-}
-
-defineExpose({ handleError })
 </script>
 
 <style scoped>
