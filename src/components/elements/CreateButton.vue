@@ -1,17 +1,7 @@
 <template>
   <template v-for="(button, index) in normalizedButtons" :key="index">
     <template v-if="!button?.rules?.includes('hide')">
-      <div
-        v-if="button.tag === 'select'"
-        :id="button.id || ''"
-        :class="['btn', button.class, globalStyle]"
-        :style="[button?.style, typeof button?.position === 'object' && button.position]"
-        @click.capture="openContextMenu(button.options)"
-      ></div>
-
-      <component
-        v-else
-        :is="'button'"
+      <button
         :id="button.id || ''"
         :type="button.type || 'submit'"
         :class="[
@@ -23,6 +13,7 @@
         :style="[button?.style, typeof button?.position === 'object' && button.position]"
         :disabled="loadingStates[index]"
         @click="handleClick(button, index, $event)"
+        @click.capture="button.tag === 'select' && openContextMenu(button.options)"
       >
         <span
           v-if="button.icon"
@@ -45,7 +36,7 @@
         </p>
 
         <create-loading v-if="loadingStates[index]" :size="'1.2em'" style="position: absolute" />
-      </component>
+      </button>
     </template>
   </template>
   <create-context-menu ref="contextMenu" @emit-event="emitEvent" />
@@ -69,7 +60,7 @@ const props = defineProps({
   id: String,
 })
 
-const emits = defineEmits(['emitEvent', 'click'])
+const emits = defineEmits(['emitEvent'])
 const slots = useSlots()
 const hasDefaultSlot = !!slots.default
 /**@type {import('@/components/elements/CreateContextMenu.vue').default} */
