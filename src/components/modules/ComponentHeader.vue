@@ -18,17 +18,13 @@
           <div class="separator"></div>
           <nav class="main-nav">
             <CreateButton
-              v-for="(button, index) in finalNavLinks.left"
-              :key="'left-' + index"
-              :buttons="[
-                {
-                  ...button,
-                  class: [
-                    ...(Array.isArray(button.class) ? button.class : [button.class]),
-                    'symbolic upper',
-                  ],
-                },
-              ]"
+              v-for="(btn, index) in finalNavLinks.left"
+              :key="index"
+              :text="btn.text"
+              :icon="btn.icon"
+              :action="btn.action"
+              :class="[...(Array.isArray(btn.class) ? btn.class : [btn.class]), 'symbolic upper']"
+              :type="btn.type"
             />
           </nav>
         </div>

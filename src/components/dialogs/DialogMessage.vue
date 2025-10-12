@@ -4,7 +4,12 @@
       <p>{{ params.message }}</p>
     </div>
     <div class="modal-buttons">
-      <CreateButton :buttons="params.buttons" @emitEvent="$emit('close')" />
+      <CreateButton
+        v-for="(btn, index) in params.buttons"
+        :key="index"
+        v-bind="btn"
+        @emitEvent="$emit('close')"
+      />
     </div>
   </div>
 </template>

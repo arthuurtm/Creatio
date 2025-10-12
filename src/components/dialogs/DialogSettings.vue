@@ -5,7 +5,7 @@
         <CreateButton
           :globalStyle="'justify-start'"
           :rules="['noGroup']"
-          :buttons="[
+          v-for="(btn, index) in [
             {
               id: 1,
               text: 'Geral',
@@ -30,6 +30,8 @@
               rules: [!isAuth && 'hide'],
             },
           ]"
+          :key="index"
+          v-bind="btn"
         />
       </ul>
     </nav>
@@ -77,25 +79,17 @@
             <li>
               <p>Alterar senha</p>
               <CreateButton
-                :buttons="[
-                  {
-                    icon: 'arrow_outward',
-                    class: 'symbolic',
-                    action: () => handleExtLink('PasswordRescue'),
-                  },
-                ]"
+                icon="arrow_outward"
+                class="symbolic"
+                :action="() => handleExtLink('PasswordRescue')"
               />
             </li>
             <li>
               <p>Dispositivos conectados</p>
               <CreateButton
-                :buttons="[
-                  {
-                    icon: 'visibility',
-                    class: 'symbolic',
-                    action: () => handleNavPage(3.1, 'Dispositivos'),
-                  },
-                ]"
+                icon="visibility"
+                class="symbolic"
+                :action="() => handleNavPage(3.1, 'Dispositivos')"
               />
             </li>
           </ul>
@@ -103,12 +97,8 @@
 
         <div class="pageContainer" :class="actualPage == 3.1 && 'active'">
           <CreateButton
-            :buttons="[
-              {
-                text: 'Desconectar todos',
-                position: 'center',
-              },
-            ]"
+            text="Desconectar todos"
+            position="center"
             @emitEvent="disconnectAllDevices"
           />
           <ul class="devices">
