@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch, onUnmounted } from 'vue'
+import { computed, ref, watch, onUnmounted, shallowRef } from 'vue'
 import { useAppDynamicDialog } from '@/stores'
 
 const props = defineProps({
@@ -173,7 +173,7 @@ onUnmounted(() => {
         </div>
       </div>
       <div class="content">
-        <transition name="fastFade" mode="out-in">
+        <transition name="fastFade">
           <component
             v-if="component"
             :is="component"
@@ -190,9 +190,12 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.dialog-shadow.focus {
+.dialog-shadow {
   position: fixed;
   display: flex;
+  z-index: 5;
+}
+.dialog-shadow.focus {
   top: 0;
   left: 0;
   width: 100vw;
@@ -200,17 +203,17 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   background-color: var(--overlay-bg);
-  z-index: 5;
 }
 
-.dialog-shadow.disabled {
-  display: flex;
+.dialog-shadow:has(> .dialog-main.fullscreen) {
+  /* border: 4px dashed red; */
+  width: -webkit-fill-available;
+  height: -webkit-fill-available;
 }
 
 .dialog-main {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 50px auto;
+  display: flex;
+  flex-direction: column;
   border-radius: 24px;
   background: var(--bg2);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -237,16 +240,14 @@ onUnmounted(() => {
   height: auto;
 }
 
-.dialog-main.fullscreen,
-.dialog-shadow:has(> .dialog-main.fullscreen) {
+.dialog-main.fullscreen {
   width: 100%;
   height: 100%;
-}
-
-.dialog-main.fullscreen .title-bar,
-.dialog-main.fullscreen {
   border-radius: 0;
   border: none;
+}
+
+.dialog-main.fullscreen .title-bar {
   border-top: 1px solid var(--border);
 }
 
@@ -266,6 +267,7 @@ onUnmounted(() => {
   color: var(--text);
   text-align: center;
   flex: 1;
+  position: absolute;
 }
 
 /* botão de fechar */
@@ -280,6 +282,12 @@ onUnmounted(() => {
   order: -1;
   margin-left: 0;
   margin-right: auto;
+}
+
+.content {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 @media (max-width: 600px) {
