@@ -5,14 +5,14 @@ import { ws, http, util } from '@/functions'
 import DialogBase from '@/components/modules/ComponentDialog.vue'
 import CreateNode from '@/components/elements/CreateNode.vue'
 import CreateContextMenu from '../elements/CreateContextMenu.vue'
-import { useConnections } from '@/composables/useDotConnection'
-import { editorStore, nodeOps, createNode, resetEditorStore } from '@/composables/useNodeFunctions'
+import { useConnections } from '@/composables/editor/useDotConnection'
+import { editorStore, nodeOps, createNode } from '@/composables/editor/useNodeFunctions'
 
 const route = useRoute()
 const contextMenu = ref({})
 const gameBasicData = ref({ gameId: route.params.id, version: 1 })
 const { data, status, error, requestStatus, connect, send, disconnect } = ws(http.getApiUrl('ws'))
-const nodeUtils = nodeOps({ openContextMenu })
+const nodeUtils = nodeOps()
 const { handleStartConnection, paths, forceUpdatePaths } = useConnections(editorStore)
 
 onMounted(async () => {
@@ -20,7 +20,7 @@ onMounted(async () => {
 })
 onUnmounted(() => {
   disconnect()
-  resetEditorStore()
+  editorStore.$reset()
 })
 
 const stopWatch = watch(status, (newStatus) => {
@@ -68,9 +68,9 @@ function openContextMenu(items, event) {
   contextMenu.value.openContextMenu(items, event)
 }
 
-const handleNodeRightClick = (e, node) => {
+const handleNodeRightClick = (node, e) => {
   const selectedNode = editorStore.nodes.find((n) => n.id === node.id)
-  nodeUtils.use.openNodeMenu(e, selectedNode)
+  nodeUtils.ui({ openContextMenu }).mainNodeMenu(selectedNode, e)
 }
 
 function isLocalStateNewer(remoteState) {
@@ -135,10 +135,10 @@ function emitEventHandler(e) {
       handleStartConnection(e.data)
       break
     }
-    case 'handle-node-menu': {
-      nodeUtils.use.openNodeMenu()
-      break
-    }
+    // case 'handle-node-menu': {
+    //   nodeUtils.ui.mainNodeMenu(...e.data)
+    //   break
+    // }
   }
 }
 
@@ -174,7 +174,7 @@ defineExpose({
         {
           icon: 'developer_mode_tv',
           class: 'symbolic no-padding',
-          action: () => openContextMenu([{ items: [{ text: editorStore }] }]),
+          action: () => openContextMenu([{ items: [{ text: editorStore }] }], $event),
         },
         {
           icon: 'help',
@@ -216,12 +216,12 @@ defineExpose({
     <DialogBase
       v-for="node in editorStore.nodes"
       :key="node.id"
-      v-on:contextmenu.stop="handleNodeRightClick($event, node)"
+      v-on:contextmenu.stop="handleNodeRightClick(node, $event)"
       v-on:contextmenu.prevent
       :title="node.id"
       :component="CreateNode"
       :component-props="{ node }"
-      :always-visible="true"
+      :is-visible="true"
       :no-close-button="true"
       :no-focus-window="true"
       :is-draggable="true"
