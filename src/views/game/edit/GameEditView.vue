@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, shallowRef, markRaw } from 'vue'
 import ComponentNode from '@/components/modules/ComponentNode.vue'
 import ComponentHeader from '@/components/modules/ComponentHeader.vue'
 import ComponentDialog from '@/components/modules/ComponentDialog.vue'
@@ -18,8 +18,10 @@ const tabData = ref({
 const navLinks = ref({
   left: [
     { text: 'Eventos', action: () => handleGameEditorTab(TabEventEditView, 'Editor de Eventos') },
-    { text: 'Ações', action: () => handleGameEditorTab(TabActionEditView, 'Editor de Ações') },
-    { text: 'Objetos' },
+    {
+      text: 'Painel de dados',
+      action: () => handleGameEditorTab(TabActionEditView, 'Painel de dados'),
+    },
   ],
 })
 
@@ -88,7 +90,7 @@ function handleContextMenu(e) {
 }
 
 function handleGameEditorTab(tab, title) {
-  tabData.value.component = tab ?? null
+  tabData.value.component = shallowRef(markRaw(tab)) ?? null
   tabData.value.title = title ?? ''
   if (!tabData.value.isVisible) tabData.value.isVisible = true
 }
@@ -104,8 +106,8 @@ function handleCloseEditorTab() {
   <div class="editor-wrapper" @contextmenu="handleContextMenu">
     <div class="editor-canvas">
       <ComponentNode ref="componentNodeRef" />
-      <ComponentDialog v-bind="tabData" @contextMenu.stop @close="handleCloseEditorTab" />
     </div>
+    <ComponentDialog v-bind="tabData" @contextMenu.stop @close="handleCloseEditorTab" />
     <CreateContextMenu ref="contextMenuRef" />
   </div>
 </template>
