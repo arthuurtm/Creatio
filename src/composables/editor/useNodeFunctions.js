@@ -1,6 +1,4 @@
 import { useEditorStore } from '@/stores/editor'
-import { Actions, Events, Conditions, Consequences } from './set'
-
 const editorStore = useEditorStore
 
 // fábrica de nodes
@@ -68,7 +66,7 @@ const _buildAutoMenu = (modules, e, node, openContextMenu) => {
  * @param {Object} param0
  * @param {import('@/components/elements/CreateContextMenu.vue').default} param0.openContextMenu
  */
-const nodeOps = ({ openContextMenu }) => {
+const nodeOps = () => {
   const get = {
     event: {
       name: 'Evento',
@@ -92,20 +90,15 @@ const nodeOps = ({ openContextMenu }) => {
     },
   }
 
-  const set = {
-    event: (args) => Events[args.type]?.execute(...args.params),
-    condition: (args) => Conditions[args.type]?.execute(...args.params),
-    consequence: (args) => Consequences[args.type]?.execute(...args.params),
-    action: (args) => Actions[args.type]?.execute(...args.params),
-  }
+  const exec = () => {}
 
-  const ui = {
-    mainNodeMenu: (node, e) => {
+  const ui = ({ openContextMenu }) => {
+    function mainNodeMenu(node, e) {
       openContextMenu(_buildAutoMenu(get, e, node, openContextMenu), e)
-    },
+    }
   }
 
-  return { ui, get, set }
+  return { ui, get }
 }
 
 export { editorStore, createNode, nodeOps }
