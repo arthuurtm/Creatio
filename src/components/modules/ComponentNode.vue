@@ -3,8 +3,7 @@ import { ref, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ws, http, util } from '@/functions'
 import DialogBase from '@/components/modules/ComponentDialog.vue'
-import CreateNode from '@/components/elements/CreateNode.vue'
-import CreateContextMenu from '../elements/CreateContextMenu.vue'
+import CNode from '@/components/ui/CNode.vue'
 import { useConnections } from '@/composables/editor/useDotConnection'
 import { editorStore, nodeOps, createNode } from '@/composables/editor/useNodeFunctions'
 
@@ -168,42 +167,37 @@ defineExpose({
 </script>
 
 <template>
-  <div style="position: absolute; top: 0; right: 0.5rem; z-index: 3; display: flex">
-    <CreateButton
-      :buttons="[
-        {
-          icon: 'developer_mode_tv',
-          class: 'symbolic no-padding',
-          action: () => openContextMenu([{ items: [{ text: editorStore }] }], $event),
-        },
-        {
-          icon: 'help',
-          class: 'symbolic no-padding',
-          action: (e) => {
-            openContextMenu(
-              [
-                {
-                  items: [
-                    {
-                      text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
-                    },
-                  ],
-                },
-              ],
-              e,
-            )
-          },
-        },
-        {
-          icon: connectionMap.icon[requestStatus],
-          text: connectionMap.message[requestStatus],
-          class: 'symbolic no-padding no-scalling',
-          style: {
-            cursor: requestStatus != 'ERROR' ? 'inherit' : 'pointer',
-          },
-          action: requestStatus === 'ERROR' && (async () => await connect()),
-        },
-      ]"
+  <div style="position: absolute; top: 0; right: 0.5rem; z-index: 3; display: flex; gap: 1rem">
+    <CButton
+      :icon="'developer_mode_tv'"
+      :classes="['symbolic', 'no-padding']"
+      @click="(e) => openContextMenu([{ items: [{ text: editorStore }] }], e)"
+    />
+    <CButton
+      icon="help"
+      :classes="['symbolic', 'no-padding']"
+      @click="
+        (e) =>
+          openContextMenu(
+            [
+              {
+                items: [
+                  {
+                    text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
+                  },
+                ],
+              },
+            ],
+            e,
+          )
+      "
+    />
+    <CButton
+      :icon="connectionMap.icon[requestStatus]"
+      :text="connectionMap.message[requestStatus]"
+      :classes="['symbolic', 'no-padding', 'no-scalling']"
+      :style="{ cursor: requestStatus != 'ERROR' ? 'inherit' : 'pointer' }"
+      @click="requestStatus === 'ERROR' && connect()"
     />
   </div>
 
@@ -219,7 +213,7 @@ defineExpose({
       v-on:contextmenu.stop="handleNodeRightClick(node, $event)"
       v-on:contextmenu.prevent
       :title="node.id"
-      :component="CreateNode"
+      :component="CNode"
       :component-props="{ node }"
       :is-visible="true"
       :no-close-button="true"
@@ -232,7 +226,7 @@ defineExpose({
     />
   </div>
 
-  <CreateContextMenu ref="contextMenu" />
+  <CContextMenu ref="contextMenu" />
 </template>
 
 <style scoped>

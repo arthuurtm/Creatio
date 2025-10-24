@@ -4,7 +4,7 @@
       <header class="header" id="header">
         <div class="header-left">
           <div class="header-info">
-            <CreateLogo
+            <CLogo
               :style="['font-size: 2.5rem', 'cursor: pointer']"
               @click="router.push({ name: 'Home' })"
             />
@@ -17,37 +17,28 @@
           </div>
           <div class="separator"></div>
           <nav class="main-nav">
-            <CreateButton
+            <CButton
               v-for="(btn, index) in finalNavLinks.left"
               :key="index"
-              :text="btn.text"
-              :icon="btn.icon"
-              :action="btn.action"
-              :class="[...(Array.isArray(btn.class) ? btn.class : [btn.class]), 'symbolic upper']"
-              :type="btn.type"
+              v-bind="btn"
+              :classes="[btn.class, 'symbolic upper']"
+              @click="btn.action?.()"
             />
           </nav>
         </div>
 
         <div class="header-right">
-          <CreateButton
-            v-for="(button, index) in finalNavLinks.right"
+          <CButton
+            v-for="(btn, index) in finalNavLinks.right"
             :key="'right-' + index"
-            :buttons="[
-              {
-                ...button,
-                class: [
-                  ...(Array.isArray(button.class) ? button.class : [button.class]),
-                  'symbolic',
-                ],
-              },
-            ]"
+            v-bind="btn"
+            :classes="[btn.class, 'symbolic upper']"
           />
         </div>
       </header>
     </div>
   </Transition>
-  <CreateContextMenu ref="contextMenuRef" />
+  <CContextMenu ref="contextMenuRef" />
 </template>
 
 <script setup>

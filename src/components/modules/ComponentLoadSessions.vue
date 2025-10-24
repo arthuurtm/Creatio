@@ -2,35 +2,32 @@
   <div class="games-grid" :class="styleType">
     <div class="content">
       <div class="scroll-button" id="left">
-        <CreateButton
+        <CButton
           v-if="isEnableScrollButton"
           @emitEvent="scrollLeft"
-          :buttons="[
-            {
-              icon: 'arrow_back_ios',
-              class: 'symbolic no-padding no-scalling',
-              id: 'left',
-            },
-          ]"
+          icon="arrow_back_ios"
+          classes="symbolic no-padding no-scalling"
+          id="left"
         />
       </div>
 
       <div v-if="items && items.length > 0" class="sliding" ref="scrollContainer">
-        <CreateCard :card="items" :styleType="cardsType" @emitEvent="reEmitEvent" />
+        <CGameCard
+          v-for="(card, index) in items"
+          :key="index"
+          :="card"
+          :styleType="cardsType"
+          @emitEvent="reEmitEvent"
+        />
       </div>
 
       <div class="scroll-button" id="right">
-        <CreateButton
+        <CButton
           v-if="isEnableScrollButton"
           @emitEvent="scrollRight"
-          :buttons="[
-            {
-              position: 'left',
-              icon: 'arrow_forward_ios',
-              class: 'symbolic no-padding no-scalling',
-              id: 'right',
-            },
-          ]"
+          icon="arrow_forward_ios"
+          classes="symbolic no-padding no-scalling left"
+          id="right"
         />
       </div>
     </div>

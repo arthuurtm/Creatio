@@ -4,11 +4,12 @@
       <p>{{ params.message }}</p>
     </div>
     <div class="modal-buttons">
-      <CreateButton
+      <CButton
         v-for="(btn, index) in params.buttons"
         :key="index"
-        v-bind="btn"
-        @emitEvent="$emit('close')"
+        :text="btn.text"
+        :classes="btn.class"
+        @click="dialogFunctionController(btn)"
       />
     </div>
   </div>
@@ -18,6 +19,7 @@
 import { computed } from 'vue'
 import { useAppDynamicDialog } from '@/stores'
 
+const emit = defineEmits('close')
 const dialog = useAppDynamicDialog()
 const params = computed(() => dialog.getData || [{}])
 if (!params.value.buttons) {
@@ -29,7 +31,16 @@ if (!params.value.buttons) {
     },
   ]
 }
-defineEmits('close')
+
+function dialogFunctionController(btn) {
+  if (typeof btn.action === Function) {
+    btn.action?.()
+    emit('close')
+  } else {
+    emit('close')
+    return null
+  }
+}
 </script>
 
 <style scoped>

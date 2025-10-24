@@ -1,5 +1,5 @@
 <template>
-  <BaseCard :size="styleType" v-bind="$attrs">
+  <BaseCard :size="styleType" v-bind="$attrs" @click="$emit('emitEvent')">
     <div class="title">
       <p>{{ title || 'Exemplo' }}</p>
     </div>
@@ -17,6 +17,7 @@ defineProps({
   bannerSrc: String,
   styleType: String,
 })
+defineEmits('emitEvent')
 </script>
 
 <style scoped>

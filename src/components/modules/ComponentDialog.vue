@@ -159,16 +159,12 @@ onUnmounted(() => {
       >
         <p>{{ props.title }}</p>
         <div id="close">
-          <create-button
+          <CButton
             v-if="!noCloseButton"
-            :buttons="[
-              {
-                icon: 'close',
-                class: 'symbolic no-padding no-scalling',
-                id: 'close',
-              },
-            ]"
-            @emit-event="close()"
+            icon="close"
+            classes="symbolic no-padding no-scalling"
+            id="close"
+            @click="close()"
           />
         </div>
       </div>

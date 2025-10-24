@@ -12,7 +12,7 @@ export default defineConfig({
     vue(),
     vueJsx(),
     Components({
-      dirs: ['src/components/elements'],
+      dirs: ['src/components/ui'],
       extensions: ['vue'],
       deep: true,
       dts: true,

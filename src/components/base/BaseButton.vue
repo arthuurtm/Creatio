@@ -19,9 +19,9 @@
         aria-hidden="true"
       />
 
-      <span v-if="text && !hasDefaultSlot" class="btn-text">
+      <p v-if="text && !hasDefaultSlot" class="btn-text">
         {{ text }}
-      </span>
+      </p>
       <slot v-else />
     </span>
 
@@ -36,19 +36,10 @@
 <script setup>
 import { useSlots, computed } from 'vue'
 import BaseLoading from './BaseLoading.vue'
+import { baseButtonProps, baseButtonEmits } from './BaseButton.props'
 
-defineProps({
-  type: { type: String, default: 'button' },
-  disabled: Boolean,
-  loading: Boolean,
-  icon: String,
-  img: Object,
-  text: String,
-  /** ALERTA!!! o seu uso é desencorajado  */
-  classes: Array,
-})
-
-const emits = defineEmits(['click', 'emitEvent'])
+defineProps(baseButtonProps)
+const emits = defineEmits(baseButtonEmits)
 const slots = useSlots()
 const hasDefaultSlot = computed(() => !!slots.default)
 

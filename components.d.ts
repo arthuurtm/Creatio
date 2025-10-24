@@ -8,16 +8,17 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    CreateAnchor: typeof import('./src/components/elements/CreateAnchor.vue')['default']
-    CreateButton: typeof import('./src/components/elements/CreateButton.vue')['default']
-    CreateCard: typeof import('./src/components/elements/CreateCard.vue')['default']
-    CreateContextMenu: typeof import('./src/components/elements/CreateContextMenu.vue')['default']
-    CreateDynamicParams: typeof import('./src/components/elements/CreateDynamicParams.vue')['default']
-    CreateLoading: typeof import('./src/components/elements/CreateLoading.vue')['default']
-    CreateLogo: typeof import('./src/components/elements/CreateLogo.vue')['default']
-    CreateNode: typeof import('./src/components/elements/CreateNode.vue')['default']
-    CreateStepProgress: typeof import('./src/components/elements/CreateStepProgress.vue')['default']
-    CreateTextField: typeof import('./src/components/elements/CreateTextField.vue')['default']
+    CButton: typeof import('./src/components/ui/CButton.vue')['default']
+    CContextMenu: typeof import('./src/components/ui/CContextMenu.vue')['default']
+    CGameCard: typeof import('./src/components/ui/CGameCard.vue')['default']
+    CLink: typeof import('./src/components/ui/CLink.vue')['default']
+    CLoading: typeof import('./src/components/ui/CLoading.vue')['default']
+    CLogo: typeof import('./src/components/ui/CLogo.vue')['default']
+    CNode: typeof import('./src/components/ui/CNode.vue')['default']
+    CPasswordInput: typeof import('./src/components/ui/CPasswordInput.vue')['default']
+    CSelect: typeof import('./src/components/ui/CSelect.vue')['default']
+    CStepProgress: typeof import('./src/components/ui/CStepProgress.vue')['default']
+    CTextField: typeof import('./src/components/ui/CInputText.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

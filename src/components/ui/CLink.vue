@@ -1,38 +1,9 @@
 <template>
-  <a
-    v-if="anchor"
-    class="h-link"
-    :class="anchor.class"
-    :id="anchor.model"
-    @click="emitEvent(anchor.action.event, anchor.action.value, anchor.action.type)"
-  >
-    {{ anchor.text }}</a
-  >
+  <a class="h-link" :class="classes" @click="$emit('click', $event)"> {{ text }}</a>
 </template>
 
-<script>
-import { computed } from 'vue'
-
-export default {
-  name: 'CreateAnchor',
-  props: {
-    anchor: Object,
-    modelValue: String,
-  },
-  emits: ['update:modelValue', 'emitEvent'],
-  setup(props, { emit }) {
-    // Criamos uma propriedade reativa que sincroniza com modelValue
-    const inputValue = computed({
-      get: () => props.modelValue,
-      set: (value) => emit('update:modelValue', value),
-    })
-
-    return { inputValue }
-  },
-  methods: {
-    emitEvent(action, value, type) {
-      this.$emit('emitEvent', { action: action, value: value, type: type })
-    },
-  },
-}
+<script setup>
+import { baseButtonEmits, baseButtonProps } from '../base/BaseButton.props'
+defineProps(baseButtonProps)
+defineEmits(baseButtonEmits)
 </script>

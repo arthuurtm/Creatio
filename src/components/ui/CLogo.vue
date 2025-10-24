@@ -1,16 +1,15 @@
+<template>
+  <div class="gradient logo-text" :style="style">Creatio</div>
+</template>
+
 <script setup>
-const props = defineProps({
+defineProps({
   style: {
     type: [Object, String],
     default: () => ({}),
   },
 })
 </script>
-
-<template>
-  <!-- <img src="/src/assets/img/min-logo.png" :style="props.style" /> -->
-  <div class="gradient logo-text" :style="style">Creatio</div>
-</template>
 
 <style scoped>
 @font-face {
@@ -19,7 +18,6 @@ const props = defineProps({
   font-weight: normal;
   font-style: normal;
 }
-
 .logo-text {
   font-family: 'Poseidon', sans-serif;
   font-size: 4rem;

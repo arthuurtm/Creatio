@@ -88,15 +88,10 @@ defineExpose({
                 v-on="item?.listeners"
                 @emit-event="emitEvent"
               />
-              <create-button
-                :buttons="[
-                  {
-                    ...item,
-                    class: 'symbolic no-padding no-scalling',
-                    action: () => handleMenuItemClick(item.action),
-                  },
-                ]"
-                @emit-event="emitEvent"
+              <CButton
+                :="item"
+                classes="symbolic no-padding no-scalling"
+                @click="handleMenuItemClick(item.action)"
               />
               <p>{{ item.shortcut }}</p>
             </div>
