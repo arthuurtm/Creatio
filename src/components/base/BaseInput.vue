@@ -11,13 +11,14 @@
     <span v-if="!!slots.leading" class="input-slot-leading">
       <slot name="leading" />
     </span>
+    <CButton v-else-if="icon" :icon="icon" classes="symbolic no-scalling" />
 
     <component
       :is="tag"
       class="input-field"
       :type="type"
       :id="model"
-      :value="modelValue[model]"
+      :value="modelValue?.[model]"
       :placeholder="!label ? placeholder : ' '"
       :disabled="disabled || loading"
       @input="updateValue(model, $event.target.value)"
