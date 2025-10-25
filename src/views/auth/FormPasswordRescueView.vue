@@ -1,58 +1,39 @@
 <template>
-  <AppFormPage :title="'Alterar senha'" :currentStep="currentStep" ref="form">
-    <template #fields>
+  <AppFormPage :title="'Alterar senha'" :currentStep="currentStep" :loading="loading" ref="form">
+    <template #form>
       <template v-if="currentStep === 1">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'text',
-              name: 'email',
-              model: 'email',
-              label: 'E-mail',
-              placeholder: 'Digite seu e-mail',
-              required: true,
-            },
-          ]"
+        <CInputText
+          model="email"
+          label="E-mail"
+          placeholder="Digite seu e-mail"
+          aria-required="true"
           v-model="formData"
         />
       </template>
       <template v-if="currentStep === 2">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'text',
-              name: 'verifyCode',
-              model: 'verifyCode',
-              label: 'Código de verificação',
-              placeholder: 'Código de verificação recebido no seu e-mail',
-              required: true,
-            },
-          ]"
+        <CInputText
+          model="verifyCode"
+          label="Código de verificação"
+          placeholder="Código de verificação recebido no seu e-mail"
+          aria-required="true"
           v-model="formData"
         />
       </template>
       <template v-if="currentStep === 3">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'password',
-              name: 'password',
-              model: 'passwd1',
-              id: 'psswd1',
-              label: 'Sua senha',
-              placeholder: 'Digite uma senha BEM segura!',
-              required: true,
-            },
-            {
-              type: 'password',
-              name: 'passwordConfirm',
-              model: 'passwd2',
-              id: 'psswd2',
-              label: 'Confirme sua senha',
-              placeholder: 'Re-digite sua senha!',
-              required: true,
-            },
-          ]"
+        <CInputPassword
+          model="passwd1"
+          id="psswd1"
+          label="Sua senha"
+          placeholder="Digite uma senha BEM segura!"
+          aria-required="true"
+          v-model="formData"
+        />
+        <CInputPassword
+          model="passwd2"
+          id="psswd2"
+          label="Confirme sua senha"
+          placeholder="Re-digite sua senha!"
+          aria-required="true"
           v-model="formData"
         />
       </template>
@@ -60,65 +41,27 @@
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <CreateButton
-          :buttons="[
-            {
-              text: 'Cancelar',
-              class: '',
-              type: 'button',
-              action: () => pageRedirect({ name: 'Login' }),
-            },
-            {
-              text: 'Avançar',
-              class: 'confirm',
-              type: 'submit',
-              action: () => prepareVerifyCode(),
-            },
-          ]"
+        <CButton text="Cancelar" @click="() => router.back()" />
+        <CButton
+          text="Avançar"
+          class="confirm"
+          @click="() => loaderController(prepareVerifyCode)"
         />
       </template>
       <template v-if="currentStep === 2">
-        <CreateButton
-          :buttons="[
-            {
-              text: 'Voltar',
-              class: '',
-              type: 'button',
-              action: () => prevStep(),
-            },
-            {
-              text: 'Avançar',
-              class: 'confirm',
-              type: 'submit',
-              action: () => verifySecureCode(),
-            },
-          ]"
-        />
+        <CButton text="Voltar" @click="() => prevStep()" />
+        <CButton text="Avançar" class="confirm" @click="() => loaderController(verifySecureCode)" />
       </template>
       <template v-if="currentStep === 3">
-        <CreateButton
-          :buttons="[
-            {
-              text: 'Voltar',
-              class: '',
-              type: 'button',
-              action: () => prevStep(),
-            },
-            {
-              text: 'Confirmar',
-              class: 'confirm',
-              type: 'submit',
-              action: () => resetPassword(),
-            },
-          ]"
-        />
+        <CButton text="Voltar" @click="() => prevStep()" />
+        <CButton text="Confirmar" class="confirm" @click="() => loaderController(resetPassword)" />
       </template>
     </template>
   </AppFormPage>
 </template>
 
 <script setup>
-import AppFormPage from '@/layouts/LayoutForm.vue'
+import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { ref } from 'vue'
 import { http, form as stepForm } from '@/functions'
 import { useRouter } from 'vue-router'
@@ -127,7 +70,9 @@ import { showToast } from '@/plugins/toast'
 const formData = ref({})
 const router = useRouter()
 const form = ref({})
-const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 3 })
+const { currentStep, nextStep, prevStep, loading, loaderController } = stepForm({
+  totalSteps: 3,
+})
 const sentCode = ref(false)
 
 const prepareVerifyCode = async () => {

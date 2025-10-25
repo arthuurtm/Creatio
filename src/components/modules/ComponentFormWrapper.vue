@@ -16,14 +16,14 @@
     <form class="form-container centered" @submit.prevent="$emit('submit')">
       <transition name="slide-left" mode="out-in">
         <div class="form" :key="currentStep">
-          <slot v-if="hasSlot('form')" name="form" />
+          <slot v-if="hasSlot('buttons') && hasSlot('form')" name="form" />
           <p v-else>
             Não foi possível carregar os dados do formulário. Tente novamente mais tarde!
           </p>
         </div>
       </transition>
       <div class="buttons-container">
-        <slot v-if="hasSlot('buttons')" name="buttons" />
+        <slot v-if="hasSlot('buttons') && hasSlot('form')" name="buttons" />
         <CButton v-else text="Voltar" @click="$router.back()" />
       </div>
     </form>
@@ -35,13 +35,14 @@
     :is-visible="settingsVisible"
     @close="settingsVisible = !settingsVisible"
   />
+  <CLoading v-if="loading" :full="true" />
 </template>
 
 <script setup>
 import { useSlots, ref } from 'vue'
 import LayoutForm from '@/layouts/LayoutForm.vue'
 import DialogSettings from '../dialogs/DialogSettings.vue'
-defineProps({ title: String, subTitle: String, currentStep: Number })
+defineProps({ title: String, subTitle: String, currentStep: Number, loading: Boolean })
 defineEmits(['submit'])
 const slots = useSlots()
 const settingsVisible = ref(false)
@@ -55,7 +56,7 @@ function hasSlot(name) {
 .form-container {
   display: flex;
   flex-direction: column;
-  /* justify-content: space-between; */
+  justify-content: space-between;
   box-sizing: border-box;
   height: 100%;
   width: 100%;
@@ -66,7 +67,7 @@ function hasSlot(name) {
   flex-direction: column;
   gap: 30px;
   justify-content: center;
-  /* height: 100%; */
+  height: 100%;
   width: 100%;
   word-break: break-word;
   overflow-wrap: break-word;
