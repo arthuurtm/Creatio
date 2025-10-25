@@ -25,22 +25,24 @@
   border-radius: 30px;
 }
 
-.input:focus-within {
-  border-color: #1778fb;
-  outline: none;
-}
-
 .input label {
-  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left top;
   overflow: hidden;
   position: absolute;
   background: var(--bg2);
   padding: 0 6px;
 }
 
-.input:focus-within + label,
-.input input:not(:placeholder-shown) + label {
-  transform: translateY(-1.5rem);
+.input:focus-within {
+  border-color: var(--primary);
+}
+
+.input:focus-within label,
+.input input:not(:placeholder-shown) ~ label {
+  top: 0;
+  transform: translateY(-50%) scale(0.85);
+  color: var(--primary);
 }
 
 .input.select {
