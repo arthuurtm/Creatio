@@ -12,14 +12,15 @@
  */
 
 export const baseInputProps = /**@type {import('vue').ComponentPropsOptions<BaseInputProps>}*/ {
-  modelValue: { type: Object, required: true },
-  model: { type: String, required: true },
+  modelValue: Object,
+  model: String,
   type: { type: String, default: 'text' },
   label: String,
   placeholder: String,
   disabled: Boolean,
   loading: Boolean,
   anchor: Object,
+  icon: String,
   classes: [String, Array, Object],
 }
 
