@@ -32,7 +32,8 @@
             v-for="(btn, index) in finalNavLinks.right"
             :key="'right-' + index"
             v-bind="btn"
-            :classes="[btn.class, 'symbolic upper']"
+            :classes="[btn.class, 'symbolic']"
+            @click="btn.action"
           />
         </div>
       </header>
@@ -99,7 +100,7 @@ const openMoreOptions = (event) => {
       {
         items: [
           { text: 'Configurações', icon: 'settings', action: handleSettingsBox },
-          { text: 'Sair', icon: 'logout', class: 'confirm', action: handleLogout },
+          { text: 'Sair', icon: 'logout', action: handleLogout },
         ],
       },
     ],
@@ -122,7 +123,7 @@ const finalNavLinks = computed(() => {
         class: 'profile-picture',
       },
       id: 'user-info',
-      action: openMoreOptions,
+      action: (e) => openMoreOptions(e),
       hidden: !isAuthenticated.value,
     },
   ]

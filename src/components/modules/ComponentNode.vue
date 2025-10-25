@@ -2,7 +2,6 @@
 import { ref, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ws, http, util } from '@/functions'
-import DialogBase from '@/components/modules/ComponentDialog.vue'
 import CNode from '@/components/ui/CNode.vue'
 import { useConnections } from '@/composables/editor/useDotConnection'
 import { editorStore, nodeOps, createNode } from '@/composables/editor/useNodeFunctions'
@@ -207,7 +206,7 @@ defineExpose({
 
   <!-- Camada de nodes -->
   <div class="nodes-layer">
-    <DialogBase
+    <ComponentDialog
       v-for="node in editorStore.nodes"
       :key="node.id"
       v-on:contextmenu.stop="handleNodeRightClick(node, $event)"
