@@ -1,97 +1,39 @@
 <template>
-  <div class="page">
-    <CreateButton
-      :buttons="[
-        {
-          icon: 'settings',
-          class: 'symbolic no-padding no-scalling',
-          action: () => handleSettingsBox(),
-          style: `
-          position: absolute;
-          top: 0.5rem;
-          right: 0.5rem;
-          `,
-        },
-      ]"
-    />
+  <div class="app-form">
+    <div class="header-actions">
+      <slot name="header-actions" />
+    </div>
 
-    <div class="main-form-container">
+    <div class="main-container">
       <div class="left">
         <div id="logo">
-          <CreateLogo />
+          <CLogo />
         </div>
-        <h1>{{ title }}</h1>
-        <h4>{{ subTitle }}</h4>
-        <slot v-if="hasSlot('formInfo')" name="formInfo" />
+        <h1>
+          <slot name="title">{{ title }}</slot>
+        </h1>
+        <h4>
+          <slot name="subTitle">{{ subTitle }}</slot>
+        </h4>
+        <slot name="formInfo" />
       </div>
 
       <div class="right">
-        <form class="form-container centered" @submit.prevent="submitForm">
-          <transition name="slide-left" mode="out-in">
-            <div class="sepElements" :key="currentStep">
-              <slot v-if="hasSlot('fields')" name="fields" />
-              <p v-else>Ocorreu um erro e não foi possível carregar o formulário.</p>
-            </div>
-          </transition>
-
-          <slot v-if="hasSlot('anchors')" name="anchors" />
-          <div class="sepButtons">
-            <slot v-if="hasSlot('buttons')" name="buttons" />
-            <CreateButton v-else text="Reiniciar" :action="() => router.go()" />
-          </div>
-        </form>
+        <slot />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { useSlots } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAppDynamicDialog } from '@/stores'
-import DialogSettings from '@/components/dialogs/DialogSettings.vue'
-
-const dialog = useAppDynamicDialog()
-const slots = useSlots()
-const router = useRouter()
-
 defineProps({
-  title: {
-    type: String,
-    default: 'Formulário',
-  },
-  subTitle: {
-    type: String,
-    default: '',
-  },
-  currentStep: {
-    type: Number,
-    default: 1,
-  },
+  title: { type: String, default: 'Formulário' },
+  subTitle: { type: String },
 })
-
-function hasSlot(name) {
-  return !!slots[name]
-}
-
-function handleSettingsBox() {
-  dialog.setDialog(DialogSettings, { title: 'Configurações' })
-}
 </script>
 
-<style scoped>
-@-moz-document url-prefix() {
-  .main-form-container .right {
-    overflow-x: hidden !important;
-    overflow: hidden;
-  }
-
-  .centered {
-    align-items: unset !important;
-  }
-}
-
-.page {
+<style>
+.app-form {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -103,40 +45,15 @@ function handleSettingsBox() {
   box-sizing: border-box;
 }
 
-.page.minimal {
-  background: transparent;
-  display: unset;
-  width: 100%;
+.header-actions {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem;
 }
 
-.page.minimal .main-form-container {
-  display: flex;
-  flex-direction: column;
-  height: auto;
-  width: 100%;
-  min-width: unset;
-  max-width: 400px;
-  margin: 0 auto;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-}
-
-.page.minimal .main-form-container .left {
-  display: none !important;
-}
-
-.page.minimal .main-form-container .right {
-  flex: 1 1 auto;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.main-form-container {
+.main-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 30px;
@@ -144,11 +61,11 @@ function handleSettingsBox() {
   gap: 5px;
   width: 840px;
   height: auto;
-  /* border: 1px solid var(--border); */
+  border: 1px solid var(--border);
   background: var(--bg2);
   transition: border 300ms ease-out;
   overflow: hidden;
-  min-height: 350px;
+  min-height: 300px;
   animation: fadeInBlur 0.2s ease-out;
   scrollbar-color: var(--bg) var(--bg);
   scrollbar-width: thin;
@@ -158,11 +75,11 @@ function handleSettingsBox() {
   box-shadow: 0 8px 32px 0 var(--main-shadow);
 }
 
-.main-form-container .left {
+.main-container .left {
   grid-column: 1;
 }
 
-.main-form-container .right {
+.main-container .right {
   display: grid;
   position: relative;
   grid-column: 2;
@@ -173,106 +90,33 @@ function handleSettingsBox() {
   overflow-y: auto;
 }
 
-#logo {
+.main-container #logo {
   width: fit-content;
   height: 6rem;
 }
 
-.main-form-container p {
+.main-container p {
   font-size: 15px;
   margin-bottom: 25px;
   text-align: justify;
 }
 
-.main-form-container label {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.main-form-container h1 {
+.main-container h1 {
   margin: 0 0 1rem 0;
   font-weight: bold;
 }
 
-.main-form-container a {
-  display: inline-block;
-  margin-bottom: 20px;
-  font-size: 13px;
-  color: var(--text);
-  transition: all linear 160ms;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.form-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-sizing: border-box;
-  height: 100%;
-  width: 100%;
-}
-
-.sepElements {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-  word-break: break-word;
-  overflow-wrap: break-word;
-}
-
-.groupElements {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: inherit;
-}
-
-.groupElements label,
-.groupElements a {
-  margin-left: 3px;
-}
-
-.show {
-  display: block;
-}
-
-.centered {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  width: 100%;
-}
-
-.centered > div {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.settings-button {
-  display: flex;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  transition: transform 0.5s ease-in-out;
-  color: var(--form-sub);
-}
-
-.settings-button:hover {
-  transform: rotate(180deg);
+.main-container h4 {
+  margin: 0;
+  font-weight: normal;
 }
 
 @media (max-width: 900px) {
-  .page {
+  .app-form {
     flex-direction: column;
   }
 
-  .main-form-container {
+  .main-container {
     min-width: 80%;
     border: none;
     width: unset;
@@ -281,11 +125,11 @@ function handleSettingsBox() {
 }
 
 @media (max-width: 600px) {
-  .page {
+  .app-form {
     background: var(--form);
   }
 
-  .main-form-container {
+  .main-container {
     grid-template-rows: auto auto;
     grid-template-columns: none;
     border-radius: unset;
@@ -296,27 +140,23 @@ function handleSettingsBox() {
     box-shadow: none;
   }
 
-  .main-form-container .left {
+  .main-container .left {
     display: grid;
     grid-row: 1;
     grid-column: 1;
   }
 
-  .main-form-container .right {
+  .main-container .right {
     grid-row: 2;
     grid-column: 1;
   }
 
-  .main-form-container .left h1 {
+  .main-container .left h1 {
     text-align: center;
   }
 
   .form-container {
     gap: 30px;
-  }
-
-  .sepButtons {
-    position: unset;
   }
 
   #logo {

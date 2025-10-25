@@ -184,13 +184,6 @@
   justify-content: space-between;
 }
 
-.sepButtons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 5px;
-}
-
 .modal-buttons .btn {
   width: 100%;
 }
