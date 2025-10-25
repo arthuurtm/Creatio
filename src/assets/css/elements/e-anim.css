@@ -118,6 +118,23 @@
   transform: translateX(-100%);
 }
 
+.slide-left-and-back-enter-active,
+.slide-left-and-back-leave-active {
+  transition: transform 0.35s ease;
+}
+.slide-left-and-back-enter-from {
+  transform: translateX(100%);
+}
+.slide-left-and-back-enter-to {
+  transform: translateX(0);
+}
+.slide-left-and-back-leave-from {
+  transform: translateX(0);
+}
+.slide-left-and-back-leave-to {
+  transform: translateX(100%);
+}
+
 .slide-top-enter-active,
 .slide-top-leave-active {
   transition:

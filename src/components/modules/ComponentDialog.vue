@@ -133,56 +133,58 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div
-    :class="!noFocusWindow ? 'dialog-shadow focus' : 'dialog-shadow disabled'"
-    v-show="showDialog"
-    @click="!noFocusWindow && close()"
-  >
+  <Transition :name="fullscreen ? 'slide-left-and-back' : ''" mode="out-in">
     <div
-      class="dialog-main"
-      :id="[]"
-      :class="{
-        active: showDialogAnim,
-        noInterpolateSize,
-        fullscreen,
-      }"
-      :style="dialogStyle"
-      @click.stop
+      :class="!noFocusWindow ? 'dialog-shadow focus' : 'dialog-shadow disabled'"
+      v-show="showDialog"
+      @click="!noFocusWindow && close()"
     >
       <div
-        class="title-bar"
-        :class="{ left: fullscreen }"
-        @touchstart="onTouchStart"
-        @touchmove="onTouchMove"
-        @touchend="onTouchEnd"
-        @mousedown="handleMouseDown"
+        class="dialog-main"
+        :id="[]"
+        :class="{
+          active: showDialogAnim,
+          noInterpolateSize,
+          fullscreen,
+        }"
+        :style="dialogStyle"
+        @click.stop
       >
-        <p>{{ props.title }}</p>
-        <div id="close">
-          <CButton
-            v-if="!noCloseButton"
-            icon="close"
-            classes="symbolic no-padding no-scalling"
-            id="close"
-            @click="close()"
-          />
+        <div
+          class="title-bar"
+          :class="{ left: fullscreen }"
+          @touchstart="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+          @mousedown="handleMouseDown"
+        >
+          <p>{{ props.title }}</p>
+          <div id="close">
+            <CButton
+              v-if="!noCloseButton"
+              icon="close"
+              classes="symbolic no-padding no-scalling"
+              id="close"
+              @click="close()"
+            />
+          </div>
+        </div>
+        <div class="content">
+          <transition name="fastFade">
+            <component
+              v-if="component"
+              :is="component"
+              :key="props.component"
+              @close="close"
+              @emit-event="(e) => emit('emit-event', e)"
+              v-bind="componentProps"
+            />
+            <slot v-else />
+          </transition>
         </div>
       </div>
-      <div class="content">
-        <transition name="fastFade">
-          <component
-            v-if="component"
-            :is="component"
-            :key="props.component"
-            @close="close"
-            @emit-event="(e) => emit('emit-event', e)"
-            v-bind="componentProps"
-          />
-          <slot v-else />
-        </transition>
-      </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style scoped>
@@ -282,7 +284,6 @@ onUnmounted(() => {
 
 .content {
   flex-grow: 1;
-  overflow-y: auto;
   min-height: 0;
 }
 
