@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    CAgroup: typeof import('./src/components/ui/CAgroup.vue')['default']
     CButton: typeof import('./src/components/ui/CButton.vue')['default']
     CContextMenu: typeof import('./src/components/ui/CContextMenu.vue')['default']
     CGameCard: typeof import('./src/components/ui/CGameCard.vue')['default']
