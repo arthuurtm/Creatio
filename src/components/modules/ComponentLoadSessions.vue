@@ -17,7 +17,7 @@
           :key="index"
           :="card"
           :styleType="cardsType"
-          @emitEvent="reEmitEvent"
+          @emitEvent="card?.action"
         />
       </div>
 
