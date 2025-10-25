@@ -32,50 +32,49 @@
 
       <div class="controls-panel">
         <div class="search-wrapper">
-          <CreateTextField
-            :fields="[
-              {
-                type: 'search',
-                placeholder: 'Buscar por nome...',
-                icon: 'search',
-                class: 'fill border',
-              },
-            ]"
+          <CInputText
+            type="search"
+            placeholder="Buscar por nome..."
+            icon="search"
+            class="fill border"
           />
         </div>
 
         <div class="view-switcher">
-          <CreateButton
-            :buttons="[
+          <CButton
+            v-for="(btn, index) in [
               {
                 icon: 'grid_view',
-                class: currentView === 'grade' ? 'active' : '',
+                classes: currentView === 'grade' ? 'active' : '',
                 action: () => setView('grade'),
               },
               {
                 icon: 'view_list',
-                class: currentView === 'list' ? 'active' : '',
+                classes: currentView === 'list' ? 'active' : '',
                 action: () => setView('list'),
               },
               {
                 icon: 'view_stream',
-                class: currentView === 'line' ? 'active' : '',
+                classes: currentView === 'line' ? 'active' : '',
                 action: () => setView('line'),
               },
               {
                 text: 'Criar Novo',
                 icon: 'add',
-                class: 'btn btn-primary',
+                classes: 'btn btn-primary',
                 action: () => criarNovoJogo(),
               },
             ]"
+            :key="index"
+            :="btn"
+            @click="btn.action"
           />
         </div>
       </div>
     </header>
 
     <main class="content-area">
-      <CreateLoading v-if="loading" />
+      <CLoading v-if="loading" />
       <div v-else-if="filteredCreations.length === 0" class="empty-state">
         <p v-if="allCreations.length > 0">Nenhum item encontrado para "{{ searchQuery }}"</p>
         <p v-else>Você ainda não tem criações. Que tal começar uma agora?</p>
@@ -85,7 +84,6 @@
         :key="currentView"
         :items="filteredCreations"
         :style-type="currentView"
-        @emitEvent="loadEditTool"
       />
     </main>
   </div>
@@ -107,12 +105,16 @@ const currentView = ref('grade')
 const searchQuery = ref('')
 
 const filteredCreations = computed(() => {
-  if (!searchQuery.value) {
-    return allCreations.value
-  }
-  return allCreations.value.filter((creation) =>
-    creation.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
-  )
+  const list = !searchQuery.value
+    ? allCreations.value
+    : allCreations.value.filter((creation) =>
+        creation.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
+      )
+
+  return list.map((creation) => ({
+    ...creation,
+    action: () => loadEditTool(creation),
+  }))
 })
 
 async function fetchMyCreations() {
@@ -132,8 +134,8 @@ function setView(view) {
   currentView.value = view
 }
 
-function loadEditTool(event) {
-  router.push({ name: 'EditGame', params: event })
+function loadEditTool(params) {
+  router.push({ name: 'EditGame', params })
 }
 
 async function criarNovoJogo() {
