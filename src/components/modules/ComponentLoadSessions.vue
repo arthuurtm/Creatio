@@ -1,35 +1,33 @@
 <template>
-  <div class="games-grid" :class="styleType">
-    <div class="content">
-      <div class="scroll-button" id="left">
-        <CButton
-          v-if="isEnableScrollButton"
-          @emitEvent="scrollLeft"
-          icon="arrow_back_ios"
-          classes="symbolic no-padding no-scalling"
-          id="left"
-        />
-      </div>
+  <div class="grid-man" :class="styleType">
+    <div class="scroll-button" id="left">
+      <CButton
+        v-if="isEnableScrollButton"
+        @emitEvent="scrollLeft"
+        icon="arrow_back_ios"
+        classes="symbolic no-padding no-scalling"
+        id="left"
+      />
+    </div>
 
-      <div v-if="items && items.length > 0" class="sliding" ref="scrollContainer">
-        <CGameCard
-          v-for="(card, index) in items"
-          :key="index"
-          :="card"
-          :styleType="cardsType"
-          @emitEvent="card?.action"
-        />
-      </div>
+    <div v-if="items && items.length > 0" class="sliding" ref="scrollContainer">
+      <CGameCard
+        v-for="(card, index) in items"
+        :key="index"
+        :="card"
+        :styleType="cardsType"
+        @emitEvent="card?.action"
+      />
+    </div>
 
-      <div class="scroll-button" id="right">
-        <CButton
-          v-if="isEnableScrollButton"
-          @emitEvent="scrollRight"
-          icon="arrow_forward_ios"
-          classes="symbolic no-padding no-scalling left"
-          id="right"
-        />
-      </div>
+    <div class="scroll-button" id="right">
+      <CButton
+        v-if="isEnableScrollButton"
+        @emitEvent="scrollRight"
+        icon="arrow_forward_ios"
+        classes="symbolic no-padding no-scalling left"
+        id="right"
+      />
     </div>
   </div>
 </template>
@@ -84,13 +82,7 @@ function reEmitEvent(args = {}) {
 </script>
 
 <style scoped>
-.games-grid {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.games-grid .content {
+.grid-man {
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-rows: 1fr;
@@ -98,7 +90,6 @@ function reEmitEvent(args = {}) {
   width: 100%;
   box-sizing: border-box;
   position: relative;
-  /* overflow-x: auto; */
   scroll-behavior: smooth;
 }
 
@@ -115,10 +106,10 @@ function reEmitEvent(args = {}) {
   box-sizing: border-box;
 }
 
-.games-grid.grade .content {
+.grid-man.grade {
   scroll-behavior: unset;
 }
-.games-grid.grade .sliding {
+.grid-man.grade .sliding {
   flex-wrap: wrap;
   justify-content: center;
   align-content: flex-start;
@@ -149,7 +140,7 @@ function reEmitEvent(args = {}) {
 }
 
 @media (max-width: 600px) {
-  .content .group-button {
+  .grid-man .group-button {
     display: none;
   }
   #btn {
