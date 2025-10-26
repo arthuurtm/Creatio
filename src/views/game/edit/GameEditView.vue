@@ -1,11 +1,9 @@
 <script setup>
 import { ref, shallowRef, markRaw } from 'vue'
-import ComponentNode from '@/components/modules/ComponentNode.vue'
-import ComponentHeader from '@/components/modules/ComponentHeader.vue'
-import ComponentDialog from '@/components/modules/ComponentDialog.vue'
-import TabActionEditView from './TabActionEditView.vue'
+import TabDataPanelView from './TabDataPanelView.vue'
 import TabEventEditView from './TabEventEditView.vue'
 
+defineProps({ id: String })
 const contextMenuRef = ref(null)
 const componentNodeRef = ref(null)
 const tabData = ref({
@@ -20,7 +18,7 @@ const navLinks = ref({
     { text: 'Eventos', action: () => handleGameEditorTab(TabEventEditView, 'Editor de Eventos') },
     {
       text: 'Painel de dados',
-      action: () => handleGameEditorTab(TabActionEditView, 'Painel de dados'),
+      action: () => handleGameEditorTab(TabDataPanelView, 'Painel de dados'),
     },
   ],
 })
@@ -108,7 +106,7 @@ function handleCloseEditorTab() {
       <ComponentNode ref="componentNodeRef" />
     </div>
     <ComponentDialog v-bind="tabData" @contextMenu.stop @close="handleCloseEditorTab" />
-    <CreateContextMenu ref="contextMenuRef" />
+    <CContextMenu ref="contextMenuRef" />
   </div>
 </template>
 

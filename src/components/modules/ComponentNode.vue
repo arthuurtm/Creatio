@@ -166,7 +166,7 @@ defineExpose({
 </script>
 
 <template>
-  <div style="position: absolute; top: 0; right: 0.5rem; z-index: 3; display: flex; gap: 1rem">
+  <CAgroup direction="row" gap="0.5rem" grow justify="end" style="padding: 0.5rem">
     <CButton
       :icon="'developer_mode_tv'"
       :classes="['symbolic', 'no-padding']"
@@ -198,7 +198,7 @@ defineExpose({
       :style="{ cursor: requestStatus != 'ERROR' ? 'inherit' : 'pointer' }"
       @click="requestStatus === 'ERROR' && connect()"
     />
-  </div>
+  </CAgroup>
 
   <svg class="connections-layer">
     <path v-for="p in paths" :key="p?.id" :d="p?.d" :stroke-dasharray="p?.isLoop ? '6,3' : '0'" />

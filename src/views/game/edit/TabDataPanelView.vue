@@ -81,22 +81,22 @@ function selectItem(type, id) {
   <div class="editor-container unified">
     <nav class="sidebar sidebar-tree">
       <div class="sidebar-search">
-        <create-text-field :model-value="searchQuery" :fields="[{ icon: 'search' }]" />
+        <CInputText :modelValue="searchQuery" icon="search" />
       </div>
 
       <div class="sidebar-content">
         <div v-for="category in filteredTreeData" :key="category.key" class="tree-section">
-          <create-button
+          <CButton
             :text="`${category.name} (${category.items.length})`"
             icon="arrow_drop_down"
-            class="symbolic"
+            classes="symbolic"
           />
 
           <div class="tree-items">
-            <create-button
+            <CButton
               v-for="item in category.items"
               :key="item.id"
-              :class="[item.id === selectedItemRef.id && 'active', 'symbolic no-scalling']"
+              :classes="[item.id === selectedItemRef.id && 'active', 'symbolic no-scalling']"
               :text="item.name"
               @emit-event="selectItem(category.key, item.id)"
             />
@@ -121,7 +121,7 @@ function selectItem(type, id) {
         <p>Configure as propriedades e parâmetros deste item.</p>
       </div>
 
-      <div class="panel-body">
+      <!-- <div class="panel-body">
         <div class="form-section">
           <h3 class="section-title">Propriedades Gerais</h3>
           <CustomTextInput label="Nome" v-model="activeItem.name" />
@@ -140,7 +140,7 @@ function selectItem(type, id) {
             />
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <div v-else class="content-panel placeholder">
