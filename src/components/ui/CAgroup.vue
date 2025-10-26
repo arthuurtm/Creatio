@@ -1,5 +1,5 @@
 <template>
-  <component :is="tag" class="c-group" :style="groupStyles">
+  <component :is="tag" class="c-group" :style="groupStyles" v-bind="$attrs">
     <slot />
   </component>
 </template>
@@ -8,76 +8,129 @@
 import { computed } from 'vue'
 
 /**
- * @typedef {'div' | 'span' | 'fieldset' | 'ul' | 'li' | 'label'} CGroupTag
+ * @typedef {'div' | 'span' | 'fieldset' | 'section' | 'ul' | 'li' | 'label'} CGroupTag
+ * Elemento HTML que o grupo renderiza.
+ */
+
+/**
  * @typedef {'row' | 'column'} CGroupDirection
+ * Direção do layout flexível.
+ */
+
+/**
  * @typedef {'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'} CGroupJustify
+ * Controle do alinhamento horizontal (justify-content).
+ */
+
+/**
  * @typedef {'start' | 'center' | 'end' | 'stretch' | 'baseline'} CGroupAlign
+ * Controle do alinhamento vertical (align-items).
  */
 
 const props = defineProps({
   /**
    * @type {import('vue').PropType<CGroupTag>}
-   * A tag HTML a ser renderizada (div, span, fieldset, etc.)
+   * Elemento HTML a ser usado como contêiner.
+   * @default 'div'
    */
-  tag: {
-    type: String,
-    default: 'div',
-  },
+  tag: { type: String, default: 'div' },
+
   /**
    * @type {import('vue').PropType<CGroupDirection>}
-   * A direção do flex (row = horizontal, column = vertical)
+   * Direção dos itens do grupo (horizontal ou vertical).
+   * @default 'row'
    */
-  direction: {
-    type: String,
-    default: 'row',
-  },
+  direction: { type: String, default: 'row' },
+
   /**
    * @type {import('vue').PropType<CGroupJustify>}
-   * Alinhamento no eixo principal (justify-content)
+   * Distribuição dos itens no eixo principal.
+   * @default 'start'
    */
-  justify: {
-    type: String,
-    default: 'start',
-  },
+  justify: { type: String, default: 'start' },
+
   /**
    * @type {import('vue').PropType<CGroupAlign>}
-   * Alinhamento no eixo cruzado (align-items)
+   * Alinhamento dos itens no eixo cruzado.
+   * @default 'stretch'
    */
-  align: {
-    type: String,
-    default: 'stretch',
-  },
+  align: { type: String, default: 'stretch' },
+
   /**
-   * Espaçamento entre os elementos (ex: "1rem", "8px", "var(--spacing-md)")
+   * Espaçamento entre elementos (ex: `"1rem"`, `"8px"`, `"var(--gap-md)"`).
    */
-  gap: {
-    type: String,
-    default: null,
-  },
+  gap: { type: String, default: null },
+
   /**
-   * Permite que os itens quebrem para a próxima linha
+   * Permite quebra de linha (equivalente a `flex-wrap: wrap`).
    */
-  wrap: {
-    type: Boolean,
-    default: false,
-  },
+  wrap: { type: Boolean, default: false },
+
   /**
-   * Usa 'display: inline-flex' em vez de 'display: flex'
+   * Usa `inline-flex` em vez de `flex`.
    */
-  inline: {
-    type: Boolean,
-    default: false,
-  },
+  inline: { type: Boolean, default: false },
+
   /**
-   * Faz o grupo crescer para preencher o espaço (flex-grow: 1)
+   * Faz o grupo crescer para preencher o espaço disponível.
    */
-  grow: {
-    type: Boolean,
-    default: false,
-  },
+  grow: { type: Boolean, default: false },
+
+  // ---------------------------
+  // 🔶 Aparência e tamanho
+  // ---------------------------
+
+  /** Largura do grupo (`100%`, `auto`, `200px`, etc.). */
+  width: { type: String, default: null },
+
+  /** Altura do grupo (`100vh`, `auto`, `400px`, etc.). */
+  height: { type: String, default: null },
+
+  /** Largura máxima permitida. */
+  maxWidth: { type: String, default: null },
+
+  /** Altura máxima permitida. */
+  maxHeight: { type: String, default: null },
+
+  /** Largura mínima. */
+  minWidth: { type: String, default: null },
+
+  /** Altura mínima. */
+  minHeight: { type: String, default: null },
+
+  /** Espaçamento interno (`padding`). */
+  padding: { type: String, default: null },
+
+  /** Espaçamento externo (`margin`). */
+  margin: { type: String, default: null },
+
+  /** Cor de fundo. */
+  background: { type: String, default: null },
+
+  /** Arredondamento das bordas (`border-radius`). */
+  radius: { type: String, default: null },
+
+  /** Controla o comportamento do overflow (`hidden`, `auto`, `scroll`). */
+  overflow: { type: String, default: null },
+
+  /** Exibe uma borda leve ao redor do grupo. */
+  bordered: { type: Boolean, default: false },
+
+  /** Exibe um contorno vermelho para depuração visual. */
+  debug: { type: Boolean, default: false },
+
+  /**
+   * Centraliza o conteúdo no meio (tanto em `justify-content` quanto em `align-items`).
+   */
+  center: { type: Boolean, default: false },
 })
 
-function mapearJustify(val) {
+/**
+ * Mapeia os valores semânticos de `justify` para valores CSS válidos.
+ * @param {CGroupJustify} val
+ * @returns {string}
+ */
+function mapJustify(val) {
   const map = {
     start: 'flex-start',
     center: 'center',
@@ -89,7 +142,12 @@ function mapearJustify(val) {
   return map[val] || map.start
 }
 
-function mapearAlign(val) {
+/**
+ * Mapeia os valores semânticos de `align` para valores CSS válidos.
+ * @param {CGroupAlign} val
+ * @returns {string}
+ */
+function mapAlign(val) {
   const map = {
     start: 'flex-start',
     center: 'center',
@@ -100,29 +158,43 @@ function mapearAlign(val) {
   return map[val] || map.stretch
 }
 
+/**
+ * Estilos computados baseados nas props.
+ * Mantém apenas chaves válidas (sem `null`/`undefined`).
+ */
 const groupStyles = computed(() => {
   const styles = {
     display: props.inline ? 'inline-flex' : 'flex',
     flexDirection: props.direction,
-    justifyContent: mapearJustify(props.justify),
-    alignItems: mapearAlign(props.align),
+    justifyContent: props.center ? 'center' : mapJustify(props.justify),
+    alignItems: props.center ? 'center' : mapAlign(props.align),
     flexWrap: props.wrap ? 'wrap' : 'nowrap',
+    gap: props.gap,
+    flexGrow: props.grow ? 1 : undefined,
+
+    width: props.width,
+    height: props.height,
+    maxWidth: props.maxWidth,
+    maxHeight: props.maxHeight,
+    minWidth: props.minWidth,
+    minHeight: props.minHeight,
+
+    padding: props.padding,
+    margin: props.margin,
+    background: props.background,
+    borderRadius: props.radius,
+    overflow: props.overflow,
+    border: props.bordered ? '1px solid var(--border, #ccc)' : undefined,
+    outline: props.debug ? '1px dashed red' : undefined,
   }
 
-  if (props.gap) {
-    styles.gap = props.gap
-  }
-
-  if (props.grow) {
-    styles.flexGrow = 1
-  }
-
-  return styles
+  return Object.fromEntries(Object.entries(styles).filter(([_, v]) => v != null))
 })
 </script>
 
 <style scoped>
 .c-group {
   min-width: 0;
+  box-sizing: border-box;
 }
 </style>
