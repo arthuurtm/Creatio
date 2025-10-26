@@ -8,10 +8,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    CAgroup: typeof import('./src/components/ui/CAgroup.vue')['default']
     CButton: typeof import('./src/components/ui/CButton.vue')['default']
     CContextMenu: typeof import('./src/components/ui/CContextMenu.vue')['default']
     CGameCard: typeof import('./src/components/ui/CGameCard.vue')['default']
+    CGroup: typeof import('./src/components/ui/CGroup.vue')['default']
     CInputPassword: typeof import('./src/components/ui/CInputPassword.vue')['default']
     CInputText: typeof import('./src/components/ui/CInputText.vue')['default']
     CLink: typeof import('./src/components/ui/CLink.vue')['default']
