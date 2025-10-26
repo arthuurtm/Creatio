@@ -12,7 +12,7 @@
  */
 
 export const baseInputProps = /**@type {import('vue').ComponentPropsOptions<BaseInputProps>}*/ {
-  modelValue: Object,
+  modelValue: [Object, String],
   model: String,
   type: { type: String, default: 'text' },
   label: String,
@@ -22,6 +22,7 @@ export const baseInputProps = /**@type {import('vue').ComponentPropsOptions<Base
   anchor: Object,
   icon: String,
   classes: [String, Array, Object],
+  id: String,
 }
 
 /**

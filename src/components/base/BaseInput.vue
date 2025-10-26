@@ -26,19 +26,19 @@
 
     <label v-if="label" :for="model">{{ label }}</label>
 
-    <BaseLoading v-if="loading" class="input-loading-spinner" />
+    <CLoading v-if="loading" class="input-loading-spinner" />
 
     <span v-if="!!slots.trailing && !loading" class="input-slot-trailing">
       <slot name="trailing" />
     </span>
   </div>
-
-  <CLink v-if="anchor" v-bind="anchor" @click="reEmitEvent" />
 </template>
 
 <script setup>
 import { ref, computed, useSlots } from 'vue'
 import { baseInputProps, baseInputEmits } from './BaseInput.props.js'
+import CLoading from '../ui/CLoading.vue'
+import CButton from '../ui/CButton.vue'
 
 // --- Definições ---
 const props = defineProps(baseInputProps)
