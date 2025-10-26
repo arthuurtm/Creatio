@@ -12,7 +12,7 @@
       </template>
 
       <template v-if="currentStep === 2">
-        <CAgroup :direction="'column'" :gap="'0.5rem'">
+        <CGroup :direction="'column'" :gap="'0.5rem'">
           <CInputPassword
             model="password"
             label="Senha"
@@ -21,7 +21,7 @@
             v-model="formData"
           />
           <CLink text="Esqueci minha senha" @click="$router.push({ name: 'PasswordRescue' })" />
-        </CAgroup>
+        </CGroup>
       </template>
     </template>
 
