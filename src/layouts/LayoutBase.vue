@@ -28,9 +28,9 @@ const navLinks = computed(() => {
     >
       <router-view v-slot="{ Component }">
         <transition name="fastFade" mode="out-in">
-          <div :key="route.path" style="width: 100%; height: 100%">
+          <CGroup grow>
             <component :is="Component" />
-          </div>
+          </CGroup>
         </transition>
       </router-view>
     </div>
@@ -52,7 +52,7 @@ const navLinks = computed(() => {
 
 .app-content {
   display: flex;
-  overflow: hidden;
+  overflow: auto;
   padding: 0.5rem;
   z-index: 1;
   height: 100%;
