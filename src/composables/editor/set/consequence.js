@@ -7,75 +7,142 @@ export const Consequences = {
     heal: {
       name: 'Curar',
       icon: 'healing',
-      execute: (amount, targetId) => pushConsequence('heal', { amount, targetId }),
+      params: [
+        { key: 'amount', label: 'Quantidade a curar', type: 'number', required: true },
+        { key: 'targetId', label: 'ID do alvo', type: 'select', options: 'characters' },
+      ],
+      execute: (params) => pushConsequence('heal', params),
     },
     damage: {
       name: 'Dano',
       icon: 'dangerous',
-      execute: (amount, targetId) => pushConsequence('damage', { amount, targetId }),
+      params: [
+        { key: 'amount', label: 'Quantidade de dano', type: 'number', required: true },
+        { key: 'targetId', label: 'ID do alvo', type: 'select', options: 'characters' },
+      ],
+      execute: (params) => pushConsequence('damage', params),
     },
     gainItem: {
       name: 'Receber Item',
       icon: 'inventory',
-      execute: (itemId, quantity = 1, playerId) =>
-        pushConsequence('gainItem', { itemId, quantity, playerId }),
+      params: [
+        { key: 'itemId', label: 'ID do Item', type: 'select', options: 'items', required: true },
+        { key: 'quantity', label: 'Quantidade', type: 'number', default: 1 },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushConsequence('gainItem', params),
     },
     loseItem: {
       name: 'Perder Item',
       icon: 'remove_circle',
-      execute: (itemId, quantity = 1, playerId) =>
-        pushConsequence('loseItem', { itemId, quantity, playerId }),
+      params: [
+        { key: 'itemId', label: 'ID do Item', type: 'select', options: 'items', required: true },
+        { key: 'quantity', label: 'Quantidade', type: 'number', default: 1 },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushConsequence('loseItem', params),
     },
     transferItem: {
       name: 'Transferir Item',
       icon: 'swap_horiz',
-      execute: (fromId, toId, itemId, quantity = 1) =>
-        pushConsequence('transferItem', { fromId, toId, itemId, quantity }),
+      params: [
+        { key: 'fromId', label: 'De (ID)', type: 'select', options: 'containers', required: true },
+        { key: 'toId', label: 'Para (ID)', type: 'select', options: 'containers', required: true },
+        { key: 'itemId', label: 'ID do Item', type: 'select', options: 'items', required: true },
+        { key: 'quantity', label: 'Quantidade', type: 'number', default: 1 },
+      ],
+      execute: (params) => pushConsequence('transferItem', params),
     },
     displayMessage: {
       name: 'Exibir Mensagem',
       icon: 'message',
-      execute: (text, style = 'default') => pushConsequence('displayMessage', { text, style }),
+      params: [
+        { key: 'text', label: 'Mensagem', type: 'textarea', required: true },
+        {
+          key: 'style',
+          label: 'Estilo',
+          type: 'select',
+          options: ['default', 'alert', 'info'],
+          default: 'default',
+        },
+      ],
+      execute: (params) => pushConsequence('displayMessage', params),
     },
     setBackground: {
       name: 'Mudar Fundo',
       icon: 'image',
-      execute: (url) => pushConsequence('setBackground', { url }),
+      params: [{ key: 'url', label: 'URL da Imagem', type: 'text', required: true }],
+      execute: (params) => pushConsequence('setBackground', params),
     },
     setMusic: {
       name: 'Tocar Música',
       icon: 'music_note',
-      execute: (url, loop = true) => pushConsequence('setMusic', { url, loop }),
+      params: [
+        { key: 'url', label: 'URL da Música', type: 'text', required: true },
+        { key: 'loop', label: 'Repetir?', type: 'boolean', default: true },
+      ],
+      execute: (params) => pushConsequence('setMusic', params),
     },
     playSound: {
       name: 'Tocar Efeito Sonoro',
       icon: 'volume_up',
-      execute: (url) => pushConsequence('playSound', { url }),
+      params: [{ key: 'url', label: 'URL do Efeito', type: 'text', required: true }],
+      execute: (params) => pushConsequence('playSound', params),
     },
     showImage: {
       name: 'Mostrar Imagem',
       icon: 'image',
-      execute: (url, duration = 0) => pushConsequence('showImage', { url, duration }),
+      params: [
+        { key: 'url', label: 'URL da Imagem', type: 'text', required: true },
+        { key: 'duration', label: 'Duração (s)', type: 'number', default: 0 },
+      ],
+      execute: (params) => pushConsequence('showImage', params),
     },
     unlockNode: {
       name: 'Destravar Nó',
       icon: 'lock_open',
-      execute: (nodeId) => pushConsequence('unlockNode', { nodeId }),
+      params: [
+        { key: 'nodeId', label: 'ID do Nó', type: 'select', options: 'nodes', required: true },
+      ],
+      execute: (params) => pushConsequence('unlockNode', params),
     },
     teleport: {
       name: 'Teletransportar',
       icon: 'travel_explore',
-      execute: (targetNodeId) => pushConsequence('teleport', { targetNodeId }),
+      params: [
+        {
+          key: 'targetNodeId',
+          label: 'Nó de Destino',
+          type: 'select',
+          options: 'nodes',
+          required: true,
+        },
+      ],
+      execute: (params) => pushConsequence('teleport', params),
     },
     modifyRelation: {
       name: 'Modificar Relação',
       icon: 'group',
-      execute: (targetId, value) => pushConsequence('modifyRelation', { targetId, value }),
+      params: [
+        {
+          key: 'targetId',
+          label: 'Alvo da Relação',
+          type: 'select',
+          options: 'characters',
+          required: true,
+        },
+        { key: 'value', label: 'Valor (Alteração)', type: 'number', required: true },
+      ],
+      execute: (params) => pushConsequence('modifyRelation', params),
     },
     setFlag: {
       name: 'Definir Flag',
       icon: 'flag',
-      execute: (flagId, value) => pushConsequence('setFlag', { flagId, value }),
+      params: [
+        { key: 'flagId', label: 'ID da Flag', type: 'select', options: 'flags', required: true },
+        { key: 'value', label: 'Valor', type: 'text', required: true },
+      ],
+      execute: (params) => pushConsequence('setFlag', params),
     },
   },
 }

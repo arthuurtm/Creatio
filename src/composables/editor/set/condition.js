@@ -7,74 +7,167 @@ export const Conditions = {
     hasItem: {
       name: 'Item',
       icon: 'inventory',
-      execute: (itemId, quantity = 1, playerId) =>
-        pushCondition('has', { subtype: 'item', itemId, quantity, playerId }),
+      params: [
+        { key: 'itemId', label: 'ID do Item', type: 'select', options: 'items', required: true },
+        { key: 'quantity', label: 'Quantidade Mínima', type: 'number', default: 1 },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('has', { subtype: 'item', ...params }),
     },
     hasCurrency: {
       name: 'Moeda',
       icon: 'attach_money',
-      execute: (currencyType = 'gold', amount = 1, playerId) =>
-        pushCondition('has', { subtype: 'currency', currencyType, amount, playerId }),
+      params: [
+        { key: 'currencyType', label: 'Tipo de Moeda', type: 'text', default: 'gold' },
+        { key: 'amount', label: 'Quantidade Mínima', type: 'number', default: 1 },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('has', { subtype: 'currency', ...params }),
     },
     hasStatus: {
       name: 'Status',
       icon: 'medication',
-      execute: (statusId, active = true, playerId) =>
-        pushCondition('has', { subtype: 'status', statusId, active, playerId }),
+      params: [
+        {
+          key: 'statusId',
+          label: 'ID do Status',
+          type: 'select',
+          options: 'statuses',
+          required: true,
+        },
+        { key: 'active', label: 'Ativo?', type: 'boolean', default: true },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('has', { subtype: 'status', ...params }),
     },
     hasAttribute: {
       name: 'Atributo',
       icon: 'bar_chart',
-      execute: (attribute, comparator = '>=', value, playerId) =>
-        pushCondition('has', { subtype: 'attribute', attribute, comparator, value, playerId }),
+      params: [
+        { key: 'attribute', label: 'Atributo', type: 'text', required: true },
+        {
+          key: 'comparator',
+          label: 'Comparador',
+          type: 'select',
+          options: ['>=', '<=', '==', '>', '<', '!='],
+          default: '>=',
+        },
+        { key: 'value', label: 'Valor', type: 'text', required: true },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('has', { subtype: 'attribute', ...params }),
     },
     hasLevel: {
       name: 'Level',
       icon: 'trending_up',
-      execute: (comparator = '>=', value, playerId) =>
-        pushCondition('has', { subtype: 'level', comparator, value, playerId }),
+      params: [
+        {
+          key: 'comparator',
+          label: 'Comparador',
+          type: 'select',
+          options: ['>=', '<=', '==', '>', '<', '!='],
+          default: '>=',
+        },
+        { key: 'value', label: 'Nível', type: 'number', required: true },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('has', { subtype: 'level', ...params }),
     },
     hasSkill: {
       name: 'Habilidade',
       icon: 'school',
-      execute: (skillId, level = 1, playerId) =>
-        pushCondition('has', { subtype: 'skill', skillId, level, playerId }),
+      params: [
+        {
+          key: 'skillId',
+          label: 'ID da Habilidade',
+          type: 'select',
+          options: 'skills',
+          required: true,
+        },
+        { key: 'level', label: 'Nível Mínimo', type: 'number', default: 1 },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('has', { subtype: 'skill', ...params }),
     },
     hasCompanion: {
       name: 'Companheiro',
       icon: 'people',
-      execute: (companionId, active = true, playerId) =>
-        pushCondition('has', { subtype: 'companion', companionId, active, playerId }),
+      params: [
+        {
+          key: 'companionId',
+          label: 'ID do Companheiro',
+          type: 'select',
+          options: 'companions',
+          required: true,
+        },
+        { key: 'active', label: 'Ativo?', type: 'boolean', default: true },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('has', { subtype: 'companion', ...params }),
     },
     hasFlag: {
       name: 'Flag',
       icon: 'flag',
-      execute: (flagId, value = true, playerId) =>
-        pushCondition('has', { subtype: 'flag', flagId, value, playerId }),
+      params: [
+        { key: 'flagId', label: 'ID da Flag', type: 'select', options: 'flags', required: true },
+        { key: 'value', label: 'Valor', type: 'text', default: true },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('has', { subtype: 'flag', ...params }),
     },
     hasRelation: {
       name: 'Relação',
       icon: 'group',
-      execute: (targetId, relationType, level = 1, comparator = '>=', playerId) =>
-        pushCondition('has', {
-          subtype: 'relation',
-          targetId,
-          relationType,
-          level,
-          comparator,
-          playerId,
-        }),
+      params: [
+        {
+          key: 'targetId',
+          label: 'Alvo da Relação',
+          type: 'select',
+          options: 'characters',
+          required: true,
+        },
+        { key: 'relationType', label: 'Tipo de Relação', type: 'text', required: true },
+        { key: 'level', label: 'Nível Mínimo', type: 'number', default: 1 },
+        {
+          key: 'comparator',
+          label: 'Comparador',
+          type: 'select',
+          options: ['>=', '<=', '==', '>', '<', '!='],
+          default: '>=',
+        },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('has', { subtype: 'relation', ...params }),
     },
     stat: {
       name: 'Estatística',
       icon: 'equalizer',
-      execute: (stat, comparator = '>=', value, playerId) =>
-        pushCondition('stat', { stat, comparator, value, playerId }),
+      params: [
+        { key: 'stat', label: 'Estatística', type: 'text', required: true },
+        {
+          key: 'comparator',
+          label: 'Comparador',
+          type: 'select',
+          options: ['>=', '<=', '==', '>', '<', '!='],
+          default: '>=',
+        },
+        { key: 'value', label: 'Valor', type: 'text', required: true },
+        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+      ],
+      execute: (params) => pushCondition('stat', params),
     },
     custom: {
       name: 'Custom',
       icon: 'extension',
-      execute: (params) => pushCondition('custom', params),
+      params: [
+        {
+          key: 'params',
+          label: 'Parâmetros Customizados (JSON)',
+          type: 'textarea',
+          required: true,
+        },
+      ],
+      execute: (params) => pushCondition('custom', params.params),
     },
   },
 }

@@ -7,27 +7,39 @@ export const Actions = {
     setBackgroundImage: {
       name: 'Mudar Fundo',
       icon: 'image',
-      execute: (url) => pushAction('setBackgroundImage', { url }),
+      params: [{ key: 'url', label: 'URL da Imagem', type: 'text', required: true }],
+      execute: (params) => pushAction('setBackgroundImage', params),
     },
     setMusic: {
       name: 'Tocar Música',
       icon: 'music_note',
-      execute: (url) => pushAction('setMusic', { url }),
+      params: [{ key: 'url', label: 'URL da Música', type: 'text', required: true }],
+      execute: (params) => pushAction('setMusic', params),
     },
     setSoundEffect: {
       name: 'Efeito Sonoro',
       icon: 'volume_up',
-      execute: (url) => pushAction('setSoundEffect', { url }),
+      params: [{ key: 'url', label: 'URL do Efeito', type: 'text', required: true }],
+      execute: (params) => pushAction('setSoundEffect', params),
     },
     showDialogue: {
       name: 'Mostrar Diálogo',
       icon: 'chat',
-      execute: (speaker, text) => pushAction('showDialogue', { speaker, text }),
+      params: [
+        { key: 'speaker', label: 'Nome do Orador', type: 'text', required: true },
+        { key: 'text', label: 'Texto do Diálogo', type: 'textarea', required: true },
+      ],
+      execute: (params) => pushAction('showDialogue', params),
     },
     moveCamera: {
       name: 'Mover Câmera',
       icon: 'videocam',
-      execute: (x, y, duration) => pushAction('moveCamera', { x, y, duration }),
+      params: [
+        { key: 'x', label: 'Posição X', type: 'number', required: true },
+        { key: 'y', label: 'Posição Y', type: 'number', required: true },
+        { key: 'duration', label: 'Duração (s)', type: 'number', required: true },
+      ],
+      execute: (params) => pushAction('moveCamera', params),
     },
   },
 }
