@@ -1,5 +1,5 @@
 <template>
-  <div class="grid-man" :class="styleType">
+  <CGroup justify="between" grow>
     <div class="scroll-button" id="left">
       <CButton
         v-if="isEnableScrollButton"
@@ -11,13 +11,23 @@
     </div>
 
     <div v-if="items && items.length > 0" class="sliding" ref="scrollContainer">
-      <CGameCard
+      <CFeaturedGameCard
         v-for="(card, index) in items"
         :key="index"
-        :="card"
+        :item="card"
         :styleType="cardsType"
-        @emitEvent="card?.action"
+        @click="card?.action"
       />
+      <!-- <CFeaturedGameCard
+        :item="{
+          id: 'dark-realm',
+          title: 'The Dark Realm',
+          coverImage: 'https://ggayane.github.io/css-experiments/cards/dark_rider-cover.jpg',
+          characterImage:
+            'https://ggayane.github.io/css-experiments/cards/dark_rider-character.webp',
+        }"
+        size="large"
+      /> -->
     </div>
 
     <div class="scroll-button" id="right">
@@ -29,11 +39,12 @@
         id="right"
       />
     </div>
-  </div>
+  </CGroup>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import CFeaturedGameCard from '../ui/CFeaturedGameCard.vue'
 
 const props = defineProps({
   items: {

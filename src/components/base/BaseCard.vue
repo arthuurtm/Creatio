@@ -1,11 +1,8 @@
 <template>
   <div
-    class="card"
-    :class="size"
-    @click="$emit('click', e)"
-    @mousemove="(e) => handleMouseMove(e)"
-    @mouseleave="() => handleMouseLeave(index)"
-    ref="card"
+    @click="$emit('click')"
+    @mousemove="(e) => !no3dEffect && handleMouseMove(e)"
+    @mouseleave="() => !no3dEffect && handleMouseLeave(index)"
   >
     <slot />
   </div>
@@ -14,8 +11,7 @@
 <script setup>
 import { ref } from 'vue'
 defineProps({
-  /** @type {reduced} */
-  size: String,
+  no3dEffect: Boolean,
 })
 defineEmits(['click'])
 const card = ref()
@@ -34,26 +30,3 @@ function handleMouseLeave() {
   card.value.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)'
 }
 </script>
-
-<style scoped>
-.card {
-  position: relative;
-  overflow: hidden;
-  margin: 20px;
-  background-color: var(--overlay-bg);
-  border-radius: 15px;
-  width: 200px;
-  min-width: 200px;
-  height: 340px;
-  cursor: pointer;
-  transform-style: preserve-3d;
-  transition:
-    transform 0.1s ease,
-    scale 0.1s ease;
-  perspective: 1000px;
-}
-
-.card.reduced {
-  height: 200px;
-}
-</style>
