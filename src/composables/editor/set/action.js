@@ -1,29 +1,29 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
 
 export const Actions = {
-  name: 'Ação',
+  text: 'Ação',
   icon: 'play_arrow',
   value: {
     setBackgroundImage: {
-      name: 'Mudar Fundo',
+      text: 'Mudar Fundo',
       icon: 'image',
       params: [{ key: 'url', label: 'URL da Imagem', type: 'text', required: true }],
       execute: (params) => pushAction('setBackgroundImage', params),
     },
     setMusic: {
-      name: 'Tocar Música',
+      text: 'Tocar Música',
       icon: 'music_note',
       params: [{ key: 'url', label: 'URL da Música', type: 'text', required: true }],
       execute: (params) => pushAction('setMusic', params),
     },
     setSoundEffect: {
-      name: 'Efeito Sonoro',
+      text: 'Efeito Sonoro',
       icon: 'volume_up',
       params: [{ key: 'url', label: 'URL do Efeito', type: 'text', required: true }],
       execute: (params) => pushAction('setSoundEffect', params),
     },
     showDialogue: {
-      name: 'Mostrar Diálogo',
+      text: 'Mostrar Diálogo',
       icon: 'chat',
       params: [
         { key: 'speaker', label: 'Nome do Orador', type: 'text', required: true },
@@ -32,7 +32,7 @@ export const Actions = {
       execute: (params) => pushAction('showDialogue', params),
     },
     moveCamera: {
-      name: 'Mover Câmera',
+      text: 'Mover Câmera',
       icon: 'videocam',
       params: [
         { key: 'x', label: 'Posição X', type: 'number', required: true },

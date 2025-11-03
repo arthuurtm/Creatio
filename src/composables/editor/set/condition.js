@@ -1,11 +1,11 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
 
 export const Conditions = {
-  name: 'Condições',
+  text: 'Condições',
   icon: 'check_circle',
   value: {
     hasItem: {
-      name: 'Item',
+      text: 'Item',
       icon: 'inventory',
       params: [
         { key: 'itemId', label: 'ID do Item', type: 'select', options: 'items', required: true },
@@ -15,7 +15,7 @@ export const Conditions = {
       execute: (params) => pushCondition('has', { subtype: 'item', ...params }),
     },
     hasCurrency: {
-      name: 'Moeda',
+      text: 'Moeda',
       icon: 'attach_money',
       params: [
         { key: 'currencyType', label: 'Tipo de Moeda', type: 'text', default: 'gold' },
@@ -25,7 +25,7 @@ export const Conditions = {
       execute: (params) => pushCondition('has', { subtype: 'currency', ...params }),
     },
     hasStatus: {
-      name: 'Status',
+      text: 'Status',
       icon: 'medication',
       params: [
         {
@@ -41,7 +41,7 @@ export const Conditions = {
       execute: (params) => pushCondition('has', { subtype: 'status', ...params }),
     },
     hasAttribute: {
-      name: 'Atributo',
+      text: 'Atributo',
       icon: 'bar_chart',
       params: [
         { key: 'attribute', label: 'Atributo', type: 'text', required: true },
@@ -58,7 +58,7 @@ export const Conditions = {
       execute: (params) => pushCondition('has', { subtype: 'attribute', ...params }),
     },
     hasLevel: {
-      name: 'Level',
+      text: 'Level',
       icon: 'trending_up',
       params: [
         {
@@ -74,7 +74,7 @@ export const Conditions = {
       execute: (params) => pushCondition('has', { subtype: 'level', ...params }),
     },
     hasSkill: {
-      name: 'Habilidade',
+      text: 'Habilidade',
       icon: 'school',
       params: [
         {
@@ -90,7 +90,7 @@ export const Conditions = {
       execute: (params) => pushCondition('has', { subtype: 'skill', ...params }),
     },
     hasCompanion: {
-      name: 'Companheiro',
+      text: 'Companheiro',
       icon: 'people',
       params: [
         {
@@ -106,7 +106,7 @@ export const Conditions = {
       execute: (params) => pushCondition('has', { subtype: 'companion', ...params }),
     },
     hasFlag: {
-      name: 'Flag',
+      text: 'Flag',
       icon: 'flag',
       params: [
         { key: 'flagId', label: 'ID da Flag', type: 'select', options: 'flags', required: true },
@@ -116,7 +116,7 @@ export const Conditions = {
       execute: (params) => pushCondition('has', { subtype: 'flag', ...params }),
     },
     hasRelation: {
-      name: 'Relação',
+      text: 'Relação',
       icon: 'group',
       params: [
         {
@@ -140,7 +140,7 @@ export const Conditions = {
       execute: (params) => pushCondition('has', { subtype: 'relation', ...params }),
     },
     stat: {
-      name: 'Estatística',
+      text: 'Estatística',
       icon: 'equalizer',
       params: [
         { key: 'stat', label: 'Estatística', type: 'text', required: true },
@@ -157,7 +157,7 @@ export const Conditions = {
       execute: (params) => pushCondition('stat', params),
     },
     custom: {
-      name: 'Custom',
+      text: 'Custom',
       icon: 'extension',
       params: [
         {

@@ -1,11 +1,11 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
 
 export const Events = {
-  name: 'Eventos',
+  text: 'Eventos',
   icon: 'event',
   value: {
     onEnterNode: {
-      name: 'Entrar no Nó',
+      text: 'Entrar no Nó',
       icon: 'input',
       params: [
         { key: 'nodeId', label: 'ID do Nó', type: 'select', options: 'nodes', required: true },
@@ -20,7 +20,7 @@ export const Events = {
       execute: (params) => pushEvent('onEnterNode', params),
     },
     onChoiceSelected: {
-      name: 'Escolha Selecionada',
+      text: 'Escolha Selecionada',
       icon: 'check_circle',
       params: [
         { key: 'choiceId', label: 'ID da Escolha', type: 'text', required: true },
@@ -35,7 +35,7 @@ export const Events = {
       execute: (params) => pushEvent('onChoiceSelected', params),
     },
     onTimeElapsed: {
-      name: 'Tempo Decorrido',
+      text: 'Tempo Decorrido',
       icon: 'timer',
       params: [
         { key: 'duration', label: 'Duração (s)', type: 'number', required: true },
@@ -49,15 +49,15 @@ export const Events = {
       execute: (params) => pushEvent('onTimeElapsed', params),
     },
     custom: {
-      name: 'Custom',
+      text: 'Custom',
       icon: 'extension',
       params: [
-        { key: 'name', label: 'Nome do Evento', type: 'text', required: true },
+        { key: 'text', label: 'Nome do Evento', type: 'text', required: true },
         { key: 'params', label: 'Parâmetros Customizados (JSON)', type: 'textarea' },
       ],
       execute: (params) => {
-        const { name, params: customParams } = params
-        pushEvent(name ?? 'custom', customParams)
+        const { text, params: customParams } = params
+        pushEvent(text ?? 'custom', customParams)
       },
     },
   },
