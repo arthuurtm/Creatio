@@ -43,8 +43,13 @@ function closeContextMenu() {
   contextMenuVisible.value = false
 }
 
-function handleMenuItemClick(action) {
-  const result = action?.()
+function handleMenuItemClick(item) {
+  let result
+  if (typeof action === 'function') {
+    result = item.action?.()
+  } else {
+    emitEvent(item)
+  }
   if (result !== 'keep-open') {
     closeContextMenu()
   }
@@ -89,9 +94,11 @@ defineExpose({
                 @emit-event="emitEvent"
               />
               <CButton
-                :="item"
+                :text="item.text"
+                :img="item.img"
+                :icon="item.icon"
                 classes="symbolic no-padding no-scalling"
-                @click="handleMenuItemClick(item.action)"
+                @click="handleMenuItemClick(item)"
               />
               <p>{{ item.shortcut }}</p>
             </div>
@@ -118,6 +125,8 @@ defineExpose({
   flex-direction: column;
   backdrop-filter: var(--main-blur);
   border: 0.5px solid var(--border);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .sub-menu {
