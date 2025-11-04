@@ -45,7 +45,7 @@ function closeContextMenu() {
 
 function handleMenuItemClick(item) {
   let result
-  if (typeof action === 'function') {
+  if (item?.action) {
     result = item.action?.()
   } else {
     emitEvent(item)
