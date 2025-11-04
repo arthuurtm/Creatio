@@ -96,6 +96,8 @@ const nodeOps = () => {
     function mainNodeMenu(node, e) {
       openContextMenu(_buildAutoMenu(get, e, node, openContextMenu), e)
     }
+
+    return { mainNodeMenu }
   }
 
   return { ui, get }

@@ -189,7 +189,7 @@ onUnmounted(() => {
 
 <style scoped>
 .dialog-shadow {
-  position: fixed;
+  position: absolute;
   display: flex;
   z-index: 5;
 }
