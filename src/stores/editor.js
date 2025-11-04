@@ -13,30 +13,24 @@ const base = {
 }
 
 const baseState = {
-  $categories: [
-    { key: 'objects', name: 'Objetos', icon: 'category' },
-    { key: 'avatars', name: 'Avatares', icon: 'person' },
-    { key: 'conditions', name: 'Condições', icon: 'rule' },
-    { key: 'consequences', name: 'Consequências', icon: 'flash_on' },
-    { key: 'events', name: 'Eventos', icon: 'event' },
-    { key: 'actions', name: 'Ações', icon: 'bolt' },
-  ],
-  ...structuredClone(base),
+  objects: { text: 'Objetos', icon: 'category' },
+  avatars: { text: 'Avatares', icon: 'person' },
+  conditions: { text: 'Condições', icon: 'rule' },
+  consequences: { text: 'Consequências', icon: 'flash_on' },
+  events: { text: 'Eventos', icon: 'event' },
+  actions: { text: 'Ações', icon: 'bolt' },
 }
 
-const useEditorStore = (() => {
-  const state = reactive(structuredClone(baseState))
+const useEditorStore = reactive({
+  ...structuredClone(base),
 
-  const $reset = () => {
-    Object.assign(state, structuredClone(baseState))
-  }
+  $reset() {
+    Object.assign(this, structuredClone(base))
+  },
 
-  /**
-   * Adiciona algo ao editor, chamando a função correspondente em addFunctions
-   * @param {keyof typeof addFunctions} key - Nome da função em addFunctions
-   * @param {...any} args - Argumentos a serem passados à função
-   */
-  const $add = (key, subKey, ...args) => {
+  $components: baseState,
+
+  $add(key, subKey, ...args) {
     const fn = addFunctions[key]
 
     if (!fn) {
@@ -57,16 +51,14 @@ const useEditorStore = (() => {
       return subFn.execute(...args)
     }
 
-    // caso 3: função simples
+    // função simples
     if (typeof fn === 'function') {
-      return fn(state, ...args)
+      return fn(this, ...args)
     }
 
     console.warn(`[Editor] "${key}" não é uma função nem contém subfunções válidas`)
-  }
-
-  return { ...state, $reset, $add }
-})()
+  },
+})
 
 function generateId(prefix) {
   const time = Date.now().toString(36)
