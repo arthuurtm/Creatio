@@ -143,13 +143,13 @@
 import { http, util } from '@/functions/'
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAppDynamicDialog, useUserStore, useSettingsStore } from '@/stores'
+import { useUserStore, useSettingsStore } from '@/stores'
 import DialogMessage from './DialogMessage.vue'
 
 // Stores e router
 const router = useRouter()
 const user = useUserStore()
-const dialog = useAppDynamicDialog()
+const dialog = null
 const settings = useSettingsStore()
 
 const isAuth = computed(() => user.getIsAuth)

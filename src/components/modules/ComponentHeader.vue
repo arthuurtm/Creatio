@@ -33,26 +33,30 @@
             :key="'right-' + index"
             v-bind="btn"
             :classes="[btn.class, 'symbolic']"
-            @click="btn.action"
+            @click="btn?.action"
           />
         </div>
       </header>
     </div>
   </Transition>
   <CContextMenu ref="contextMenuRef" />
+  <ComponentDialog
+    :is-visible="isDialogVisible"
+    @close="handleDialogMessageEvent"
+    :title="dialogData?.title"
+  >
+    <DialogMessage :dialog-data="dialogData" @click="handleDialogMessageEvent" />
+  </ComponentDialog>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { http } from '@/functions/'
-import DialogMessage from '@/components/dialogs/DialogMessage.vue'
-import DialogSettings from '@/components/dialogs/DialogSettings.vue'
-import { useUserStore, useAppDynamicDialog } from '@/stores'
+import { useUserStore } from '@/stores'
 import router from '@/router'
 
 // Stores e Router
 const user = useUserStore()
-const dialog = useAppDynamicDialog()
 const contextMenuRef = ref(null)
 
 // Props
@@ -70,18 +74,24 @@ const props = defineProps({
 
 // Estado Reativo
 const isAuthenticated = computed(() => user.getIsAuth)
+const dialogData = ref(null)
+const isDialogVisible = ref(false)
 
 // Funções
 const handleLogout = () => {
-  dialog.setDialog(DialogMessage, {
+  isDialogVisible.value = true
+  dialogData.value = {
     title: 'Sair',
     message: 'Você quer mesmo sair?',
     buttons: [{ text: 'Não' }, { text: 'Sim', class: 'confirm', action: () => http.auth.logout() }],
-  })
+  }
 }
 
-const handleSettingsBox = () => {
-  dialog.setDialog(DialogSettings, { title: 'Configurações' })
+const handleDialogMessageEvent = (e) => {
+  if (e?.action) {
+    e.action()
+  }
+  isDialogVisible.value = !isDialogVisible.value
 }
 
 const openMoreOptions = (event) => {
@@ -99,7 +109,7 @@ const openMoreOptions = (event) => {
       },
       {
         items: [
-          { text: 'Configurações', icon: 'settings', action: handleSettingsBox },
+          { text: 'Configurações', icon: 'settings' },
           { text: 'Sair', icon: 'logout', action: handleLogout },
         ],
       },

@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref, watch, onUnmounted, shallowRef } from 'vue'
-import { useAppDynamicDialog } from '@/stores'
 
 const props = defineProps({
   component: Object,
@@ -17,15 +16,12 @@ const props = defineProps({
   fullscreen: { type: Boolean, default: false },
 })
 
-const dialog = useAppDynamicDialog()
-const showDialog = computed(() => dialog.getIsVisible || props.isVisible)
+const showDialog = computed(() => props.isVisible)
 const showDialogAnim = ref(false)
 const emit = defineEmits(['update:x', 'update:y', 'emit-event', 'close'])
 
 function close() {
-  if (!dialog.getIsHistory) showDialogAnim.value = false
   setTimeout(() => {
-    dialog.close()
     emit('close')
   }, 300)
 }
