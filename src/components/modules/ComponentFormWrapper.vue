@@ -1,5 +1,5 @@
 <template>
-  <LayoutForm>
+  <component :is="formLayout">
     <template #title>{{ title }}</template>
     <template #subTitle>{{ subTitle }}</template>
     <template #formInfo><slot name="formInfo" /></template>
@@ -27,7 +27,7 @@
         <CButton v-else text="Voltar" @click="$router.back()" />
       </div>
     </form>
-  </LayoutForm>
+  </component>
   <ComponentDialog
     :component="DialogSettings"
     :fullscreen="true"
@@ -42,10 +42,17 @@
 import { useSlots, ref } from 'vue'
 import LayoutForm from '@/layouts/LayoutForm.vue'
 import DialogSettings from '../dialogs/DialogSettings.vue'
-defineProps({ title: String, subTitle: String, currentStep: Number, loading: Boolean })
+const props = defineProps({
+  title: String,
+  subTitle: String,
+  currentStep: Number,
+  loading: Boolean,
+  layoutComponent: Object,
+})
 defineEmits(['submit'])
 const slots = useSlots()
 const settingsVisible = ref(false)
+const formLayout = ref(props.layoutComponent ?? LayoutForm)
 
 function hasSlot(name) {
   return !!slots[name]
