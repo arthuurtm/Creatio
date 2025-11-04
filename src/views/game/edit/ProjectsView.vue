@@ -1,13 +1,8 @@
 <template>
-  <div class="creations-container">
-    <header class="creations-header">
-      <CGroup gap="1rem">
-        <CButton icon="wand_stars" style="cursor: default" classes="symbolic no-padding" />
-        <h2 class="page-title">Seus projetos</h2>
-      </CGroup>
-
-      <CGroup justify="between" align="center" gap="1rem" wrap>
-        <CGroup grow width="400px">
+  <CGroup direction="column" grow>
+    <CGroup direction="column" max-width="1240px" margin="1rem auto">
+      <CGroup justify="between" :align="'center'" gap="1rem">
+        <CGroup width="400px">
           <CInputText type="search" placeholder="Buscar por nome..." icon="search" class="fill" />
         </CGroup>
 
@@ -37,12 +32,12 @@
             />
           </CGroup>
 
-          <CButton text="Criar Novo" icon="add" classes="primary" :action="() => criarNovoJogo()" />
+          <CButton text="Criar Novo" icon="add" classes="primary" @click="() => criarNovoJogo()" />
         </CGroup>
       </CGroup>
-    </header>
+    </CGroup>
 
-    <CGroup direction="column" gap="1rem" class="content-area">
+    <CGroup direction="column" gap="1rem" class="content-area" grow>
       <CLoading v-if="loading" />
       <div v-else-if="filteredCreations.length === 0" class="empty-state">
         <p v-if="allCreations.length > 0">Nenhum item encontrado para "{{ searchQuery }}"</p>
@@ -55,7 +50,7 @@
         :style-type="currentView"
       />
     </CGroup>
-  </div>
+  </CGroup>
 </template>
 
 <script setup>
@@ -89,9 +84,9 @@ const filteredCreations = computed(() => {
 async function fetchMyCreations() {
   loading.value = true
   try {
-    const userId = userStore.getId
-    const url = `getGames?filters=${encodeURIComponent(JSON.stringify({ userId }))}`
-    allCreations.value = Object.values(await http.get({ type: 'database', route: url }))
+    allCreations.value = Object.values(
+      await http.get({ type: 'database', route: 'getGames', query: { userId: userStore.getId } }),
+    )
   } catch (error) {
     showToast({ type: 'error', message: 'Falha ao carregar suas criações.' })
   } finally {
@@ -119,69 +114,3 @@ async function criarNovoJogo() {
 
 onMounted(fetchMyCreations)
 </script>
-
-<style scoped>
-.creations-container {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  margin: 0 auto;
-}
-.creations-header {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  max-width: 1400px;
-}
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.page-title {
-  font-size: 2.25rem;
-  font-weight: 700;
-  margin: 0;
-}
-.creations-count {
-  font-size: 1rem;
-  color: var(--secondary);
-}
-
-.controls-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.search-wrapper {
-  position: relative;
-  flex-grow: 1;
-  max-width: 400px;
-}
-
-.view-switcher {
-  display: flex;
-  align-items: center;
-  border-radius: 8px;
-  padding: 4px;
-}
-
-:deep(.view-switcher .btn.active) {
-  background-color: var(--primary-back);
-  color: var(--primary-hover);
-}
-
-.content-area {
-  padding-top: 1rem;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--secondary);
-  font-size: 1.1rem;
-}
-</style>
