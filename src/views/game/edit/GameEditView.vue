@@ -100,14 +100,16 @@ function handleCloseEditorTab() {
 </script>
 
 <template>
-  <ComponentHeader :nav-links="navLinks" :title="'EDITOR DO JOGO'" />
-  <div class="editor-wrapper" @contextmenu="handleContextMenu">
-    <div class="editor-canvas">
-      <ComponentNode ref="componentNodeRef" />
+  <CGroup grow direction="column">
+    <ComponentHeader :nav-links="navLinks" :title="'EDITOR DO JOGO'" />
+    <div class="editor-wrapper" @contextmenu="handleContextMenu">
+      <div class="editor-canvas">
+        <ComponentNode ref="componentNodeRef" />
+      </div>
+      <ComponentDialog v-bind="tabData" @contextMenu.stop @close="handleCloseEditorTab" />
+      <CContextMenu @contextMenu.stop ref="contextMenuRef" />
     </div>
-    <ComponentDialog v-bind="tabData" @contextMenu.stop @close="handleCloseEditorTab" />
-    <CContextMenu ref="contextMenuRef" />
-  </div>
+  </CGroup>
 </template>
 
 <style scoped>
