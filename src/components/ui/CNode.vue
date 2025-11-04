@@ -9,15 +9,11 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['dot-click', 'emit-event'])
+const emit = defineEmits(['emit-event'])
 
 function handleDotMouseDown(socketId, event) {
   event.stopPropagation()
-  // pega posição inicial
   const start = { x: event.clientX, y: event.clientY }
-
-  // emite para o pai (ComponentNode) que começou um arraste
-  console.log('Iniciando conexão do nó', props.node.id, 'ponto', socketId)
   reEmitEvent('start-connection', {
     nodeId: props.node.id,
     socketId,
@@ -30,10 +26,6 @@ function reEmitEvent(name, data = {}) {
     name,
     data,
   })
-}
-
-function handleDotClick(socketId, event) {
-  emit('dot-click', { nodeId: props.node.id, socketId, event })
 }
 
 // Computeds para simplificar o template e garantir reatividade
