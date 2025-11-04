@@ -1,273 +1,163 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useEditorStore } from '@/stores/editor'
+import { ref, computed, onMounted } from 'vue'
+import { useEditorStore as editorStore, addFunctions } from '@/stores/editor'
 
-// --- Configuração ---
-const tabMetadata = {
-  conditions: { name: 'Condições', icon: 'check_circle' },
-  consequences: { name: 'Consequências', icon: 'flash_on' },
-  actions: { name: 'Ações', icon: 'bolt' },
-  events: { name: 'Eventos', icon: 'event' },
-  objects: { name: 'Objetos', icon: 'inventory' },
-  avatars: { name: 'Personagens', icon: 'people' },
-}
-const componentMap = {
-  text: 'CustomTextInput',
-  number: 'CustomNumberInput',
-  textarea: 'CustomTextareaInput',
-  select: 'CustomSelectInput',
-}
-
-const editorStore = useEditorStore
-
-// --- Estado da Interface ---
-
-// O item selecionado (precisa de tipo E id)
-const selectedItemRef = ref({ type: null, id: null })
-// O termo da busca
 const searchQuery = ref('')
+const activeCategory = ref(null)
+const formParams = ref([])
+const popupContextMenu = ref(null)
+const isDialogOpen = ref(false)
+const createItemExecuteFn = ref(null)
 
-// --- Dados Computados ---
+// --- Inicialização de teste ---
+onMounted(() => {
+  editorStore.actions.push({ text: 'Ação teste' })
+  editorStore.conditions.push({ text: 'Condição teste' })
+})
 
-// A "Árvore" principal, que reage à busca
-const filteredTreeData = computed(() => {
+// --- Metadados das abas ---
+const tabMetadata = editorStore.$components
+/** Retorna subcategorias da função em addFunctions */
+const getSubCategories = (categoryKey = null) => {
+  addFunctions[categoryKey]?.value ?? [{ text: 'Nada a mostrar.', icon: 'info' }]
+}
+const activeCategoryItems = computed(() => {
+  if (!activeCategory.value) return []
+  // Garante que é um array, caso a categoria exista na store
+  return editorStore[activeCategory.value] ?? []
+})
+/** Computed: filtra categorias com base na busca */
+const filteredCategories = computed(() => {
   const query = searchQuery.value.toLowerCase().trim()
-
-  return (
-    Object.keys(tabMetadata)
-      .map((typeKey) => {
-        // 1. Pega os metadados da categoria (nome, ícone)
-        const category = tabMetadata[typeKey]
-        // 2. Pega os itens reais da store
-        const allItems = editorStore[typeKey] || []
-
-        // 3. Filtra os itens se houver uma busca
-        const filteredItems = !query
-          ? allItems // Se não há busca, retorna todos
-          : allItems.filter((item) => item.name.toLowerCase().includes(query))
-
-        return {
-          key: typeKey,
-          name: category.name,
-          icon: category.icon,
-          items: filteredItems,
-        }
-      })
-      // 4. Se houver busca, esconde categorias que não têm resultados
-      .filter((category) => {
-        return !query || category.items.length > 0
-      })
-  )
+  return Object.entries(tabMetadata)
+    .filter(([_, cat]) => cat.text.toLowerCase().includes(query))
+    .map(([key, cat]) => ({
+      key,
+      ...cat,
+      count: editorStore[key]?.length ?? 0,
+    }))
 })
 
-// O item ativo, baseado na seleção
-const activeItem = computed(() => {
-  const { type, id } = selectedItemRef.value
-  if (type && id) {
-    const sourceArray = editorStore[type] || []
-    return sourceArray.find((item) => item.id === id)
+// --- Ações ---
+function openCategory(categoryKey) {
+  activeCategory.value = categoryKey
+}
+
+function openAddObjectContextMenu(items, event) {
+  popupContextMenu.value.openContextMenu(items, event)
+}
+
+function handleContextMenuEvent(e) {
+  const selectedItem = e.item
+  formParams.value = selectedItem.params ?? []
+  createItemExecuteFn.value = selectedItem.execute ?? null
+  if (formParams.value.length > 0 && createItemExecuteFn.value) {
+    isDialogOpen.value = true
   }
-  return null
-})
+}
 
-// --- Funções ---
-
-function selectItem(type, id) {
-  selectedItemRef.value = { type, id }
+function handleSaveNewItem(formData) {
+  if (!activeCategory.value || !createItemExecuteFn.value) {
+    console.error('Categoria ou função de criação não definida.')
+    return
+  }
+  const newItem = createItemExecuteFn.value(formData)
+  editorStore[activeCategory.value].push(newItem)
+  isDialogOpen.value = false
+  formParams.value = []
+  createItemExecuteFn.value = null
 }
 </script>
 
 <template>
-  <div class="editor-container unified">
-    <nav class="sidebar sidebar-tree">
-      <div class="sidebar-search">
-        <CInputText :modelValue="searchQuery" icon="search" />
-      </div>
+  <CGroup height="100%" width="100%">
+    <CGroup
+      direction="column"
+      padding="1rem"
+      gap="1rem"
+      style="border-right: 1px solid var(--border)"
+      width="280px"
+    >
+      <CInputText v-model="searchQuery" icon="search" placeholder="Buscar categoria..." />
 
-      <div class="sidebar-content">
-        <div v-for="category in filteredTreeData" :key="category.key" class="tree-section">
+      <CGroup grow direction="column" gap="0.5rem">
+        <CGroup
+          v-for="category in filteredCategories"
+          :key="category.key"
+          justify="between"
+          align="center"
+        >
           <CButton
-            :text="`${category.name} (${category.items.length})`"
-            icon="arrow_drop_down"
-            classes="symbolic"
+            :text="category.text"
+            :icon="category.icon"
+            :active="activeCategory === category.key"
+            classes="symbolic no-scalling"
+            @click="openCategory(category.key)"
           />
+          <CButton
+            icon="add_circle"
+            classes="symbolic"
+            title="Adicionar novo"
+            @click="openAddObjectContextMenu([{ items: getSubCategories(category.key) }], $event)"
+          />
+        </CGroup>
+      </CGroup>
 
-          <div class="tree-items">
-            <CButton
-              v-for="item in category.items"
-              :key="item.id"
-              :classes="[item.id === selectedItemRef.id && 'active', 'symbolic no-scalling']"
-              :text="item.name"
-              @emit-event="selectItem(category.key, item.id)"
-            />
+      <CContextMenu ref="popupContextMenu" @emit-event="handleContextMenuEvent" />
+    </CGroup>
 
-            <p v-if="searchQuery && category.items.length === 0" class="no-items">
-              Nenhum item encontrado.
-            </p>
-          </div>
+    <CGroup v-if="activeCategory" grow direction="column">
+      <CGroup
+        justify="between"
+        align="center"
+        padding="1rem"
+        style="border-bottom: 1px solid var(--border)"
+      >
+        <h3>
+          {{ tabMetadata[activeCategory]?.text || 'Itens' }}
+        </h3>
+        <CButton icon="add_circle" text="Adicionar" @click="isDialogOpen = true" />
+      </CGroup>
+
+      <CGroup grow direction="column" padding="1rem" gap="0.5rem" style="overflow-y: auto">
+        <div
+          v-if="activeCategoryItems.length === 0"
+          style="text-align: center; color: var(--form-sub); padding: 2rem"
+        >
+          Nenhum item em **{{ tabMetadata[activeCategory]?.text || 'esta categoria' }}**.
         </div>
+        <CGroup
+          v-for="item in activeCategoryItems"
+          :key="item.id"
+          justify="between"
+          align="center"
+          padding="0.5rem 1rem"
+          style="border: 1px solid var(--border); border-radius: 8px"
+        >
+          <span>{{ item.text || `Item #${item.id}` }}</span>
+          <CButton icon="edit" classes="symbolic" title="Editar" />
+        </CGroup>
 
-        <p v-if="filteredTreeData.length === 0 && searchQuery" class="no-results">
-          Nenhum resultado para "{{ searchQuery }}".
-        </p>
-      </div>
-    </nav>
+        <ComponentDialog
+          :is-visible="isDialogOpen"
+          title="Adicionar Novo Item"
+          fullscreen="true"
+          @close="isDialogOpen = false"
+        >
+          <template #default>
+            <CGroup direction="column" gap="1.5rem" padding="1rem">
+              <CFormBuilder :params="formParams" @submit="handleSaveNewItem" />
+              <CGroup justify="end">
+                <CButton text="Cancelar" classes="symbolic" @click="isDialogOpen = false" />
+              </CGroup>
+            </CGroup>
+          </template>
+        </ComponentDialog>
+      </CGroup>
+    </CGroup>
 
-    <div class="content-panel" v-if="activeItem">
-      <div class="panel-header">
-        <h2>
-          Editando: <strong>{{ activeItem.name }}</strong>
-        </h2>
-        <p>Configure as propriedades e parâmetros deste item.</p>
-      </div>
-
-      <!-- <div class="panel-body">
-        <div class="form-section">
-          <h3 class="section-title">Propriedades Gerais</h3>
-          <CustomTextInput label="Nome" v-model="activeItem.name" />
-          <CustomIconPicker label="Ícone" v-model="activeItem.icon" />
-        </div>
-
-        <div class="form-section" v-if="activeItem.params && activeItem.params.length">
-          <h3 class="section-title">Parâmetros</h3>
-          <div v-for="param in activeItem.params" :key="param.key" class="param-field">
-            <component
-              :is="componentMap[param.type] || 'CustomTextInput'"
-              :label="param.label"
-              :placeholder="param.placeholder"
-              :options="param.options"
-              v-model="param.value"
-            />
-          </div>
-        </div>
-      </div> -->
-    </div>
-
-    <div v-else class="content-panel placeholder">
-      <p>Selecione um item na árvore à esquerda para editar.</p>
-    </div>
-  </div>
+    <CGroup v-else grow align="center" justify="center" style="color: var(--form-sub)">
+      <p>Selecione uma categoria à esquerda</p>
+    </CGroup>
+  </CGroup>
 </template>
-
-<style scoped>
-/* Layout Unificado: Sidebar + Conteúdo */
-.editor-container.unified {
-  display: flex;
-  flex-direction: row; /* Lado a lado */
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-}
-
-/* --- Sidebar (Árvore) --- */
-.sidebar-tree {
-  width: 300px; /* Mais espaço para a árvore */
-  display: flex;
-  flex-direction: column;
-  background-color: var(--navigator);
-  border-right: 1px solid var(--border);
-  flex-shrink: 0;
-  height: 100%;
-  min-height: 0;
-}
-
-/* Busca no Topo */
-.sidebar-search {
-  padding: 1rem;
-  flex-shrink: 0;
-}
-
-/* Conteúdo da Árvore */
-.sidebar-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 1rem;
-}
-
-.tree-section {
-  margin-bottom: 1.5rem;
-}
-
-.tree-category-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--form-sub);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 0.5rem;
-}
-
-.tree-category-title .material-icons {
-  font-size: 1.1rem;
-}
-
-/* Estilos para botões de item */
-.tree-items :deep(button) {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-}
-
-.tree-items :deep(button.active) {
-  background-color: var(--form-normal-link-active-bg);
-  color: var(--form-normal-link);
-  font-weight: 600;
-}
-
-.no-items,
-.no-results {
-  color: var(--form-sub);
-  font-size: 0.9rem;
-  padding: 0 0.75rem;
-}
-
-/* --- Painel de Conteúdo --- */
-.content-panel {
-  flex-grow: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Placeholder (quando vazio) */
-.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--form-sub);
-  font-size: 1.1rem;
-  height: 100%;
-}
-
-.panel-header {
-  border-bottom: 1px solid var(--border);
-  padding: 1.5rem 2rem;
-  flex-shrink: 0;
-}
-.panel-header h2 {
-  font-size: 1.5rem;
-  margin: 0;
-}
-.panel-header p {
-  color: var(--form-sub);
-  margin: 0.25rem 0 0;
-}
-
-/* Wrapper para o scroll do formulário */
-.panel-body {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 2rem;
-}
-
-.form-section {
-  margin-bottom: 2.5rem;
-}
-/* .section-title { ... }
-.param-field { ... } */
-</style>
