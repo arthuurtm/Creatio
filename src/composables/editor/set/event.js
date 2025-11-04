@@ -1,6 +1,6 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
 
-export const Events = {
+export const events = {
   text: 'Eventos',
   icon: 'event',
   value: {

@@ -1,6 +1,6 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
 
-export const Consequences = {
+export const consequences = {
   text: 'Consequências',
   icon: 'flash_on',
   value: {

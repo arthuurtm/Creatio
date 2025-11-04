@@ -1,6 +1,6 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
 
-export const Actions = {
+export const actions = {
   text: 'Ação',
   icon: 'play_arrow',
   value: {

@@ -1,6 +1,6 @@
-import { Actions } from './action'
-import { Events } from './event'
-import { Conditions } from './condition'
-import { Consequences } from './consequence'
+import { actions } from './action'
+import { events } from './event'
+import { conditions } from './condition'
+import { consequences } from './consequence'
 
-export { Events, Conditions, Consequences, Actions }
+export { events, conditions, consequences, actions }

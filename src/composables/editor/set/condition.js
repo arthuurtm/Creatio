@@ -1,6 +1,6 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
 
-export const Conditions = {
+export const conditions = {
   text: 'Condições',
   icon: 'check_circle',
   value: {
