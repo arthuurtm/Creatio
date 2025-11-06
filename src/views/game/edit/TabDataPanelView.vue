@@ -1,29 +1,25 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useEditorStore as editorStore, addFunctions } from '@/stores/editor'
+import CInputText from '@/components/ui/CInputText.vue'
+import CInputSelect from '@/components/ui/CInputSelect.vue'
+import CButton from '@/components/ui/CButton.vue'
 
 const searchQuery = ref('')
 const activeCategory = ref(null)
 const formParams = ref([])
-const popupContextMenu = ref(null)
 const isDialogOpen = ref(false)
 const createItemExecuteFn = ref(null)
 
-// --- Inicialização de teste ---
-onMounted(() => {
-  editorStore.actions.push({ text: 'Ação teste' })
-  editorStore.conditions.push({ text: 'Condição teste' })
-})
-
-// --- Metadados das abas ---
-const tabMetadata = editorStore.$components
-/** Retorna subcategorias da função em addFunctions */
-const getSubCategories = (categoryKey = null) => {
-  addFunctions[categoryKey]?.value ?? [{ text: 'Nada a mostrar.', icon: 'info' }]
+// --- Metadados ---
+const inputParamMap = {
+  text: CInputText,
+  select: CInputSelect,
+  button: CButton,
 }
+const tabMetadata = editorStore.$components
 const activeCategoryItems = computed(() => {
   if (!activeCategory.value) return []
-  // Garante que é um array, caso a categoria exista na store
   return editorStore[activeCategory.value] ?? []
 })
 /** Computed: filtra categorias com base na busca */
@@ -42,30 +38,13 @@ const filteredCategories = computed(() => {
 function openCategory(categoryKey) {
   activeCategory.value = categoryKey
 }
-
-function openAddObjectContextMenu(items, event) {
-  popupContextMenu.value.openContextMenu(items, event)
-}
-
-function handleContextMenuEvent(e) {
-  const selectedItem = e.item
+function addButtonHandler(event) {
+  const selectedItem = event
   formParams.value = selectedItem.params ?? []
   createItemExecuteFn.value = selectedItem.execute ?? null
   if (formParams.value.length > 0 && createItemExecuteFn.value) {
     isDialogOpen.value = true
   }
-}
-
-function handleSaveNewItem(formData) {
-  if (!activeCategory.value || !createItemExecuteFn.value) {
-    console.error('Categoria ou função de criação não definida.')
-    return
-  }
-  const newItem = createItemExecuteFn.value(formData)
-  editorStore[activeCategory.value].push(newItem)
-  isDialogOpen.value = false
-  formParams.value = []
-  createItemExecuteFn.value = null
 }
 </script>
 
@@ -94,16 +73,8 @@ function handleSaveNewItem(formData) {
             classes="symbolic no-scalling"
             @click="openCategory(category.key)"
           />
-          <CButton
-            icon="add_circle"
-            classes="symbolic"
-            title="Adicionar novo"
-            @click="openAddObjectContextMenu([{ items: getSubCategories(category.key) }], $event)"
-          />
         </CGroup>
       </CGroup>
-
-      <CContextMenu ref="popupContextMenu" @emit-event="handleContextMenuEvent" />
     </CGroup>
 
     <CGroup v-if="activeCategory" grow direction="column">
@@ -116,15 +87,19 @@ function handleSaveNewItem(formData) {
         <h3>
           {{ tabMetadata[activeCategory]?.text || 'Itens' }}
         </h3>
-        <CButton icon="add_circle" text="Adicionar" @click="isDialogOpen = true" />
+        <CInputSelect
+          icon="add_circle"
+          classes="symbolic"
+          title="Adicionar novo"
+          :options="Object.values(addFunctions.getSubCategories(activeCategory))"
+          @select="addButtonHandler"
+        />
       </CGroup>
 
       <CGroup grow direction="column" padding="1rem" gap="0.5rem" style="overflow-y: auto">
-        <div
-          v-if="activeCategoryItems.length === 0"
-          style="text-align: center; color: var(--form-sub); padding: 2rem"
-        >
-          Nenhum item em **{{ tabMetadata[activeCategory]?.text || 'esta categoria' }}**.
+        <div v-if="activeCategoryItems.length === 0" style="text-align: center; padding: 2rem">
+          Nenhum item em <b>{{ tabMetadata[activeCategory]?.text || 'esta categoria' }}</b
+          >.
         </div>
         <CGroup
           v-for="item in activeCategoryItems"
@@ -141,15 +116,14 @@ function handleSaveNewItem(formData) {
         <ComponentDialog
           :is-visible="isDialogOpen"
           title="Adicionar Novo Item"
-          fullscreen="true"
+          :fullscreen="true"
           @close="isDialogOpen = false"
         >
           <template #default>
             <CGroup direction="column" gap="1.5rem" padding="1rem">
-              <CFormBuilder :params="formParams" @submit="handleSaveNewItem" />
-              <CGroup justify="end">
-                <CButton text="Cancelar" classes="symbolic" @click="isDialogOpen = false" />
-              </CGroup>
+              <template v-for="(param, index) in formParams" :key="index">
+                <component :is="inputParamMap[param.type]" :="param" v-model="param.model" />
+              </template>
             </CGroup>
           </template>
         </ComponentDialog>
