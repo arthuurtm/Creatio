@@ -40,7 +40,7 @@
 
 <script setup>
 import { useSlots, ref } from 'vue'
-import LayoutForm from '@/layouts/LayoutForm.vue'
+import LayoutPageForm from '@/layouts/LayoutPageForm.vue'
 import DialogSettings from '../dialogs/DialogSettings.vue'
 const props = defineProps({
   title: String,
@@ -52,7 +52,7 @@ const props = defineProps({
 defineEmits(['submit'])
 const slots = useSlots()
 const settingsVisible = ref(false)
-const formLayout = ref(props.layoutComponent ?? LayoutForm)
+const formLayout = ref(props.layoutComponent ?? LayoutPageForm)
 
 function hasSlot(name) {
   return !!slots[name]
