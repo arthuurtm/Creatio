@@ -20,7 +20,7 @@
       />
 
       <p v-if="text && !hasDefaultSlot" class="btn-text">
-        {{ text }}
+        {{ text || label }}
       </p>
       <slot v-else />
     </span>

@@ -16,6 +16,7 @@ export const baseButtonProps = /**@type {import('vue').ComponentPropsOptions<Bas
   icon: String,
   img: Object,
   text: String,
+  label: String,
   classes: [String, Array, Object],
 }
 

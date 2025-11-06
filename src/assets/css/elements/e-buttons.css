@@ -166,6 +166,10 @@
   top: 0;
 }
 
+.btn.full {
+  width: 100%;
+}
+
 /* Ocultar texto */
 .btn.hide-text {
   gap: 0;
