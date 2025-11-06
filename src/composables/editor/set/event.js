@@ -1,14 +1,34 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
+import { computed } from 'vue'
 
-export const events = {
+export const events = computed(() => ({
   text: 'Eventos',
   icon: 'event',
-  value: {
+  definitions: {
+    onGameLoad: {
+      text: 'Ao Carregar Jogo',
+      icon: 'power_settings_new',
+      params: [
+        {
+          key: 'consequences',
+          label: 'Consequências',
+          type: 'complex-array',
+          itemType: 'consequence',
+        },
+      ],
+      execute: (params) => pushEvent('onGameLoad', params),
+    },
     onEnterNode: {
       text: 'Entrar no Nó',
       icon: 'input',
       params: [
-        { key: 'nodeId', label: 'ID do Nó', type: 'select', options: 'nodes', required: true },
+        {
+          key: 'nodeId',
+          label: 'Nó',
+          type: 'select',
+          options: useEditorStore.nodes,
+          required: true,
+        },
         { key: 'conditions', label: 'Condições', type: 'complex-array', itemType: 'condition' },
         {
           key: 'consequences',
@@ -19,11 +39,53 @@ export const events = {
       ],
       execute: (params) => pushEvent('onEnterNode', params),
     },
+    onObjectInteract: {
+      text: 'Interagir com Objeto',
+      icon: 'ads_click',
+      params: [
+        {
+          key: 'objectId',
+          label: 'Objeto',
+          type: 'select',
+          options: useEditorStore.objects,
+          required: true,
+        },
+        { key: 'conditions', label: 'Condições', type: 'complex-array', itemType: 'condition' },
+        {
+          key: 'consequences',
+          label: 'Consequências',
+          type: 'complex-array',
+          itemType: 'consequence',
+        },
+      ],
+      execute: (params) => pushEvent('onObjectInteract', params),
+    },
+    onRegionEnter: {
+      text: 'Entrar na Região',
+      icon: 'place',
+      params: [
+        {
+          key: 'regionId',
+          label: 'Região (Trigger)',
+          type: 'select',
+          options: useEditorStore.regions,
+          required: true,
+        },
+        { key: 'conditions', label: 'Condições', type: 'complex-array', itemType: 'condition' },
+        {
+          key: 'consequences',
+          label: 'Consequências',
+          type: 'complex-array',
+          itemType: 'consequence',
+        },
+      ],
+      execute: (params) => pushEvent('onRegionEnter', params),
+    },
     onChoiceSelected: {
       text: 'Escolha Selecionada',
       icon: 'check_circle',
       params: [
-        { key: 'choiceId', label: 'ID da Escolha', type: 'text', required: true },
+        { key: 'choiceId', label: 'ID da Escolha (do Nó)', type: 'text', required: true },
         { key: 'conditions', label: 'Condições', type: 'complex-array', itemType: 'condition' },
         {
           key: 'consequences',
@@ -48,23 +110,32 @@ export const events = {
       ],
       execute: (params) => pushEvent('onTimeElapsed', params),
     },
-    custom: {
-      text: 'Custom',
-      icon: 'extension',
+    onFlagChanged: {
+      text: 'Flag Alterada',
+      icon: 'flag',
       params: [
-        { key: 'text', label: 'Nome do Evento', type: 'text', required: true },
-        { key: 'params', label: 'Parâmetros Customizados (JSON)', type: 'textarea' },
+        {
+          key: 'flagId',
+          label: 'Flag',
+          type: 'select',
+          options: useEditorStore.flags,
+          required: true,
+        },
+        { key: 'value', label: 'Valor (Opcional)', type: 'text' },
+        {
+          key: 'consequences',
+          label: 'Consequências',
+          type: 'complex-array',
+          itemType: 'consequence',
+        },
       ],
-      execute: (params) => {
-        const { text, params: customParams } = params
-        pushEvent(text ?? 'custom', customParams)
-      },
+      execute: (params) => pushEvent('onFlagChanged', params),
     },
   },
-}
+}))
 
 function pushEvent(type, params) {
-  const editorStore = useEditorStore()
+  const editorStore = useEditorStore
   const id = generateId('event')
   const event = { id, type, ...params }
   editorStore.events.push(event)

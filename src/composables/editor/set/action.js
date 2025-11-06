@@ -1,9 +1,89 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
+import { computed } from 'vue'
 
-export const actions = {
+export const actions = computed(() => ({
   text: 'Ação',
   icon: 'play_arrow',
-  value: {
+  definitions: {
+    // --- Diálogo e UI ---
+    showDialogue: {
+      text: 'Mostrar Diálogo',
+      icon: 'chat',
+      params: [
+        { key: 'speaker', label: 'Nome do Orador', type: 'text', required: true },
+        { key: 'text', label: 'Texto do Diálogo', type: 'textarea', required: true },
+        {
+          key: 'avatarId',
+          label: 'Avatar (Opcional)',
+          type: 'select',
+          options: useEditorStore.avatars,
+        },
+      ],
+      execute: (params) => pushAction('showDialogue', params),
+    },
+    hideUI: {
+      text: 'Esconder UI',
+      icon: 'visibility_off',
+      params: [
+        {
+          key: 'element',
+          label: 'Elemento da UI',
+          type: 'select',
+          options: ['all', 'dialogue_box', 'hotbar', 'hud'],
+          default: 'all',
+        },
+      ],
+      execute: (params) => pushAction('hideUI', params),
+    },
+    showUI: {
+      text: 'Mostrar UI',
+      icon: 'visibility',
+      params: [
+        {
+          key: 'element',
+          label: 'Elemento da UI',
+          type: 'select',
+          options: ['all', 'dialogue_box', 'hotbar', 'hud'],
+          default: 'all',
+        },
+      ],
+      execute: (params) => pushAction('showUI', params),
+    },
+
+    // --- Cena e Animação ---
+    moveCamera: {
+      text: 'Mover Câmera',
+      icon: 'videocam',
+      params: [
+        { key: 'x', label: 'Posição X', type: 'number', required: true },
+        { key: 'y', label: 'Posição Y', type: 'number', required: true },
+        { key: 'duration', label: 'Duração (s)', type: 'number', required: true },
+      ],
+      execute: (params) => pushAction('moveCamera', params),
+    },
+    animateObject: {
+      text: 'Animar Objeto',
+      icon: 'animation',
+      params: [
+        {
+          key: 'targetId',
+          label: 'Alvo',
+          type: 'select',
+          options: useEditorStore.objects, // Ou Avatars
+          required: true,
+        },
+        { key: 'animationName', label: 'Nome da Animação', type: 'text', required: true },
+      ],
+      execute: (params) => pushAction('animateObject', params),
+    },
+    wait: {
+      text: 'Aguardar',
+      icon: 'pause',
+      params: [{ key: 'duration', label: 'Duração (s)', type: 'number', required: true }],
+      execute: (params) => pushAction('wait', params),
+    },
+
+    // --- Mídia ---
     setBackgroundImage: {
       text: 'Mudar Fundo',
       icon: 'image',
@@ -22,30 +102,11 @@ export const actions = {
       params: [{ key: 'url', label: 'URL do Efeito', type: 'text', required: true }],
       execute: (params) => pushAction('setSoundEffect', params),
     },
-    showDialogue: {
-      text: 'Mostrar Diálogo',
-      icon: 'chat',
-      params: [
-        { key: 'speaker', label: 'Nome do Orador', type: 'text', required: true },
-        { key: 'text', label: 'Texto do Diálogo', type: 'textarea', required: true },
-      ],
-      execute: (params) => pushAction('showDialogue', params),
-    },
-    moveCamera: {
-      text: 'Mover Câmera',
-      icon: 'videocam',
-      params: [
-        { key: 'x', label: 'Posição X', type: 'number', required: true },
-        { key: 'y', label: 'Posição Y', type: 'number', required: true },
-        { key: 'duration', label: 'Duração (s)', type: 'number', required: true },
-      ],
-      execute: (params) => pushAction('moveCamera', params),
-    },
   },
-}
+}))
 
 function pushAction(type, params) {
-  const editorStore = useEditorStore()
+  const editorStore = useEditorStore
   const id = generateId('action')
   const action = { id, type, ...params }
   editorStore.actions.push(action)

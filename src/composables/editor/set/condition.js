@@ -1,16 +1,29 @@
 import { useEditorStore, generateId } from '@/stores/editor.js'
+import { computed } from 'vue'
 
-export const conditions = {
+export const conditions = computed(() => ({
   text: 'Condições',
   icon: 'check_circle',
-  value: {
+  definitions: {
+    // --- Personagem / Inventário ---
     hasItem: {
       text: 'Item',
       icon: 'inventory',
       params: [
-        { key: 'itemId', label: 'ID do Item', type: 'select', options: 'items', required: true },
+        {
+          key: 'itemId',
+          label: 'Item',
+          type: 'select',
+          options: useEditorStore.objects, // Componente deve filtrar por type: 'item'
+          required: true,
+        },
         { key: 'quantity', label: 'Quantidade Mínima', type: 'number', default: 1 },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+        {
+          key: 'playerId',
+          label: 'Jogador',
+          type: 'select',
+          options: useEditorStore.avatars,
+        },
       ],
       execute: (params) => pushCondition('has', { subtype: 'item', ...params }),
     },
@@ -20,7 +33,12 @@ export const conditions = {
       params: [
         { key: 'currencyType', label: 'Tipo de Moeda', type: 'text', default: 'gold' },
         { key: 'amount', label: 'Quantidade Mínima', type: 'number', default: 1 },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+        {
+          key: 'playerId',
+          label: 'Jogador',
+          type: 'select',
+          options: useEditorStore.avatars,
+        },
       ],
       execute: (params) => pushCondition('has', { subtype: 'currency', ...params }),
     },
@@ -30,13 +48,18 @@ export const conditions = {
       params: [
         {
           key: 'statusId',
-          label: 'ID do Status',
+          label: 'Status',
           type: 'select',
-          options: 'statuses',
+          options: useEditorStore.statuses,
           required: true,
         },
         { key: 'active', label: 'Ativo?', type: 'boolean', default: true },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+        {
+          key: 'playerId',
+          label: 'Jogador',
+          type: 'select',
+          options: useEditorStore.avatars,
+        },
       ],
       execute: (params) => pushCondition('has', { subtype: 'status', ...params }),
     },
@@ -44,7 +67,7 @@ export const conditions = {
       text: 'Atributo',
       icon: 'bar_chart',
       params: [
-        { key: 'attribute', label: 'Atributo', type: 'text', required: true },
+        { key: 'attribute', label: 'Atributo (ex: FOR)', type: 'text', required: true },
         {
           key: 'comparator',
           label: 'Comparador',
@@ -53,25 +76,14 @@ export const conditions = {
           default: '>=',
         },
         { key: 'value', label: 'Valor', type: 'text', required: true },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+        {
+          key: 'playerId',
+          label: 'Jogador',
+          type: 'select',
+          options: useEditorStore.avatars,
+        },
       ],
       execute: (params) => pushCondition('has', { subtype: 'attribute', ...params }),
-    },
-    hasLevel: {
-      text: 'Level',
-      icon: 'trending_up',
-      params: [
-        {
-          key: 'comparator',
-          label: 'Comparador',
-          type: 'select',
-          options: ['>=', '<=', '==', '>', '<', '!='],
-          default: '>=',
-        },
-        { key: 'value', label: 'Nível', type: 'number', required: true },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
-      ],
-      execute: (params) => pushCondition('has', { subtype: 'level', ...params }),
     },
     hasSkill: {
       text: 'Habilidade',
@@ -79,13 +91,18 @@ export const conditions = {
       params: [
         {
           key: 'skillId',
-          label: 'ID da Habilidade',
+          label: 'Habilidade',
           type: 'select',
-          options: 'skills',
+          options: useEditorStore.skills,
           required: true,
         },
         { key: 'level', label: 'Nível Mínimo', type: 'number', default: 1 },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+        {
+          key: 'playerId',
+          label: 'Jogador',
+          type: 'select',
+          options: useEditorStore.avatars,
+        },
       ],
       execute: (params) => pushCondition('has', { subtype: 'skill', ...params }),
     },
@@ -95,25 +112,20 @@ export const conditions = {
       params: [
         {
           key: 'companionId',
-          label: 'ID do Companheiro',
+          label: 'Companheiro',
           type: 'select',
-          options: 'companions',
+          options: useEditorStore.companions,
           required: true,
         },
-        { key: 'active', label: 'Ativo?', type: 'boolean', default: true },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+        { key: 'active', label: 'Ativo no grupo?', type: 'boolean', default: true },
+        {
+          key: 'playerId',
+          label: 'Jogador',
+          type: 'select',
+          options: useEditorStore.avatars,
+        },
       ],
       execute: (params) => pushCondition('has', { subtype: 'companion', ...params }),
-    },
-    hasFlag: {
-      text: 'Flag',
-      icon: 'flag',
-      params: [
-        { key: 'flagId', label: 'ID da Flag', type: 'select', options: 'flags', required: true },
-        { key: 'value', label: 'Valor', type: 'text', default: true },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
-      ],
-      execute: (params) => pushCondition('has', { subtype: 'flag', ...params }),
     },
     hasRelation: {
       text: 'Relação',
@@ -123,11 +135,10 @@ export const conditions = {
           key: 'targetId',
           label: 'Alvo da Relação',
           type: 'select',
-          options: 'characters',
+          options: useEditorStore.objects, // Componente deve filtrar por type: 'npc'
           required: true,
         },
-        { key: 'relationType', label: 'Tipo de Relação', type: 'text', required: true },
-        { key: 'level', label: 'Nível Mínimo', type: 'number', default: 1 },
+        { key: 'level', label: 'Nível de Relação', type: 'number', default: 1 },
         {
           key: 'comparator',
           label: 'Comparador',
@@ -135,45 +146,112 @@ export const conditions = {
           options: ['>=', '<=', '==', '>', '<', '!='],
           default: '>=',
         },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
+        {
+          key: 'playerId',
+          label: 'Jogador',
+          type: 'select',
+          options: useEditorStore.avatars,
+        },
       ],
       execute: (params) => pushCondition('has', { subtype: 'relation', ...params }),
     },
-    stat: {
-      text: 'Estatística',
-      icon: 'equalizer',
+
+    // --- Estado do Jogo ---
+    hasFlag: {
+      text: 'Flag',
+      icon: 'flag',
       params: [
-        { key: 'stat', label: 'Estatística', type: 'text', required: true },
+        {
+          key: 'flagId',
+          label: 'Flag',
+          type: 'select',
+          options: useEditorStore.flags,
+          required: true,
+        },
+        { key: 'value', label: 'Valor', type: 'text', default: true },
         {
           key: 'comparator',
           label: 'Comparador',
           type: 'select',
-          options: ['>=', '<=', '==', '>', '<', '!='],
-          default: '>=',
+          options: ['==', '!=', '>=', '<='], // Comparador para o valor
+          default: '==',
         },
-        { key: 'value', label: 'Valor', type: 'text', required: true },
-        { key: 'playerId', label: 'ID do Jogador', type: 'select', options: 'players' },
       ],
-      execute: (params) => pushCondition('stat', params),
+      execute: (params) => pushCondition('has', { subtype: 'flag', ...params }),
     },
-    custom: {
-      text: 'Custom',
-      icon: 'extension',
+    isQuestActive: {
+      text: 'Missão (Status)',
+      icon: 'assignment',
       params: [
         {
-          key: 'params',
-          label: 'Parâmetros Customizados (JSON)',
-          type: 'textarea',
+          key: 'questId',
+          label: 'Missão',
+          type: 'select',
+          options: useEditorStore.quests,
           required: true,
         },
+        {
+          key: 'status',
+          label: 'Status',
+          type: 'select',
+          options: ['not_started', 'active', 'completed', 'failed'],
+          default: 'active',
+        },
       ],
-      execute: (params) => pushCondition('custom', params.params),
+      execute: (params) => pushCondition('quest', { subtype: 'status', ...params }),
+    },
+    isQuestStepComplete: {
+      text: 'Missão (Etapa)',
+      icon: 'rule',
+      params: [
+        {
+          key: 'questId',
+          label: 'Missão',
+          type: 'select',
+          options: useEditorStore.quests,
+          required: true,
+        },
+        { key: 'stepKey', label: 'Etapa (Chave)', type: 'text', required: true },
+        { key: 'completed', label: 'Completa?', type: 'boolean', default: true },
+      ],
+      execute: (params) => pushCondition('quest', { subtype: 'step', ...params }),
+    },
+    isNodeUnlocked: {
+      text: 'Nó Destravado',
+      icon: 'lock_open',
+      params: [
+        {
+          key: 'nodeId',
+          label: 'Nó',
+          type: 'select',
+          options: useEditorStore.nodes,
+          required: true,
+        },
+        { key: 'unlocked', label: 'Destravado?', type: 'boolean', default: true },
+      ],
+      execute: (params) => pushCondition('node', { subtype: 'unlocked', ...params }),
+    },
+    checkObjectState: {
+      text: 'Estado de Objeto',
+      icon: 'toggle_on',
+      params: [
+        {
+          key: 'objectId',
+          label: 'Objeto',
+          type: 'select',
+          options: useEditorStore.objects,
+          required: true,
+        },
+        { key: 'stateKey', label: 'Chave do Estado (ex: isOpen)', type: 'text', required: true },
+        { key: 'value', label: 'Valor Esperado', type: 'text', required: true },
+      ],
+      execute: (params) => pushCondition('object', { subtype: 'state', ...params }),
     },
   },
-}
+}))
 
 function pushCondition(type, params) {
-  const editorStore = useEditorStore()
+  const editorStore = useEditorStore
   const id = generateId('cond')
   const condition = { id, type, ...params }
   editorStore.conditions.push(condition)
