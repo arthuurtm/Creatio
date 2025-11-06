@@ -1,11 +1,22 @@
 import { reactive } from 'vue'
-import * as addFunctions from '@/composables/editor/set'
+import addFunctions from '@/composables/editor/set/index.js'
 
 const base = {
+  // Estrutura
   nodes: [],
   connections: [],
-  objects: [],
-  avatars: [],
+  regions: [],
+
+  // Dados do Jogo
+  objects: [], // Itens, NPCs, Inimigos, Contêineres, etc.
+  avatars: [], // Personagens dos jogadores
+  flags: [], // Flags/variáveis globais
+  statuses: [], // Definições de status (envenenado, abençoado)
+  skills: [], // Definições de habilidades
+  companions: [], // Definições de companheiros
+  quests: [], // Definições de missões
+
+  // Lógica (Instâncias)
   conditions: [],
   consequences: [],
   events: [],
