@@ -1,7 +1,7 @@
-import { reactive } from 'vue'
+import { reactive, toRaw } from 'vue'
 import addFunctions from '@/composables/editor/set/index.js'
 
-const base = {
+const base = reactive({
   // Estrutura
   nodes: [],
   connections: [],
@@ -21,7 +21,7 @@ const base = {
   consequences: [],
   events: [],
   actions: [],
-}
+})
 
 const baseState = {
   objects: { text: 'Objetos', icon: 'category' },
@@ -33,42 +33,13 @@ const baseState = {
 }
 
 const useEditorStore = reactive({
-  ...structuredClone(base),
-
+  ...base,
   $reset() {
-    Object.assign(this, structuredClone(base))
+    Object.assign(this, structuredClone(toRaw(base)))
   },
-
   $components: baseState,
-
-  $add(key, subKey, ...args) {
-    const fn = addFunctions[key]
-
-    if (!fn) {
-      console.warn(`[Editor] Função "${key}" não encontrada em addFunctions`)
-      return
-    }
-
-    if (typeof fn === 'object' && subKey) {
-      const subFn = fn.value?.[subKey]
-      if (!subFn) {
-        console.warn(`[Editor] Subfunção "${subKey}" não encontrada dentro de "${key}"`)
-        return
-      }
-      if (typeof subFn.execute !== 'function') {
-        console.warn(`[Editor] "${key}.${subKey}" não possui função execute válida`)
-        return
-      }
-      return subFn.execute(...args)
-    }
-
-    // função simples
-    if (typeof fn === 'function') {
-      return fn(this, ...args)
-    }
-
-    console.warn(`[Editor] "${key}" não é uma função nem contém subfunções válidas`)
-  },
+  $getState: base,
+  $getKeysName: Object.keys(base),
 })
 
 function generateId(prefix) {

@@ -1,5 +1,4 @@
-import { useEditorStore } from '@/stores/editor'
-const editorStore = useEditorStore
+import { useEditorStore as editorStore } from '@/stores/editor'
 
 // fábrica de nodes
 const createNode = (x, y, params = {}) => {

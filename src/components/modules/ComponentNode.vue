@@ -1,10 +1,12 @@
 <script setup>
 import { ref, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { ws, http, util } from '@/functions'
+import { ws, http } from '@/functions'
 import CNode from '@/components/ui/CNode.vue'
 import { useConnections } from '@/composables/editor/useDotConnection'
 import { editorStore, nodeOps, createNode } from '@/composables/editor/useNodeFunctions'
+import { useUndoRedo } from '@/composables/useHistoryRef'
+import { useSyncProtection } from '@/composables/useSyncProtection'
 
 const route = useRoute()
 const contextMenu = ref({})
@@ -12,6 +14,8 @@ const gameBasicData = ref({ gameId: route.params.id, version: 1 })
 const { data, status, error, requestStatus, connect, send, disconnect } = ws(http.getApiUrl('ws'))
 const nodeUtils = nodeOps()
 const { handleStartConnection, paths, forceUpdatePaths } = useConnections(editorStore)
+const { undo, redo, commitState } = useUndoRedo(editorStore, editorStore.$getKeysName)
+const { isLocalStateNewer } = useSyncProtection(editorStore)
 
 onMounted(async () => {
   await connect()
@@ -45,9 +49,8 @@ watch(data, (newMessage) => {
 })
 
 watch(
-  () => editorStore,
+  () => editorStore.$getState,
   () => {
-    console.log('era zoeira plmr')
     commitState()
     if (status.value === 'OPEN') {
       updateGameData()
@@ -57,7 +60,7 @@ watch(
 )
 
 function updateGameData() {
-  const state = editorStore
+  const state = editorStore.$getState
   const dataToSend = { state, ...gameBasicData.value }
   send({ event: 'game:lab:update:json', payload: dataToSend })
 }
@@ -71,60 +74,26 @@ const handleNodeRightClick = (node, e) => {
   nodeUtils.ui({ openContextMenu }).mainNodeMenu(selectedNode, e)
 }
 
-function isLocalStateNewer(remoteState) {
-  const getLatestTimestamp = (arr) =>
-    arr && arr.length ? Math.max(...arr.map((item) => item.updatedAt || 0)) : 0
-  const localNodesTs = getLatestTimestamp(editorStore.nodes)
-  const localConnsTs = getLatestTimestamp(editorStore.connections)
-  const remoteNodesTs = getLatestTimestamp(remoteState.nodes)
-  const remoteConnsTs = getLatestTimestamp(remoteState.connections)
-  return localNodesTs > remoteNodesTs || localConnsTs > remoteConnsTs
-}
-
 function setEditorState(state) {
-  if (!isLocalStateNewer(state)) {
-    editorStore.nodes.splice(0, editorStore.nodes.length, ...state.nodes)
-    editorStore.connections.splice(0, editorStore.connections.length, ...state.connections)
-  }
-}
-
-const undoStack = []
-const redoStack = []
-
-function commitState() {
-  const snapshot = {
-    nodes: JSON.parse(JSON.stringify(editorStore.nodes)),
-    connections: JSON.parse(JSON.stringify(editorStore.connections)),
+  if (isLocalStateNewer(state, editorStore.$getKeysName)) {
+    return
   }
 
-  undoStack.push(snapshot)
-  redoStack.length = 0
-}
+  const keysToUpdate = editorStore.$getKeysName
 
-function undo() {
-  if (!undoStack.length) return
-  // salva o estado atual para redo
-  redoStack.push({
-    nodes: JSON.parse(JSON.stringify(editorStore.nodes)),
-    connections: JSON.parse(JSON.stringify(editorStore.connections)),
-  })
-  // recupera o último do undo
-  const prev = undoStack.pop()
-  editorStore.nodes.splice(0, editorStore.nodes.length, ...prev.nodes)
-  editorStore.connections.splice(0, editorStore.connections.length, ...prev.connections)
-}
+  for (const key of keysToUpdate) {
+    // Verifica se a chave existe no estado recebido e na store
+    if (state[key] && Array.isArray(editorStore[key])) {
+      // Usa o método 'splice' para atualizar o array reativamente
+      // (Isso é melhor do que editorStore[key] = state[key])
+      editorStore[key].splice(0, editorStore[key].length, ...state[key])
+    }
+  }
 
-function redo() {
-  if (!redoStack.length) return
-  // salva o estado atual para undo
-  undoStack.push({
-    nodes: JSON.parse(JSON.stringify(editorStore.nodes)),
-    connections: JSON.parse(JSON.stringify(editorStore.connections)),
+  // Após atualizar tudo, force a atualização dos caminhos (paths)
+  nextTick(() => {
+    forceUpdatePaths()
   })
-  // recupera o próximo do redo
-  const next = redoStack.pop()
-  editorStore.nodes.splice(0, editorStore.nodes.length, ...next.nodes)
-  editorStore.connections.splice(0, editorStore.connections.length, ...next.connections)
 }
 
 function emitEventHandler(e) {
@@ -133,10 +102,6 @@ function emitEventHandler(e) {
       handleStartConnection(e.data)
       break
     }
-    // case 'handle-node-menu': {
-    //   nodeUtils.ui.mainNodeMenu(...e.data)
-    //   break
-    // }
   }
 }
 
