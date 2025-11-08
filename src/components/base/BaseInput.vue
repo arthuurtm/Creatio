@@ -11,22 +11,23 @@
     <span v-if="!!slots.leading" class="input-slot-leading">
       <slot name="leading" />
     </span>
-    <CButton v-else-if="icon" :icon="icon" classes="symbolic no-scalling" />
+    <CButton v-else-if="icon" :icon="icon" classes="symbolic no-scalling no-padding" />
 
     <component
       :is="tag"
       class="input-field"
       :type="type"
-      :id="model"
-      :value="modelValue?.[model]"
+      :id="id || label"
+      :value="modelValue"
       :placeholder="!label ? placeholder : ' '"
       :disabled="disabled || loading"
-      @input="updateValue(model, $event.target.value)"
+      @input="updateValue($event.target.value)"
     />
 
-    <label v-if="label" :for="model">{{ label }}</label>
+    <label v-if="label" :for="id || label">{{ label }}</label>
 
     <CLoading v-if="loading" class="input-loading-spinner" />
+    <slot />
 
     <span v-if="!!slots.trailing && !loading" class="input-slot-trailing">
       <slot name="trailing" />
@@ -47,9 +48,8 @@ const slots = useSlots()
 const inputWrapper = ref(null)
 
 // --- Funções (Handlers) ---
-function updateValue(modelKey, value) {
-  const newModelValue = { ...props.modelValue, [modelKey]: value }
-  emits('update:modelValue', newModelValue)
+function updateValue(value) {
+  emits('update:modelValue', value)
 }
 
 function reEmitEvent(event) {

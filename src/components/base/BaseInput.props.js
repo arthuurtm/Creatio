@@ -13,7 +13,6 @@
 
 export const baseInputProps = /**@type {import('vue').ComponentPropsOptions<BaseInputProps>}*/ {
   modelValue: [Object, String],
-  model: String,
   type: { type: String, default: 'text' },
   label: String,
   placeholder: String,
