@@ -40,11 +40,7 @@
     </div>
   </Transition>
   <CContextMenu ref="contextMenuRef" />
-  <ComponentDialog
-    :is-visible="isDialogVisible"
-    @close="handleDialogMessageEvent"
-    :title="dialogData?.title"
-  >
+  <ComponentDialog v-model:is-visible="isDialogVisible" :title="dialogData?.title">
     <DialogMessage :dialog-data="dialogData" @click="handleDialogMessageEvent" />
   </ComponentDialog>
 </template>

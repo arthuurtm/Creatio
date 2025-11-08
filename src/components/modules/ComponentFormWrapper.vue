@@ -32,8 +32,7 @@
     :component="DialogSettings"
     :fullscreen="true"
     title="Configurações"
-    :is-visible="settingsVisible"
-    @close="settingsVisible = !settingsVisible"
+    v-model:is-visible="settingsVisible"
   />
   <CLoading v-if="loading" :full="true" />
 </template>
