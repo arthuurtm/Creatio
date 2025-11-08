@@ -16,23 +16,48 @@ const props = defineProps({
   fullscreen: { type: Boolean, default: false },
 })
 
-const showDialog = computed(() => props.isVisible)
+const isDisplaying = ref(props.isVisible)
 const showDialogAnim = ref(false)
-const emit = defineEmits(['update:x', 'update:y', 'emit-event', 'close'])
+const openTimeout = ref(null)
+const emit = defineEmits(['update:x', 'update:y', 'emit-event', 'close', 'update:isVisible'])
 
 function close() {
+  // cancela qualquer timer de abertura pendente
+  if (openTimeout.value) {
+    clearTimeout(openTimeout.value)
+    openTimeout.value = null
+  }
+
+  showDialogAnim.value = false
   setTimeout(() => {
+    isDisplaying.value = false
+    emit('update:isVisible', false)
     emit('close')
   }, 300)
 }
 
-watch(showDialog, (newValue) => {
-  if (newValue) {
-    setTimeout(() => {
-      showDialogAnim.value = newValue
-    }, 200)
-  }
-})
+watch(
+  () => props.isVisible,
+  (newValue) => {
+    if (openTimeout.value) {
+      clearTimeout(openTimeout.value)
+      openTimeout.value = null
+    }
+
+    if (newValue) {
+      isDisplaying.value = true
+      openTimeout.value = setTimeout(() => {
+        showDialogAnim.value = true
+        openTimeout.value = null
+      }, 200)
+    } else {
+      close()
+    }
+  },
+  {
+    immediate: true,
+  },
+)
 
 const touchHandlers = (() => {
   let touchTimeout = null
@@ -123,6 +148,7 @@ const dialogStyle = computed(() => {
   return {}
 })
 
+defineExpose({ close })
 onUnmounted(() => {
   stopDrag()
 })
@@ -132,7 +158,7 @@ onUnmounted(() => {
   <Transition :name="fullscreen ? 'slide-left-and-back' : ''" mode="out-in">
     <div
       :class="!noFocusWindow ? 'dialog-shadow focus' : 'dialog-shadow disabled'"
-      v-show="showDialog"
+      v-show="isDisplaying"
       @click="!noFocusWindow && close()"
     >
       <div
