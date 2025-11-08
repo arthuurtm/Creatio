@@ -3,65 +3,58 @@
     <template #form>
       <template v-if="currentStep === 1">
         <CInputText
-          model="nickname"
           label="Nome de Exibição"
           placeholder="Um nome criativo"
-          v-model="formData"
+          v-model="formData.nickname"
         />
         <CInputText
-          model="username"
           label="Nome de Usuário"
           placeholder="Seu nome de usuário"
           aria-required="true"
-          v-model="formData"
+          v-model="formData.username"
         />
       </template>
 
       <template v-if="currentStep === 2">
         <CInputText
           type="email"
-          model="email"
           label="Seu e-mail"
           placeholder="Seu e-mail"
           aria-required="true"
-          v-model="formData"
+          v-model="formData.email"
         />
         <CInputText
           type="date"
-          model="birthdate"
           label="Data de nascimento"
           aria-required="true"
           class="date"
-          v-model="formData"
+          v-model="formData.birthdate"
         />
       </template>
 
       <template v-if="currentStep === 3">
         <CInputText
-          model="verifyCode"
           label="Código de verificação"
           placeholder="Código de verificação recebido no seu e-mail"
           aria-required="true"
-          v-model="formData"
+          v-model="formData.verifyCode"
         />
       </template>
 
       <template v-if="currentStep === 4">
         <CInputPassword
-          model="passwd1"
           id="passwd1"
           label="Sua senha"
           placeholder="Digite uma senha BEM segura!"
           aria-required="true"
-          v-model="formData"
+          v-model="formData.passwd1"
         />
         <CInputPassword
-          model="passwd2"
           id="passwd2"
           label="Confirme sua senha"
           placeholder="Re-digite sua senha!"
           aria-required="true"
-          v-model="formData"
+          v-model="formData.passwd2"
         />
       </template>
     </template>
@@ -105,7 +98,16 @@ import { http, form as stepForm } from '@/functions'
 import { useRouter } from 'vue-router'
 import { showToast } from '@/plugins/toast'
 
-const formData = ref({})
+const formData = ref({
+  nickname: null,
+  username: null,
+  email: null,
+  birthdate: null,
+  passwd1: null,
+  passwd2: null,
+  verifyCode: null,
+  sessionUUID: null,
+})
 const nicknameValue = computed(() => formData.value.nickname)
 const router = useRouter()
 

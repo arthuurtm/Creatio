@@ -3,22 +3,20 @@
     <template #form>
       <template v-if="currentStep === 1">
         <CInputText
-          model="identification"
           label="Usuário ou e-mail"
           placeholder="Digite seu nome de usuário ou e-mail"
           aria-required="true"
-          v-model="formData"
+          v-model="formData.identification"
         />
       </template>
 
       <template v-if="currentStep === 2">
         <CGroup :direction="'column'" :gap="'0.5rem'">
           <CInputPassword
-            model="password"
             label="Senha"
             placeholder="Digite sua senha"
             aria-required="true"
-            v-model="formData"
+            v-model="formData.password"
           />
           <CLink text="Esqueci minha senha" @click="$router.push({ name: 'PasswordRescue' })" />
         </CGroup>
@@ -62,7 +60,7 @@ import { showToast } from '@/plugins/toast'
 const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 2 })
 
 // Dados do formulário
-const formData = ref({})
+const formData = ref({ identification: null, password: null })
 const route = useRoute()
 const redirect = route.query.redirect || false
 
