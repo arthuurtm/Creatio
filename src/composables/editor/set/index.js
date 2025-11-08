@@ -2,6 +2,9 @@ import { actions } from './action'
 import { events } from './event'
 import { conditions } from './condition'
 import { consequences } from './consequence'
+import { objects } from './objects'
+import { quests } from './quests'
+import { skills } from './skills'
 
 /**
  * Define a estrutura do objeto de configuração para uma categoria do editor.
@@ -23,7 +26,7 @@ import { consequences } from './consequence'
 
 /**
  * Chaves de categoria válidas para {@link AddFunctions}.
- * @typedef {'actions' | 'events' | 'conditions' | 'consequences'} CategoryKey
+ * @typedef {'actions' | 'events' | 'conditions' | 'consequences' | 'objects' | 'quests' | 'skills'} CategoryKey
  */
 
 /**
@@ -40,7 +43,7 @@ import { consequences } from './consequence'
  */
 
 /** @type {CategoryKey} */
-const metadata = { actions, events, conditions, consequences }
+const metadata = { actions, events, conditions, consequences, objects, quests, skills }
 
 /**
  * Extrai o mapa de definições (subcategorias) de uma categoria principal.
