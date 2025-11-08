@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { useSlots, ref } from 'vue'
+import { useSlots, ref, shallowRef } from 'vue'
 import LayoutPageForm from '@/layouts/LayoutPageForm.vue'
 import DialogSettings from '../dialogs/DialogSettings.vue'
 const props = defineProps({
@@ -51,7 +51,7 @@ const props = defineProps({
 defineEmits(['submit'])
 const slots = useSlots()
 const settingsVisible = ref(false)
-const formLayout = ref(props.layoutComponent ?? LayoutPageForm)
+const formLayout = ref(shallowRef(props.layoutComponent ?? LayoutPageForm))
 
 function hasSlot(name) {
   return !!slots[name]
