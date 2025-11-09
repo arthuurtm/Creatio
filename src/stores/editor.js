@@ -23,21 +23,11 @@ const base = reactive({
   actions: [],
 })
 
-const baseState = {
-  objects: { text: 'Objetos', icon: 'category' },
-  avatars: { text: 'Avatares', icon: 'person' },
-  conditions: { text: 'Condições', icon: 'rule' },
-  consequences: { text: 'Consequências', icon: 'flash_on' },
-  events: { text: 'Eventos', icon: 'event' },
-  actions: { text: 'Ações', icon: 'bolt' },
-}
-
 const useEditorStore = reactive({
   ...base,
   $reset() {
     Object.assign(this, structuredClone(toRaw(base)))
   },
-  $components: baseState,
   $getState: base,
   $getKeysName: Object.keys(base),
 })

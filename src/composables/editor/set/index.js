@@ -6,6 +6,16 @@ import { objects } from './objects'
 import { quests } from './quests'
 import { skills } from './skills'
 
+const components = {
+  actions: { text: 'Ações', icon: 'bolt' },
+  events: { text: 'Eventos', icon: 'event' },
+  conditions: { text: 'Condições', icon: 'rule' },
+  consequences: { text: 'Consequências', icon: 'flash_on' },
+  objects: { text: 'Objetos', icon: 'category' },
+  quests: { text: 'Missões', icon: 'assignment' },
+  skills: { text: 'Habilidades', icon: 'build' },
+}
+
 /**
  * Define a estrutura do objeto de configuração para uma categoria do editor.
  * (Este é o valor resolvido de dentro do 'computed' importado).
@@ -62,6 +72,7 @@ function getSubCategories(categoryKey = null) {
 const addFunctions = {
   ...metadata,
   getSubCategories,
+  components,
 }
 
 export default addFunctions
