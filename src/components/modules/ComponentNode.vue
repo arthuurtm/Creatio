@@ -1,99 +1,24 @@
 <script setup>
-import { ref, watch, onMounted, nextTick, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { ws, http } from '@/functions'
+import { ref } from 'vue'
 import CNode from '@/components/ui/CNode.vue'
 import { useConnections } from '@/composables/editor/useDotConnection'
-import { editorStore, nodeOps, createNode } from '@/composables/editor/useNodeFunctions'
+import { nodeOps, createNode } from '@/composables/editor/useNodeFunctions'
+import { useEditorStore } from '@/stores/editor'
 import { useUndoRedo } from '@/composables/useHistoryRef'
-import { useSyncProtection } from '@/composables/useSyncProtection'
 
-const route = useRoute()
+const editorStore = useEditorStore()
 const contextMenu = ref({})
-const gameBasicData = ref({ gameId: route.params.id, version: 1 })
-const { data, status, error, requestStatus, connect, send, disconnect } = ws(http.getApiUrl('ws'))
 const nodeUtils = nodeOps()
-const { handleStartConnection, paths, forceUpdatePaths } = useConnections(editorStore)
-const { undo, redo, commitState } = useUndoRedo(editorStore, editorStore.$getKeysName)
-const { isLocalStateNewer } = useSyncProtection(editorStore)
-
-onMounted(async () => {
-  await connect()
-})
-onUnmounted(() => {
-  disconnect()
-  editorStore.$reset()
-})
-
-const stopWatch = watch(status, (newStatus) => {
-  if (newStatus === 'OPEN') {
-    send({
-      event: 'game:lab:get:json',
-      payload: {
-        gameId: gameBasicData.value.gameId,
-        version: gameBasicData.value.version,
-      },
-    })
-    stopWatch()
-  }
-})
-
-watch(data, (newMessage) => {
-  if (!newMessage || !newMessage.event) return
-  if (newMessage.event === 'game:lab:get:json:success') {
-    setEditorState(newMessage.data)
-    nextTick(() => {
-      forceUpdatePaths()
-    })
-  }
-})
-
-watch(
-  () => editorStore.$getState,
-  () => {
-    commitState()
-    if (status.value === 'OPEN') {
-      updateGameData()
-    }
-  },
-  { deep: true },
-)
-
-function updateGameData() {
-  const state = editorStore.$getState
-  const dataToSend = { state, ...gameBasicData.value }
-  send({ event: 'game:lab:update:json', payload: dataToSend })
-}
+const { handleStartConnection, paths } = useConnections(editorStore)
+const { undo, redo } = useUndoRedo(editorStore, editorStore.$properties())
 
 function openContextMenu(items, event) {
   contextMenu.value.openContextMenu(items, event)
 }
 
-const handleNodeRightClick = (node, e) => {
-  const selectedNode = editorStore.nodes.find((n) => n.id === node.id)
+function handleNodeRightClick(node, e) {
+  const selectedNode = editorStore.$state.nodes.find((n) => n.id === node.id)
   nodeUtils.ui({ openContextMenu }).mainNodeMenu(selectedNode, e)
-}
-
-function setEditorState(state) {
-  if (isLocalStateNewer(state, editorStore.$getKeysName)) {
-    return
-  }
-
-  const keysToUpdate = editorStore.$getKeysName
-
-  for (const key of keysToUpdate) {
-    // Verifica se a chave existe no estado recebido e na store
-    if (state[key] && Array.isArray(editorStore[key])) {
-      // Usa o método 'splice' para atualizar o array reativamente
-      // (Isso é melhor do que editorStore[key] = state[key])
-      editorStore[key].splice(0, editorStore[key].length, ...state[key])
-    }
-  }
-
-  // Após atualizar tudo, force a atualização dos caminhos (paths)
-  nextTick(() => {
-    forceUpdatePaths()
-  })
 }
 
 function emitEventHandler(e) {
@@ -105,33 +30,32 @@ function emitEventHandler(e) {
   }
 }
 
-const connectionMap = {
-  icon: {
-    IDLE: 'cloud',
-    SENDING: 'cloud_sync',
-    ERROR: 'cloud_alert',
-    WAITING: 'cloud_sync',
-    SUCCESS: 'cloud_done',
-  },
-  message: {
-    IDLE: null,
-    SENDING: 'Salvando...',
-    ERROR: error || 'Ocorreu um erro.',
-    WAITING: null,
-    SUCCESS: null,
-  },
-}
+// const connectionMap = {
+//   icon: {
+//     IDLE: 'cloud',
+//     SENDING: 'cloud_sync',
+//     ERROR: 'cloud_alert',
+//     WAITING: 'cloud_sync',
+//     SUCCESS: 'cloud_done',
+//   },
+//   message: {
+//     IDLE: null,
+//     SENDING: 'Salvando...',
+//     ERROR: 'Ocorreu um erro.',
+//     WAITING: null,
+//     SUCCESS: null,
+//   },
+// }
 
 defineExpose({
   createNode,
   undo,
   redo,
-  setEditorState,
 })
 </script>
 
 <template>
-  <CGroup direction="row" gap="0.5rem" grow justify="end" style="padding: 0.5rem">
+  <!--<CGroup direction="row" gap="0.5rem" grow justify="end" style="padding: 0.5rem">
     <CButton
       :icon="'developer_mode_tv'"
       :classes="['symbolic', 'no-padding']"
@@ -163,7 +87,7 @@ defineExpose({
       :style="{ cursor: requestStatus != 'ERROR' ? 'inherit' : 'pointer' }"
       @click="requestStatus === 'ERROR' && connect()"
     />
-  </CGroup>
+  </CGroup>-->
 
   <svg class="connections-layer">
     <path v-for="p in paths" :key="p?.id" :d="p?.d" :stroke-dasharray="p?.isLoop ? '6,3' : '0'" />

@@ -5,16 +5,7 @@ import { consequences } from './consequence'
 import { objects } from './objects'
 import { quests } from './quests'
 import { skills } from './skills'
-
-const components = {
-  actions: { text: 'Ações', icon: 'bolt' },
-  events: { text: 'Eventos', icon: 'event' },
-  conditions: { text: 'Condições', icon: 'rule' },
-  consequences: { text: 'Consequências', icon: 'flash_on' },
-  objects: { text: 'Objetos', icon: 'category' },
-  quests: { text: 'Missões', icon: 'assignment' },
-  skills: { text: 'Habilidades', icon: 'build' },
-}
+import { assets } from './asset'
 
 /**
  * Define a estrutura do objeto de configuração para uma categoria do editor.
@@ -36,7 +27,7 @@ const components = {
 
 /**
  * Chaves de categoria válidas para {@link AddFunctions}.
- * @typedef {'actions' | 'events' | 'conditions' | 'consequences' | 'objects' | 'quests' | 'skills'} CategoryKey
+ * @typedef {'actions' | 'events' | 'conditions' | 'consequences' | 'objects' | 'quests' | 'skills' | 'assets'} CategoryKey
  */
 
 /**
@@ -52,8 +43,19 @@ const components = {
  * @property {function(CategoryKey | null): (Object<string, Object> | FallbackItem[])} getSubCategories - Método para extrair as definições.
  */
 
+const components = {
+  actions: { text: 'Ações', icon: 'bolt' },
+  events: { text: 'Eventos', icon: 'event' },
+  conditions: { text: 'Condições', icon: 'rule' },
+  consequences: { text: 'Consequências', icon: 'flash_on' },
+  objects: { text: 'Objetos', icon: 'category' },
+  quests: { text: 'Missões', icon: 'assignment' },
+  skills: { text: 'Habilidades', icon: 'build' },
+  assets: { text: 'Recursos', icon: 'image' },
+}
+
 /** @type {CategoryKey} */
-const metadata = { actions, events, conditions, consequences, objects, quests, skills }
+const metadata = { actions, events, conditions, consequences, objects, quests, skills, assets }
 
 /**
  * Extrai o mapa de definições (subcategorias) de uma categoria principal.

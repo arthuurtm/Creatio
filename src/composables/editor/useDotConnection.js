@@ -1,6 +1,8 @@
 import { ref, computed, watch } from 'vue'
+import { useEditorStore } from '@/stores/editor.js'
 
-export function useConnections(editorStore) {
+export function useConnections() {
+  const editorStore = useEditorStore()
   const tempConnection = ref(null)
   const nodesTrigger = ref(0)
   watch(

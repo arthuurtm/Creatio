@@ -63,18 +63,18 @@ export function useUndoRedo(targetState, keysToSnapshot) {
   }
 
   // Opcional: Adiciona um watcher para fazer o commit automaticamente quando o estado muda
-  watch(
-    () => keysToSnapshot.map((key) => targetState[key]),
-    // Opcional: Você pode adicionar um debounce aqui para não salvar a cada movimento
-    () => {
-      // Garante que o primeiro estado seja sempre o inicial
-      if (undoStack.length === 0) {
-        commitState()
-      }
-      commitState()
-    },
-    { deep: true, immediate: true }, // immediate para salvar o estado inicial
-  )
+  // watch(
+  //   () => keysToSnapshot.map((key) => targetState[key]),
+  //   // Opcional: Você pode adicionar um debounce aqui para não salvar a cada movimento
+  //   () => {
+  //     // Garante que o primeiro estado seja sempre o inicial
+  //     if (undoStack.length === 0) {
+  //       commitState()
+  //     }
+  //     commitState()
+  //   },
+  //   { deep: true, immediate: true }, // immediate para salvar o estado inicial
+  // )
 
   return {
     undo,
