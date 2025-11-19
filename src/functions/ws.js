@@ -116,25 +116,38 @@ export default function useWebSocket(url, options = {}) {
 
   /** Inicia a conexão WebSocket. */
   const connect = async () => {
-    // Evita múltiplas conexões
-    if (ws.value || status.value === 'CONNECTING' || status.value === 'RECONNECTING') {
-      console.warn('Conexão WebSocket já em andamento.')
-      return
-    }
+    if (ws.value || status.value === 'CONNECTING' || status.value === 'RECONNECTING') return
 
-    console.log('Conectando ao WebSocket...')
     status.value = 'CONNECTING'
     explicitClose = false
     error.value = null
 
-    try {
-      ws.value = new WebSocket(url)
-      _setupEventListeners()
-    } catch (e) {
-      console.error('Falha ao criar instância do WebSocket:', e)
-      error.value = e
-      status.value = 'CLOSED'
-    }
+    return new Promise((resolve, reject) => {
+      try {
+        ws.value = new WebSocket(url)
+
+        ws.value.onopen = () => {
+          status.value = 'OPEN'
+          retryCount.value = 0
+          _setupEventListeners()
+          resolve()
+        }
+
+        ws.value.onerror = (e) => {
+          status.value = 'CLOSED'
+          error.value = e
+          reject(e)
+        }
+
+        ws.value.onclose = () => {
+          status.value = 'CLOSED'
+        }
+      } catch (e) {
+        error.value = e
+        status.value = 'CLOSED'
+        reject(e)
+      }
+    })
   }
 
   /**
