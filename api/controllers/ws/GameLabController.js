@@ -5,13 +5,13 @@ import { validateGameOwnership } from '../../services/GameService.js'
 
 async function updateJson({ ws, wss, data }) {
   try {
-    const key = `game_${data.gameId}_editor`
-    await validateGameOwnership(data.gameId, data.accessToken)
+    const key = `game_${data.id}_editor`
+    await validateGameOwnership(data.id, data.accessToken)
 
     const objectName = await FileService.write.queueSave(key, data.state, {
       bucket: 'private',
       meta: { 'Content-Type': 'application/json' },
-      objectNameGenerator: () => `${gamePathGenerator(data.gameId, data.version)}/editor.json`,
+      objectNameGenerator: () => `${gamePathGenerator(data.id, data.version)}/editor.json`,
     })
 
     ws.send(JSON.stringify({ event: 'game:lab:update:json:success', data: { objectName } }))
@@ -26,9 +26,9 @@ async function updateJson({ ws, wss, data }) {
 
 async function getJson({ ws, wss, data }) {
   try {
-    const { gameId, version } = data
-    const fileName = `${gamePathGenerator(data.gameId, data.version)}/editor.json`
-    await validateGameOwnership(data.gameId, data.accessToken)
+    const { id, version } = data
+    const fileName = `${gamePathGenerator(id, version)}/editor.json`
+    await validateGameOwnership(id, data.accessToken)
 
     const result = await FileService.read.readJson('private', fileName)
 
