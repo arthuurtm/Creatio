@@ -2,7 +2,7 @@
 import { useRouter /*useRoute*/ } from 'vue-router'
 import { http } from '@/functions'
 import { showToast } from '@/plugins/toast'
-import ComponentFormPage from '@/layouts/LayoutForm.vue'
+import ComponentFormPage from '@/layouts/LayoutPageForm.vue'
 import { ref } from 'vue'
 
 const inputData = ref({})

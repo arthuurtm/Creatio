@@ -1,98 +1,45 @@
-/* ---------- Base Theme Colors ---------- */
 :root {
-  --form-field-text-hover: #1778fb;
+  /* ---------- Structural Glass Settings ---------- */
+  --blur-strong: blur(22px);
+  --blur-medium: blur(16px);
+  --blur-soft: blur(8px);
 
-  /* Tema claro */
-  --primary: #0b6a90;
-  --primary-hover: rgb(51, 117, 248);
-  --primary-back: #205fdc44;
+  --sat-strong: saturate(200%);
+  --sat-medium: saturate(180%);
+  --sat-soft: saturate(140%);
 
-  --secondary: #7e7e7e;
-  --secondary-hover: #757575;
-
-  --danger: #bb2a2a;
-  --danger-hover: #a23333;
-
-  --accent: #31a526;
-
-  --text-color: #000;
-  --background-color: #fff;
-  --background-alt: #fafafa;
-  --border-color: #a8a8a8;
-  --primary-shadow: #d5dce340;
-
-  --input-bg-neutral: #e9ecef;
-  --input-text-neutral: #737c85;
-
-  --overlay-neutral: #121212a9;
-  --scroll-btn: #91919194;
-  --scroll-btn-hover: #ffffff85;
-
-  --element-focus: #ddddddf1;
-  --element-hover: #c5c5c5a9;
-}
-
-/* Tema escuro */
-:root[data-theme='dark'] {
-  --primary: #0d4b85;
-  --primary-hover: #136dc2;
-  --primary-back: #1060aa3d;
-
-  --secondary: #7e7e7e;
-  --secondary-hover: #999;
-
-  --danger: #a20202;
-  --danger-hover: #bb0b0b;
-
-  --accent: #075500;
-
-  --text-color: #f2f2f2;
-  --background-color: #0e0e0e;
-  --background-alt: #0d0d0d;
-  --border-color: #121212;
-  --primary-shadow: #1d1b1b80;
-
-  --input-bg-neutral: #3a3a3a;
-  --input-text-neutral: #f0f0f0;
-
-  --overlay-neutral: #00000094;
-  --scroll-btn: #ffffff33;
-  --scroll-btn-hover: #ffffff4d;
-
-  --element-focus: #7a7a7ad9;
-  --element-hover: #777777aa;
-}
-
-:root[data-modifier='glass'] {
-  --main-blur: blur(16px);
-  --main-saturate: saturate(180%);
-}
-
-/* ---------- Glassy Modifier (Light) ---------- */
-:root[data-modifier='glass'] {
+  /* ---------- Primary Palette (Glassy Light) ---------- */
   --primary: linear-gradient(135deg, #0b6a90cc, #1290c2cc);
   --primary-hover: linear-gradient(135deg, #0b6a90dd, #1290c2dd);
+  --primary-back: #205fdc44;
+
   --secondary: rgba(126, 126, 126, 0.3);
   --secondary-hover: rgba(117, 117, 117, 0.4);
+
   --danger: linear-gradient(135deg, #681d1dcc, #b31313cc);
   --danger-hover: linear-gradient(135deg, #681d1ddd, #b31313dd);
+
   --accent: #31a526;
 
+  /* ---------- Text & Background ---------- */
   --text-color: #000;
   --background-color: linear-gradient(135deg, #dce7ec, #c1d1e7, #aab5c4);
   --background-alt: rgb(216, 227, 239);
   --border-color: rgba(200, 200, 200, 0.35);
 
+  /* ---------- Inputs ---------- */
   --input-bg-neutral: rgba(255, 255, 255, 0.28);
   --input-text-neutral: #737c85;
-
-  /* --overlay-neutral: rgba(255, 255, 255, 0.08); */
-  --scroll-btn: rgba(180, 180, 180, 0.35);
-  --scroll-btn-hover: rgba(255, 255, 255, 0.55);
 
   --element-focus: rgba(94, 94, 104, 0.096);
   --element-hover: #777777aa;
 
+  /* ---------- Scroll & Overlay ---------- */
+  --overlay-neutral: rgba(255, 255, 255, 0.08);
+  --scroll-btn: rgba(180, 180, 180, 0.35);
+  --scroll-btn-hover: rgba(255, 255, 255, 0.55);
+
+  /* ---------- Shadows ---------- */
   --primary-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
 
   --main-shadow: rgba(31, 38, 135, 0.1);
@@ -100,32 +47,56 @@
   --shadow-medium: inset 0px 1px 2px #ffffff70, 0px 4px 8px rgba(0, 0, 0, 0.12);
   --shadow-large: inset 0px 1px 2px #ffffff70, 0px 6px 16px rgba(0, 0, 0, 0.15);
   --shadow-inset: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
+
+  /* ---------- New Extended Palette (Light) ---------- */
+  --bg-glass-1: rgba(255, 255, 255, 0.3);
+  --bg-glass-2: rgba(255, 255, 255, 0.18);
+  --bg-glass-3: rgba(255, 255, 255, 0.1);
+
+  --surface-1: rgba(240, 244, 255, 0.35);
+  --surface-2: rgba(230, 237, 248, 0.45);
+  --surface-3: rgba(210, 222, 240, 0.55);
+
+  --card-bg: rgba(255, 255, 255, 0.25);
+  --menu-bg: rgba(240, 240, 250, 0.3);
+
+  --border-soft: rgba(255, 255, 255, 0.18);
+  --border-strong: rgba(255, 255, 255, 0.4);
+
+  --overlay-strong: rgba(10, 10, 15, 0.45);
+  --overlay-medium: rgba(20, 20, 25, 0.28);
+  --overlay-light: rgba(40, 40, 50, 0.12);
 }
 
-/* ---------- Glassy Modifier (Dark) ---------- */
-:root[data-theme='dark'][data-modifier='glass'] {
+:root[data-theme='dark'] {
   --primary: linear-gradient(135deg, #1677d3cc, #034380cc);
   --primary-hover: linear-gradient(135deg, #1677d3dd, #034380dd);
+  --primary-back: #1060aa3d;
+
   --secondary: rgba(40, 40, 60, 0.37);
   --secondary-hover: rgba(153, 153, 153, 0.35);
+
   --danger: linear-gradient(135deg, #e91616cc, #a20202cc);
   --danger-hover: linear-gradient(135deg, #e91616dd, #a20202dd);
+
   --accent: #075500;
 
+  /* ---------- Text & Background ---------- */
   --text-color: #f2f2f2;
   --background-color: linear-gradient(135deg, #090909, #090b0e, #040c13);
   --background-alt: rgb(16, 17, 23);
   --border-color: rgb(41, 37, 37);
 
+  /* ---------- Inputs ---------- */
   --input-bg-neutral: rgba(60, 60, 80, 0.25);
   --input-text-neutral: #f0f0f0;
 
-  /* --overlay-neutral: rgba(0, 0, 0, 0.3); */
-  --scroll-btn: rgba(255, 255, 255, 0.2);
-  --scroll-btn-hover: rgba(255, 255, 255, 0.4);
-
   --element-focus: rgba(94, 94, 104, 0.096);
   --element-hover: #777777aa;
+
+  --overlay-neutral: rgba(0, 0, 0, 0.3);
+  --scroll-btn: rgba(255, 255, 255, 0.2);
+  --scroll-btn-hover: rgba(255, 255, 255, 0.4);
 
   --primary-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
 
@@ -134,9 +105,28 @@
   --shadow-medium: inset 0px 1px 2px rgba(255, 255, 255, 0.1), 0px 4px 8px rgba(0, 0, 0, 0.5);
   --shadow-large: inset 0px 1px 2px rgba(255, 255, 255, 0.1), 0px 6px 16px rgba(0, 0, 0, 0.6);
   --shadow-inset: inset 0px 2px 4px rgba(0, 0, 0, 0.5);
+
+  /* ---------- New Extended Palette (Dark) ---------- */
+  --bg-glass-1: rgba(255, 255, 255, 0.1);
+  --bg-glass-2: rgba(255, 255, 255, 0.06);
+  --bg-glass-3: rgba(255, 255, 255, 0.03);
+
+  --surface-1: rgba(40, 40, 60, 0.45);
+  --surface-2: rgba(25, 25, 40, 0.35);
+  --surface-3: rgba(18, 18, 30, 0.25);
+
+  --card-bg: rgba(22, 22, 32, 0.4);
+  --menu-bg: rgba(34, 34, 44, 0.42);
+
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  --overlay-strong: rgba(0, 0, 0, 0.55);
+  --overlay-medium: rgba(0, 0, 0, 0.32);
+  --overlay-light: rgba(0, 0, 0, 0.18);
 }
 
-/* ---------- Semantic Map ---------- */
+/* mapa semantico */
 :root {
   --text: var(--text-color);
   --bg: var(--background-color);
@@ -162,16 +152,15 @@
   --overlay-bg: var(--overlay-neutral);
   --scroll-button: var(--scroll-btn);
   --scroll-button-hover: var(--scroll-btn-hover);
-  --discovery-play-button: var(--accent);
 
-  --form-bg: var(--bg2);
-  --form: var(--bg);
+  --form-bg: var(--surface-1);
+  --form: var(--card-bg);
   --form-critical-link: var(--danger);
   --form-normal-link: var(--primary);
   --form-normal-link-hover: var(--primary-hover);
   --form-sub: var(--secondary);
 
-  --context-menu-bg: var(--secondary);
+  --context-menu-bg: var(--menu-bg);
 }
 
 body {

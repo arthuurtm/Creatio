@@ -1,14 +1,13 @@
 <template>
   <div class="loading-overlay" :class="{ full: 'full' }">
     <div class="spinner center" :style="{ fontSize: size }">
-      <div v-for="n in 12" :key="n" class="spinner-blade"></div>
+      <div v-for="n in 8" :key="n" class="spinner-blade"></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-const props = defineProps({
+defineProps({
   full: Boolean,
   size: String,
 })
@@ -72,62 +71,62 @@ const props = defineProps({
 }
 
 .spinner .spinner-blade:nth-child(2) {
-  -webkit-animation-delay: 0.083s;
-  animation-delay: 0.083s;
-  -webkit-transform: rotate(30deg);
-  -ms-transform: rotate(30deg);
-  transform: rotate(30deg);
+  -webkit-animation-delay: 0.125s;
+  animation-delay: 0.125s;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
 }
 
 .spinner .spinner-blade:nth-child(3) {
-  -webkit-animation-delay: 0.166s;
-  animation-delay: 0.166s;
-  -webkit-transform: rotate(60deg);
-  -ms-transform: rotate(60deg);
-  transform: rotate(60deg);
-}
-
-.spinner .spinner-blade:nth-child(4) {
-  -webkit-animation-delay: 0.249s;
-  animation-delay: 0.249s;
+  -webkit-animation-delay: 0.25s;
+  animation-delay: 0.25s;
   -webkit-transform: rotate(90deg);
   -ms-transform: rotate(90deg);
   transform: rotate(90deg);
 }
 
+.spinner .spinner-blade:nth-child(4) {
+  -webkit-animation-delay: 0.375s;
+  animation-delay: 0.375s;
+  -webkit-transform: rotate(135deg);
+  -ms-transform: rotate(135deg);
+  transform: rotate(135deg);
+}
+
 .spinner .spinner-blade:nth-child(5) {
-  -webkit-animation-delay: 0.332s;
-  animation-delay: 0.332s;
-  -webkit-transform: rotate(120deg);
-  -ms-transform: rotate(120deg);
-  transform: rotate(120deg);
-}
-
-.spinner .spinner-blade:nth-child(6) {
-  -webkit-animation-delay: 0.415s;
-  animation-delay: 0.415s;
-  -webkit-transform: rotate(150deg);
-  -ms-transform: rotate(150deg);
-  transform: rotate(150deg);
-}
-
-.spinner .spinner-blade:nth-child(7) {
-  -webkit-animation-delay: 0.498s;
-  animation-delay: 0.498s;
+  -webkit-animation-delay: 0.5s;
+  animation-delay: 0.5s;
   -webkit-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
   transform: rotate(180deg);
 }
 
-.spinner .spinner-blade:nth-child(8) {
-  -webkit-animation-delay: 0.581s;
-  animation-delay: 0.581s;
-  -webkit-transform: rotate(210deg);
-  -ms-transform: rotate(210deg);
-  transform: rotate(210deg);
+.spinner .spinner-blade:nth-child(6) {
+  -webkit-animation-delay: 0.625s;
+  animation-delay: 0.625s;
+  -webkit-transform: rotate(225deg);
+  -ms-transform: rotate(225deg);
+  transform: rotate(225deg);
 }
 
-.spinner .spinner-blade:nth-child(9) {
+.spinner .spinner-blade:nth-child(7) {
+  -webkit-animation-delay: 0.75s;
+  animation-delay: 0.75s;
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+
+.spinner .spinner-blade:nth-child(8) {
+  -webkit-animation-delay: 0.875s;
+  animation-delay: 0.875s;
+  -webkit-transform: rotate(315deg);
+  -ms-transform: rotate(315deg);
+  transform: rotate(315deg);
+}
+
+/* .spinner .spinner-blade:nth-child(9) {
   -webkit-animation-delay: 0.664s;
   animation-delay: 0.664s;
   -webkit-transform: rotate(240deg);
@@ -157,7 +156,7 @@ const props = defineProps({
   -webkit-transform: rotate(330deg);
   -ms-transform: rotate(330deg);
   transform: rotate(330deg);
-}
+} */
 
 @keyframes spinner-fade9234 {
   0% {

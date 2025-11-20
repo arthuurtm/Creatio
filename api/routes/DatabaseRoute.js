@@ -28,7 +28,7 @@ router.get('/getAllUserSessions', isAuthenticated, getAnyUserSessionController)
 router.delete('/deleteSession', isAuthenticated, async (req, res) => {})
 router.delete('/logoutAll', isAuthenticated, logoutAllSessionsController)
 router.delete('/logout', isAuthenticated, logoutUserController)
-router.post('/setGame', reqLimiter(1, 12), isAuthenticated, setGameOnDatabaseController)
+router.post('/setGame', /*reqLimiter(1, 12),*/ isAuthenticated, setGameOnDatabaseController)
 
 // não precisa de autenticação
 router.post('/setLogin', handleLoginController)

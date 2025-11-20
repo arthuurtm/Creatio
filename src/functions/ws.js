@@ -150,31 +150,33 @@ export default function useWebSocket(url, options = {}) {
     })
   }
 
-  /**
-   * Envia uma mensagem para o servidor WebSocket.
-   * @param {object} message - O objeto a ser enviado.
-   * @param {string} message.event - O evento/rota de destino no servidor.
-   * @param {*} [message.payload={}] - Os dados a serem enviados.
-   */
-  const send = ({ event, payload = {} }) => {
-    if (ws.value && status.value === 'OPEN' && event) {
+  const send = async ({ event, payload = {} }) => {
+    console.log(`Enviando evento WebSocket: ${event}`, payload)
+    return new Promise((resolve, reject) => {
+      if (!ws.value || status.value !== 'OPEN') {
+        const err = 'Não conectado ao servidor.'
+        requestStatus.value = 'ERROR'
+        error.value = err
+        console.warn(err, { status: status.value })
+        return reject(err)
+      }
+
       requestStatus.value = 'SENDING'
+
       try {
         const dataToSend = JSON.stringify({ event, payload })
         ws.value.send(dataToSend)
+
+        // pronto: enviada ao buffer
         requestStatus.value = 'WAITING'
+        resolve()
       } catch (e) {
         requestStatus.value = 'ERROR'
-        console.error('Falha ao enviar mensagem:', e)
         error.value = e
+        console.error('Falha ao enviar mensagem:', e)
+        reject(e)
       }
-    } else {
-      requestStatus.value = 'ERROR'
-      error.value = 'Não conectado ao servidor.'
-      console.warn('Não foi possível enviar a mensagem. WebSocket não está aberto.', {
-        status: status.value,
-      })
-    }
+    })
   }
 
   /** Fecha a conexão WebSocket intencionalmente. */

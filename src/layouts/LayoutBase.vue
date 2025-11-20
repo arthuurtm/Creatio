@@ -28,7 +28,7 @@ const navLinks = computed(() => {
     >
       <router-view v-slot="{ Component }">
         <transition name="fastFade" mode="out-in">
-          <CGroup grow>
+          <CGroup grow :key="Component">
             <component :is="Component" />
           </CGroup>
         </transition>

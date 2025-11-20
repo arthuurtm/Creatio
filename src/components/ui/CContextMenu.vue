@@ -58,7 +58,9 @@ async function openContextMenu(items = [], event = null) {
 }
 
 function normalizeToContextMenu(input) {
-  if (!input) return []
+  if (!input || (Array.isArray(input) && input.length === 0)) {
+    return [{ items: [{ text: 'Nada a mostrar', icon: 'warning' }] }]
+  }
   let inputArray
 
   if (typeof input === 'object' && !Array.isArray(input) && input !== null) {

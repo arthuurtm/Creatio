@@ -10,9 +10,11 @@ declare module 'vue' {
   export interface GlobalComponents {
     CButton: typeof import('./src/components/ui/CButton.vue')['default']
     CContextMenu: typeof import('./src/components/ui/CContextMenu.vue')['default']
-    CGameCard: typeof import('./src/components/ui/CGameCard.vue')['default']
+    CFatGameCard: typeof import('./src/components/ui/CFeaturedGameCard.vue')['default']
+    CFeaturedGameCard: typeof import('./src/components/ui/CFeaturedGameCard.vue')['default']
     CGroup: typeof import('./src/components/ui/CGroup.vue')['default']
     CInputPassword: typeof import('./src/components/ui/CInputPassword.vue')['default']
+    CInputSelect: typeof import('./src/components/ui/CInputSelect.vue')['default']
     CInputText: typeof import('./src/components/ui/CInputText.vue')['default']
     CLink: typeof import('./src/components/ui/CLink.vue')['default']
     CLoading: typeof import('./src/components/ui/CLoading.vue')['default']

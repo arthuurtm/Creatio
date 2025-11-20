@@ -6,6 +6,7 @@ import { objects } from './objects'
 import { quests } from './quests'
 import { skills } from './skills'
 import { assets } from './asset'
+import { nodes } from './node'
 
 /**
  * Define a estrutura do objeto de configuração para uma categoria do editor.
@@ -27,7 +28,7 @@ import { assets } from './asset'
 
 /**
  * Chaves de categoria válidas para {@link AddFunctions}.
- * @typedef {'actions' | 'events' | 'conditions' | 'consequences' | 'objects' | 'quests' | 'skills' | 'assets'} CategoryKey
+ * @typedef {'actions' | 'events' | 'conditions' | 'consequences' | 'objects' | 'quests' | 'skills' | 'assets' | 'nodes'} CategoryKey
  */
 
 /**
@@ -52,10 +53,21 @@ const components = {
   quests: { text: 'Missões', icon: 'assignment' },
   skills: { text: 'Habilidades', icon: 'build' },
   assets: { text: 'Recursos', icon: 'image' },
+  nodes: { text: 'Linhas do tempo', icon: 'polyline' },
 }
 
 /** @type {CategoryKey} */
-const metadata = { actions, events, conditions, consequences, objects, quests, skills, assets }
+const metadata = {
+  actions,
+  events,
+  conditions,
+  consequences,
+  objects,
+  quests,
+  skills,
+  assets,
+  nodes,
+}
 
 /**
  * Extrai o mapa de definições (subcategorias) de uma categoria principal.

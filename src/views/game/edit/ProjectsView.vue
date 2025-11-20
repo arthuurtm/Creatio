@@ -60,8 +60,10 @@ import ComponentLoadSessions from '@/components/modules/ComponentLoadSessions.vu
 import { http } from '@/functions'
 import { showToast } from '@/plugins/toast'
 import { useUserStore } from '@/stores'
+import { useEditorStore } from '@/stores/editor'
 
 const userStore = useUserStore()
+const editorStore = useEditorStore()
 const router = useRouter()
 const allCreations = ref([])
 const loading = ref(true)
@@ -105,12 +107,23 @@ function loadEditTool(params) {
 async function criarNovoJogo() {
   let result
   try {
-    result = await http.post({ type: 'database', route: 'setGame' }, { title: 'Novo Jogo' })
+    result = await http.post(
+      { type: 'database', route: 'setGame' },
+      { title: 'Novo Jogo', state: editorStore.$rawState(), ...editorStore.info },
+    )
+
+    Object.assign(editorStore.info, {
+      id: result.id,
+      title: result.title,
+    })
+
+    router.push({ name: 'EditGame', params: { id: result.id } })
   } catch (error) {
     showToast({ type: 'error', message: error.message })
   }
-  router.push({ name: 'EditGame', params: { id: result.id } })
 }
 
-onMounted(fetchMyCreations)
+onMounted(async () => {
+  await fetchMyCreations()
+})
 </script>

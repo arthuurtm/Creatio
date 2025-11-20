@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch, onUnmounted, shallowRef } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
 
 const props = defineProps({
   component: Object,
@@ -181,15 +181,15 @@ onUnmounted(() => {
           @mousedown="handleMouseDown"
         >
           <p>{{ props.title }}</p>
-          <div id="close">
+          <CGroup id="close">
             <CButton
               v-if="!noCloseButton"
               icon="close"
               classes="symbolic no-padding no-scalling"
-              id="close"
+              style="font-size: large"
               @click="close()"
             />
-          </div>
+          </CGroup>
         </div>
         <div class="content">
           <transition name="fastFade">
@@ -269,6 +269,7 @@ onUnmounted(() => {
 
 .dialog-main.fullscreen .title-bar {
   border-top: 1px solid var(--border);
+  border-bottom: unset;
 }
 
 .title-bar {
@@ -293,6 +294,7 @@ onUnmounted(() => {
 /* botão de fechar */
 .title-bar #close {
   all: unset;
+  display: flex;
   font-weight: bold;
   cursor: pointer;
   margin-left: auto;

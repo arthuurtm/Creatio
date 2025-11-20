@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useEditorStore as editorStore, addFunctions } from '@/stores/editor'
+import { useEditorStore, addFunctions } from '@/stores/editor'
 import CInputText from '@/components/ui/CInputText.vue'
 import CInputSelect from '@/components/ui/CInputSelect.vue'
 import CButton from '@/components/ui/CButton.vue'
@@ -10,19 +10,24 @@ const activeCategory = ref(null)
 const formParams = ref([])
 const isDialogOpen = ref(false)
 const createItemExecuteFn = ref(null)
+const editorStore = useEditorStore()
 
-// --- Metadados ---
+// --- Map de componentes ---
 const inputParamMap = {
   text: CInputText,
+  number: CInputText,
+  textarea: CInputText,
   select: CInputSelect,
   button: CButton,
+  file: CInputText,
 }
-const tabMetadata = editorStore.$components
-const activeCategoryItems = computed(() => {
-  if (!activeCategory.value) return []
-  return editorStore[activeCategory.value] ?? []
-})
-/** Computed: filtra categorias com base na busca */
+
+// --- Dados ---
+const tabMetadata = addFunctions.components
+const activeCategoryItems = computed(() =>
+  activeCategory.value ? (editorStore.$state[activeCategory.value] ?? []) : [],
+)
+
 const filteredCategories = computed(() => {
   const query = searchQuery.value.toLowerCase().trim()
   return Object.entries(tabMetadata)
@@ -30,7 +35,7 @@ const filteredCategories = computed(() => {
     .map(([key, cat]) => ({
       key,
       ...cat,
-      count: editorStore[key]?.length ?? 0,
+      count: editorStore.$state[key]?.length ?? 0,
     }))
 })
 
@@ -46,92 +51,160 @@ function addButtonHandler(event) {
     isDialogOpen.value = true
   }
 }
+function handleCreate() {
+  if (createItemExecuteFn.value) {
+    // 1. Transforma o array de parâmetros em um objeto de valores
+    const paramsObject = formParams.value.reduce((acc, param) => {
+      // 'acc' é o objeto que está sendo construído (inicia como {})
+
+      // ✅ Correção: Só adiciona ao objeto se 'param.key'
+      // for uma string válida (não undefined, não um objeto).
+      if (param.key && typeof param.key === 'string') {
+        acc[param.key] = param.model
+      }
+
+      return acc
+    }, {}) // Inicia com um objeto vazio
+
+    // 2. ✅ Correção: Adiciona a propriedade 'text' APÓS o loop,
+    // usando os valores que acabaram de ser coletados.
+    paramsObject.text = paramsObject.name || paramsObject.label || null
+
+    // 3. Passa o objeto de valores correto
+    createItemExecuteFn.value(paramsObject)
+    isDialogOpen.value = false
+  }
+}
 </script>
 
 <template>
-  <CGroup height="100%" width="100%">
-    <CGroup
-      direction="column"
-      padding="1rem"
-      gap="1rem"
-      style="border-right: 1px solid var(--border)"
-      width="280px"
-    >
+  <CGroup height="100%" width="100">
+    <!-- Painel lateral -->
+    <CGroup direction="column" padding="1rem" gap="1rem" width="280px">
       <CInputText v-model="searchQuery" icon="search" placeholder="Buscar categoria..." />
 
-      <CGroup grow direction="column" gap="0.5rem">
-        <CGroup
-          v-for="category in filteredCategories"
-          :key="category.key"
-          justify="between"
-          align="center"
-        >
+      <CGroup grow direction="column" gap="0.25rem" align="start" justify="start">
+        <template v-for="category in filteredCategories" :key="category.key">
           <CButton
             :text="category.text"
             :icon="category.icon"
             :active="activeCategory === category.key"
-            classes="symbolic no-scalling"
+            classes="symbolic category-btn left"
             @click="openCategory(category.key)"
           />
-        </CGroup>
+        </template>
       </CGroup>
     </CGroup>
 
-    <CGroup v-if="activeCategory" grow direction="column">
+    <!-- Conteúdo principal -->
+    <CGroup
+      grow
+      direction="column"
+      style="
+        background: var(--surface-2);
+        border-left: 1px solid var(--border);
+        border-top: 1px solid var(--border);
+        border-top-left-radius: 24px;
+      "
+    >
+      <!-- Cabeçalho -->
       <CGroup
         justify="between"
         align="center"
-        padding="1rem"
+        padding="1rem 1.5rem"
         style="border-bottom: 1px solid var(--border)"
       >
-        <h3>
-          {{ tabMetadata[activeCategory]?.text || 'Itens' }}
-        </h3>
+        <CGroup direction="row" align="center" gap="0.5rem">
+          <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0">
+            {{ tabMetadata[activeCategory]?.text || 'Itens' }}
+          </h3>
+          <span v-if="activeCategoryItems.length" style="font-size: 0.9rem">
+            ({{ activeCategoryItems.length }})
+          </span>
+        </CGroup>
+
         <CInputSelect
           icon="add_circle"
-          classes="symbolic"
           title="Adicionar novo"
+          classes="symbolic no-padding"
+          :only-icon="true"
           :options="Object.values(addFunctions.getSubCategories(activeCategory))"
           @select="addButtonHandler"
         />
       </CGroup>
 
-      <CGroup grow direction="column" padding="1rem" gap="0.5rem" style="overflow-y: auto">
-        <div v-if="activeCategoryItems.length === 0" style="text-align: center; padding: 2rem">
-          Nenhum item em <b>{{ tabMetadata[activeCategory]?.text || 'esta categoria' }}</b
-          >.
-        </div>
+      <!-- Lista de itens -->
+      <CGroup v-if="activeCategory" grow direction="column" padding="1.25rem" gap="0.75rem">
+        <CGroup
+          v-if="activeCategoryItems.length === 0"
+          height="100%"
+          align="center"
+          justify="center"
+        >
+          Nenhum item em {{ tabMetadata[activeCategory]?.text }}
+        </CGroup>
+
         <CGroup
           v-for="item in activeCategoryItems"
           :key="item.id"
           justify="between"
           align="center"
-          padding="0.5rem 1rem"
-          style="border: 1px solid var(--border); border-radius: 8px"
+          padding="0.75rem 1rem"
+          style="
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--element-hover);
+            transition:
+              background 0.2s,
+              transform 0.2s;
+          "
         >
-          <span>{{ item.text || `Item #${item.id}` }}</span>
+          <CGroup direction="column">
+            <span style="font-weight: 600">{{ item.text || `Item #${item.id}` }}</span>
+            <span style="font-size: 0.85rem">ID: {{ item.id }}</span>
+          </CGroup>
+
           <CButton icon="edit" classes="symbolic" title="Editar" />
         </CGroup>
+      </CGroup>
 
-        <ComponentDialog
-          :is-visible="isDialogOpen"
-          title="Adicionar Novo Item"
-          :fullscreen="true"
-          @close="isDialogOpen = false"
-        >
-          <template #default>
-            <CGroup direction="column" gap="1.5rem" padding="1rem">
-              <template v-for="(param, index) in formParams" :key="index">
-                <component :is="inputParamMap[param.type]" :="param" v-model="param.model" />
-              </template>
-            </CGroup>
-          </template>
-        </ComponentDialog>
+      <!-- Mensagem padrão -->
+      <CGroup v-else grow align="center" justify="center">
+        <p>Selecione uma categoria à esquerda</p>
       </CGroup>
     </CGroup>
-
-    <CGroup v-else grow align="center" justify="center" style="color: var(--form-sub)">
-      <p>Selecione uma categoria à esquerda</p>
-    </CGroup>
   </CGroup>
+
+  <!-- Diálogo de criação genérica -->
+  <ComponentDialog v-model:is-visible="isDialogOpen" title="Criar Novo Objeto">
+    <CGroup direction="column" gap="1.25rem" padding="1.5rem">
+      <CGroup
+        v-for="(param, index) in formParams"
+        :key="index"
+        direction="column"
+        gap="0.5rem"
+        style="max-width: 600px; width: 100%"
+      >
+        <component :is="inputParamMap[param.type]" v-bind="param" v-model="param.model" />
+      </CGroup>
+
+      <CGroup justify="center" gap="1rem" padding="1rem 0 0">
+        <CButton text="Cancelar" icon="close" classes="ghost" @click="isDialogOpen = false" />
+        <CButton text="Criar" icon="check" class="confirm" @click="handleCreate" />
+      </CGroup>
+    </CGroup>
+  </ComponentDialog>
 </template>
+
+<style scoped>
+.category-btn {
+  border-radius: 8px;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.category-btn:hover {
+  background: var(--surface-hover);
+  transform: translateX(2px);
+}
+</style>

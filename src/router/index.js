@@ -18,7 +18,7 @@ import GameEdit from '@/views/game/edit/GameEditView.vue'
 
 // Layouts
 import LayoutBase from '@/layouts/LayoutBase.vue'
-import LayoutForm from '@/layouts/LayoutForm.vue'
+import LayoutForm from '@/layouts/LayoutPageForm.vue'
 
 /**
  * @typedef {Object} RouteMeta
