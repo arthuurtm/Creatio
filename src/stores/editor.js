@@ -1,7 +1,5 @@
-import { reactive, toRaw } from 'vue'
 import { defineStore } from 'pinia'
 import addFunctions from '@/composables/editor/set/index.js'
-import { useUndoRedo } from '@/composables/useHistoryRef'
 
 const models = () => ({
   // Estrutura
@@ -38,43 +36,13 @@ function generateId(prefix) {
   return `${prefix}_${time}_${rand}`
 }
 
-export const useEditorStore = defineStore('editor', () => {
-  const base = reactive(models())
-
-  // undo/redo
-  const { commitState } = useUndoRedo(base, Object.keys(base))
-
-  function setState(newState) {
-    Object.assign(base, newState)
-    commitState()
-  }
-
-  function reset() {
-    Object.assign(base, models())
-  }
-
-  function raw() {
-    const clean = {}
-    const template = models()
-
-    for (const key in template) {
-      clean[key] = toRaw(base[key])
-    }
-
-    return clean
-  }
-
-  const store = Object.assign(base, {
-    get $state() {
-      return base
+export const useEditorStore = defineStore('editor', {
+  state: () => models(),
+  actions: {
+    setState(newState) {
+      this.$patch(newState)
     },
-    $properties: () => Object.keys(base),
-    $rawState: raw,
-    $reset: reset,
-    $setState: setState,
-  })
-
-  return store
+  },
 })
 
 export { generateId, addFunctions }
