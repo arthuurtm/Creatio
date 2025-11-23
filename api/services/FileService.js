@@ -227,6 +227,8 @@ async function _saveFileImmediate({
 
   // caso: JS object => stringify para Buffer
   if (typeof data === 'object' && !Buffer.isBuffer(data) && !data.pipe) {
+    const now = Date.now()
+    data.updatedAt = now
     const json = JSON.stringify(data)
     const buffer = Buffer.from(json, 'utf8')
     if (!meta['Content-Type'] && !meta['content-type']) meta['Content-Type'] = 'application/json'
