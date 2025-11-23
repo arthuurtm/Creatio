@@ -8,7 +8,7 @@ import { OAuth2Client } from 'google-auth-library'
 import { UAParser } from 'ua-parser-js'
 
 async function createUserSession(userId, deviceData) {
-  const { accessToken, refreshToken } = await createClientSession(userId, deviceData)
+  const { accessToken, refreshToken } = await createClientSession(userId)
 
   await Session.create({
     accessToken: accessToken,
@@ -42,11 +42,7 @@ async function updateUserSession(oldRefreshToken) {
 
   jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET)
 
-  // erro aqui puta que pariu vontade de se matar do caralho vVAI SE FUDEEEEEEEEEEEEEE PORRA
-  const { accessToken, refreshToken } = await createClientSession(
-    storedToken.User.id,
-    storedToken.deviceGenerics,
-  )
+  const { accessToken, refreshToken } = await createClientSession(storedToken.User.id)
 
   await Session.update(
     {
