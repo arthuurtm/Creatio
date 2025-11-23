@@ -1,39 +1,32 @@
-/**
- * Helper para obter o timestamp mais recente em uma coleção de objetos.
- * Assume que os objetos no array possuem a propriedade 'updatedAt'.
- * @param {Array<Object>} arr O array de objetos a ser verificado.
- * @returns {number} O timestamp (número) mais alto encontrado, ou 0.
- */
-const getLatestTimestamp = (arr) =>
-  arr && arr.length ? Math.max(...arr.map((item) => item.updatedAt || 0)) : 0
+import { unref } from 'vue'
 
 /**
- * Hook para gerenciar a proteção contra sobrescrita de estado.
- * @param {object} localState O objeto de estado reativo local (ex: editorStore)
+ * Helper para obter o timestamp.
  */
+const getTimestamp = (obj) => obj?.updatedAt || 0
+
 export function useSyncProtection(localState) {
   /**
-   * Compara o timestamp do estado local com o estado remoto para as chaves especificadas.
-   *
-   * @param {object} remoteState O objeto de estado completo recebido do servidor.
-   * @param {string[]} keysToCheck Um array com os nomes das chaves (propriedades) a serem comparadas.
-   * @returns {boolean} Retorna TRUE se o estado local for mais novo e NÃO deve ser sobrescrito.
+   * Compara a versão do arquivo local com a remota.
+   * Agora compara apenas o timestamp da RAIZ.
+   * * @param {object} remoteState O objeto completo recebido do servidor.
+   * @returns {boolean} TRUE se o local é mais recente.
    */
-  const isLocalStateNewer = (remoteState, keysToCheck) => {
-    let isLocalNewer = false
+  const isLocalStateNewer = (remoteState) => {
+    const currentState = unref(localState)
 
-    for (const key of keysToCheck) {
-      const localTs = getLatestTimestamp(localState[key])
-      const remoteTs = getLatestTimestamp(remoteState[key])
+    // Pega o timestamp da raiz do objeto
+    const localTs = getTimestamp(currentState)
+    const remoteTs = getTimestamp(remoteState)
 
-      if (localTs > remoteTs) {
-        // Se qualquer chave local for mais nova que a remota, a proteção é acionada.
-        isLocalNewer = true
-        break
-      }
+    if (localTs > remoteTs) {
+      console.warn(
+        `Proteção de Sincronia: O estado local (${localTs}) é mais recente que o servidor (${remoteTs}). Sobrescrita bloqueada.`,
+      )
+      return true
     }
 
-    return isLocalNewer
+    return false
   }
 
   return {
