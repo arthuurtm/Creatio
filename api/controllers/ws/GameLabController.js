@@ -3,11 +3,13 @@ import GameEditorService from '../../services/EditorService.js'
 export default {
   async updateJson({ ws, wss, data }) {
     try {
-      const { id, version, accessToken, state } = data
+      const gameState = data
+      const { id, version } = gameState.info || {}
+      const accessToken = ws.cookies.accessToken
       const objectName = await GameEditorService.saveState({
         id,
         version,
-        state,
+        state: gameState,
         accessToken,
       })
       ws.send(
@@ -28,7 +30,8 @@ export default {
 
   async getJson({ ws, wss, data }) {
     try {
-      const { id, version, accessToken } = data
+      const { id, version } = data
+      const accessToken = ws.cookies.accessToken
       const result = await GameEditorService.getState({
         id,
         version,

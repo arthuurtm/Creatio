@@ -9,7 +9,7 @@ const routes = {
   'game:leave': null,
 }
 
-const handleConnection = (ws, wss, cookies) => {
+const handleConnection = (ws, wss) => {
   ws.on('message', async (message) => {
     try {
       const data = JSON.parse(message)
@@ -20,7 +20,7 @@ const handleConnection = (ws, wss, cookies) => {
 
       if (handler) {
         // Cria um objeto de contexto para passar informações úteis
-        const context = { ws, wss, data: { ...data.payload, ...cookies } }
+        const context = { ws, wss, data: data.payload }
         await handler(context)
       } else {
         log.warn(`Nenhum handler encontrado para o evento: ${data.event}`)
