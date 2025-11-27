@@ -11,6 +11,7 @@ const formParams = ref([])
 const isDialogOpen = ref(false)
 const createItemExecuteFn = ref(null)
 const editorStore = useEditorStore()
+const allCategories = ref(addFunctions.components)
 
 // --- Map de componentes ---
 const inputParamMap = {
@@ -23,21 +24,12 @@ const inputParamMap = {
 }
 
 // --- Dados ---
-const tabMetadata = addFunctions.components
-const activeCategoryItems = computed(() =>
+const activeCategoryDatabase = computed(() =>
   activeCategory.value ? (editorStore.$state[activeCategory.value] ?? []) : [],
 )
-
-const filteredCategories = computed(() => {
-  const query = searchQuery.value.toLowerCase().trim()
-  return Object.entries(tabMetadata)
-    .filter(([_, cat]) => cat.text.toLowerCase().includes(query))
-    .map(([key, cat]) => ({
-      key,
-      ...cat,
-      count: editorStore.$state[key]?.length ?? 0,
-    }))
-})
+const activeCategoryConfig = computed(() =>
+  activeCategory.value ? addFunctions[activeCategory.value] : {},
+)
 
 // --- Ações ---
 function openCategory(categoryKey) {
@@ -82,15 +74,14 @@ function handleCreate() {
     <!-- Painel lateral -->
     <CGroup direction="column" padding="1rem" gap="1rem" width="280px">
       <CInputText v-model="searchQuery" icon="search" placeholder="Buscar categoria..." />
-
       <CGroup grow direction="column" gap="0.25rem" align="start" justify="start">
-        <template v-for="category in filteredCategories" :key="category.key">
+        <template v-for="(category, index) in allCategories" :key="index">
           <CButton
             :text="category.text"
             :icon="category.icon"
-            :active="activeCategory === category.key"
+            :active="activeCategory === index"
             classes="symbolic category-btn left"
-            @click="openCategory(category.key)"
+            @click="openCategory(index)"
           />
         </template>
       </CGroup>
@@ -116,10 +107,10 @@ function handleCreate() {
       >
         <CGroup direction="row" align="center" gap="0.5rem">
           <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0">
-            {{ tabMetadata[activeCategory]?.text || 'Itens' }}
+            {{ activeCategoryConfig?.value?.text ?? 'Itens' }}
           </h3>
-          <span v-if="activeCategoryItems.length" style="font-size: 0.9rem">
-            ({{ activeCategoryItems.length }})
+          <span v-if="activeCategoryDatabase.length" style="font-size: 0.9rem">
+            ({{ activeCategoryDatabase.length }})
           </span>
         </CGroup>
 
@@ -136,16 +127,16 @@ function handleCreate() {
       <!-- Lista de itens -->
       <CGroup v-if="activeCategory" grow direction="column" padding="1.25rem" gap="0.75rem">
         <CGroup
-          v-if="activeCategoryItems.length === 0"
+          v-if="activeCategoryDatabase.length === 0"
           height="100%"
           align="center"
           justify="center"
         >
-          Nenhum item em {{ tabMetadata[activeCategory]?.text }}
+          Nenhum item em {{ activeCategoryConfig?.value?.text ?? 'item' }}
         </CGroup>
 
         <CGroup
-          v-for="item in activeCategoryItems"
+          v-for="item in activeCategoryDatabase"
           :key="item.id"
           justify="between"
           align="center"
