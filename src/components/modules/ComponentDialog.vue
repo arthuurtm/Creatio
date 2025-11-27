@@ -14,6 +14,7 @@ const props = defineProps({
   isDraggable: { type: Boolean, default: false },
   noInterpolateSize: { type: Boolean, default: false },
   fullscreen: { type: Boolean, default: false },
+  noTitleBar: { type: Boolean, default: false },
 })
 
 const isDisplaying = ref(props.isVisible)
@@ -179,6 +180,7 @@ onUnmounted(() => {
           @touchmove="onTouchMove"
           @touchend="onTouchEnd"
           @mousedown="handleMouseDown"
+          v-if="!noTitleBar"
         >
           <p>{{ props.title }}</p>
           <CGroup id="close">
@@ -193,15 +195,15 @@ onUnmounted(() => {
         </div>
         <div class="content">
           <transition name="fastFade">
-            <component
-              v-if="component"
-              :is="component"
-              :key="props.component"
-              @close="close"
-              @emit-event="(e) => emit('emit-event', e)"
-              v-bind="componentProps"
-            />
-            <slot v-else />
+            <span :key="props.component">
+              <component
+                :is="component"
+                @close="close"
+                @emit-event="(e) => emit('emit-event', e)"
+                v-bind="componentProps"
+              />
+              <slot />
+            </span>
           </transition>
         </div>
       </div>
