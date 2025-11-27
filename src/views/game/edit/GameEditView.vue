@@ -1,16 +1,40 @@
 <script setup>
-import { ref, shallowRef, markRaw, onMounted, onUnmounted } from 'vue'
-import TabDataPanelView from './TabDataPanelView.vue'
-import TabEventEditView from './TabEventEditView.vue'
+import { ref, shallowRef, markRaw, onMounted, onUnmounted, computed } from 'vue'
 import { useEditorConnection } from '@/composables/useEditorConnection'
 import { useEditorStore, addFunctions } from '@/stores/editor'
-import { useUndoRedo } from '@/composables/useHistoryRef'
+import TabDataPanelView from './TabDataPanelView.vue'
+import ComponentQuickEditPanel from '@/components/modules/ComponentQuickEditPanel.vue'
+import { add } from 'lodash-es'
 
 const props = defineProps({ id: String })
 const editorStore = useEditorStore()
 const contextMenuRef = ref(null)
-const { start: connect, stop: disconnect, requestStatus, send } = useEditorConnection()
-const { undo, redo } = useUndoRedo(editorStore.$state, editorStore.$properties())
+const connectionInfo = computed(() => {
+  const status = requestStatus.value
+  const currentError = error.value
+  const map = {
+    icon: {
+      IDLE: 'cloud',
+      SENDING: 'cloud_sync',
+      ERROR: 'cloud_alert',
+      WAITING: 'cloud_sync',
+      SUCCESS: 'cloud_done',
+    },
+    message: {
+      IDLE: null,
+      SENDING: 'Sincronizando...',
+      ERROR: currentError ?? 'Desconectado',
+      WAITING: null,
+      SUCCESS: null,
+    },
+  }
+
+  return {
+    icon: map.icon[status] || 'cloud_alert',
+    message: map.message[status],
+  }
+})
+const { start: connect, stop: disconnect, send, error, requestStatus } = useEditorConnection()
 const tabData = ref({
   isVisible: false,
   fullscreen: true,
@@ -18,31 +42,35 @@ const tabData = ref({
   noFocusWindow: true,
   title: 'Editor',
 })
-const navLinks = ref({
+const quickPanelData = ref({
+  visible: false,
+  title: 'Painel Rápido',
+})
+const navLinks = computed(() => ({
   left: [
-    { text: 'Eventos', action: () => handleGameEditorTab(TabEventEditView, 'Editor de Eventos') },
     {
       text: 'Painel de dados',
       action: () => handleGameEditorTab(TabDataPanelView, 'Painel de dados'),
     },
   ],
-})
-const connectionMap = {
-  icon: {
-    IDLE: 'cloud',
-    SENDING: 'cloud_sync',
-    ERROR: 'cloud_alert',
-    WAITING: 'cloud_sync',
-    SUCCESS: 'cloud_done',
-  },
-  message: {
-    IDLE: null,
-    SENDING: 'Salvando...',
-    ERROR: 'Ocorreu um erro',
-    WAITING: null,
-    SUCCESS: null,
-  },
-}
+  right: [
+    {
+      icon: connectionInfo.value.icon,
+      text: connectionInfo.value.message,
+      classes: ['symbolic', 'no-padding', 'no-scalling'],
+    },
+    {
+      icon: `help`,
+      action: (e) =>
+        openContextMenu(
+          {
+            text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
+          },
+          e,
+        ),
+    },
+  ],
+}))
 
 function openContextMenu(items, event) {
   contextMenuRef.value.openContextMenu(items, event)
@@ -70,64 +98,70 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <CGroup grow direction="column">
-    <ComponentHeader :nav-links="navLinks" :title="'EDITOR DO JOGO'" />
-    <div class="editor-wrapper">
-      <CGroup
-        direction="row"
-        gap="0.5rem"
-        padding="0.5rem"
-        style="position: absolute; right: 0; z-index: 3"
-      >
+  <CGroup grow direction="column" style="height: 100vh; overflow: hidden">
+    <!-- HEADER FIXO -->
+    <ComponentHeader :nav-links="navLinks" title="EDITOR DO JOGO" />
+
+    <!-- WRAPPER DO CONTEÚDO (tudo abaixo da header) -->
+    <div style="position: relative; flex: 1; overflow: hidden">
+      <!-- TOOLBAR (só aparece quando o painel geral não está aberto) -->
+      <CGroup v-if="!tabData.isVisible" direction="row" align="center" margin="1rem" gap="1rem">
         <CButton
-          icon="help"
-          :classes="['symbolic', 'no-padding']"
-          @click="
-            (e) =>
-              openContextMenu(
-                [
-                  {
-                    items: [
-                      {
-                        text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
-                      },
-                    ],
-                  },
-                ],
-                e,
-              )
-          "
+          text="Adicionar Nova Linha do Tempo"
+          icon="add"
+          @click="addFunctions.nodes.value.definitions.createDialogBlock.execute(0, 0)"
         />
-        <CButton
-          :icon="connectionMap.icon[requestStatus ?? 'ERROR']"
-          :text="connectionMap.message[requestStatus ?? 'ERROR']"
-          :classes="['symbolic', 'no-padding', 'no-scalling']"
-          :style="{ cursor: requestStatus != 'ERROR' ? 'inherit' : 'pointer' }"
-          @click="requestStatus === 'ERROR' && connect()"
-        />
+        <CButton text="Seleção" icon="arrow_selector_tool" />
+        <CButton text="Conexão Direta" icon="linear_scale" />
+        <CButton text="Conexão Condicional" icon="alt_route" />
+        <CButton text="Comentário" icon="chat" />
+        <CButton text="teste" @click="quickPanelData.visible = !quickPanelData.visible" />
       </CGroup>
-      <div class="editor-canvas" @contextmenu="handleContextMenu">
-        <ComponentNode :nodes="editorStore.nodes" />
+
+      <!-- ÁREA PRINCIPAL DO EDITOR -->
+      <CGroup
+        v-if="!tabData.isVisible"
+        grow
+        direction="row"
+        style="position: relative; height: calc(100% - 64px); overflow: hidden"
+      >
+        <!-- EDITOR DE NODES -->
+        <ComponentNode :nodes="editorStore.nodes" style="flex: 1; height: 100%; overflow: auto" />
+      </CGroup>
+
+      <!-- PAINEL RÁPIDO -->
+      <div
+        style="
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 30vw;
+          height: 100%;
+          pointer-events: none;
+        "
+      >
+        <ComponentDialog
+          :title="'Painel Rápido'"
+          :component="ComponentQuickEditPanel"
+          :component-props="{ panel: quickPanelData }"
+          :is-visible="quickPanelData.visible"
+          fullscreen
+          no-close-button
+          no-title-bar
+          style="width: 100%; height: 100%; pointer-events: auto"
+          ><CButton
+            icon="right_panel_close"
+            @click="quickPanelData.visible = !quickPanelData.visible"
+            style="position: absolute; top: 0; left: 0"
+            classes="symbolic"
+        /></ComponentDialog>
       </div>
+
+      <!-- PAINEL DE DADOS GERAL (FULLSCREEN ABAIXO DA HEADER) -->
       <ComponentDialog v-bind="tabData" @close="handleCloseEditorTab" />
-      <CContextMenu @contextMenu.stop ref="contextMenuRef" />
     </div>
+
+    <!-- CONTEXT MENU -->
+    <CContextMenu @contextMenu.stop ref="contextMenuRef" />
   </CGroup>
 </template>
-
-<style scoped>
-.editor-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: var(--bg);
-  display: flex;
-}
-
-.editor-canvas {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-</style>
