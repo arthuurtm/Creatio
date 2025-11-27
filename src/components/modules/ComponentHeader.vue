@@ -39,21 +39,11 @@
       </header>
     </div>
   </Transition>
-  <CContextMenu ref="contextMenuRef" />
-  <ComponentDialog v-model:is-visible="isDialogVisible" :title="dialogData?.title">
-    <DialogMessage :dialog-data="dialogData" @click="handleDialogMessageEvent" />
-  </ComponentDialog>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { http } from '@/functions/'
-import { useUserStore } from '@/stores'
+import { computed } from 'vue'
 import router from '@/router'
-
-// Stores e Router
-const user = useUserStore()
-const contextMenuRef = ref(null)
 
 // Props
 const props = defineProps({
@@ -68,78 +58,10 @@ const props = defineProps({
   title: String,
 })
 
-// Estado Reativo
-const isAuthenticated = computed(() => user.getIsAuth)
-const dialogData = ref(null)
-const isDialogVisible = ref(false)
-
-// Funções
-const handleLogout = () => {
-  isDialogVisible.value = true
-  dialogData.value = {
-    title: 'Sair',
-    message: 'Você quer mesmo sair?',
-    buttons: [{ text: 'Não' }, { text: 'Sim', class: 'confirm', action: () => http.auth.logout() }],
-  }
-}
-
-const handleDialogMessageEvent = (e) => {
-  if (e?.action) {
-    e.action()
-  }
-  isDialogVisible.value = !isDialogVisible.value
-}
-
-const openMoreOptions = (event) => {
-  event.preventDefault()
-  contextMenuRef.value.openContextMenu(
-    [
-      {
-        items: [
-          {
-            text: 'Meu Perfil',
-            icon: 'account_circle',
-            action: () => router.push({ name: 'UserProfile' }),
-          },
-        ],
-      },
-      {
-        items: [
-          { text: 'Configurações', icon: 'settings' },
-          { text: 'Sair', icon: 'logout', action: handleLogout },
-        ],
-      },
-    ],
-    event,
-  )
-}
-
 const finalNavLinks = computed(() => {
-  const defaultRightButtons = [
-    {
-      icon: 'inbox',
-      text: 'Notificações',
-      action: () => console.log('Abrir notificações'),
-      hidden: !isAuthenticated.value,
-    },
-    {
-      img: {
-        src: user.getProfilePicture,
-        alt: 'Foto de perfil',
-        class: 'profile-picture',
-      },
-      id: 'user-info',
-      action: (e) => openMoreOptions(e),
-      hidden: !isAuthenticated.value,
-    },
-  ]
-
   return {
     left: props.navLinks?.left,
-    right: [
-      ...(props.navLinks && Array.isArray(props.navLinks.right) ? props.navLinks.right : []),
-      ...defaultRightButtons.filter((btn) => !btn.hidden),
-    ],
+    right: [...(props.navLinks && Array.isArray(props.navLinks.right) ? props.navLinks.right : [])],
   }
 })
 </script>
@@ -149,7 +71,6 @@ const finalNavLinks = computed(() => {
   width: 100%;
   background-color: var(--bg2);
   position: relative;
-  /* padding: 0 1rem; */
 }
 
 .header {
