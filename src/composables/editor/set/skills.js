@@ -14,7 +14,7 @@ export const skills = computed(() => {
 
   return {
     text: 'Habilidades',
-    icon: 'star',
+    icon: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f4a1/lottie.json',
     definitions: {
       createActiveSkill: {
         text: 'Habilidade Ativa',

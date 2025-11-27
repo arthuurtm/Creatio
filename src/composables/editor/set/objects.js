@@ -14,7 +14,7 @@ export const objects = computed(() => {
 
   return {
     text: 'Objetos',
-    icon: 'category',
+    icon: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f48e/lottie.json',
     definitions: {
       createItem: {
         text: 'Criar Item',

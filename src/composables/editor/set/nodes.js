@@ -5,17 +5,13 @@ export const nodes = computed(() => {
   const createActionNode = (x, y, extra = {}) => createNode(x, y, extra)
 
   return {
-    text: 'Editor',
-    icon: 'edit_note',
+    text: 'Linhas do tempo',
+    icon: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f52e/lottie.json',
 
     definitions: {
       createDialogBlock: {
-        text: 'Ação de diálogo',
+        text: 'Ação de narrativa',
         icon: 'code',
-        params: [
-          // se quiser, pode ter parâmetros como no assets:
-          // { key: 'message', label: 'Texto', type: 'textarea' }
-        ],
         execute: (e) => createActionNode(e.pageX, e.pageY),
       },
 

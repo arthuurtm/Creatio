@@ -13,8 +13,8 @@ export const quests = computed(() => {
   }
 
   return {
-    text: 'Missões (Quests)',
-    icon: 'hiking',
+    text: 'Missões',
+    icon: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f6f8/lottie.json',
     definitions: {
       createMainQuest: {
         text: 'Missão Principal',

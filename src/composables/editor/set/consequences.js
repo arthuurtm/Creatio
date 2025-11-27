@@ -13,7 +13,7 @@ export const consequences = computed(() => {
 
   return {
     text: 'Consequências',
-    icon: 'flash_on',
+    icon: 'https://fonts.gstatic.com/s/e/notoemoji/latest/26a1/lottie.json',
     definitions: {
       // --- Personagem ---
       heal: {

@@ -14,7 +14,7 @@ export const assets = computed(() => {
 
   return {
     text: 'Arquivos enviados',
-    icon: 'file_upload',
+    icon: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f680/lottie.json',
     definitions: {
       createImageAsset: {
         text: 'Criar Imagem/Sprite',

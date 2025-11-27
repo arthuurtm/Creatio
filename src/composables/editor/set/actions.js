@@ -13,7 +13,7 @@ export const actions = computed(() => {
 
   return {
     text: 'Ação',
-    icon: 'play_arrow',
+    icon: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f3ac/lottie.json',
     definitions: {
       // --- Diálogo e UI ---
       showDialogue: {

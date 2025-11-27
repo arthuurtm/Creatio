@@ -13,7 +13,7 @@ export const conditions = computed(() => {
 
   return {
     text: 'Condições',
-    icon: 'check_circle',
+    icon: 'https://fonts.gstatic.com/s/e/notoemoji/latest/2705/lottie.json',
     definitions: {
       // --- Personagem / Inventário ---
       hasItem: {

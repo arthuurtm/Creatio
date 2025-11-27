@@ -13,7 +13,7 @@ export const events = computed(() => {
 
   return {
     text: 'Eventos',
-    icon: 'event',
+    icon: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f514/lottie.json',
     definitions: {
       onGameLoad: {
         text: 'Ao Carregar Jogo',
