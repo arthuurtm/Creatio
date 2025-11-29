@@ -23,7 +23,7 @@
 
   /* ---------- Text & Background ---------- */
   --text-color: #000;
-  --background-color: linear-gradient(135deg, #dce7ec, #c1d1e7, #aab5c4);
+  --background-color: linear-gradient(135deg, #cdd7dc, #c1d1e7, #aab5c4);
   --background-alt: rgb(216, 227, 239);
   --border-color: rgba(200, 200, 200, 0.35);
 

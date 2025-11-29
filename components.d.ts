@@ -26,6 +26,7 @@ declare module 'vue' {
     ComponentHeader: typeof import('./src/components/modules/ComponentHeader.vue')['default']
     ComponentLoadSessions: typeof import('./src/components/modules/ComponentLoadSessions.vue')['default']
     ComponentNode: typeof import('./src/components/modules/ComponentNode.vue')['default']
+    ComponentQuickEditPanel: typeof import('./src/components/modules/ComponentQuickEditPanel.vue')['default']
     CSelect: typeof import('./src/components/ui/CSelect.vue')['default']
     CStepProgress: typeof import('./src/components/ui/CStepProgress.vue')['default']
     DialogMessage: typeof import('./src/components/dialogs/DialogMessage.vue')['default']
