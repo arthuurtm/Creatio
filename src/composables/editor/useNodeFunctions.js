@@ -1,6 +1,5 @@
 import { useEditorStore } from '@/stores/editor'
 
-// mantendo a fábrica de nodes igual
 const createNode = (x, y, params = {}) => {
   const editorStore = useEditorStore()
   const id = 'node' + Date.now()
@@ -19,62 +18,34 @@ const createNode = (x, y, params = {}) => {
   return node
 }
 
-/**
- * @abstract Funções para o controle de editorStore focado em gerenciamento
- */
-const nodeOps = () => {
+// Função interna para deletar (exemplo simples)
+const deleteNode = (nodeId) => {
   const editorStore = useEditorStore()
-
-  // Função interna para deletar (exemplo simples)
-  const deleteNode = (nodeId) => {
-    const index = editorStore.nodes.findIndex((n) => n.id === nodeId)
-    if (index > -1) {
-      editorStore.nodes.splice(index, 1)
-      // Nota: Idealmente você também deve remover os links conectados a este node aqui
-    }
+  const index = editorStore.nodes.findIndex((n) => n.id === nodeId)
+  if (index > -1) {
+    editorStore.nodes.splice(index, 1)
+    // Nota: Idealmente você também deve remover os links conectados a este node aqui
   }
-
-  // Função interna para acionar o QuickEdit
-  const triggerQuickEdit = (node) => {
-    console.log('Abrindo QuickEdit para:', node.id)
-    editorStore.selectedNode = node // Exemplo hipotético
-  }
-
-  const ui = ({ openContextMenu }) => {
-    function mainNodeMenu(node, e) {
-      // Definição estática das ações administrativas
-      const menuOptions = [
-        {
-          text: 'Duplicar',
-          icon: 'content_copy',
-          action: () => {
-            // Exemplo rápido de duplicar (deslocando um pouco o X/Y)
-            createNode(node.x + 20, node.y + 20, {
-              type: node.type,
-              // Clonar conteúdo se necessário
-            })
-          },
-        },
-        {
-          text: 'Excluir',
-          icon: 'delete',
-          classes: 'destructive',
-          action: () => deleteNode(node.id),
-        },
-        {
-          text: 'Propriedades',
-          icon: 'tune', // ou 'edit', 'settings'
-          action: () => triggerQuickEdit(node),
-        },
-      ]
-
-      openContextMenu(menuOptions, e)
-    }
-
-    return { mainNodeMenu }
-  }
-
-  return { ui }
 }
 
-export { createNode, nodeOps }
+const cloneNode = (node) => {
+  createNode(node.x + 20, node.y + 20, {
+    type: node.type,
+  })
+}
+
+function getNodeContextMenuItems(node) {
+  return [
+    { text: 'Duplicar', icon: 'content_copy', command: 'NODE.CLONE', payload: { node } },
+    {
+      text: 'Excluir',
+      icon: 'delete',
+      classes: 'destructive',
+      command: 'NODE.DELETE',
+      payload: { node },
+    },
+    { text: 'Propriedades', icon: 'tune', command: 'NODE.OPEN_PROPERTIES', payload: { node } },
+  ]
+}
+
+export { createNode, deleteNode, cloneNode, getNodeContextMenuItems }
