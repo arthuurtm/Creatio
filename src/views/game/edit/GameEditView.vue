@@ -2,7 +2,11 @@
 import { ref, shallowRef, markRaw, onMounted, onUnmounted, computed } from 'vue'
 import { useEditorConnection } from '@/composables/useEditorConnection'
 import { useEditorStore, addFunctions } from '@/stores/editor'
-import { nodeOps } from '@/composables/editor/useNodeFunctions'
+import {
+  getNodeContextMenuItems,
+  cloneNode,
+  deleteNode,
+} from '@/composables/editor/useNodeFunctions'
 import TabDataPanelView from './TabDataPanelView.vue'
 import ComponentQuickEditPanel from '@/components/modules/ComponentQuickEditPanel.vue'
 
@@ -10,7 +14,6 @@ const props = defineProps({ id: String })
 const editorStore = useEditorStore()
 const contextMenuRef = ref(null)
 const { start: connect, stop: disconnect, send, error, requestStatus } = useEditorConnection()
-const { ui: nodeUI } = nodeOps()
 
 const connectionInfo = computed(() => {
   const status = requestStatus.value
@@ -117,7 +120,26 @@ function handleCloseEditorTab() {
 }
 
 function handleNodeContextMenu({ node, event }) {
-  nodeUI({ openContextMenu }).mainNodeMenu(node, event)
+  openContextMenu(getNodeContextMenuItems(node), event)
+}
+
+function handleContextMenuSelect(item) {
+  const node = item.payload.node
+
+  switch (item.command) {
+    case 'NODE.CLONE':
+      cloneNode(node)
+      break
+    case 'NODE.DELETE':
+      deleteNode(node.id)
+      break
+    case 'NODE.OPEN_PROPERTIES':
+      quickPanelData.value = {
+        visible: true,
+        data: node,
+      }
+      break
+  }
 }
 
 onMounted(async () => {
@@ -209,7 +231,7 @@ onUnmounted(() => {
       </CGroup>
 
       <ComponentDialog v-bind="tabData" @close="handleCloseEditorTab" />
-      <CContextMenu @contextMenu.stop ref="contextMenuRef" />
+      <CContextMenu @contextMenu.stop @select="handleContextMenuSelect" ref="contextMenuRef" />
     </CGroup>
   </CGroup>
 </template>
