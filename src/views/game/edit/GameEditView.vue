@@ -2,13 +2,16 @@
 import { ref, shallowRef, markRaw, onMounted, onUnmounted, computed } from 'vue'
 import { useEditorConnection } from '@/composables/useEditorConnection'
 import { useEditorStore, addFunctions } from '@/stores/editor'
+import { nodeOps } from '@/composables/editor/useNodeFunctions'
 import TabDataPanelView from './TabDataPanelView.vue'
 import ComponentQuickEditPanel from '@/components/modules/ComponentQuickEditPanel.vue'
-import { add } from 'lodash-es'
 
 const props = defineProps({ id: String })
 const editorStore = useEditorStore()
 const contextMenuRef = ref(null)
+const { start: connect, stop: disconnect, send, error, requestStatus } = useEditorConnection()
+const { ui: nodeUI } = nodeOps()
+
 const connectionInfo = computed(() => {
   const status = requestStatus.value
   const currentError = error.value
@@ -28,13 +31,10 @@ const connectionInfo = computed(() => {
       SUCCESS: null,
     },
   }
-
-  return {
-    icon: map.icon[status] || 'cloud_alert',
-    message: map.message[status],
-  }
+  return { icon: map.icon[status] || 'cloud_alert', message: map.message[status] }
 })
-const { start: connect, stop: disconnect, send, error, requestStatus } = useEditorConnection()
+
+// Dados das abas e painéis
 const tabData = ref({
   isVisible: false,
   fullscreen: true,
@@ -44,8 +44,18 @@ const tabData = ref({
 })
 const quickPanelData = ref({
   visible: false,
-  title: 'Painel Rápido',
+  data: {
+    id: '123',
+    label: 'Cena Inicial',
+    type: 'narrative',
+    data: { title: 'A Chegada', text: 'Você acorda em um campo...' },
+    actions: [
+      { text: 'Andar', target: 2 },
+      { text: 'Olhar ao redor', target: 3 },
+    ],
+  },
 })
+
 const navLinks = computed(() => ({
   left: [
     {
@@ -59,17 +69,36 @@ const navLinks = computed(() => ({
       text: connectionInfo.value.message,
       classes: ['symbolic', 'no-padding', 'no-scalling'],
     },
-    {
-      icon: `help`,
-      action: (e) =>
-        openContextMenu(
-          {
-            text: 'Para começar a adicionar ações no seu jogo basta clicar botão direito que um menu com várias opções irá aparecer.',
-          },
-          e,
-        ),
-    },
+    { icon: `help`, action: (e) => openContextMenu({ text: 'Ajuda...' }, e) },
   ],
+}))
+
+const zoom = ref(1)
+const ZOOM_STEP = 0.1
+const MIN_ZOOM = 0.5
+const MAX_ZOOM = 2.0
+
+function handleZoom(direction) {
+  const newZoom = direction === 'in' ? zoom.value + ZOOM_STEP : zoom.value - ZOOM_STEP
+  // Math.round corrige imprecisões de ponto flutuante (ex: 1.10000004)
+  zoom.value = Math.min(Math.max(Math.round(newZoom * 100) / 100, MIN_ZOOM), MAX_ZOOM)
+}
+
+const gridStyle = computed(() => {
+  const size = 20 * zoom.value
+  return {
+    backgroundSize: `${size}px ${size}px`,
+    backgroundPosition: '0 0',
+  }
+})
+
+// estilo aplicado ao Componente de Nodes para efetivar o zoom visual
+const editorStyle = computed(() => ({
+  transform: `scale(${zoom.value})`,
+  transformOrigin: '0 0', // Garante que o zoom parta do canto superior esquerdo (alinhado com o grid)
+
+  width: `${100 / zoom.value}%`,
+  height: `${100 / zoom.value}%`,
 }))
 
 function openContextMenu(items, event) {
@@ -87,6 +116,10 @@ function handleCloseEditorTab() {
   tabData.value.component = null
 }
 
+function handleNodeContextMenu({ node, event }) {
+  nodeUI({ openContextMenu }).mainNodeMenu(node, event)
+}
+
 onMounted(async () => {
   await connect()
   send({ event: 'game:lab:get:json', payload: { ...editorStore.info, id: props.id } })
@@ -99,12 +132,15 @@ onUnmounted(() => {
 
 <template>
   <CGroup grow direction="column" style="height: 100vh; overflow: hidden">
-    <!-- HEADER FIXO -->
     <ComponentHeader :nav-links="navLinks" title="EDITOR DO JOGO" />
 
-    <!-- WRAPPER DO CONTEÚDO (tudo abaixo da header) -->
-    <div style="position: relative; flex: 1; overflow: hidden">
-      <!-- TOOLBAR (só aparece quando o painel geral não está aberto) -->
+    <CGroup
+      grow
+      direction="column"
+      style="position: relative"
+      class="editor-grid"
+      :style="gridStyle"
+    >
       <CGroup v-if="!tabData.isVisible" direction="row" align="center" margin="1rem" gap="1rem">
         <CButton
           text="Adicionar Nova Linha do Tempo"
@@ -118,50 +154,70 @@ onUnmounted(() => {
         <CButton text="teste" @click="quickPanelData.visible = !quickPanelData.visible" />
       </CGroup>
 
-      <!-- ÁREA PRINCIPAL DO EDITOR -->
       <CGroup
         v-if="!tabData.isVisible"
         grow
         direction="row"
         style="position: relative; height: calc(100% - 64px); overflow: hidden"
       >
-        <!-- EDITOR DE NODES -->
-        <ComponentNode :nodes="editorStore.nodes" style="flex: 1; height: 100%; overflow: auto" />
+        <ComponentNode
+          :nodes="editorStore.nodes"
+          :zoom="zoom"
+          @node-context-menu="handleNodeContextMenu"
+          :style="editorStyle"
+          style="flex: 1; overflow: auto"
+        />
       </CGroup>
 
-      <!-- PAINEL RÁPIDO -->
-      <div
-        style="
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: 30vw;
-          height: 100%;
-          pointer-events: none;
-        "
+      <CGroup
+        direction="column"
+        gap="0.5rem"
+        radius="50px"
+        align="center"
+        style="position: absolute; bottom: 1rem; right: 2rem; z-index: 2"
+        background="var(--surface-1)"
+      >
+        <CButton icon="add" @click="handleZoom('in')" title="Aumentar Zoom" classes="symbolic" />
+        <div class="zoom-display" style="font-variant-numeric: tabular-nums">
+          {{ Math.round(zoom * 100) }}%
+        </div>
+        <CButton
+          icon="remove"
+          @click="handleZoom('out')"
+          title="Diminuir Zoom"
+          classes="symbolic"
+        />
+      </CGroup>
+
+      <CGroup
+        style="position: absolute; top: 0; right: 0; pointer-events: none"
+        min-width="30vw"
+        width="auto"
+        height="95%"
+        margin="1rem"
+        overflow="hidden"
+        radius="24px"
       >
         <ComponentDialog
-          :title="'Painel Rápido'"
-          :component="ComponentQuickEditPanel"
-          :component-props="{ panel: quickPanelData }"
+          title="Painel Rápido"
           :is-visible="quickPanelData.visible"
           fullscreen
-          no-close-button
-          no-title-bar
-          style="width: 100%; height: 100%; pointer-events: auto"
-          ><CButton
-            icon="right_panel_close"
-            @click="quickPanelData.visible = !quickPanelData.visible"
-            style="position: absolute; top: 0; left: 0"
-            classes="symbolic"
-        /></ComponentDialog>
-      </div>
+          background="var(--bg2)"
+        >
+          <ComponentQuickEditPanel v-model="quickPanelData.data" />
+        </ComponentDialog>
+      </CGroup>
 
-      <!-- PAINEL DE DADOS GERAL (FULLSCREEN ABAIXO DA HEADER) -->
       <ComponentDialog v-bind="tabData" @close="handleCloseEditorTab" />
-    </div>
-
-    <!-- CONTEXT MENU -->
-    <CContextMenu @contextMenu.stop ref="contextMenuRef" />
+      <CContextMenu @contextMenu.stop ref="contextMenuRef" />
+    </CGroup>
   </CGroup>
 </template>
+
+<style scoped>
+.editor-grid {
+  background-image:
+    linear-gradient(to right, var(--surface-2) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--surface-2) 1px, transparent 1px);
+}
+</style>
