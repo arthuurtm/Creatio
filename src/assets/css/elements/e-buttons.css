@@ -145,8 +145,9 @@
   color: var(--form-normal-link);
 }
 
+.btn.symbolic.destructive:hover,
 .btn.symbolic.critical:hover {
-  color: var(--form-critical-link);
+  color: var(--destructive-button);
 }
 
 .btn.left {

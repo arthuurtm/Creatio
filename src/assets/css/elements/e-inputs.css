@@ -35,14 +35,14 @@
 }
 
 .input:focus-within {
-  border-color: var(--primary);
+  border-color: var(--text);
 }
 
 .input:focus-within label,
 .input input:not(:placeholder-shown) ~ label {
   top: 0;
   transform: translateY(-50%) scale(0.85);
-  color: var(--primary);
+  color: var(--text);
 }
 
 .input.select {

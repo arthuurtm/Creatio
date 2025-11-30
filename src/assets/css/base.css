@@ -1,129 +1,127 @@
 :root {
-  /* ---------- Structural Glass Settings ---------- */
-  --blur-strong: blur(22px);
-  --blur-medium: blur(16px);
-  --blur-soft: blur(8px);
+  /* Structural Filters (mantidos, mas não usados em superfícies) */
+  --blur-strong: blur(0px);
+  --blur-medium: blur(0px);
+  --blur-soft: blur(0px);
 
-  --sat-strong: saturate(200%);
-  --sat-medium: saturate(180%);
-  --sat-soft: saturate(140%);
+  --sat-strong: saturate(120%);
+  --sat-medium: saturate(110%);
+  --sat-soft: saturate(100%);
 
-  /* ---------- Primary Palette (Glassy Light) ---------- */
-  --primary: linear-gradient(135deg, #0b6a90cc, #1290c2cc);
-  --primary-hover: linear-gradient(135deg, #0b6a90dd, #1290c2dd);
-  --primary-back: #205fdc44;
+  /* ---------- Primary Palette (solid) ---------- */
+  --primary: #1290c2;
+  --primary-hover: #17a3e2;
+  --primary-back: #1e5cb8;
 
-  --secondary: rgba(126, 126, 126, 0.3);
-  --secondary-hover: rgba(117, 117, 117, 0.4);
+  --secondary: #7e7e7e;
+  --secondary-hover: #6c6c6c;
 
-  --danger: linear-gradient(135deg, #681d1dcc, #b31313cc);
-  --danger-hover: linear-gradient(135deg, #681d1ddd, #b31313dd);
+  --danger: #b31313;
+  --danger-hover: #d71818;
 
   --accent: #31a526;
 
   /* ---------- Text & Background ---------- */
-  --text-color: #000;
-  --background-color: linear-gradient(135deg, #cdd7dc, #c1d1e7, #aab5c4);
-  --background-alt: rgb(216, 227, 239);
-  --border-color: rgba(200, 200, 200, 0.35);
+  --text-color: #0a0a0a;
+  --background-color: #d6dfe5;
+  --background-alt: #c7d2dd;
+  --border-color: #b8b8b8;
 
   /* ---------- Inputs ---------- */
-  --input-bg-neutral: rgba(255, 255, 255, 0.28);
-  --input-text-neutral: #737c85;
+  --input-bg-neutral: #ffffff;
+  --input-text-neutral: #404040;
 
-  --element-focus: rgba(94, 94, 104, 0.096);
-  --element-hover: #777777aa;
+  --element-focus: #d0d0d0;
+  --element-hover: #bdbdbd;
 
   /* ---------- Scroll & Overlay ---------- */
-  --overlay-neutral: rgba(255, 255, 255, 0.08);
-  --scroll-btn: rgba(180, 180, 180, 0.35);
-  --scroll-btn-hover: rgba(255, 255, 255, 0.55);
+  --overlay-neutral: rgba(255, 255, 255, 0.7); /* deixa overlay translúcido */
+  --scroll-btn: #b4b4b4;
+  --scroll-btn-hover: #e5e5e5;
 
   /* ---------- Shadows ---------- */
-  --primary-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  --primary-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
 
-  --main-shadow: rgba(31, 38, 135, 0.1);
-  --shadow-small: inset 0px 1px 1px #ffffff70, 0px 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-medium: inset 0px 1px 2px #ffffff70, 0px 4px 8px rgba(0, 0, 0, 0.12);
-  --shadow-large: inset 0px 1px 2px #ffffff70, 0px 6px 16px rgba(0, 0, 0, 0.15);
-  --shadow-inset: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
+  --main-shadow: rgba(0, 0, 0, 0.15);
+  --shadow-small: 0px 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0px 3px 6px rgba(0, 0, 0, 0.15);
+  --shadow-large: 0px 6px 16px rgba(0, 0, 0, 0.2);
 
-  /* ---------- New Extended Palette (Light) ---------- */
-  --bg-glass-1: rgba(255, 255, 255, 0.3);
-  --bg-glass-2: rgba(255, 255, 255, 0.18);
-  --bg-glass-3: rgba(255, 255, 255, 0.1);
+  /* ---------- Surfaces (solid) ---------- */
+  --bg-glass-1: #ffffff;
+  --bg-glass-2: #f3f6fa;
+  --bg-glass-3: #e6ecf3;
 
-  --surface-1: rgba(240, 244, 255, 0.35);
-  --surface-2: rgba(230, 237, 248, 0.45);
-  --surface-3: rgba(210, 222, 240, 0.55);
+  --surface-1: #f0f3fa;
+  --surface-2: #e6ecf5;
+  --surface-3: #dae3ef;
 
-  --card-bg: rgba(255, 255, 255, 0.25);
-  --menu-bg: rgba(240, 240, 250, 0.3);
+  --card-bg: #ffffff;
+  --menu-bg: #f3f3f8;
 
-  --border-soft: rgba(255, 255, 255, 0.18);
-  --border-strong: rgba(255, 255, 255, 0.4);
+  --border-soft: #e0e0e0;
+  --border-strong: #bfbfbf;
 
-  --overlay-strong: rgba(10, 10, 15, 0.45);
-  --overlay-medium: rgba(20, 20, 25, 0.28);
-  --overlay-light: rgba(40, 40, 50, 0.12);
+  --overlay-strong: rgba(0, 0, 0, 0.6);
+  --overlay-medium: rgba(0, 0, 0, 0.4);
+  --overlay-light: rgba(0, 0, 0, 0.2);
 }
 
+/* ---------- DARK MODE (contraste alto, SÓ overlays têm translucidez) ---------- */
 :root[data-theme='dark'] {
-  --primary: linear-gradient(135deg, #1677d3cc, #034380cc);
-  --primary-hover: linear-gradient(135deg, #1677d3dd, #034380dd);
-  --primary-back: #1060aa3d;
+  --primary: #034380;
+  --primary-hover: #045299;
+  --primary-back: #0f58a0;
 
-  --secondary: rgba(40, 40, 60, 0.37);
-  --secondary-hover: rgba(153, 153, 153, 0.35);
+  --secondary: #46465c;
+  --secondary-hover: #55556f;
 
-  --danger: linear-gradient(135deg, #e91616cc, #a20202cc);
-  --danger-hover: linear-gradient(135deg, #e91616dd, #a20202dd);
+  --danger: #a20202;
+  --danger-hover: #c00000;
 
-  --accent: #075500;
+  --accent: #1f890f;
 
   /* ---------- Text & Background ---------- */
-  --text-color: #f2f2f2;
-  --background-color: linear-gradient(135deg, #090909, #090b0e, #040c13);
-  --background-alt: rgb(16, 17, 23);
-  --border-color: rgb(41, 37, 37);
+  --text-color: #f5f5f5;
+  --background-color: #0f1116;
+  --background-alt: #141720;
+  --border-color: #4d4d4d;
 
   /* ---------- Inputs ---------- */
-  --input-bg-neutral: rgba(60, 60, 80, 0.25);
-  --input-text-neutral: #f0f0f0;
+  --input-bg-neutral: #20222c;
+  --input-text-neutral: #f2f2f2;
 
-  --element-focus: rgba(94, 94, 104, 0.096);
-  --element-hover: #777777aa;
+  --element-focus: #3a3d49;
+  --element-hover: #4a4d58;
 
-  --overlay-neutral: rgba(0, 0, 0, 0.3);
-  --scroll-btn: rgba(255, 255, 255, 0.2);
-  --scroll-btn-hover: rgba(255, 255, 255, 0.4);
+  /* ---------- Scroll & Overlay ---------- */
+  --overlay-neutral: rgba(0, 0, 0, 0.55); /* overlay único translúcido */
+  --scroll-btn: #5a5a5a;
+  --scroll-btn-hover: #7a7a7a;
 
-  --primary-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+  /* ---------- Shadows ---------- */
+  --primary-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --main-shadow: rgba(0, 0, 0, 0.4);
 
-  --main-shadow: rgba(0, 0, 0, 0.25);
-  --shadow-small: inset 0px 1px 1px rgba(255, 255, 255, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.4);
-  --shadow-medium: inset 0px 1px 2px rgba(255, 255, 255, 0.1), 0px 4px 8px rgba(0, 0, 0, 0.5);
-  --shadow-large: inset 0px 1px 2px rgba(255, 255, 255, 0.1), 0px 6px 16px rgba(0, 0, 0, 0.6);
-  --shadow-inset: inset 0px 2px 4px rgba(0, 0, 0, 0.5);
+  /* ---------- Surfaces (solid) ---------- */
+  --bg-glass-1: #1c1e26;
+  --bg-glass-2: #181a22;
+  --bg-glass-3: #12141b;
 
-  /* ---------- New Extended Palette (Dark) ---------- */
-  --bg-glass-1: rgba(255, 255, 255, 0.1);
-  --bg-glass-2: rgba(255, 255, 255, 0.06);
-  --bg-glass-3: rgba(255, 255, 255, 0.03);
+  --surface-1: #242631;
+  --surface-2: #1e202a;
+  --surface-3: #181a23;
 
-  --surface-1: rgba(40, 40, 60, 0.45);
-  --surface-2: rgba(25, 25, 40, 0.35);
-  --surface-3: rgba(18, 18, 30, 0.25);
+  --card-bg: #20222c;
+  --menu-bg: #272a35;
 
-  --card-bg: rgba(22, 22, 32, 0.4);
-  --menu-bg: rgba(34, 34, 44, 0.42);
+  --border-soft: #3a3a3a;
+  --border-strong: #646464;
 
-  --border-soft: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.2);
-
-  --overlay-strong: rgba(0, 0, 0, 0.55);
-  --overlay-medium: rgba(0, 0, 0, 0.32);
-  --overlay-light: rgba(0, 0, 0, 0.18);
+  /* Only overlays keep transparency */
+  --overlay-strong: rgba(0, 0, 0, 0.75);
+  --overlay-medium: rgba(0, 0, 0, 0.55);
+  --overlay-light: rgba(0, 0, 0, 0.35);
 }
 
 /* mapa semantico */
