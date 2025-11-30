@@ -87,7 +87,11 @@ async function fetchMyCreations() {
   loading.value = true
   try {
     allCreations.value = Object.values(
-      await http.get({ type: 'database', route: 'getGames', query: { userId: userStore.getId } }),
+      await http.get({
+        type: 'database',
+        route: 'getGames',
+        querys: { filters: { userId: userStore.getId } },
+      }),
     )
   } catch (error) {
     showToast({ type: 'error', message: 'Falha ao carregar suas criações.' })
@@ -109,7 +113,7 @@ async function criarNovoJogo() {
   try {
     result = await http.post(
       { type: 'database', route: 'setGame' },
-      { title: 'Novo Jogo', state: editorStore.$rawState(), ...editorStore.info },
+      { title: 'Novo Jogo', state: editorStore.$state, ...editorStore.info },
     )
 
     Object.assign(editorStore.info, {
