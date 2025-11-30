@@ -15,6 +15,9 @@ const props = defineProps({
   noInterpolateSize: { type: Boolean, default: false },
   fullscreen: { type: Boolean, default: false },
   noTitleBar: { type: Boolean, default: false },
+  bordered: { type: Boolean, default: false },
+  noOverflow: { type: Boolean, default: false },
+  background: { type: String },
 })
 
 const isDisplaying = ref(props.isVisible)
@@ -169,8 +172,10 @@ onUnmounted(() => {
           active: showDialogAnim,
           noInterpolateSize,
           fullscreen,
+          bordered,
+          noOverflow,
         }"
-        :style="dialogStyle"
+        :style="{ ...dialogStyle, background }"
         @click.stop
       >
         <div
@@ -195,15 +200,15 @@ onUnmounted(() => {
         </div>
         <div class="content">
           <transition name="fastFade">
-            <span :key="props.component">
-              <component
-                :is="component"
-                @close="close"
-                @emit-event="(e) => emit('emit-event', e)"
-                v-bind="componentProps"
-              />
-              <slot />
-            </span>
+            <component
+              v-if="component"
+              :is="component"
+              :key="props.component"
+              @close="close"
+              @emit-event="(e) => emit('emit-event', e)"
+              v-bind="componentProps"
+            />
+            <slot v-else />
           </transition>
         </div>
       </div>
@@ -220,8 +225,8 @@ onUnmounted(() => {
 .dialog-shadow.focus {
   top: 0;
   left: 0;
-  width: 100vw;
-  min-height: 100vh;
+  width: 100%;
+  min-height: 100%;
   justify-content: center;
   align-items: center;
   background-color: var(--overlay-bg);
@@ -252,6 +257,7 @@ onUnmounted(() => {
   width: auto;
   interpolate-size: allow-keywords;
   z-index: 6;
+  pointer-events: auto;
 }
 
 .dialog-main.noInterpolateSize {
@@ -260,6 +266,7 @@ onUnmounted(() => {
 
 .dialog-main.active {
   height: auto;
+  overflow: auto;
 }
 
 .dialog-main.fullscreen {
@@ -267,6 +274,14 @@ onUnmounted(() => {
   height: 100%;
   border-radius: 0;
   border: none;
+}
+
+.dialog-main.bordered {
+  border: 1px solid var(--border);
+}
+
+.dialog-main.noOverflow {
+  overflow: hidden;
 }
 
 .dialog-main.fullscreen .title-bar {
