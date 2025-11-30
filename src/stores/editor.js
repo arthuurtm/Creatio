@@ -42,6 +42,9 @@ export const useEditorStore = defineStore('editor', {
     setState(newState) {
       this.$patch(newState)
     },
+    getModel() {
+      return models()
+    },
   },
 })
 
