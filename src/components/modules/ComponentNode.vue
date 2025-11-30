@@ -1,34 +1,22 @@
 <script setup>
-import { ref } from 'vue'
-import CNode from '@/components/ui/CNode.vue'
 import { useConnections } from '@/composables/editor/useDotConnection'
-import { nodeOps } from '@/composables/editor/useNodeFunctions'
 
-/** @typedef {import('@/stores/editor').EditorState} EditorState */
 const props = defineProps({
-  /** @type {EditorState['nodes']} */
   nodes: { type: Array, default: () => [] },
+  style: { type: [Array, Object, String], default: () => null },
 })
-
-const contextMenu = ref({})
-const nodeUtils = nodeOps()
+const emit = defineEmits(['node-context-menu', 'emit-event'])
 const { handleStartConnection, paths } = useConnections(props.nodes)
 
-function openContextMenu(items, event) {
-  contextMenu.value.openContextMenu(items, event)
-}
-
-function handleNodeRightClick(node, e) {
-  const selectedNode = props.nodes.find((n) => n.id === node.id)
-  nodeUtils.ui({ openContextMenu }).mainNodeMenu(selectedNode, e)
+function handleNodeRightClick(node, event) {
+  emit('node-context-menu', { node, event })
 }
 
 function emitEventHandler(e) {
-  switch (e.name) {
-    case 'start-connection': {
-      handleStartConnection(e.data)
-      break
-    }
+  if (e.name === 'start-connection') {
+    handleStartConnection(e.data)
+  } else {
+    emit('emit-event', e)
   }
 }
 </script>
@@ -38,28 +26,25 @@ function emitEventHandler(e) {
     <path v-for="p in paths" :key="p?.id" :d="p?.d" :stroke-dasharray="p?.isLoop ? '6,3' : '0'" />
   </svg>
 
-  <!-- Camada de nodes -->
-  <div class="nodes-layer">
+  <div class="nodes-layer" :style="style">
     <ComponentDialog
       v-for="node in props.nodes"
       :key="node.id"
       v-on:contextmenu.stop="handleNodeRightClick(node, $event)"
       v-on:contextmenu.prevent
       :title="node.id"
-      :component="CNode"
-      :component-props="{ node }"
-      :is-visible="true"
-      :no-close-button="true"
-      :no-focus-window="true"
-      :is-draggable="true"
-      :no-interpolate-size="true"
       v-model:x="node.x"
       v-model:y="node.y"
-      @emit-event="emitEventHandler"
-    />
+      is-visible
+      no-close-button
+      no-focus-window
+      is-draggable
+      no-interpolate-size
+      no-overflow
+    >
+      <CNode :node="node" @emit-event="emitEventHandler" />
+    </ComponentDialog>
   </div>
-
-  <CContextMenu ref="contextMenu" />
 </template>
 
 <style scoped>
