@@ -1,6 +1,6 @@
 import { useEditorStore } from '@/stores/editor'
 
-// fábrica de nodes
+// mantendo a fábrica de nodes igual
 const createNode = (x, y, params = {}) => {
   const editorStore = useEditorStore()
   const id = 'node' + Date.now()
@@ -10,7 +10,6 @@ const createNode = (x, y, params = {}) => {
     y,
     type: params.type || 'default',
     content: {
-      choices: [],
       actions: [],
       events: [],
     },
@@ -20,88 +19,62 @@ const createNode = (x, y, params = {}) => {
   return node
 }
 
-const _menuItemsConstructor = (obj) => {
-  return [
-    {
-      items: obj.map((def) => ({
-        ...def,
-        component: def.component,
-        componentProps: def.componentProps,
-        text: def.text || def.label,
-        icon: def.icon,
-        action: def.action ? () => def.action() : null,
-      })),
-    },
-  ]
-}
-
 /**
- *
- * @param {Event} e
- * @param {String} node
- * @param {import('@/components/elements/CreateContextMenu.vue').default} openContextMenu
- * @returns
- */
-const _buildAutoMenu = (modules, e, node, openContextMenu) => {
-  const categories = Object.entries(modules)
-  const definitions = categories.map(([key, module]) => ({
-    text: `Adicionar ${module.name ?? key.charAt(0).toUpperCase() + key.slice(1)}`,
-    icon: module.icon || 'add_circle',
-
-    action: () => {
-      const items = Object.entries(module.value).map(([subKey, subModule]) => ({
-        text: subModule.text,
-      }))
-
-      openContextMenu(_menuItemsConstructor(items), e)
-      return 'keep-open'
-    },
-  }))
-  return _menuItemsConstructor(definitions)
-}
-
-/**
- * @abstract Funções para o controle correto de editorStore
- * @param {Object} param0
- * @param {import('@/components/elements/CreateContextMenu.vue').default} param0.openContextMenu
+ * @abstract Funções para o controle de editorStore focado em gerenciamento
  */
 const nodeOps = () => {
   const editorStore = useEditorStore()
 
-  const get = {
-    event: {
-      name: 'Evento',
-      icon: 'event',
-      value: { ...editorStore.events },
-    },
-    condition: {
-      name: 'Condição',
-      icon: 'help_outline',
-      value: { ...editorStore.conditions },
-    },
-    consequence: {
-      name: 'Consequência',
-      icon: 'flash_on',
-      value: { ...editorStore.consequences },
-    },
-    action: {
-      name: 'Ação',
-      icon: 'play_arrow',
-      value: { ...editorStore.actions },
-    },
+  // Função interna para deletar (exemplo simples)
+  const deleteNode = (nodeId) => {
+    const index = editorStore.nodes.findIndex((n) => n.id === nodeId)
+    if (index > -1) {
+      editorStore.nodes.splice(index, 1)
+      // Nota: Idealmente você também deve remover os links conectados a este node aqui
+    }
   }
 
-  const exec = () => {}
+  // Função interna para acionar o QuickEdit
+  const triggerQuickEdit = (node) => {
+    console.log('Abrindo QuickEdit para:', node.id)
+    editorStore.selectedNode = node // Exemplo hipotético
+  }
 
   const ui = ({ openContextMenu }) => {
     function mainNodeMenu(node, e) {
-      openContextMenu(_buildAutoMenu(get, e, node, openContextMenu), e)
+      // Definição estática das ações administrativas
+      const menuOptions = [
+        {
+          text: 'Duplicar',
+          icon: 'content_copy',
+          action: () => {
+            // Exemplo rápido de duplicar (deslocando um pouco o X/Y)
+            createNode(node.x + 20, node.y + 20, {
+              type: node.type,
+              // Clonar conteúdo se necessário
+            })
+          },
+        },
+        {
+          text: 'Excluir',
+          icon: 'delete',
+          classes: 'destructive',
+          action: () => deleteNode(node.id),
+        },
+        {
+          text: 'Propriedades',
+          icon: 'tune', // ou 'edit', 'settings'
+          action: () => triggerQuickEdit(node),
+        },
+      ]
+
+      openContextMenu(menuOptions, e)
     }
 
     return { mainNodeMenu }
   }
 
-  return { ui, get }
+  return { ui }
 }
 
 export { createNode, nodeOps }
