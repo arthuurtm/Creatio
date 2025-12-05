@@ -2,19 +2,18 @@
 import { ref, shallowRef, markRaw, onMounted, onUnmounted, computed } from 'vue'
 import { useEditorConnection } from '@/composables/useEditorConnection'
 import { useEditorStore, addFunctions } from '@/stores/editor'
-import {
-  getNodeContextMenuItems,
-  cloneNode,
-  deleteNode,
-} from '@/composables/editor/useNodeFunctions'
+import { getNodeContextMenuItems, cloneNode, deleteNode } from '@/composables/useNodeFunctions'
 import TabDataPanelView from './TabDataPanelView.vue'
 import ComponentQuickEditPanel from '@/components/modules/ComponentQuickEditPanel.vue'
+import { useEditorViewport } from '@/composables/useEditorViewport'
 
+const MIN_ZOOM = 0.5
+const MAX_ZOOM = 2.0
 const props = defineProps({ id: String })
 const editorStore = useEditorStore()
 const contextMenuRef = ref(null)
 const { start: connect, stop: disconnect, send, error, requestStatus } = useEditorConnection()
-
+const { zoom, gridStyle, editorStyle, handleZoom } = useEditorViewport(MIN_ZOOM, MAX_ZOOM)
 const connectionInfo = computed(() => {
   const status = requestStatus.value
   const currentError = error.value
@@ -36,8 +35,6 @@ const connectionInfo = computed(() => {
   }
   return { icon: map.icon[status] || 'cloud_alert', message: map.message[status] }
 })
-
-// Dados das abas e painéis
 const tabData = ref({
   isVisible: false,
   fullscreen: true,
@@ -49,7 +46,6 @@ const quickPanelData = ref({
   visible: false,
   data: {},
 })
-
 const navLinks = computed(() => ({
   left: [
     {
@@ -65,34 +61,6 @@ const navLinks = computed(() => ({
     },
     { icon: `help`, action: (e) => openContextMenu({ text: 'Ajuda...' }, e) },
   ],
-}))
-
-const zoom = ref(1)
-const ZOOM_STEP = 0.1
-const MIN_ZOOM = 0.5
-const MAX_ZOOM = 2.0
-
-function handleZoom(direction) {
-  const newZoom = direction === 'in' ? zoom.value + ZOOM_STEP : zoom.value - ZOOM_STEP
-  // Math.round corrige imprecisões de ponto flutuante (ex: 1.10000004)
-  zoom.value = Math.min(Math.max(Math.round(newZoom * 100) / 100, MIN_ZOOM), MAX_ZOOM)
-}
-
-const gridStyle = computed(() => {
-  const size = 20 * zoom.value
-  return {
-    backgroundSize: `${size}px ${size}px`,
-    backgroundPosition: '0 0',
-  }
-})
-
-// estilo aplicado ao Componente de Nodes para efetivar o zoom visual
-const editorStyle = computed(() => ({
-  transform: `scale(${zoom.value})`,
-  transformOrigin: '0 0', // Garante que o zoom parta do canto superior esquerdo (alinhado com o grid)
-
-  width: `${100 / zoom.value}%`,
-  height: `${100 / zoom.value}%`,
 }))
 
 function openContextMenu(items, event) {
