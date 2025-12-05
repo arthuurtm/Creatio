@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import addFunctions from '@/composables/editor/set/index.js'
+import addFunctions from '@/lib/editor/index.js'
+import type { EditorState } from '@/types/editor-models'
 
-const models = () => ({
+const models = (): EditorState => ({
   // Estrutura
   nodes: [],
   connections: [],
-  regions: [],
 
   // Dados do Jogo
   info: {
@@ -16,8 +16,8 @@ const models = () => ({
   },
   objects: [],
   avatars: [],
-  flags: [], // Flags/variáveis globais
-  statuses: [], // Definições de status (envenenado, abençoado)
+  flags: [],
+  statuses: [],
   skills: [],
   companions: [],
   quests: [],
@@ -29,8 +29,7 @@ const models = () => ({
   events: [],
   actions: [],
 })
-
-function generateId(prefix) {
+function generateId(prefix: string) {
   const time = Date.now().toString(36)
   const rand = Math.floor(Math.random() * 1e6).toString(36)
   return `${prefix}_${time}_${rand}`
@@ -39,7 +38,7 @@ function generateId(prefix) {
 export const useEditorStore = defineStore('editor', {
   state: () => models(),
   actions: {
-    setState(newState) {
+    setState(newState: Partial<EditorState>) {
       this.$patch(newState)
     },
     getModel() {
