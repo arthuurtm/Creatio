@@ -8,10 +8,7 @@ const createNode = (x, y, params = {}) => {
     x,
     y,
     type: params.type || 'default',
-    content: {
-      actions: [],
-      events: [],
-    },
+    content: {},
     links: params.links || [],
   }
   editorStore.nodes.push(node)

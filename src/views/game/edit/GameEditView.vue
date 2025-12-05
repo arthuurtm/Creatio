@@ -47,16 +47,7 @@ const tabData = ref({
 })
 const quickPanelData = ref({
   visible: false,
-  data: {
-    id: '123',
-    label: 'Cena Inicial',
-    type: 'narrative',
-    data: { title: 'A Chegada', text: 'Você acorda em um campo...' },
-    actions: [
-      { text: 'Andar', target: 2 },
-      { text: 'Olhar ao redor', target: 3 },
-    ],
-  },
+  data: {},
 })
 
 const navLinks = computed(() => ({
@@ -222,7 +213,7 @@ onUnmounted(() => {
       >
         <ComponentDialog
           title="Painel Rápido"
-          :is-visible="quickPanelData.visible"
+          v-model:is-visible="quickPanelData.visible"
           fullscreen
           background="var(--bg2)"
         >

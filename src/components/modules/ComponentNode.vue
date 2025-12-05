@@ -41,6 +41,7 @@ function emitEventHandler(e) {
       is-draggable
       no-interpolate-size
       no-overflow
+      background="var(--surface-3)"
     >
       <CNode :node="node" @emit-event="emitEventHandler" />
     </ComponentDialog>

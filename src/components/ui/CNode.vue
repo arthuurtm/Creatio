@@ -125,11 +125,6 @@ const hasMeta = computed(() => {
 <style scoped>
 /* --- Base do Nó --- */
 .node {
-  background: var(--secondary, #2c2c2c);
-  color: var(--text, #f0f0f0);
-  border: 1px solid var(--border, #444);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   width: 280px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
