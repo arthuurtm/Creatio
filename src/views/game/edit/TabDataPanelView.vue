@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useEditorStore, addFunctions } from '@/stores/editor'
+import { useEditorStore, getSubCategories, categories } from '@/stores/editor'
 import CInputText from '@/components/ui/CInputText.vue'
 import CInputSelect from '@/components/ui/CInputSelect.vue'
 import CButton from '@/components/ui/CButton.vue'
@@ -11,7 +11,7 @@ const formParams = ref([])
 const isDialogOpen = ref(false)
 const createItemExecuteFn = ref(null)
 const editorStore = useEditorStore()
-const allCategories = ref(addFunctions.components)
+const allCategories = ref(categories)
 
 // --- Map de componentes ---
 const inputParamMap = {
@@ -28,7 +28,7 @@ const activeCategoryDatabase = computed(() =>
   activeCategory.value ? (editorStore.$state[activeCategory.value] ?? []) : [],
 )
 const activeCategoryConfig = computed(() =>
-  activeCategory.value ? addFunctions[activeCategory.value] : {},
+  activeCategory.value ? categories[activeCategory.value] : {},
 )
 
 // --- Ações ---
@@ -119,7 +119,7 @@ function handleCreate() {
           title="Adicionar novo"
           classes="symbolic no-padding"
           :only-icon="true"
-          :options="Object.values(addFunctions.getSubCategories(activeCategory))"
+          :options="Object.values(getSubCategories(activeCategory))"
           @select="addButtonHandler"
         />
       </CGroup>

@@ -1,7 +1,8 @@
 <script setup>
 import { ref, shallowRef, markRaw, onMounted, onUnmounted, computed } from 'vue'
 import { useEditorConnection } from '@/composables/useEditorConnection'
-import { useEditorStore, addFunctions } from '@/stores/editor'
+import { useEditorStore } from '@/stores/editor'
+import { nodes } from '@/lib/editor/index'
 import { getNodeContextMenuItems, cloneNode, deleteNode } from '@/composables/useNodeFunctions'
 import TabDataPanelView from './TabDataPanelView.vue'
 import ComponentQuickEditPanel from '@/components/modules/ComponentQuickEditPanel.vue'
@@ -126,7 +127,7 @@ onUnmounted(() => {
         <CButton
           text="Adicionar Nova Linha do Tempo"
           icon="add"
-          @click="addFunctions.nodes.value.definitions.createDialogBlock.execute(0, 0)"
+          @click="nodes.definitions.createDialogBlock.execute($event)"
         />
         <CButton text="Seleção" icon="arrow_selector_tool" />
         <CButton text="Conexão Direta" icon="linear_scale" />
