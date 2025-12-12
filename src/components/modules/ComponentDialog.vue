@@ -177,16 +177,12 @@ onUnmounted(() => {
         }"
         :style="{ ...dialogStyle, background }"
         @click.stop
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+        @mousedown="handleMouseDown"
       >
-        <div
-          class="title-bar"
-          :class="{ left: fullscreen }"
-          @touchstart="onTouchStart"
-          @touchmove="onTouchMove"
-          @touchend="onTouchEnd"
-          @mousedown="handleMouseDown"
-          v-if="!noTitleBar"
-        >
+        <div class="title-bar" :class="{ left: fullscreen }" v-if="!noTitleBar">
           <p>{{ props.title }}</p>
           <CGroup id="close">
             <CButton
