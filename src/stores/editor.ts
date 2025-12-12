@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import addFunctions from '@/lib/editor/index.js'
+import { getSubCategories, categories } from '@/lib/editor/index.js'
 import type { EditorState } from '@/types/editor-models'
 
 const models = (): EditorState => ({
@@ -47,4 +47,4 @@ export const useEditorStore = defineStore('editor', {
   },
 })
 
-export { generateId, addFunctions }
+export { generateId, getSubCategories, categories }

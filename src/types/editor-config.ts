@@ -24,14 +24,6 @@ export interface EditorParam {
   options?: any[] | ComputedRef<any[]> // Pode ser array estático ou reativo da store
 }
 
-// Define a estrutura de uma funcionalidade (ex: "Mostrar Diálogo")
-export interface EditorDefinition {
-  text: string
-  icon: string
-  params: EditorParam[]
-  execute: (params: Record<string, any>) => void | string
-}
-
 // Define a estrutura da Categoria (ex: "Ações", "Eventos")
 export interface CategoryConfig<
   T extends Record<string, EditorDefinition> = Record<string, EditorDefinition>,
@@ -60,11 +52,10 @@ export interface FallbackItem {
 }
 
 // Definimos uma interface base para a definição
-export interface EditorDefinition {
+export interface EditorDefinition<T = Record<string, any>> {
   text: string
   icon: string
-  params: EditorParam[]
-  execute: (params: Record<string, any>) => void | string
+  execute: (params: T) => string | void
 }
 
 // Helper para criar definições sem perder a tipagem

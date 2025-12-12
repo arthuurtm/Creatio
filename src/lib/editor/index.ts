@@ -30,22 +30,12 @@ const metadata: Record<CategoryKey, ComputedRef<CategoryConfig>> = {
 /**
  * @abstract Extrai o mapa de definições (subcategorias) de uma categoria principal.
  */
-function getSubCategories(
+export function getSubCategories(
   categoryKey: CategoryKey,
 ): Record<string, EditorDefinition> | FallbackItem[] {
   return metadata[categoryKey]?.value?.definitions ?? {}
 }
 
-// Interface para o export final
-interface AddFunctions extends Record<CategoryKey, ComputedRef<CategoryConfig>> {
-  getSubCategories: typeof getSubCategories
-  components: Record<CategoryKey, ComputedRef<CategoryConfig>>
-}
-
-const addFunctions: AddFunctions = {
-  ...metadata,
-  getSubCategories,
-  components: metadata,
-}
-
-export default addFunctions
+// Exporta os dados diretamente
+export { actions, events, conditions, consequences, objects, quests, skills, assets, nodes }
+export const categories = metadata
