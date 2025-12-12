@@ -57,28 +57,50 @@ const hasMeta = computed(() => {
       <div
         class="dot dot-top"
         :data-port="`${node.id}:in`"
-        @click="handleDotMouseDown('in', $event)"
+        @mousedown="handleDotMouseDown('in', $event)"
       ></div>
+
       <div
         class="dot dot-left"
         :data-port="`${node.id}:left`"
-        @click="handleDotMouseDown('left', $event)"
+        @mousedown="handleDotMouseDown('left', $event)"
       ></div>
+
       <div
         class="dot dot-right"
         :data-port="`${node.id}:right`"
-        @click="handleDotMouseDown('right', $event)"
+        @mousedown="handleDotMouseDown('right', $event)"
       ></div>
+
       <div
         class="dot dot-bottom"
         :data-port="`${node.id}:out`"
-        @click="handleDotMouseDown('out', $event)"
+        @mousedown="handleDotMouseDown('out', $event)"
       ></div>
     </div>
 
     <header class="node-header">
-      <span class="node-type">{{ node.type || 'default' }}</span>
-      <span class="node-id">#{{ node.id }}</span>
+      <span class="node-type">{{ node.type }}</span>
+
+      <div class="node-actions">
+        <CButton
+          v-if="choices.length"
+          icon="alt_route"
+          size="xs"
+          classes="symbolic"
+          :title="`${choices.length} conexões`"
+        />
+
+        <CButton
+          v-if="actions.length"
+          icon="bolt"
+          size="xs"
+          classes="symbolic"
+          :title="`${actions.length} ações`"
+        />
+
+        <CButton icon="edit" size="xs" classes="symbolic" title="Editar" />
+      </div>
     </header>
 
     <div v-if="choices.length" class="node-section">
@@ -130,25 +152,23 @@ const hasMeta = computed(() => {
   font-size: 14px;
 }
 
-/* --- Cabeçalho --- */
 .node-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border, #444);
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle);
 }
+
 .node-type {
-  font-weight: bold;
-  text-transform: capitalize;
-  padding: 2px 6px;
-  border-radius: 4px;
   font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
 }
-.node-id {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
-  opacity: 0.6;
+
+.node-actions {
+  display: flex;
+  gap: 4px;
 }
 
 /* --- Seções --- */

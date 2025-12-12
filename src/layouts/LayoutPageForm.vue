@@ -61,7 +61,6 @@ defineProps({
   gap: 5px;
   width: 840px;
   height: auto;
-  border: 1px solid var(--border);
   background: var(--bg2);
   transition: border 300ms ease-out;
   overflow: hidden;
@@ -70,9 +69,6 @@ defineProps({
   scrollbar-color: var(--bg) var(--bg);
   scrollbar-width: thin;
   box-shadow: 0 3px 6px var(--primary-shadow);
-  /* backdrop-filter: var(--main-saturate); */
-  /* -webkit-backdrop-filter: var(--main-blur); */
-  box-shadow: 0 8px 32px 0 var(--main-shadow);
 }
 
 .main-container .left {
@@ -126,7 +122,7 @@ defineProps({
 
 @media (max-width: 600px) {
   .app-form {
-    background: var(--form);
+    background: var(--bg2);
   }
 
   .main-container {
