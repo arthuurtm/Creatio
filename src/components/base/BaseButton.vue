@@ -9,33 +9,35 @@
   >
     <span class="btn-content" :class="{ 'is-loading-content': loading }">
       <!-- se for um arquivo de imagem animado (lottie)-->
-      <div
-        v-if="isLottieUrl"
-        ref="lottieContainer"
-        class="custom-lottie-icon"
-        aria-hidden="true"
-        :style="{ width: '1.5em', height: '1.5em' }"
-      ></div>
+      <template v-if="icon">
+        <div
+          v-if="isLottieUrl"
+          ref="lottieContainer"
+          class="custom-lottie-icon"
+          aria-hidden="true"
+          :style="{ width: '1.5em', height: '1.5em' }"
+        ></div>
 
-      <!--se for uma url-->
-      <img
-        v-else-if="isUrl"
-        :src="icon"
-        alt="Ícone customizado"
-        class="custom-icon-url"
-        aria-hidden="true"
-        style="width: 1.5em; height: auto; border-radius: 0"
-      />
+        <!--se for uma url-->
+        <img
+          v-else-if="isUrl"
+          :src="icon"
+          alt="Ícone customizado"
+          class="custom-icon-url"
+          aria-hidden="true"
+          style="width: 1.5em; height: auto; border-radius: 0"
+        />
 
-      <!-- se for um emoji -->
-      <span v-else-if="isEmoji" class="animated-emoji" aria-hidden="true">
-        {{ icon }}
-      </span>
+        <!-- se for um emoji -->
+        <span v-else-if="isEmoji" class="animated-emoji" aria-hidden="true">
+          {{ icon }}
+        </span>
 
-      <!--nenhuma das anteriores, considera-se um material-symbols-->
-      <span v-else class="material-symbols-rounded notranslate" aria-hidden="true">
-        {{ icon }}
-      </span>
+        <!--nenhuma das anteriores, considera-se um material-symbols-->
+        <span v-else class="material-symbols-rounded notranslate" aria-hidden="true">
+          {{ icon }}
+        </span>
+      </template>
 
       <img
         v-if="img"
