@@ -1,21 +1,27 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useEditorStore } from '@/stores/editor.js'
 
 export function useConnections() {
   const editorStore = useEditorStore()
   const tempConnection = ref(null)
   const nodesTrigger = ref(0)
+  const isDomReady = ref(false)
+
+  onMounted(async () => {
+    await nextTick()
+    isDomReady.value = true
+    nodesTrigger.value++
+  })
+
   watch(
-    () => editorStore.nodes.map((n) => ({ x: n.x, y: n.y })),
-    () => {
+    () => editorStore.nodes.map((n) => [n.x, n.y]),
+    async () => {
+      if (!isDomReady.value) return
+      await nextTick()
       nodesTrigger.value++
     },
     { deep: true },
   )
-
-  function forceUpdatePaths() {
-    nodesTrigger.value++
-  }
 
   function getPortPosition(nodeId, port) {
     const selector = `[data-port="${nodeId}:${port}"]`
@@ -125,19 +131,35 @@ export function useConnections() {
   }
 
   const paths = computed(() => {
+    if (!isDomReady.value) return []
+
     nodesTrigger.value
-    const realPaths = (editorStore.connections || [])
-      .map((conn) => {
-        if (!conn || !conn.from || !conn.to) return null
-        return buildPath(conn.from, conn.to)
-      })
+
+    const realPaths = editorStore.connections
+      .map((conn) => buildPath(conn.from, conn.to))
       .filter(Boolean)
 
-    const tempPath = tempConnection.value ? buildTempPath(tempConnection.value) : null
-    if (tempPath) realPaths.push(tempPath)
+    if (tempConnection.value) {
+      realPaths.push(buildTempPath(tempConnection.value))
+    }
 
     return realPaths
   })
 
-  return { handleStartConnection, paths, forceUpdatePaths }
+  const activePorts = computed(() => {
+    const set = new Set()
+
+    for (const c of editorStore.connections) {
+      if (c.from) set.add(c.from)
+      if (c.to) set.add(c.to)
+    }
+
+    return set
+  })
+
+  function isPortActive(nodeId, portId) {
+    return activePorts.value.has(`${nodeId}:${portId}`)
+  }
+
+  return { handleStartConnection, paths, isPortActive }
 }
