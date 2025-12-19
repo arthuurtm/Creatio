@@ -2,7 +2,7 @@
 import { ref, shallowRef, markRaw, onMounted, onUnmounted, computed } from 'vue'
 import { useEditorConnection } from '@/composables/useEditorConnection'
 import { useEditorStore } from '@/stores/editor'
-import { nodes } from '@/lib/editor/index'
+import { categories, nodes } from '@/lib/editor/index'
 import { getNodeContextMenuItems, cloneNode, deleteNode } from '@/composables/useNodeFunctions'
 import TabDataPanelView from './TabDataPanelView.vue'
 import ComponentQuickEditPanel from '@/components/modules/ComponentQuickEditPanel.vue'
@@ -79,26 +79,43 @@ function handleCloseEditorTab() {
   tabData.value.component = null
 }
 
-function handleNodeContextMenu({ node, event }) {
-  openContextMenu(getNodeContextMenuItems(node), event)
-}
-
-function handleContextMenuSelect(item) {
-  const node = item.payload.node
-
+function handleCommandListAction(item) {
+  console.log(item)
   switch (item.command) {
-    case 'NODE.CLONE':
-      cloneNode(node)
+    case 'NODE.CLONE': {
+      cloneNode(item.data.node)
       break
-    case 'NODE.DELETE':
-      deleteNode(node.id)
+    }
+
+    case 'NODE.DELETE': {
+      deleteNode(item.data.node.id)
       break
-    case 'NODE.OPEN_PROPERTIES':
+    }
+
+    case 'NODE.OPEN_PROPERTIES_SCREEN': {
       quickPanelData.value = {
         visible: true,
-        data: node,
+        data: item.data.node,
       }
       break
+    }
+
+    case 'NODE.OPEN_ADD_DATA_MENU': {
+      openContextMenu(
+        Object.values(categories).map((c) => c.value),
+        item.data.event,
+      )
+      break
+    }
+
+    case 'NODE.OPEN_CONTEXT_MENU': {
+      openContextMenu(getNodeContextMenuItems(item.data.node), item.data.event)
+      break
+    }
+
+    default: {
+      console.log('Comando desconhecido para o menu de contexto: ', item)
+    }
   }
 }
 
@@ -145,7 +162,7 @@ onUnmounted(() => {
         <ComponentNode
           :nodes="editorStore.nodes"
           :zoom="zoom"
-          @node-context-menu="handleNodeContextMenu"
+          @emit-event="handleCommandListAction"
           :style="editorStyle"
           style="flex: 1; overflow: auto"
         />
@@ -191,8 +208,8 @@ onUnmounted(() => {
       </CGroup>
 
       <ComponentDialog v-bind="tabData" @close="handleCloseEditorTab" />
-      <CContextMenu @contextMenu.stop @select="handleContextMenuSelect" ref="contextMenuRef" />
     </CGroup>
+    <CContextMenu @contextMenu.stop @select="handleCommandListAction" ref="contextMenuRef" />
   </CGroup>
 </template>
 
