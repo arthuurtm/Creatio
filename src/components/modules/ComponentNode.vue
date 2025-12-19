@@ -7,18 +7,19 @@ const props = defineProps<{
   nodes: GameNode[]
   style?: CSSProperties | CSSProperties[] | string
 }>()
-const emit = defineEmits(['node-context-menu', 'emit-event'])
+const emit = defineEmits(['emit-event'])
 const { handleStartConnection, paths } = useConnections()
 
-function handleNodeRightClick(node: GameNode, event: MouseEvent) {
-  emit('node-context-menu', { node, event })
-}
-
-function emitEventHandler(e: { name: string; data: any }) {
-  if (e.name === 'start-connection') {
-    handleStartConnection(e.data)
-  } else {
-    emit('emit-event', e)
+function emitEventHandler(e: { command: string; [key: string]: any }) {
+  console.log(e)
+  switch (e.command) {
+    case 'NODE.CONNECTION': {
+      handleStartConnection(e.data)
+      break
+    }
+    default: {
+      emit('emit-event', e)
+    }
   }
 }
 </script>
@@ -32,7 +33,9 @@ function emitEventHandler(e: { name: string; data: any }) {
     <ComponentDialog
       v-for="node in props.nodes"
       :key="node.id"
-      v-on:contextmenu.stop="handleNodeRightClick(node, $event)"
+      v-on:contextmenu.stop="
+        emitEventHandler({ command: 'NODE.OPEN_CONTEXT_MENU', data: { node, event: $event } })
+      "
       v-on:contextmenu.prevent
       :title="node.id"
       v-model:x="node.position.x"
