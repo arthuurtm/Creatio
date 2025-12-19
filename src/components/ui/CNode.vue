@@ -14,16 +14,16 @@ const emit = defineEmits(['emit-event'])
 function handleDotMouseDown(socketId, event) {
   event.stopPropagation()
   const start = { x: event.clientX, y: event.clientY }
-  reEmitEvent('start-connection', {
+  emitEvent('NODE.CONNECTION', {
     nodeId: props.node.id,
     socketId,
     start,
   })
 }
 
-function reEmitEvent(name, data = {}) {
+function emitEvent(name, data = {}) {
   emit('emit-event', {
-    name,
+    command: name,
     data,
   })
 }
@@ -83,6 +83,13 @@ const hasMeta = computed(() => {
       <span class="node-type">{{ node.type }}</span>
 
       <div class="node-actions">
+        <CButton
+          icon="add_circle"
+          classes="symbolic"
+          title="Adicionar dados"
+          @click="emitEvent('NODE.OPEN_ADD_DATA_MENU', { event: $event })"
+        />
+
         <CButton
           v-if="choices.length"
           icon="alt_route"
@@ -148,7 +155,6 @@ const hasMeta = computed(() => {
 /* --- Base do Nó --- */
 .node {
   width: 280px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
 }
 
