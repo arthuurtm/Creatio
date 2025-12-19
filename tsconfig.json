@@ -13,6 +13,6 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "src/**/*.vue", "*.d.ts"],
+  "include": ["src/**/*.js", "src/**/*.vue", "*.d.ts", "src/**/*.ts"],
   "exclude": ["node_modules"]
 }

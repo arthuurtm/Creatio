@@ -4,15 +4,17 @@ import { watch } from 'vue'
 import { useSettingsStore } from '@/stores'
 const settings = useSettingsStore()
 watch(
-  () => settings.darkTheme,
+  () => settings.theme,
   (v) => {
-    document.documentElement.setAttribute('data-theme', v ? 'dark' : 'light')
+    document.documentElement.setAttribute('data-theme', v)
   },
   { immediate: true },
 )
 </script>
 
 <template>
-  <RouterView />
-  <ComponentGamepad />
+  <v-app>
+    <RouterView />
+    <ComponentGamepad />
+  </v-app>
 </template>
