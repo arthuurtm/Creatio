@@ -1,18 +1,17 @@
 import { useEditorStore } from '@/stores/editor'
 
-const createNode = (x, y, params = {}) => {
+function createNode(x, y, params = {}) {
   const editorStore = useEditorStore()
   const id = 'node' + Date.now()
   const node = {
     id,
-    x,
-    y,
+    position: { x, y },
     type: params.type || 'default',
-    content: {},
+    content: params.content || {},
     links: params.links || [],
   }
   editorStore.nodes.push(node)
-  return node
+  return id
 }
 
 // Função interna para deletar (exemplo simples)
@@ -33,15 +32,20 @@ const cloneNode = (node) => {
 
 function getNodeContextMenuItems(node) {
   return [
-    { text: 'Duplicar', icon: 'content_copy', command: 'NODE.CLONE', payload: { node } },
+    { text: 'Duplicar', icon: 'content_copy', command: 'NODE.CLONE', node },
     {
       text: 'Excluir',
       icon: 'delete',
       classes: 'destructive',
       command: 'NODE.DELETE',
-      payload: { node },
+      node,
     },
-    { text: 'Propriedades', icon: 'tune', command: 'NODE.OPEN_PROPERTIES', payload: { node } },
+    {
+      text: 'Propriedades',
+      icon: 'tune',
+      command: 'NODE.OPEN_PROPERTIES_SCREEN',
+      node,
+    },
   ]
 }
 
