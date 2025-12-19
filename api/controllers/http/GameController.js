@@ -11,9 +11,18 @@ async function getAnyGameController(req, res, next) {
 
 async function setGameOnDatabaseController(req, res, next) {
   try {
-    const { title, description } = req?.body
-    const { id: userId } = req.user
-    const result = await setGameOnDatabase({ title, description, userId })
+    // 1. Recebe os dados (state.info.id aqui ainda é null)
+    const { title, description, version, state } = req?.body
+    const { id: userId } = req?.user
+    const { accessToken } = req
+    const result = await setGameOnDatabase({
+      title,
+      description,
+      userId,
+      accessToken,
+      state,
+      version,
+    })
     res.json(result)
   } catch (err) {
     next(err)

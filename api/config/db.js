@@ -1,29 +1,25 @@
-// Arquivo: database/index.js (ou onde preferir)
-
 import { Sequelize } from 'sequelize'
-import mariadb from 'mariadb'
+import mysql from 'mysql2/promise'
 import log from '../helpers/console.js'
 
 async function initialize() {
   try {
     // garantir que o banco de dados exista
-    const pool = mariadb.createPool({
+    const connection = await mysql.createConnection({
       host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
     })
 
-    let conn
     try {
-      conn = await pool.getConnection()
-      await conn.query(
-        `CREATE DATABASE IF NOT EXISTS \`${process.env.DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci;`,
+      await connection.query(
+        `CREATE DATABASE IF NOT EXISTS \`${process.env.DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;`
       )
       log.info('Database verificado/criado com sucesso!')
-    } finally {
-      if (conn) conn.release()
-      // serviu apenas para criar o DB, fechado
-      await pool.end()
+    } catch(err) {
+      log.error('Erro ao criar banco de dados: ', err)
+    }finally {
+      await connection.end()
     }
 
     // criar e autenticar a instância do Sequelize
@@ -33,8 +29,8 @@ async function initialize() {
       process.env.DB_PASSWORD,
       {
         host: process.env.DB_HOST || 'localhost',
-        dialect: 'mariadb',
-        logging: false, // não poluir o console
+        dialect: 'mysql',
+        // logging: false,
       },
     )
 

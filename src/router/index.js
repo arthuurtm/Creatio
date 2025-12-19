@@ -13,12 +13,12 @@ import ViewGameDetails from '@/views/game/general/GameDetailsView.vue'
 import ViewHome from '@/views/user/HomeView.vue'
 import ViewUserProfile from '@/views/user/UserProfileView.vue'
 import ViewGameRun from '@/views/game/general/GameRunView.vue'
-import CreateHome from '@/views/game/edit/HomeView.vue'
+import ProjectsView from '@/views/game/edit/ProjectsView.vue'
 import GameEdit from '@/views/game/edit/GameEditView.vue'
 
 // Layouts
 import LayoutBase from '@/layouts/LayoutBase.vue'
-import LayoutForm from '@/layouts/LayoutForm.vue'
+import LayoutForm from '@/layouts/LayoutPageForm.vue'
 
 /**
  * @typedef {Object} RouteMeta
@@ -32,7 +32,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: LayoutBase, // layout principal
+      component: LayoutBase,
       children: [
         { path: '', name: 'About', component: ViewAbout },
         { path: 'home', name: 'Home', component: ViewHome },
@@ -50,15 +50,15 @@ const router = createRouter({
           ],
         },
         {
-          path: 'lab',
+          path: 'projects',
           children: [
-            { path: '', name: 'CreateHome', component: CreateHome, meta: { requiresAuth: true } },
+            { path: '', name: 'CreateHome', component: ProjectsView, meta: { requiresAuth: true } },
             {
               path: ':id/edit',
               name: 'EditGame',
               component: GameEdit,
               props: true,
-              meta: { requiresAuth: true, hiddenNavigator: true },
+              meta: { requiresAuth: true, hiddenNavigator: true, fullscreen: true },
             },
           ],
         },
@@ -67,7 +67,6 @@ const router = createRouter({
 
     {
       path: '/auth',
-      component: LayoutForm, // layout de formulários
       children: [
         { path: 'login', name: 'Login', component: FormLogin, meta: { requiresAuth: false } },
         { path: 'signup', name: 'Signup', component: FormSignup, meta: { requiresAuth: false } },

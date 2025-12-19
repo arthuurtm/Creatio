@@ -27,7 +27,7 @@ for file in $(find . -maxdepth 1 -type f -name "*.mjs"); do
 done
 
 # Inicia o servidor de exibição do site
-npm run dev
+pnpm run dev
 
 # Aguardar a execução de todos os processos em segundo plano
 echo "Serviços sendo executados em segundo plano. Ctrl + C para sair;"

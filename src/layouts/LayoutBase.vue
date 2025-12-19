@@ -1,57 +1,134 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import ComponentNavigator from '@/components/modules/ComponentNavigator.vue'
+import { useRoute, useRouter } from 'vue-router'
+import ComponentNavigator from '@/components/modules/ComponentHeader.vue'
+import { useUserStore } from '@/stores'
+import { http } from '@/functions/'
 
 const route = useRoute()
+const router = useRouter()
+const user = useUserStore()
 const pageMeta = computed(() => route?.meta)
-const navigator = ref(null)
-const pageName = computed(() => route?.name)
+const isAuthenticated = computed(() => user.getIsAuth)
+const contextMenuRef = ref(null)
+const dialogData = ref(null)
+const isDialogVisible = ref(false)
+
+const handleDialogMessageEvent = (e) => {
+  if (e?.action) {
+    e.action()
+  }
+  isDialogVisible.value = !isDialogVisible.value
+}
+
+const handleLogout = () => {
+  isDialogVisible.value = true
+  dialogData.value = {
+    title: 'Sair',
+    message: 'Você quer mesmo sair?',
+    buttons: [{ text: 'Não' }, { text: 'Sim', class: 'confirm', action: () => http.auth.logout() }],
+  }
+}
+
+const openMoreOptions = (event) => {
+  event.preventDefault()
+  contextMenuRef.value.openContextMenu(
+    [
+      {
+        items: [
+          {
+            text: 'Meu Perfil',
+            icon: 'account_circle',
+            action: () => router.push({ name: 'UserProfile' }),
+          },
+        ],
+      },
+      {
+        items: [
+          { text: 'Configurações', icon: 'settings' },
+          { text: 'Sair', icon: 'logout', action: handleLogout },
+        ],
+      },
+    ],
+    event,
+  )
+}
+
+const navLinks = computed(() => {
+  return {
+    left: [
+      { text: 'HOME', action: () => router.push({ name: 'Home' }) },
+      { text: 'JOGOS', action: () => router.push({ name: 'GamesView' }) },
+      { text: 'PROJETOS', action: () => router.push({ name: 'CreateHome' }) },
+      { text: 'SOBRE', action: () => router.push({ name: 'About' }) },
+    ],
+    right: [
+      {
+        icon: 'inbox',
+        text: 'Notificações',
+        action: () => console.log('Abrir notificações'),
+        hidden: !isAuthenticated.value,
+      },
+      {
+        img: {
+          src: user.getProfilePicture,
+          alt: 'Foto de perfil',
+          class: 'profile-picture',
+        },
+        id: 'user-info',
+        action: (e) => openMoreOptions(e),
+        hidden: !isAuthenticated.value,
+      },
+    ],
+  }
+})
 </script>
 
 <template>
   <div class="app-container">
-    <div class="app-content" :class="[pageMeta.hiddenNavigator && 'overlay-nav']">
-      <div class="app-navigator">
-        <ComponentNavigator
-          :hidden="pageMeta.hiddenNavigator"
-          :page="pageName"
-          :defaultHideButton="true"
-          @navigatorStatus="updateNavStatus"
-          ref="navigator"
-        />
-      </div>
-
-      <div class="app-view" :class="[pageMeta.fullscreen && 'full']">
-        <router-view v-slot="{ Component }">
-          <transition name="fastFade" mode="out-in">
-            <div :key="route.path" style="width: 100%; height: 100%">
-              <component :is="Component" />
-            </div>
-          </transition>
-        </router-view>
-      </div>
+    <ComponentNavigator :hidden="pageMeta.hiddenNavigator" :nav-links="navLinks" />
+    <div
+      class="app-content"
+      :class="[pageMeta.hiddenNavigator && 'overlay-nav', pageMeta.fullscreen && 'full']"
+    >
+      <router-view v-slot="{ Component }">
+        <transition name="fastFade" mode="out-in">
+          <CGroup grow :key="Component">
+            <component :is="Component" />
+          </CGroup>
+        </transition>
+      </router-view>
     </div>
+    <CContextMenu ref="contextMenuRef" />
+    <ComponentDialog v-model:is-visible="isDialogVisible" :title="dialogData?.title">
+      <DialogMessage :dialog-data="dialogData" @click="handleDialogMessageEvent" />
+    </ComponentDialog>
   </div>
 </template>
 
 <style scoped>
 .app-container {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  grid-template-columns: 1fr;
+  display: flex;
   height: 100%;
   width: 100%;
   position: relative;
+  flex-direction: column;
+}
+
+.app-header {
+  height: auto;
 }
 
 .app-content {
-  display: grid;
-  flex-direction: column;
-  grid-row: 2;
+  display: flex;
+  overflow: auto;
+  padding: 0.5rem;
+  z-index: 1;
   height: 100%;
-  overflow: hidden;
-  grid-template-columns: auto 1fr;
+}
+
+.app-content.full {
+  padding: 0;
 }
 
 .app-navigator {
@@ -59,37 +136,12 @@ const pageName = computed(() => route?.name)
   position: sticky;
   grid-column: 1;
   z-index: 2;
-  background: var(--navigator);
-}
-
-.app-view {
-  padding: 1rem 0 1rem 1rem;
-  overflow-y: auto;
-  flex-grow: 1;
-  z-index: 1;
-  grid-column: 2;
-  height: 100%;
-}
-
-.app-view.full {
-  padding: 0;
 }
 
 /* --- MODO MENU ESCONDIDO (QUANDO hidden é ativo) --- */
 .app-content.overlay-nav {
   grid-template-columns: 1fr;
   position: relative;
-}
-
-.app-content.overlay-nav .app-navigator {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-}
-
-.app-content.overlay-nav .app-view {
-  grid-column: 1;
 }
 
 @media (max-width: 600px) {

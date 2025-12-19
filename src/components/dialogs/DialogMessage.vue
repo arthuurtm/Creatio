@@ -1,60 +1,41 @@
 <template>
-  <div class="modal" @click.stop>
-    <div class="modal-message">
+  <CGroup
+    padding="10px"
+    min-width="300px"
+    background="transparent"
+    direction="column"
+    align="center"
+    @click.stop
+  >
+    <CGroup align="center" padding="10px 30px">
       <p>{{ params.message }}</p>
-    </div>
-    <div class="modal-buttons">
-      <CreateButton :buttons="params.buttons" @emitEvent="$emit('close')" />
-    </div>
-  </div>
+    </CGroup>
+    <CGroup gap="0.5rem" justify="center" align="center" width="100%">
+      <CButton
+        v-for="(btn, index) in params.buttons"
+        :key="index"
+        :text="btn.text"
+        :classes="[btn.class, 'full']"
+        @click="$emit('click', btn)"
+      />
+    </CGroup>
+  </CGroup>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { useAppDynamicDialog } from '@/stores'
-
-const dialog = useAppDynamicDialog()
-const params = computed(() => dialog.getData || [{}])
-if (!params.value.buttons) {
-  params.value.buttons = [
+const props = defineProps({
+  dialogData: Object,
+})
+defineEmits(['click'])
+const defaultValues = {
+  buttons: [
     {
       text: 'OK',
       class: 'confirm',
-      type: 'button',
     },
-  ]
+  ],
+  message: 'Ocorreu um erro ao carregar a mensagem.',
 }
-defineEmits('close')
+const params = computed(() => props.dialogData ?? defaultValues)
 </script>
-
-<style scoped>
-/* Estilo da janela modal */
-.modal {
-  background: transparent;
-  border-radius: 8px;
-  padding: 10px;
-  min-width: 300px;
-  max-width: 600px;
-  color: var(--text);
-}
-
-.modal-message {
-  padding: 10px 30px;
-  text-align: center;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.btn,
-.btn-destructive {
-  margin: 5px;
-}
-
-.callOverlay {
-  cursor: pointer;
-}
-</style>

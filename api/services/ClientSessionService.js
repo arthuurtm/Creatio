@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken'
 import log from '../helpers/console.js'
 
-async function createClientSession(userId, device) {
-  const accessToken = jwt.sign({ userId, device }, process.env.ACCESS_TOKEN_SECRET, {
+async function createClientSession(userId) {
+  const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: '15m',
   })
-  const refreshToken = jwt.sign({ userId, device }, process.env.REFRESH_TOKEN_SECRET, {
+  const refreshToken = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: '30d',
   })
 

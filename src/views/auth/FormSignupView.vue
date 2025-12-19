@@ -1,182 +1,119 @@
 <template>
-  <AppFormPage :title="'Crie sua conta'" :currentStep="currentStep">
-    <template #fields>
+  <AppFormPage :title="'Crie sua conta'" :currentStep="currentStep" :loading="loading" ref="form">
+    <template #form>
       <template v-if="currentStep === 1">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'text',
-              name: 'nickname',
-              model: 'nickname',
-              label: 'Nome de Exibição',
-              placeholder: 'Um nome criativo',
-            },
-            {
-              type: 'text',
-              name: 'username',
-              model: 'username',
-              label: 'Nome de Usuário',
-              placeholder: 'Seu nome de usuário',
-              required: true,
-            },
-          ]"
-          v-model="formData"
+        <CInputText
+          label="Nome de Exibição"
+          placeholder="Um nome criativo"
+          v-model="formData.nickname"
+        />
+        <CInputText
+          label="Nome de Usuário"
+          placeholder="Seu nome de usuário"
+          aria-required="true"
+          v-model="formData.username"
         />
       </template>
+
       <template v-if="currentStep === 2">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'email',
-              model: 'email',
-              label: 'Seu e-mail',
-              placeholder: 'Seu e-mail',
-              required: true,
-            },
-            {
-              type: 'date',
-              name: 'birthdate',
-              model: 'birthdate',
-              label: 'Data de nascimento',
-              placeholder: '',
-              required: true,
-              class: 'date',
-            },
-          ]"
-          v-model="formData"
+        <CInputText
+          type="email"
+          label="Seu e-mail"
+          placeholder="Seu e-mail"
+          aria-required="true"
+          v-model="formData.email"
+        />
+        <CInputText
+          type="date"
+          label="Data de nascimento"
+          aria-required="true"
+          class="date"
+          v-model="formData.birthdate"
         />
       </template>
+
       <template v-if="currentStep === 3">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'text',
-              name: 'verifyCode',
-              model: 'verifyCode',
-              label: 'Código de verificação',
-              placeholder: 'Código de verificação recebido no seu e-mail',
-              required: true,
-            },
-          ]"
-          v-model="formData"
+        <CInputText
+          label="Código de verificação"
+          placeholder="Código de verificação recebido no seu e-mail"
+          aria-required="true"
+          v-model="formData.verifyCode"
         />
       </template>
+
       <template v-if="currentStep === 4">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'password',
-              name: 'password',
-              model: 'passwd1',
-              id: 'passwd1',
-              label: 'Sua senha',
-              placeholder: 'Digite uma senha BEM segura!',
-              required: true,
-            },
-            {
-              type: 'password',
-              name: 'passwordConfirm',
-              model: 'passwd2',
-              id: 'passwd2',
-              label: 'Confirme sua senha',
-              placeholder: 'Re-digite sua senha!',
-              required: true,
-            },
-          ]"
-          v-model="formData"
+        <CInputPassword
+          id="passwd1"
+          label="Sua senha"
+          placeholder="Digite uma senha BEM segura!"
+          aria-required="true"
+          v-model="formData.passwd1"
+        />
+        <CInputPassword
+          id="passwd2"
+          label="Confirme sua senha"
+          placeholder="Re-digite sua senha!"
+          aria-required="true"
+          v-model="formData.passwd2"
         />
       </template>
     </template>
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <CreateButton
-          :buttons="[
-            {
-              text: 'Cancelar',
-              class: 'left symbolic critical no-padding no-scalling',
-              type: 'button',
-              action: () => pageRedirect({ name: 'Login' }),
-            },
-            {
-              text: 'Avançar',
-              class: 'confirm',
-              type: 'submit',
-              action: () => verifyIfUserExists(),
-            },
-          ]"
+        <CButton text="Cancelar" @click="() => pageRedirect({ name: 'Login' })" />
+        <CButton
+          text="Avançar"
+          class="confirm"
+          @click="() => loaderController(verifyIfUserExists)"
         />
       </template>
+
       <template v-if="currentStep === 2">
-        <CreateButton
-          :buttons="[
-            {
-              text: 'Voltar',
-              class: '',
-              type: 'button',
-              action: () => prevStep(),
-            },
-            {
-              text: 'Avançar',
-              class: 'confirm',
-              type: 'submit',
-              action: () => prepareVerifyCode(),
-            },
-          ]"
+        <CButton text="Voltar" @click="() => prevStep()" />
+        <CButton
+          text="Avançar"
+          class="confirm"
+          @click="() => loaderController(prepareVerifyCode)"
         />
       </template>
+
       <template v-if="currentStep === 3">
-        <CreateButton
-          :buttons="[
-            {
-              text: 'Voltar',
-              class: '',
-              type: 'button',
-              action: () => prevStep(),
-            },
-            {
-              text: 'Avançar',
-              class: 'confirm',
-              type: 'submit',
-              action: () => verifySecureCode(),
-            },
-          ]"
-        />
+        <CButton text="Voltar" @click="() => prevStep()" />
+        <CButton text="Avançar" class="confirm" @click="() => loaderController(verifySecureCode)" />
       </template>
+
       <template v-if="currentStep === 4">
-        <CreateButton
-          :buttons="[
-            {
-              text: 'Voltar',
-              class: '',
-              type: 'button',
-              action: () => prevStep(),
-            },
-            {
-              text: 'Cadastrar',
-              class: 'confirm',
-              type: 'submit',
-              action: () => signupUser(),
-            },
-          ]"
-        />
+        <CButton text="Voltar" @click="() => prevStep()" />
+        <CButton text="Cadastrar" class="confirm" @click="() => loaderController(signupUser)" />
       </template>
     </template>
   </AppFormPage>
 </template>
 
 <script setup>
-import AppFormPage from '@/layouts/LayoutForm.vue'
+import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { computed, watch, ref } from 'vue'
 import { http, form as stepForm } from '@/functions'
 import { useRouter } from 'vue-router'
 import { showToast } from '@/plugins/toast'
 
-const formData = ref({})
+const formData = ref({
+  nickname: null,
+  username: null,
+  email: null,
+  birthdate: null,
+  passwd1: null,
+  passwd2: null,
+  verifyCode: null,
+  sessionUUID: null,
+})
 const nicknameValue = computed(() => formData.value.nickname)
 const router = useRouter()
 
-const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 4 })
+const { currentStep, nextStep, prevStep, pageRedirect, loading, loaderController } = stepForm({
+  totalSteps: 4,
+})
 const sentCode = ref(false)
 
 watch(nicknameValue, (newNickname) => {

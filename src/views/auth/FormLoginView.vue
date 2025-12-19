@@ -1,85 +1,50 @@
 <template>
-  <AppFormPage :title="'Entre em sua conta'" :currentStep="currentStep">
-    <template #fields>
+  <AppFormPage title="Fazer login" subTitle="Acesse sua conta Creatio" :currentStep="currentStep">
+    <template #form>
       <template v-if="currentStep === 1">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'text',
-              name: 'identification',
-              model: 'identification',
-              label: 'Usuário ou e-mail',
-              placeholder: 'Digite seu nome de usuário ou e-mail',
-              required: true,
-            },
-          ]"
-          v-model="formData"
+        <CInputText
+          label="Usuário ou e-mail"
+          placeholder="Digite seu nome de usuário ou e-mail"
+          aria-required="true"
+          v-model="formData.identification"
         />
       </template>
 
       <template v-if="currentStep === 2">
-        <CreateTextField
-          :fields="[
-            {
-              type: 'password',
-              model: 'password',
-              label: 'Senha',
-              placeholder: 'Digite sua senha',
-              required: true,
-              anchor: {
-                text: 'Esqueci minha senha',
-                class: 'critical',
-                model: 'forgotPassword',
-                action: () => pageRedirect({ name: 'PasswordRescue' }),
-              },
-            },
-          ]"
-          v-model="formData"
-        />
+        <CGroup :direction="'column'" :gap="'0.5rem'">
+          <CInputPassword
+            label="Senha"
+            placeholder="Digite sua senha"
+            aria-required="true"
+            v-model="formData.password"
+          />
+          <CLink text="Esqueci minha senha" @click="$router.push({ name: 'PasswordRescue' })" />
+        </CGroup>
       </template>
     </template>
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <CreateButton
-          :buttons="[
-            {
-              position: 'left',
-              class: 'symbolic no-padding',
-              id: 'googleButton',
-            },
-            {
-              text: 'Criar conta',
-              class: 'symbolic normal no-scalling',
-              id: 'createAnAccountButton',
-              action: () => pageRedirect({ name: 'Signup' }),
-            },
-            {
-              text: 'Avançar',
-              class: 'confirm',
-              id: 'loginButton',
-              action: () => nextStep(),
-            },
-          ]"
+        <CButton
+          style="margin-right: auto"
+          text="Criar conta"
+          classes="symbolic normal no-scalling"
+          id="createAnAccountButton"
+          @click="pageRedirect({ name: 'Signup' })"
         />
+        <!-- <CButton id="googleButton" classes="symbolic no-padding" /> -->
+        <CButton text="Avançar" classes="confirm" id="loginButton" autofocus @click="nextStep()" />
       </template>
 
       <template v-if="currentStep === 2">
-        <CreateButton
-          :buttons="[
-            {
-              text: 'Voltar',
-              type: 'submit',
-              action: () => prevStep(),
-            },
-            {
-              text: 'Entrar',
-              class: 'confirm',
-              id: 'loginButton',
-              type: 'submit',
-              action: () => handleLogin(),
-            },
-          ]"
+        <CButton text="Voltar" @click="prevStep()" />
+        <CButton
+          text="Entrar"
+          class="confirm"
+          id="loginButton"
+          type="submit"
+          autofocus
+          @click="() => handleLogin()"
         />
       </template>
     </template>
@@ -87,7 +52,7 @@
 </template>
 
 <script setup>
-import AppFormPage from '@/layouts/LayoutForm.vue'
+import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { http, form as stepForm } from '@/functions'
@@ -95,7 +60,7 @@ import { showToast } from '@/plugins/toast'
 const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 2 })
 
 // Dados do formulário
-const formData = ref({})
+const formData = ref({ identification: null, password: null })
 const route = useRoute()
 const redirect = route.query.redirect || false
 

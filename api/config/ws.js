@@ -15,7 +15,8 @@ function initializeWebSocket(server) {
     log.success('Cliente WebSocket conectado!')
 
     const cookies = cookie.parse(req.headers.cookie || '')
-    handleConnection(ws, wss, cookies)
+    ws.cookies = cookies
+    handleConnection(ws, wss)
 
     ws.on('error', (error) => {
       log.error('Erro no WebSocket: ', error)

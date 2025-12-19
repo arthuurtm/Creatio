@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref, watch, onUnmounted } from 'vue'
-import { useAppDynamicDialog } from '@/stores'
 
 const props = defineProps({
   component: Object,
@@ -9,32 +8,60 @@ const props = defineProps({
   componentProps: { type: Object, default: () => ({}) },
   x: { type: Number, default: null },
   y: { type: Number, default: null },
-  alwaysVisible: { type: Boolean, default: false },
+  isVisible: { type: Boolean, default: false },
   noCloseButton: { type: Boolean, default: false },
   noFocusWindow: { type: Boolean, default: false },
   isDraggable: { type: Boolean, default: false },
   noInterpolateSize: { type: Boolean, default: false },
+  fullscreen: { type: Boolean, default: false },
+  noTitleBar: { type: Boolean, default: false },
+  bordered: { type: Boolean, default: false },
+  noOverflow: { type: Boolean, default: false },
+  background: { type: String },
 })
 
-const dialog = useAppDynamicDialog()
-const showDialog = computed(() => dialog.getIsVisible || props.alwaysVisible)
+const isDisplaying = ref(props.isVisible)
 const showDialogAnim = ref(false)
-const emit = defineEmits(['update:x', 'update:y', 'emit-event'])
+const openTimeout = ref(null)
+const emit = defineEmits(['update:x', 'update:y', 'emit-event', 'close', 'update:isVisible'])
 
 function close() {
-  if (!dialog.getIsHistory) showDialogAnim.value = false
+  // cancela qualquer timer de abertura pendente
+  if (openTimeout.value) {
+    clearTimeout(openTimeout.value)
+    openTimeout.value = null
+  }
+
+  showDialogAnim.value = false
   setTimeout(() => {
-    dialog.close()
+    isDisplaying.value = false
+    emit('update:isVisible', false)
+    emit('close')
   }, 300)
 }
 
-watch(showDialog, (newValue) => {
-  if (newValue) {
-    setTimeout(() => {
-      showDialogAnim.value = newValue
-    }, 200)
-  }
-})
+watch(
+  () => props.isVisible,
+  (newValue) => {
+    if (openTimeout.value) {
+      clearTimeout(openTimeout.value)
+      openTimeout.value = null
+    }
+
+    if (newValue) {
+      isDisplaying.value = true
+      openTimeout.value = setTimeout(() => {
+        showDialogAnim.value = true
+        openTimeout.value = null
+      }, 200)
+    } else {
+      close()
+    }
+  },
+  {
+    immediate: true,
+  },
+)
 
 const touchHandlers = (() => {
   let touchTimeout = null
@@ -125,91 +152,93 @@ const dialogStyle = computed(() => {
   return {}
 })
 
+defineExpose({ close })
 onUnmounted(() => {
   stopDrag()
 })
 </script>
 
 <template>
-  <div
-    :class="!noFocusWindow ? 'dialog-shadow focus' : 'dialog-shadow disabled'"
-    v-show="showDialog"
-    @click="!noFocusWindow && close()"
-  >
+  <Transition :name="fullscreen ? 'slide-left-and-back' : ''" mode="out-in">
     <div
-      class="dialog-main"
-      :id="[]"
-      :class="[showDialogAnim && 'active', noInterpolateSize && 'noInterpolateSize']"
-      :style="dialogStyle"
-      @click.stop
+      :class="!noFocusWindow ? 'dialog-shadow focus' : 'dialog-shadow disabled'"
+      v-show="isDisplaying"
+      @click="!noFocusWindow && close()"
     >
       <div
-        class="title-bar"
+        class="dialog-main"
+        :id="[]"
+        :class="{
+          active: showDialogAnim,
+          noInterpolateSize,
+          fullscreen,
+          bordered,
+          noOverflow,
+        }"
+        :style="{ ...dialogStyle, background }"
+        @click.stop
         @touchstart="onTouchStart"
         @touchmove="onTouchMove"
         @touchend="onTouchEnd"
         @mousedown="handleMouseDown"
       >
-        <div class="options">
-          <div class="title">
-            <p>{{ props.title }}</p>
-          </div>
-          <div id="close">
-            <create-button
+        <div class="title-bar" :class="{ left: fullscreen }" v-if="!noTitleBar">
+          <p>{{ props.title }}</p>
+          <CGroup id="close">
+            <CButton
               v-if="!noCloseButton"
-              :buttons="[
-                {
-                  icon: 'close',
-                  class: 'symbolic no-padding no-scalling',
-                  id: 'close',
-                },
-              ]"
-              @click="close"
+              icon="close"
+              classes="symbolic no-padding no-scalling"
+              style="font-size: large"
+              @click="close()"
             />
-          </div>
+          </CGroup>
+        </div>
+        <div class="content">
+          <transition name="fastFade">
+            <component
+              v-if="component"
+              :is="component"
+              :key="props.component"
+              @close="close"
+              @emit-event="(e) => emit('emit-event', e)"
+              v-bind="componentProps"
+            />
+            <slot v-else />
+          </transition>
         </div>
       </div>
-      <div class="content">
-        <transition name="fastFade" mode="out-in">
-          <component
-            v-if="component"
-            :is="component"
-            :key="props.component"
-            @close="close"
-            @emit-event="(e) => emit('emit-event', e)"
-            v-bind="componentProps"
-          />
-          <slot v-else />
-        </transition>
-      </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style scoped>
-.dialog-shadow.focus {
-  position: fixed;
+.dialog-shadow {
+  position: absolute;
   display: flex;
+  z-index: 5;
+}
+.dialog-shadow.focus {
   top: 0;
   left: 0;
-  width: 100vw;
-  min-height: 100vh;
+  width: 100%;
+  min-height: 100%;
   justify-content: center;
   align-items: center;
   background-color: var(--overlay-bg);
-  z-index: 5;
 }
 
-.dialog-shadow.disabled {
-  display: flex;
+.dialog-shadow:has(> .dialog-main.fullscreen) {
+  /* border: 4px dashed red; */
+  width: -webkit-fill-available;
+  height: -webkit-fill-available;
 }
 
 .dialog-main {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 50px auto;
+  display: flex;
+  flex-direction: column;
   border-radius: 24px;
-  background: var(--background-alt);
+  background: var(--bg2);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   color: var(--text);
   transition:
@@ -224,54 +253,75 @@ onUnmounted(() => {
   width: auto;
   interpolate-size: allow-keywords;
   z-index: 6;
+  pointer-events: auto;
 }
 
 .dialog-main.noInterpolateSize {
   height: auto;
 }
 
-.dialog-shadow.disabled .dialog-main {
-  background: var(--secondary);
-}
-
 .dialog-main.active {
   height: auto;
+  overflow: auto;
+}
+
+.dialog-main.fullscreen {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  border: none;
+}
+
+.dialog-main.bordered {
+  border: 1px solid var(--border);
+}
+
+.dialog-main.noOverflow {
+  overflow: hidden;
+}
+
+.dialog-main.fullscreen .title-bar {
+  border-top: 1px solid var(--border);
+  border-bottom: unset;
 }
 
 .title-bar {
   display: flex;
   align-items: center;
+  justify-content: center;
   border-bottom: 1px solid var(--border);
-  padding: 10px;
+  padding: 10px 20px;
   position: relative;
 }
 
-.content {
-  display: block;
-}
-
-.title-bar .options {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.title-bar .options p {
+.title-bar p {
   margin: 0;
   font-size: 18px;
   font-weight: bold;
   color: var(--text);
+  text-align: center;
+  flex: 1;
+  position: absolute;
 }
 
-.title-bar .options #close {
+/* botão de fechar */
+.title-bar #close {
   all: unset;
+  display: flex;
   font-weight: bold;
   cursor: pointer;
-  position: absolute;
-  right: 1rem;
-  top: 0.5rem;
+  margin-left: auto;
+}
+
+.title-bar.left #close {
+  order: -1;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.content {
+  flex-grow: 1;
+  min-height: 0;
 }
 
 @media (max-width: 600px) {

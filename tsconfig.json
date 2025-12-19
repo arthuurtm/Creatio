@@ -1,0 +1,18 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "allowJs": true, // PERMITE arquivos JS no projeto
+    "checkJs": false, // NÃO valida erros dentro dos arquivos JS antigos
+    "strict": true, // É rigoroso nos arquivos TS
+    "noEmit": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "src/**/*.vue", "*.d.ts"],
+  "exclude": ["node_modules"]
+}

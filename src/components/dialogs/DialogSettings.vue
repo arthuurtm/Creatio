@@ -1,418 +1,461 @@
 <template>
-  <div class="container">
+  <div class="profile-container">
     <nav class="nav">
       <ul>
-        <CreateButton
-          :globalStyle="'justify-start'"
-          :rules="['noGroup']"
-          :buttons="[
-            {
-              id: 1,
-              text: 'Geral',
-              icon: 'settings',
-              class: 'symbolic',
-              action: () => handleNavPage(1, 'Geral'),
-            },
-            {
-              id: 2,
-              text: 'Conta',
-              icon: 'account_circle',
-              class: 'symbolic',
-              action: () => handleNavPage(2, 'Conta'),
-              rules: [!isAuth && 'hide'],
-            },
-            {
-              id: 3,
-              text: 'Segurança',
-              icon: 'security',
-              class: 'symbolic',
-              action: () => handleNavPage(3, 'Segurança'),
-              rules: [!isAuth && 'hide'],
-            },
-          ]"
-        />
+        <li
+          v-for="(btn, index) in navButtons"
+          :key="index"
+          :class="['nav-item', { selected: actualPage === btn.id }]"
+          @click="handleNavPage(btn.id, btn.text)"
+        >
+          <span class="material-symbols-rounded notranslate">{{ btn.icon }}</span>
+          <p>{{ btn.text }}</p>
+        </li>
       </ul>
     </nav>
+
     <div class="navPage">
-      <form @submit.prevent="handleAction">
-        <div class="pageContainer" :class="actualPage == 1 && 'active'">
-          <ul>
-            <li>
-              <p>Tema escuro</p>
-              <label class="switch">
-                <input type="checkbox" @change="toggleThemeColor" v-model="isDarkMode" />
-                <span class="slider"></span>
-              </label>
-            </li>
-            <li>
-              <p>Tema moderno</p>
-              <label class="switch">
-                <input type="checkbox" @change="toggleThemeGlassy" v-model="isGlassy" />
-                <span class="slider"></span>
-              </label>
-            </li>
-            <!-- <li>
-              <p>Menu lateral</p>
-              <label class="switch">
-                <input type="checkbox" @change="toggleSideBar" v-model="settings.getSideBar" />
-                <span class="slider"></span>
-              </label>
-            </li> -->
-          </ul>
-        </div>
+      <form @submit.prevent="handleSave" class="form-wrapper">
+        <CGroup class="card" v-show="actualPage === 1">
+          <template #title>Geral</template>
 
-        <div class="pageContainer" :class="actualPage == 2 && 'active'">
-          <ul>
-            <li>
-              <p>Foto de perfil</p>
-              <a>
-                <img :src="profilePicture" alt="Foto de perfil" class="profile-picture" />
-              </a>
-            </li>
-          </ul>
-        </div>
+          <div class="field-row">
+            <label>Tema escuro</label>
+            <CSwitch v-model="themeDark" />
+          </div>
 
-        <div class="pageContainer" :class="actualPage == 3 && 'active'">
-          <ul>
-            <li>
-              <p>Alterar senha</p>
-              <CreateButton
-                :buttons="[
-                  {
-                    icon: 'arrow_outward',
-                    class: 'symbolic',
-                    action: () => handleExtLink('PasswordRescue'),
-                  },
-                ]"
-              />
-            </li>
-            <li>
-              <p>Dispositivos conectados</p>
-              <CreateButton
-                :buttons="[
-                  {
-                    icon: 'visibility',
-                    class: 'symbolic',
-                    action: () => handleNavPage(3.1, 'Dispositivos'),
-                  },
-                ]"
-              />
-            </li>
-          </ul>
-        </div>
+          <div class="field-row">
+            <label>Notificações</label>
+            <CSelect
+              v-model="form.notifications"
+              :options="notificationOptions"
+              placeholder="Preferência de notificação"
+            />
+          </div>
+        </CGroup>
 
-        <div class="pageContainer" :class="actualPage == 3.1 && 'active'">
-          <CreateButton
-            :buttons="[
-              {
-                text: 'Desconectar todos',
-                position: 'center',
-              },
-            ]"
-            @emitEvent="disconnectAllDevices"
-          />
-          <ul class="devices">
-            <li class="device">
-              <div><b>Nome do dispositivo</b></div>
-              <p><b>Online</b></p>
-            </li>
-            <li v-for="(device, index) in connectedDevices" :key="index" class="device">
-              <div>
-                <div
-                  v-if="device.deviceOS === 'Android' || device.deviceOS === 'iOS'"
-                  class="material-symbols-rounded notranslate"
-                >
-                  smartphone
-                </div>
-                <div v-else class="material-symbols-rounded notranslate">computer</div>
-                <p>
-                  {{ device.deviceNavigator }} no {{ device.deviceOS }}
-                  <!-- {{ itsMe(device) && '(Você)' }} -->
-                </p>
+        <!-- ---- CONTA ---- -->
+        <CGroup class="card" v-show="actualPage === 2">
+          <template #title>Conta</template>
+
+          <div class="grid">
+            <div class="col avatar-col">
+              <label class="label">Foto de perfil</label>
+
+              <div class="avatar-preview">
+                <img
+                  :src="localProfilePic || profilePicture"
+                  alt="avatar"
+                  class="profile-picture"
+                />
               </div>
-              <p>
-                {{
-                  new Date(device.updatedAt).toLocaleString(undefined, {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                  })
-                }}
-              </p>
+
+              <input type="file" accept="image/*" @change="onFileChange" />
+              <div class="avatar-actions">
+                <CButton text="Remover" variant="ghost" @click="removeAvatar" />
+              </div>
+            </div>
+
+            <div class="col fields-col">
+              <div class="field">
+                <label>Nome de usuário</label>
+                <CInputText v-model="form.username" placeholder="username" />
+              </div>
+
+              <div class="field">
+                <label>Apelido</label>
+                <CInputText v-model="form.nickname" placeholder="nickname (opcional)" />
+              </div>
+
+              <div class="field">
+                <label>Email</label>
+                <CInputText v-model="form.email" type="email" placeholder="seu@exemplo.com" />
+              </div>
+
+              <div class="field">
+                <label>Data de nascimento</label>
+                <!-- CInputText com type date se suportado -->
+                <CInputText v-model="form.birthdate" type="date" />
+              </div>
+
+              <div class="actions">
+                <CButton text="Salvar alterações" type="submit" />
+                <CButton text="Cancelar" variant="ghost" @click="resetForm" />
+              </div>
+            </div>
+          </div>
+        </CGroup>
+
+        <!-- ---- SEGURANÇA ---- -->
+        <CGroup class="card" v-show="actualPage === 3">
+          <template #title>Segurança</template>
+
+          <div class="field-row">
+            <label>Alterar senha</label>
+            <CButton icon="arrow_outward" text="Alterar senha" @click="goToChangePassword" />
+          </div>
+
+          <div class="field-row">
+            <label>Dispositivos conectados</label>
+            <CButton
+              text="Gerenciar sessões"
+              variant="ghost"
+              @click="handleNavPage(3.1, 'Dispositivos')"
+            />
+          </div>
+
+          <div class="danger">
+            <CButton text="Desativar conta" variant="danger" @click="requestDisableAccount" />
+          </div>
+        </CGroup>
+
+        <!-- ---- DISPOSITIVOS ---- -->
+        <CGroup class="card" v-show="actualPage === 3.1">
+          <template #title>Dispositivos conectados</template>
+
+          <div class="center-row">
+            <CButton text="Desconectar todos" @click="disconnectAllDevices" />
+          </div>
+
+          <ul class="devices">
+            <li class="device" v-for="(device, idx) in connectedDevices" :key="idx">
+              <div class="device-left">
+                <span class="material-symbols-rounded notranslate">
+                  {{
+                    device.deviceOS === 'Android' || device.deviceOS === 'iOS'
+                      ? 'smartphone'
+                      : 'computer'
+                  }}
+                </span>
+                <div class="device-info">
+                  <b>{{ device.deviceNavigator }} — {{ device.deviceOS }}</b>
+                  <small v-if="itsMe(device)">(Este aparelho)</small>
+                </div>
+              </div>
+              <div class="device-right">
+                <small>{{ formatDate(device.updatedAt) }}</small>
+              </div>
             </li>
+            <li v-if="connectedDevices.length === 0">Nenhum dispositivo ativo.</li>
           </ul>
-        </div>
+        </CGroup>
       </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { http, util } from '@/functions/'
-import { computed, ref, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAppDynamicDialog, useUserStore, useSettingsStore } from '@/stores'
-import DialogMessage from './DialogMessage.vue'
+import { useUserStore, useSettingsStore } from '@/stores'
+import { http } from '@/functions/'
 
-// Stores e router
+/* ===== COMPONENTS QUE NÃO LOCALIZEI (COMENTEI PARA VOCÊ IMPLEMENTAR) ===== */
+/* import Toggle2FA from '@/components/ui/Toggle2FA.vue' // (opcional) */
+/* import AvatarUploader from '@/components/ui/AvatarUploader.vue' // (opcional) */
+/* import DialogConfirm from '@/components/dialogs/DialogConfirm.vue' // (opcional) */
+
 const router = useRouter()
 const user = useUserStore()
-const dialog = useAppDynamicDialog()
-const settings = useSettingsStore()
+const settingsStore = useSettingsStore()
 
-const isAuth = computed(() => user.getIsAuth)
-const profilePicture = computed(() => user.getProfilePicture)
-const selectedOption = ref(null)
 const actualPage = ref(1)
-const isDarkMode = ref(false)
-const isGlassy = ref(false)
-const isGoogleConnected = ref(false)
-const userData = ref({})
-const isSideBarEnable = computed(() => settings.getSideBar)
+const navButtons = [
+  { id: 1, text: 'Geral', icon: 'settings' },
+  { id: 2, text: 'Conta', icon: 'account_circle' },
+  { id: 3, text: 'Segurança', icon: 'security' },
+]
+const profilePicture = computed(() => user.getProfilePicture || '')
+const connectedDevices = ref([])
 
-function handleNavPage(value, name) {
-  actualPage.value = value
-  selectedOption.value = name ?? null
-  document.getElementById(1).classList.add('selected')
+const form = reactive({
+  email: '',
+  birthdate: '',
+  username: '',
+  nickname: '',
+  profilePic: '',
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  notifications: 'all',
+})
+
+const themeDark = computed({
+  get: () => settingsStore.darkTheme,
+  set: (value) => {
+    settingsStore.darkTheme = value
+    document.documentElement.setAttribute('data-theme', value ? 'dark' : 'light')
+  },
+})
+
+const localProfilePic = ref(null)
+
+const notificationOptions = [
+  { label: 'Todas', value: 'all' },
+  { label: 'Somente importantes', value: 'important' },
+  { label: 'Nenhuma', value: 'none' },
+]
+
+function handleNavPage(id, name = null) {
+  actualPage.value = id
 }
 
-function handleAction() {}
-
-function toggleThemeColor() {
-  util.appTheme(true)
+/* Carregar dados iniciais do usuário */
+async function loadUser() {
+  try {
+    form.email = user.getEmail ?? ''
+    form.username = user.getUsername ?? ''
+    form.nickname = user.getNickname ?? ''
+    form.birthdate = user.getBirthdate ?? ''
+    form.profilePic = user.getProfilePicture ?? ''
+    const sessions = await http.get({ type: 'database', route: 'getAllUserSessions' })
+    connectedDevices.value = sessions || []
+  } catch (err) {
+    console.error('loadUser error', err)
+  }
 }
 
-function toggleThemeGlassy() {
-  util.appTheme(false, true)
+onMounted(async () => {
+  await loadUser()
+})
+
+function onFileChange(e) {
+  const file = e.target.files && e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = () => {
+    localProfilePic.value = reader.result
+    form.profilePic = reader.result
+  }
+  reader.readAsDataURL(file)
 }
 
-function toggleSideBar() {
-  settings.setSideBar(!isSideBarEnable.value)
+function removeAvatar() {
+  localProfilePic.value = null
+  form.profilePic = null
 }
 
-function handleExtLink(name, params) {
-  if (params) params = {}
-  router.push({
-    name,
-    params,
-  })
-  dialog.close()
+/* Simula checagem se dispositivo é o atual */
+function itsMe(device) {
+  // TODO: compare com session atual (token) para identificar dispositivo atual
+  return false
+}
+
+function formatDate(iso) {
+  try {
+    return new Date(iso).toLocaleString()
+  } catch {
+    return iso
+  }
+}
+
+/* ----- AÇÕES de Segurança ---- */
+function goToChangePassword() {
+  router.push({ name: 'PasswordRescue' })
 }
 
 function disconnectAllDevices() {
-  dialog.setDialog(DialogMessage, {
-    title: 'Desconectar outras sessões',
-    message: 'Você tem certeza que deseja desconectar todas as outras sessões?',
-    buttons: [
-      {
-        text: 'Não',
-      },
-      {
-        text: 'Sim',
-        class: 'confirm',
-        action: () => {
-          http.auth.logoutAll()
-        },
-      },
-    ],
+  if (!confirm('Desconectar todas as sessões?')) return
+  http.auth.logoutAll()
+}
+
+/* desativar conta (soft delete) */
+function requestDisableAccount() {
+  if (!confirm('Tem certeza que deseja desativar sua conta?')) return
+  http.post({ type: 'database', route: 'disableAccount' }).then(() => {
+    http.auth.logout()
   })
 }
 
-const connectedDevices = ref([])
-
-onMounted(async () => {
-  let theme = util.appTheme()
-  isDarkMode.value = theme.isDark == true ? true : false
-  isGlassy.value = theme.isGlassy == true ? true : false
-
-  const gToken = http.get({ type: 'database', route: 'getUserBasics' })
-  if (gToken.ok) {
-    let data = gToken.json()
-    if (data.gToken != '' || data.gToken != null) {
-      isGoogleConnected.value = true
-      userData.value = data
+async function handleSave() {
+  try {
+    if (!form.email || !form.username) {
+      alert('Preencha email e nome de usuário.')
+      return
     }
-  }
 
-  let result = await http.get({ type: 'database', route: 'getAllUserSessions' })
-  connectedDevices.value = result
-})
+    const payload = {
+      email: form.email,
+      username: form.username,
+      nickname: form.nickname,
+      birthdate: form.birthdate,
+      profilePic: form.profilePic,
+      preferences: {
+        language: form.language,
+        timezone: form.timezone,
+        notifications: form.notifications,
+        themeGlassy: form.themeGlassy,
+        twoFactorEnabled: form.twoFactorEnabled,
+      },
+    }
+
+    const res = await http.post({ type: 'database', route: 'updateUser' }, payload)
+
+    if (res && (res.ok || res.success)) {
+      // Atualiza store local se quiser
+      // TODO: user.setProfile(...) ou refazer fetch
+      alert('Alterações salvas com sucesso.')
+    } else {
+      // fallback
+      console.error('save error', res)
+      alert('Erro ao salvar as alterações.')
+    }
+  } catch (err) {
+    console.error(err)
+    alert('Erro ao salvar alterações.')
+  }
+}
+
+function resetForm() {
+  loadUser()
+}
 </script>
 
 <style scoped>
-.container {
+.profile-container {
   display: flex;
-  max-height: 60vh;
-  overflow-x: hidden;
-  flex-direction: row;
+  gap: 18px;
+  width: 100%;
+  min-height: 360px;
+  align-items: flex-start;
 }
 
+/* NAV */
 .nav {
-  padding: 15px 20px;
+  padding: 16px;
   border-right: 1px solid var(--border);
+  min-width: 160px;
+}
+.nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.nav-item .material-symbols-rounded {
+  font-size: 20px;
+}
+.nav-item.selected,
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text);
 }
 
-.nav ul {
+/* PAGE */
+.navPage {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  max-height: 70vh;
+  width: 100%;
+}
+.form-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Card básico layout */
+.card {
+  padding: 12px;
+}
+
+/* GRID (avatar + fields) */
+.grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.avatar-col {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
-ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav a {
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-elevated);
   display: flex;
-  flex-direction: row;
-  gap: 5px;
-  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+img.profile-picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.nav a p {
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 16px;
+/* fields */
+.field {
+  margin-bottom: 8px;
+}
+.field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
-.nav a:hover {
-  color: var(--mh-options-hover);
+/* actions */
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
 }
-
-.nav a span {
-  margin-top: 3px;
-  font-size: 24px;
-}
-
-.navPage {
-  height: auto;
-  padding: 15px;
-  color: var(--text);
-  font-size: 16px;
+.center-row {
   display: flex;
   justify-content: center;
-  overflow-y: auto;
-  width: -webkit-fill-available;
-  /* border-left: 1px solid var(--border); */
+  margin-bottom: 12px;
 }
 
-form,
-.pageContainer,
-.pageContainer .ul {
-  width: 100%;
-  height: auto;
+/* devices list */
+.devices {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
-
-.pageContainer {
-  display: none;
-}
-
-.pageContainer.active {
-  display: block;
-}
-
-/* Estilização de li */
-li {
-  display: block;
-  width: 100%;
-}
-
-li:last-child {
-  border-bottom: none;
-}
-
-.nav a {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  align-items: center;
-  width: 100%;
-  text-decoration: none;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.nav a:hover {
-  background-color: var(--bg-hover);
-}
-
-.navPage ul li {
+.device {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  padding: 8px;
+  border-bottom: 1px dashed var(--border);
 }
-
-img.profile-picture {
-  width: 30px;
-  height: auto;
-  padding: 10px;
-  border-radius: 50%;
-}
-
-ul.devices li > div {
+.device-left {
   display: flex;
+  gap: 8px;
   align-items: center;
-  width: 100%;
-  gap: 0.5rem;
 }
 
-ul.devices li > p {
-  font-size: 16px;
-  text-align: end;
-}
-
-@media (min-width: 601px) {
-  .container {
-    min-width: 500px;
-  }
-}
-
-@media (max-width: 600px) {
-  .container {
-    margin-bottom: 10px;
-    height: auto;
-    interpolate-size: allow-keywords;
-    overflow-y: auto;
-    max-height: 100%;
+/* responsive */
+@media (max-width: 720px) {
+  .profile-container {
     flex-direction: column;
   }
-
-  .navPage {
-    max-height: 70vh;
-  }
-
   .nav {
+    display: flex;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    padding: 0;
-    /* position: absolute; */
-    bottom: 0;
-    width: 100%;
-    background-color: var(--bg);
+    min-width: 100%;
   }
-
-  .nav ul {
-    gap: 0;
-    flex-direction: row;
+  .grid {
+    grid-template-columns: 1fr;
   }
-
-  ul {
-    display: flex;
-    flex-direction: row;
-    overflow-x: scroll;
-  }
-
-  a {
-    padding: 0;
-  }
-
-  .pageContainer ul {
-    flex-direction: column;
+  .navPage {
+    max-height: none;
   }
 }
 </style>

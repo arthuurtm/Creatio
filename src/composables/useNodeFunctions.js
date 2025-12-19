@@ -1,232 +1,52 @@
-import CreateDynamicParams from '@/components/elements/CreateDynamicParams.vue'
-import { reactive, shallowRef } from 'vue'
+import { useEditorStore } from '@/stores/editor'
 
-const editorStore = reactive({
-  nodes: [],
-  connections: [],
-  objects: [
-    { label: 'teste1', id: crypto.randomUUID() },
-    { label: 'teste2', id: crypto.randomUUID() },
-    { label: 'teste3', id: crypto.randomUUID() },
-  ],
-  players: [],
-})
-
-// reseta editorStore
-function resetEditorStore() {
-  for (const key in editorStore) {
-    if (Array.isArray(editorStore[key])) {
-      editorStore[key].splice(0) // limpa array reativo
-    } else {
-      editorStore[key] = null // ou valor inicial
-    }
-  }
-}
-
-// fábrica de nodes
-const createNode = (x, y, params = {}) => {
+function createNode(x, y, params = {}) {
+  const editorStore = useEditorStore()
   const id = 'node' + Date.now()
   const node = {
     id,
-    x,
-    y,
+    position: { x, y },
     type: params.type || 'default',
-    content: {
-      actions: [...(params.actions || [])],
-      choices: [],
-      conditions: [],
-      consequences: [],
-    },
+    content: params.content || {},
     links: params.links || [],
   }
   editorStore.nodes.push(node)
-  return node
+  return id
 }
 
-const menuItemsConstructor = (obj) => {
+// Função interna para deletar (exemplo simples)
+const deleteNode = (nodeId) => {
+  const editorStore = useEditorStore()
+  const index = editorStore.nodes.findIndex((n) => n.id === nodeId)
+  if (index > -1) {
+    editorStore.nodes.splice(index, 1)
+    // Nota: Idealmente você também deve remover os links conectados a este node aqui
+  }
+}
+
+const cloneNode = (node) => {
+  createNode(node.x + 20, node.y + 20, {
+    type: node.type,
+  })
+}
+
+function getNodeContextMenuItems(node) {
   return [
+    { text: 'Duplicar', icon: 'content_copy', command: 'NODE.CLONE', node },
     {
-      items: obj.map((def) => ({
-        ...def,
-        component: def.component,
-        componentProps: def.componentProps,
-        text: def.text || def.label,
-        icon: def.icon,
-        action: def.action ? () => def.action() : null,
-      })),
+      text: 'Excluir',
+      icon: 'delete',
+      classes: 'destructive',
+      command: 'NODE.DELETE',
+      node,
+    },
+    {
+      text: 'Propriedades',
+      icon: 'tune',
+      command: 'NODE.OPEN_PROPERTIES_SCREEN',
+      node,
     },
   ]
 }
 
-/**
- * @abstract Funções para o controle correto de editorStore
- * @param {Object} param0
- * @param {Object} param0.node
- * @param {import('@/components/elements/CreateContextMenu.vue').default} param0.openContextMenu
- * @param {MouseEvent} param0.event
- * @returns} param0
- */
-const nodeOps = ({ openContextMenu }) => {
-  const add = {
-    action(node, action) {
-      node.content.actions.push({
-        id: 'action' + Date.now(),
-        ...action,
-      })
-    },
-    choice(node, text) {
-      node.content.choices.push({
-        id: 'choice' + Date.now(),
-        text,
-      })
-    },
-    condition(node, condition) {
-      node.content.conditions.push({
-        id: 'cond' + Date.now(),
-        ...condition,
-      })
-    },
-    consequence(node, consequence) {
-      node.content.consequences.push({
-        id: 'cons' + Date.now(),
-        ...consequence,
-      })
-    },
-    image(node, url) {
-      nodeOps.addAction(node, {
-        name: 'Definir imagem de fundo',
-        effect: { type: 'setBackgroundImage', url },
-      })
-    },
-  }
-
-  /**
-   *
-   * @abstract Retorna dados dos recursos dos nós
-   *
-   */
-  const get = {
-    nodeMenu: (e, node) => {
-      const definitions = [
-        {
-          text: 'Adicionar Condição',
-          icon: 'exclamation',
-          action: () => {
-            use.openConditionMenu(e, node)
-            return 'keep-open'
-          },
-        },
-        { text: 'Adicionar Consequência', icon: 'info' },
-        {
-          text: 'Adicionar ação',
-          icon: 'bolt',
-          action: () => {
-            openContextMenu(
-              [
-                {
-                  items: [
-                    {
-                      text: 'Imagem',
-                      icon: 'image',
-                      action: async () => {
-                        // const selectedFile = await util.selectFile('image/*')
-                        // const reqBody = new FormData()
-                        // reqBody.append('gameId', gameBasicData.value.gameId)
-                        // reqBody.append('version', gameBasicData.value.version)
-                        // reqBody.append('files', selectedFile.file)
-                        // const { urls } = await http.post(
-                        //   { type: 'file', route: 'upload' },
-                        //   reqBody,
-                        // )
-                        // nodeOps.setBackgroundImage(selectedNode, urls)
-                      },
-                    },
-                    {
-                      text: 'Áudio',
-                      icon: 'volume_down_alt',
-                      action: () => {
-                        nodeOps.setMusic()
-                      },
-                    },
-                    {
-                      text: 'Vídeo',
-                      icon: 'play_arrow',
-                    },
-                  ],
-                },
-              ],
-              e,
-            )
-            return 'keep-open'
-          },
-        },
-      ]
-      return menuItemsConstructor(definitions)
-    },
-
-    conditionsMenu: (e, node) => {
-      const definitions = [
-        {
-          text: 'Ter item',
-          action: () => {
-            openContextMenu(
-              menuItemsConstructor([
-                {
-                  component: shallowRef(CreateDynamicParams),
-                  componentProps: {
-                    data: { objects: menuItemsConstructor(editorStore.objects) },
-                    listener: (values) => {
-                      add.condition(node, values)
-                    },
-                  },
-                },
-              ]),
-              e,
-            )
-            return 'keep-open'
-          },
-        },
-        { text: 'Não ter item', params: ['no_item', 'key_sword'] },
-        { text: 'HP abaixo de', params: ['stat', 'hp', '<', 50] },
-        { text: 'HP acima de', params: ['stat', 'hp', '>', 50] },
-        { text: 'MP suficiente', params: ['stat', 'mp', '>=', 10] },
-        { text: 'Classe', params: ['class', 'mage'] },
-      ]
-      return menuItemsConstructor(definitions)
-    },
-  }
-
-  const set = {
-    setBackgroundImage(node, url) {
-      nodeOps.addAction(node, {
-        name: 'Definir imagem de fundo',
-        effect: { type: 'setBackgroundImage', url },
-      })
-    },
-    setMusic(node, url) {
-      nodeOps.addAction(node, {
-        name: 'Tocar música',
-        effect: { type: 'setMusic', url },
-      })
-    },
-    setSoundEffect(node, url) {
-      nodeOps.addAction(node, {
-        name: 'Efeito sonoro',
-        effect: { type: 'setSoundEffect', url },
-      })
-    },
-  }
-
-  const use = {
-    openNodeMenu(e, node) {
-      openContextMenu(get.nodeMenu(e, node), e)
-    },
-    openConditionMenu(e, node) {
-      openContextMenu(get.conditionsMenu(e, node), e)
-    },
-  }
-
-  return { get, use }
-}
-
-export { editorStore, createNode, nodeOps, resetEditorStore }
+export { createNode, deleteNode, cloneNode, getNodeContextMenuItems }

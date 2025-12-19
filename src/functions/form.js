@@ -10,6 +10,7 @@ import { useRouter } from 'vue-router'
 export default function useMultiStepForm(options = {}) {
   const currentStep = ref(options.initialStep || 1)
   const redirectWrapper = useRouter()
+  const loading = ref(false)
 
   function nextStep() {
     // Se um total de passos foi definido, não deixa passar do limite.
@@ -40,11 +41,24 @@ export default function useMultiStepForm(options = {}) {
     })
   }
 
+  async function loaderController(func) {
+    loading.value = true
+    try {
+      await func?.()
+    } catch (err) {
+      console.error('Erro ao processar função: ', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     currentStep,
+    loading,
     nextStep,
     prevStep,
     goToStep,
     pageRedirect,
+    loaderController,
   }
 }

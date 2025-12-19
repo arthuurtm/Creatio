@@ -1,44 +1,50 @@
 <template>
-  <div class="games-grid" :class="styleType">
-    <div class="content">
-      <div class="scroll-button" id="left">
-        <CreateButton
-          v-if="isEnableScrollButton"
-          @emitEvent="scrollLeft"
-          :buttons="[
-            {
-              icon: 'arrow_back_ios',
-              class: 'symbolic no-padding no-scalling',
-              id: 'left',
-            },
-          ]"
-        />
-      </div>
-
-      <div v-if="items && items.length > 0" class="sliding" ref="scrollContainer">
-        <CreateCard :card="items" :styleType="cardsType" @emitEvent="reEmitEvent" />
-      </div>
-
-      <div class="scroll-button" id="right">
-        <CreateButton
-          v-if="isEnableScrollButton"
-          @emitEvent="scrollRight"
-          :buttons="[
-            {
-              position: 'left',
-              icon: 'arrow_forward_ios',
-              class: 'symbolic no-padding no-scalling',
-              id: 'right',
-            },
-          ]"
-        />
-      </div>
+  <CGroup justify="between" grow>
+    <div class="scroll-button" id="left">
+      <CButton
+        v-if="isEnableScrollButton"
+        @emitEvent="scrollLeft"
+        icon="arrow_back_ios"
+        classes="symbolic no-padding no-scalling"
+        id="left"
+      />
     </div>
-  </div>
+
+    <div v-if="items && items.length > 0" class="sliding" ref="scrollContainer">
+      <CFeaturedGameCard
+        v-for="(card, index) in items"
+        :key="index"
+        :item="card"
+        :styleType="cardsType"
+        @click="card?.action"
+      />
+      <!-- <CFeaturedGameCard
+        :item="{
+          id: 'dark-realm',
+          title: 'The Dark Realm',
+          coverImage: 'https://ggayane.github.io/css-experiments/cards/dark_rider-cover.jpg',
+          characterImage:
+            'https://ggayane.github.io/css-experiments/cards/dark_rider-character.webp',
+        }"
+        size="large"
+      /> -->
+    </div>
+
+    <div class="scroll-button" id="right">
+      <CButton
+        v-if="isEnableScrollButton"
+        @emitEvent="scrollRight"
+        icon="arrow_forward_ios"
+        classes="symbolic no-padding no-scalling left"
+        id="right"
+      />
+    </div>
+  </CGroup>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import CFeaturedGameCard from '../ui/CFeaturedGameCard.vue'
 
 const props = defineProps({
   items: {
@@ -87,13 +93,7 @@ function reEmitEvent(args = {}) {
 </script>
 
 <style scoped>
-.games-grid {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.games-grid .content {
+.grid-man {
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-rows: 1fr;
@@ -101,7 +101,6 @@ function reEmitEvent(args = {}) {
   width: 100%;
   box-sizing: border-box;
   position: relative;
-  /* overflow-x: auto; */
   scroll-behavior: smooth;
 }
 
@@ -118,10 +117,10 @@ function reEmitEvent(args = {}) {
   box-sizing: border-box;
 }
 
-.games-grid.grade .content {
+.grid-man.grade {
   scroll-behavior: unset;
 }
-.games-grid.grade .sliding {
+.grid-man.grade .sliding {
   flex-wrap: wrap;
   justify-content: center;
   align-content: flex-start;
@@ -152,7 +151,7 @@ function reEmitEvent(args = {}) {
 }
 
 @media (max-width: 600px) {
-  .content .group-button {
+  .grid-man .group-button {
     display: none;
   }
   #btn {
