@@ -16,9 +16,10 @@ async function getBasicUserDataController(
 ) {
 	try {
 		const { userId, identification } = req.query;
-		if (!userId && !identification) throw new Error("Parâmetros insuficientes");
+		if (!userId && !identification)
+			throw new Error("Nenhum meio de identificação informado");
 		const id = String(userId ?? identification);
-		const data = await getBasicUserData(parseInt(id, 10));
+		const data = await getBasicUserData(id);
 		if (!data) return res.status(404).json({ error: "Usuário não encontrado" });
 		res.json(data);
 	} catch (err) {
@@ -108,7 +109,7 @@ async function validateSecureSession(
 			throw new Error("Código inválido ou expirado");
 		}
 
-		res.status(200).json({ sessionUUID: uuid });
+		res.status(200).json({ accessUUID: uuid });
 	} catch (err) {
 		next(err);
 	}
@@ -133,8 +134,8 @@ async function resetUserPasswordController(
 	next: NextFunction,
 ) {
 	try {
-		const { newPassword, sessionUUID } = req.body;
-		await resetUserPassword({ newPassword, accessToken: sessionUUID });
+		const { newPassword, accessUUID } = req.body;
+		await resetUserPassword({ newPassword, accessToken: accessUUID });
 		res.send();
 	} catch (err) {
 		next(err);

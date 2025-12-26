@@ -15,7 +15,7 @@ async function initialize() {
 			await connection.query(
 				`CREATE DATABASE IF NOT EXISTS \`${process.env.DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;`,
 			);
-			log.info("Database verificado/criado com sucesso!");
+			log.success("Banco de dados verificado/criado com sucesso!");
 		} catch (err) {
 			log.error("Erro ao criar banco de dados: ", err);
 		} finally {

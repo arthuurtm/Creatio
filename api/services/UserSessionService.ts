@@ -102,7 +102,7 @@ async function logoutAllSessions(userId: number, accessToken: string) {
 }
 
 async function getAnyUserSession(userId: number) {
-	if (!userId) throw Error("Parâmetros insuficientes.");
+	if (!userId) throw Error("Identificação do usuário da sessão não informado");
 	const sessions = await Session.findAll({ where: { userId } });
 	if (!sessions.length) {
 		throw new Error("Nenhuma sessão encontrada para o usuário");
@@ -122,43 +122,22 @@ async function deleteUserSession(accessToken: string) {
 }
 
 async function handleLogin(
-	type: string,
 	identification: string,
 	password: string,
 	userAgent: string,
+	type?: string,
 ) {
 	const parser = new UAParser();
 	const device: IResult = parser.setUA(userAgent).getResult();
 	let user: User | null;
 
-	switch (type) {
-		case "traditional": {
-			user = await User.findOne({
-				where: setUserDatabaseQuery({ value: identification }),
-			});
-			if (!user) throw new Error("Usuário não encontrado.");
+	user = await User.findOne({
+		where: setUserDatabaseQuery({ value: identification }),
+	});
+	if (!user) throw new Error("Usuário não encontrado.");
 
-			const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-			if (!isPasswordValid) throw new Error("Senha inválida.");
-			break;
-		}
-
-		case "google": {
-			const client = new OAuth2Client(env.VITE_GCLIENT_LOGIN_ID);
-			const ticket = await client.verifyIdToken({
-				idToken: identification,
-				audience: env.VITE_GCLIENT_LOGIN_ID,
-			});
-			const payload = ticket.getPayload();
-			if (!payload) throw Error("Erro interno no servidor.");
-			user = await User.findOne({ where: { email: payload.email } });
-			if (!user) throw new Error("Usuário não encontrado.");
-			break;
-		}
-
-		default:
-			throw new Error("Tipo de login inválido.");
-	}
+	const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+	if (!isPasswordValid) throw new Error("Senha inválida.");
 
 	const { accessToken, refreshToken } = await createUserSession(
 		user.id,

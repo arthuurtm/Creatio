@@ -10,7 +10,6 @@ User.hasMany(Session, {
 });
 Session.belongsTo(User, {
 	foreignKey: "userId",
-	as: "user",
 });
 
 User.hasMany(Game, {
@@ -23,22 +22,18 @@ Game.belongsTo(User, {
 
 User.hasMany(GameState, {
 	foreignKey: "userId",
-	as: "gameStates",
 	onDelete: "CASCADE",
 });
 GameState.belongsTo(User, {
 	foreignKey: "userId",
-	as: "user",
 });
 
 Game.hasMany(GameState, {
 	foreignKey: "gameId",
-	as: "gameStates",
 	onDelete: "CASCADE",
 });
 GameState.belongsTo(Game, {
 	foreignKey: "gameId",
-	as: "game",
 });
 
 sequelize.sync();
