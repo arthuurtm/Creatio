@@ -1,69 +1,68 @@
 <template>
-  <Transition name="slide-top">
-    <div class="header-container" v-if="!hidden">
-      <header class="header" id="header">
-        <div class="header-left">
-          <div class="header-info">
-            <CLogo
-              :style="['font-size: 2.5rem', 'cursor: pointer']"
-              @click="router.push({ name: 'Home' })"
-            />
-            <template v-if="title">
-              <p>x</p>
-              <p>
-                <b>{{ title }}</b>
-              </p>
-            </template>
-          </div>
-          <div class="separator"></div>
-          <nav class="main-nav">
-            <CButton
-              v-for="(btn, index) in finalNavLinks.left"
-              :key="index"
-              v-bind="btn"
-              :classes="[btn.class, 'symbolic upper']"
-              @click="btn.action?.()"
-            />
-          </nav>
-        </div>
+  <v-app-bar
+    v-if="!hidden"
+    border="b"
+    class="px-4"
+    elevation="0"
+    height="80"
+  >
+    <v-container class="d-flex align-center pa-0" style="max-width: 1280px">
 
-        <div class="header-right">
-          <CButton
-            v-for="(btn, index) in finalNavLinks.right"
-            :key="'right-' + index"
-            v-bind="btn"
-            :classes="[btn.class, 'symbolic']"
-            @click="btn?.action"
-          />
-        </div>
-      </header>
-    </div>
-  </Transition>
+      <div class="d-flex align-center gap-4">
+        <CLogo style="cursor: pointer" @click="router.push({ name: 'Home' })" />
+
+        <template v-if="title">
+          <span class="mx-4 text-grey">x</span>
+          <span class="text-h6 font-weight-bold">{{ title }}</span>
+        </template>
+      </div>
+
+      <v-divider class="mx-4" inset vertical />
+
+      <nav class="d-flex gap-4">
+        <CButton
+          v-for="(btn, index) in finalNavLinks.left"
+          :key="index"
+          v-bind="btn"
+          @click="btn.action?.()"
+        />
+      </nav>
+
+      <v-spacer /> <div class="d-flex gap-6">
+        <CButton
+          v-for="(btn, index) in finalNavLinks.right"
+          :key="'right-' + index"
+          v-bind="btn"
+          @click="btn?.action"
+        />
+      </div>
+    </v-container>
+  </v-app-bar>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import router from '@/router'
+  import { computed } from 'vue'
+  import router from '@/router'
 
-// Props
-const props = defineProps({
-  hidden: {
-    type: Boolean,
-    default: false,
-  },
-  navLinks: {
-    type: Object,
-    default: () => ({ left: [], right: [] }),
-  },
-  title: String,
-})
+  // Props
+  const props = defineProps({
+    hidden: {
+      type: Boolean,
+      default: false,
+    },
+    navLinks: {
+      type: Object,
+      default: () => ({ left: [], right: [] }),
+    },
+    title: String,
+  })
 
-const finalNavLinks = computed(() => {
-  return {
-    left: props.navLinks?.left,
-    right: [...(props.navLinks && Array.isArray(props.navLinks.right) ? props.navLinks.right : [])],
-  }
-})
+  const finalNavLinks = computed(() => {
+    return {
+      left: props.navLinks?.left,
+      right: [...(props.navLinks && Array.isArray(props.navLinks.right) ? props.navLinks.right : [])],
+    }
+  })
 </script>
 
 <style scoped>

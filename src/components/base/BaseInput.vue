@@ -37,7 +37,7 @@
 
 <script setup>
 import { ref, computed, useSlots } from 'vue'
-import { baseInputProps, baseInputEmits } from './BaseInput.props.js'
+import { baseInputProps, baseInputEmits } from './BaseInput.props.ts'
 import CLoading from '../ui/CLoading.vue'
 import CButton from '../ui/CButton.vue'
 

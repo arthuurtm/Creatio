@@ -1,99 +1,99 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import ComponentNavigator from '@/components/modules/ComponentHeader.vue'
-import { useUserStore } from '@/stores'
-import { http } from '@/functions/'
+  import { computed, ref } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import ComponentNavigator from '@/components/modules/ComponentHeader.vue'
+  import { http } from '@/functions/'
+  import { useUserStore } from '@/stores'
 
-const route = useRoute()
-const router = useRouter()
-const user = useUserStore()
-const pageMeta = computed(() => route?.meta)
-const isAuthenticated = computed(() => user.getIsAuth)
-const contextMenuRef = ref(null)
-const dialogData = ref(null)
-const isDialogVisible = ref(false)
+  const route = useRoute()
+  const router = useRouter()
+  const user = useUserStore()
+  const pageMeta = computed(() => route?.meta)
+  const isAuthenticated = computed(() => user.getIsAuth)
+  const contextMenuRef = ref(null)
+  const dialogData = ref(null)
+  const isDialogVisible = ref(false)
 
-const handleDialogMessageEvent = (e) => {
-  if (e?.action) {
-    e.action()
+  function handleDialogMessageEvent (e) {
+    if (e?.action) {
+      e.action()
+    }
+    isDialogVisible.value = !isDialogVisible.value
   }
-  isDialogVisible.value = !isDialogVisible.value
-}
 
-const handleLogout = () => {
-  isDialogVisible.value = true
-  dialogData.value = {
-    title: 'Sair',
-    message: 'Você quer mesmo sair?',
-    buttons: [{ text: 'Não' }, { text: 'Sim', class: 'confirm', action: () => http.auth.logout() }],
+  function handleLogout () {
+    isDialogVisible.value = true
+    dialogData.value = {
+      title: 'Sair',
+      message: 'Você quer mesmo sair?',
+      buttons: [{ text: 'Não' }, { text: 'Sim', class: 'confirm', action: () => http.auth.logout() }],
+    }
   }
-}
 
-const openMoreOptions = (event) => {
-  event.preventDefault()
-  contextMenuRef.value.openContextMenu(
-    [
-      {
-        items: [
-          {
-            text: 'Meu Perfil',
-            icon: 'account_circle',
-            action: () => router.push({ name: 'UserProfile' }),
-          },
-        ],
-      },
-      {
-        items: [
-          { text: 'Configurações', icon: 'settings' },
-          { text: 'Sair', icon: 'logout', action: handleLogout },
-        ],
-      },
-    ],
-    event,
-  )
-}
-
-const navLinks = computed(() => {
-  return {
-    left: [
-      { text: 'HOME', action: () => router.push({ name: 'Home' }) },
-      { text: 'JOGOS', action: () => router.push({ name: 'GamesView' }) },
-      { text: 'PROJETOS', action: () => router.push({ name: 'CreateHome' }) },
-      { text: 'SOBRE', action: () => router.push({ name: 'About' }) },
-    ],
-    right: [
-      {
-        icon: 'inbox',
-        text: 'Notificações',
-        action: () => console.log('Abrir notificações'),
-        hidden: !isAuthenticated.value,
-      },
-      {
-        img: {
-          src: user.getProfilePicture,
-          alt: 'Foto de perfil',
-          class: 'profile-picture',
+  function openMoreOptions (event) {
+    event.preventDefault()
+    contextMenuRef.value.openContextMenu(
+      [
+        {
+          items: [
+            {
+              text: 'Meu Perfil',
+              icon: 'account_circle',
+              action: () => router.push({ name: 'UserProfile' }),
+            },
+          ],
         },
-        id: 'user-info',
-        action: (e) => openMoreOptions(e),
-        hidden: !isAuthenticated.value,
-      },
-    ],
+        {
+          items: [
+            { text: 'Configurações', icon: 'settings' },
+            { text: 'Sair', icon: 'logout', action: handleLogout },
+          ],
+        },
+      ],
+      event,
+    )
   }
-})
+
+  const navLinks = computed(() => {
+    return {
+      left: [
+        { text: 'HOME', action: () => router.push({ name: 'Home' }) },
+        { text: 'JOGOS', action: () => router.push({ name: 'GamesView' }) },
+        { text: 'PROJETOS', action: () => router.push({ name: 'CreateHome' }) },
+        { text: 'SOBRE', action: () => router.push({ name: 'About' }) },
+      ],
+      right: [
+        {
+          icon: 'inbox',
+          text: 'Notificações',
+          action: () => console.log('Abrir notificações'),
+          hidden: !isAuthenticated.value,
+        },
+        {
+          img: {
+            src: user.getProfilePicture,
+            alt: 'Foto de perfil',
+            class: 'profile-picture',
+          },
+          id: 'user-info',
+          action: e => openMoreOptions(e),
+          hidden: !isAuthenticated.value,
+        },
+      ],
+    }
+  })
 </script>
 
 <template>
-  <div class="app-container">
+  <v-main>
     <ComponentNavigator :hidden="pageMeta.hiddenNavigator" :nav-links="navLinks" />
     <div
       class="app-content"
       :class="[pageMeta.hiddenNavigator && 'overlay-nav', pageMeta.fullscreen && 'full']"
     >
       <router-view v-slot="{ Component }">
-        <transition name="fastFade" mode="out-in">
-          <CGroup grow :key="Component">
+        <transition mode="out-in" name="fastFade">
+          <CGroup :key="Component" grow>
             <component :is="Component" />
           </CGroup>
         </transition>
@@ -103,7 +103,7 @@ const navLinks = computed(() => {
     <ComponentDialog v-model:is-visible="isDialogVisible" :title="dialogData?.title">
       <DialogMessage :dialog-data="dialogData" @click="handleDialogMessageEvent" />
     </ComponentDialog>
-  </div>
+  </v-main>
 </template>
 
 <style scoped>

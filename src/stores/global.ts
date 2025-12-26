@@ -6,11 +6,11 @@ export const useSettingsStore = defineStore('settings', {
   }),
 
   getters: {
-    themeMode: (state) => state.theme,
+    themeMode: state => state.theme,
   },
 
   actions: {
-    toggleTheme() {
+    toggleTheme () {
       this.theme = this.theme === 'dark' ? 'light' : 'dark'
     },
   },

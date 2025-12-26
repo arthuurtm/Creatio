@@ -1,8 +1,6 @@
-import { useToast } from 'vue-toastification'
+import { toast } from 'vue3-toastify'
 
-const toast = useToast()
-
-export function showToast({ type = 'default', message = '', timeout = 3000 }) {
+export function showToast ({ type = 'default', message = '', timeout = 3000 }) {
   console.log('Exibindo toast:', { type, message, timeout })
   const validTypes = ['success', 'error', 'info', 'warning', 'default']
 

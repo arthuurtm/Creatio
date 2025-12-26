@@ -1,19 +1,22 @@
-import { createApp } from 'vue'
-import Toast from 'vue-toastification'
-
+/**
+ * main.ts
+ *
+ * Bootstraps Vuetify and other plugins then mounts the App`
+ */
+import Antd from 'ant-design-vue'
+import { createApp, type App as VueApp } from 'vue'
+import Vue3Toasity, { type ToastContainerOptions } from 'vue3-toastify'
+import { registerPlugins } from '@/plugins'
 import App from './App.vue'
-import router from './router'
-
 import pinia from './plugins/pinia'
-import { vuetify } from '@/plugins/vuetify'
-
+import 'unfonts.css'
 import '@/assets/css/main.css'
-import 'vue-toastification/dist/index.css'
-import '@/assets/css/elements/e-toast.css'
+function resolveGLobalComponents (instance: VueApp<Element>) {
+  instance.use(Antd)
+}
 
 const app = createApp(App)
 app.use(pinia)
-app.use(router)
-app.use(Toast)
-app.use(vuetify)
+app.use(Vue3Toasity, { useHandler: resolveGLobalComponents } as ToastContainerOptions)
+registerPlugins(app)
 app.mount('#app')
