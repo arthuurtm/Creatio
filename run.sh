@@ -18,16 +18,10 @@ pids=()
 # Executa o servidor de arquivos
 podman start minio
 
-# Procurar por todos os arquivos .mjs **somente na raiz**
-cd api
-for file in $(find . -maxdepth 1 -type f -name "*.mjs"); do
-  echo "Executando $file com Node.js..."
-  node "$file" &
-  pids+=($!)  # Armazenar o PID do processo em segundo plano
-done
-
 # Inicia o servidor de exibição do site
-pnpm run dev
+pnpm run dev &
+cd api
+pnpm tsx 'api/server.mts'
 
 # Aguardar a execução de todos os processos em segundo plano
 echo "Serviços sendo executados em segundo plano. Ctrl + C para sair;"
