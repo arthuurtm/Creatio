@@ -2,14 +2,15 @@ import "#api/config/env.ts";
 import server from "#api/config/index.ts";
 import log from "#api/helpers/console.ts";
 
-// import { authenticateService } from "#api/services/EmailService.js";
+import { authenticateService } from "#api/services/EmailService.ts";
 
 const PORT = 3000;
 const startServer = async () => {
 	try {
 		// Lógicas de inicialização
-		// const authUrl = await authenticateService();
-		// log.info(`Abrindo no navegador [${authUrl}]`);
+		const mailService = await authenticateService();
+		if (!mailService.isAuth)
+			log.info(`Abrindo no navegador [${mailService.url}]`);
 
 		// Inicia o servidor
 		server.listen(PORT, () => {

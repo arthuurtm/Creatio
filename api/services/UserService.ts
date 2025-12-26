@@ -5,8 +5,7 @@ import {
 	consumeVerificationUUID,
 	createVerificationCode,
 } from "#api/services/2FAService.ts";
-
-// import { sendEmailService } from "#api/services/EmailService.js";
+import { sendEmailService } from "#api/services/EmailService.ts";
 
 interface VerificationCodeEmailParams {
 	email: string;
@@ -22,7 +21,7 @@ interface SignupUserParams {
 	email: string;
 	birthdate: Date;
 	password: string;
-	accessToken: string;
+	accessUUID: string;
 }
 
 interface ResetPasswordParams {
@@ -30,8 +29,8 @@ interface ResetPasswordParams {
 	accessToken: string;
 }
 
-async function getBasicUserData(id: number) {
-	if (!id) throw new Error("Parâmetros insuficientes");
+async function getBasicUserData(id: string) {
+	if (!id) throw new Error("Identificação do usuário não informada");
 
 	const query = setUserDatabaseQuery({ value: id });
 	const userData = await User.findOne({
@@ -59,12 +58,12 @@ async function setVerificationCodeAndSendEmail({
 }: VerificationCodeEmailParams) {
 	const { id, code, expiresAt } = await createVerificationCode(email, timeout);
 
-	// await sendEmailService({
-	// 	template,
-	// 	to: email,
-	// 	subject,
-	// 	verificationCode: code,
-	// });
+	await sendEmailService({
+		template,
+		to: email,
+		subject,
+		verificationCode: code,
+	});
 
 	return { id, code, expiresAt };
 }
@@ -75,9 +74,9 @@ async function signupUser({
 	email,
 	birthdate,
 	password,
-	accessToken,
+	accessUUID,
 }: SignupUserParams) {
-	await consumeVerificationUUID(accessToken);
+	await consumeVerificationUUID(accessUUID);
 	const birthDateObj = new Date(birthdate);
 	if (isNaN(birthDateObj.getTime()))
 		throw new Error("Data de nascimento inválida");
@@ -109,12 +108,12 @@ async function resetUserPassword({
 	user.passwordHash = passwordHash;
 	await user.save();
 
-	// await sendEmailService({
-	// 	template: "resetedPassword",
-	// 	to: email,
-	// 	subject: "A senha da sua conta foi redefinida!",
-	// 	username: user.nickname,
-	// });
+	await sendEmailService({
+		template: "resetedPassword",
+		to: email,
+		subject: "A senha da sua conta foi redefinida!",
+		username: user.nickname,
+	});
 }
 
 export {
