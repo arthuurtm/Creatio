@@ -17,6 +17,8 @@
     "#types/*": "./types/*"
   },
   "dependencies": {
+    "@fontsource/cantarell": "^5.2.8",
+    "@fontsource/inter": "^5.2.8",
     "@fontsource/roboto": "5.2.7",
     "@mdi/font": "7.4.47",
     "@slynova/flydrive": "^1.0.3",
