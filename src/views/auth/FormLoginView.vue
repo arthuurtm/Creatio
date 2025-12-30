@@ -2,50 +2,29 @@
   <AppFormPage title="Fazer login" subTitle="Acesse sua conta Creatio" :currentStep="currentStep">
     <template #form>
       <template v-if="currentStep === 1">
-        <CInputText
-          label="Usuário ou e-mail"
-          placeholder="Digite seu nome de usuário ou e-mail"
-          aria-required="true"
-          v-model="formData.identification"
-        />
+        <v-text-field label="Usuário ou e-mail" placeholder="Digite seu nome de usuário ou e-mail"
+          v-model="formData.identification" />
       </template>
 
       <template v-if="currentStep === 2">
-        <CGroup :direction="'column'" :gap="'0.5rem'">
-          <CInputPassword
-            label="Senha"
-            placeholder="Digite sua senha"
-            aria-required="true"
-            v-model="formData.password"
-          />
+        <v-container>
+          <v-password-field label="Senha" placeholder="Digite sua senha" aria-required="true"
+            v-model="formData.password" />
           <CLink text="Esqueci minha senha" @click="$router.push({ name: 'PasswordRescue' })" />
-        </CGroup>
+        </v-container>
       </template>
     </template>
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <CButton
-          style="margin-right: auto"
-          text="Criar conta"
-          classes="symbolic normal no-scalling"
-          id="createAnAccountButton"
-          @click="pageRedirect({ name: 'Signup' })"
-        />
-        <!-- <CButton id="googleButton" classes="symbolic no-padding" /> -->
-        <CButton text="Avançar" classes="confirm" id="loginButton" autofocus @click="nextStep()" />
+        <v-btn style="margin-right: auto" variant="text" text="Criar conta" id="createAnAccountButton"
+          @click="pageRedirect({ name: 'Signup' })" />
+        <v-btn text="Avançar" id="loginButton" autofocus @click="nextStep()" />
       </template>
 
       <template v-if="currentStep === 2">
-        <CButton text="Voltar" @click="prevStep()" />
-        <CButton
-          text="Entrar"
-          class="confirm"
-          id="loginButton"
-          type="submit"
-          autofocus
-          @click="() => handleLogin()"
-        />
+        <v-btn text="Voltar" variant="outlined" @click="prevStep()" />
+        <v-btn text="Entrar" id="loginButton" type="submit" autofocus @click="() => handleLogin()" />
       </template>
     </template>
   </AppFormPage>

@@ -2,47 +2,24 @@
   <AppFormPage :title="'Alterar senha'" :currentStep="currentStep" :loading="loading" ref="form">
     <template #form>
       <template v-if="currentStep === 1">
-        <CInputText
-          label="E-mail"
-          placeholder="Digite seu e-mail"
-          aria-required="true"
-          v-model="formData.email"
-        />
+        <CInputText label="E-mail" placeholder="Digite seu e-mail" aria-required="true" v-model="formData.email" />
       </template>
       <template v-if="currentStep === 2">
-        <CInputText
-          label="Código de verificação"
-          placeholder="Código de verificação recebido no seu e-mail"
-          aria-required="true"
-          v-model="formData.verifyCode"
-        />
+        <CInputText label="Código de verificação" placeholder="Código de verificação recebido no seu e-mail"
+          aria-required="true" v-model="formData.verifyCode" />
       </template>
       <template v-if="currentStep === 3">
-        <CInputPassword
-          id="psswd1"
-          label="Sua senha"
-          placeholder="Digite uma senha BEM segura!"
-          aria-required="true"
-          v-model="formData.passwd1"
-        />
-        <CInputPassword
-          id="psswd2"
-          label="Confirme sua senha"
-          placeholder="Re-digite sua senha!"
-          aria-required="true"
-          v-model="formData.passwd2"
-        />
+        <CInputPassword id="psswd1" label="Sua senha" placeholder="Digite uma senha BEM segura!" aria-required="true"
+          v-model="formData.passwd1" />
+        <CInputPassword id="psswd2" label="Confirme sua senha" placeholder="Re-digite sua senha!" aria-required="true"
+          v-model="formData.passwd2" />
       </template>
     </template>
 
     <template #buttons>
       <template v-if="currentStep === 1">
         <CButton text="Cancelar" @click="() => router.back()" />
-        <CButton
-          text="Avançar"
-          class="confirm"
-          @click="() => loaderController(prepareVerifyCode)"
-        />
+        <CButton text="Avançar" class="confirm" @click="() => loaderController(prepareVerifyCode)" />
       </template>
       <template v-if="currentStep === 2">
         <CButton text="Voltar" @click="() => prevStep()" />
@@ -68,7 +45,7 @@ const formData = ref({
   verifyCode: null,
   passwd1: null,
   passwd2: null,
-  sessionUUID: null,
+  accessUUID: null,
 })
 const router = useRouter()
 const form = ref({})
@@ -110,7 +87,7 @@ const prepareVerifyCode = async () => {
 
 const verifySecureCode = async () => {
   try {
-    const { sessionUUID } = await http.post(
+    const { accessUUID } = await http.post(
       {
         type: 'database',
         route: 'validateSecureSession',
@@ -120,7 +97,7 @@ const verifySecureCode = async () => {
         tokenId: formData.value.email,
       },
     )
-    formData.value.sessionUUID = sessionUUID
+    formData.value.accessUUID = accessUUID
     nextStep()
   } catch (err) {
     showToast({ type: 'error', message: err.message })
@@ -144,7 +121,7 @@ const resetPassword = async () => {
       },
       {
         newPassword: formData.value.passwd1,
-        sessionUUID: formData.value.sessionUUID,
+        accessUUID: formData.value.accessUUID,
       },
     )
 

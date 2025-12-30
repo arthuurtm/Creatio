@@ -1,112 +1,75 @@
 <template>
-  <AppFormPage :title="'Crie sua conta'" :currentStep="currentStep" :loading="loading" ref="form">
+  <AppFormPage :title="'Crie sua conta'" :currentStep="currentStep" :loading="loading">
+
     <template #form>
       <template v-if="currentStep === 1">
-        <CInputText
-          label="Nome de Exibição"
-          placeholder="Um nome criativo"
-          v-model="formData.nickname"
-        />
-        <CInputText
-          label="Nome de Usuário"
-          placeholder="Seu nome de usuário"
-          aria-required="true"
-          v-model="formData.username"
-        />
+        <v-text-field label="Nome de Exibição" placeholder="Um nome criativo" v-model="formData.nickname"
+          variant="outlined" />
+        <v-text-field label="Nome de Usuário" placeholder="Seu nome de usuário" v-model="formData.username"
+          variant="outlined" />
       </template>
 
       <template v-if="currentStep === 2">
-        <CInputText
-          type="email"
-          label="Seu e-mail"
-          placeholder="Seu e-mail"
-          aria-required="true"
-          v-model="formData.email"
-        />
-        <CInputText
-          type="date"
-          label="Data de nascimento"
-          aria-required="true"
-          class="date"
-          v-model="formData.birthdate"
-        />
+        <v-text-field type="email" label="Seu e-mail" placeholder="Seu e-mail" v-model="formData.email"
+          variant="outlined" />
+        <v-text-field type="date" label="Data de nascimento" v-model="formData.birthdate" variant="outlined" />
       </template>
 
       <template v-if="currentStep === 3">
-        <CInputText
-          label="Código de verificação"
-          placeholder="Código de verificação recebido no seu e-mail"
-          aria-required="true"
-          v-model="formData.verifyCode"
-        />
+        <v-text-field label="Código de verificação" placeholder="Código recebido no e-mail"
+          v-model="formData.verifyCode" variant="outlined" />
       </template>
 
       <template v-if="currentStep === 4">
-        <CInputPassword
-          id="passwd1"
-          label="Sua senha"
-          placeholder="Digite uma senha BEM segura!"
-          aria-required="true"
-          v-model="formData.passwd1"
-        />
-        <CInputPassword
-          id="passwd2"
-          label="Confirme sua senha"
-          placeholder="Re-digite sua senha!"
-          aria-required="true"
-          v-model="formData.passwd2"
-        />
+        <v-password-field id="passwd1" label="Sua senha" placeholder="Digite uma senha BEM segura!"
+          v-model="formData.passwd1" variant="outlined" />
+        <v-password-field id="passwd2" type="password" label="Confirme sua senha" placeholder="Re-digite sua senha!"
+          v-model="formData.passwd2" variant="outlined" />
       </template>
     </template>
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <CButton text="Cancelar" @click="() => pageRedirect({ name: 'Login' })" />
-        <CButton
-          text="Avançar"
-          class="confirm"
-          @click="() => loaderController(verifyIfUserExists)"
-        />
+        <v-btn :text="formData.username ? 'Cancelar' : 'Voltar'" :color="formData.username ? 'error' : 'secondary'"
+          :variant="formData.username ? 'flat' : 'outlined'" @click="pageRedirect({ name: 'Login' })" />
+        <v-btn text="Avançar" color="primary" @click="loaderController(verifyIfUserExists)" />
       </template>
 
       <template v-if="currentStep === 2">
-        <CButton text="Voltar" @click="() => prevStep()" />
-        <CButton
-          text="Avançar"
-          class="confirm"
-          @click="() => loaderController(prepareVerifyCode)"
-        />
+        <v-btn text="Voltar" variant="outlined" @click="prevStep()" />
+        <v-btn text="Avançar" color="primary" @click="loaderController(prepareVerifyCode)" />
       </template>
 
       <template v-if="currentStep === 3">
-        <CButton text="Voltar" @click="() => prevStep()" />
-        <CButton text="Avançar" class="confirm" @click="() => loaderController(verifySecureCode)" />
+        <v-btn text="Voltar" variant="outlined" @click="prevStep()" />
+        <v-btn text="Avançar" color="primary" @click="loaderController(verifySecureCode)" />
       </template>
 
       <template v-if="currentStep === 4">
-        <CButton text="Voltar" @click="() => prevStep()" />
-        <CButton text="Cadastrar" class="confirm" @click="() => loaderController(signupUser)" />
+        <v-btn text="Voltar" variant="outlined" @click="prevStep()" />
+        <v-btn text="Cadastrar" color="primary" @click="loaderController(signupUser)" />
       </template>
     </template>
   </AppFormPage>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { computed, watch, ref } from 'vue'
 import { http, form as stepForm } from '@/functions'
 import { useRouter } from 'vue-router'
 import { showToast } from '@/plugins/toast'
+import CGroup from '#src/components/ui/CGroup.vue'
 
 const formData = ref({
-  nickname: null,
-  username: null,
-  email: null,
-  birthdate: null,
-  passwd1: null,
-  passwd2: null,
-  verifyCode: null,
-  sessionUUID: null,
+  nickname: '',
+  username: '',
+  email: '',
+  birthdate: '',
+  passwd1: '',
+  passwd2: '',
+  verifyCode: '',
+  accessUUID: '',
 })
 const nicknameValue = computed(() => formData.value.nickname)
 const router = useRouter()
@@ -170,7 +133,7 @@ const prepareVerifyCode = async () => {
 
 const verifySecureCode = async () => {
   try {
-    const { sessionUUID } = await http.post(
+    const { accessUUID } = await http.post(
       {
         type: 'database',
         route: 'validateSecureSession',
@@ -180,7 +143,7 @@ const verifySecureCode = async () => {
         tokenId: formData.value.email,
       },
     )
-    formData.value.sessionUUID = sessionUUID
+    formData.value.accessUUID = accessUUID
     nextStep()
   } catch (err) {
     showToast({ type: 'error', message: err.message })
@@ -208,7 +171,7 @@ const signupUser = async () => {
         email: formData.value.email,
         birthdate: formData.value.birthdate,
         password: formData.value.passwd1,
-        sessionUUID: formData.value.sessionUUID,
+        accessUUID: formData.value.accessUUID,
       },
     )
 
