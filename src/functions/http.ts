@@ -59,7 +59,9 @@ function buildQuery(params = {}) {
 	Object.entries(params).forEach(([key, value]) => {
 		if (Array.isArray(value)) {
 			// envia array como ?tags=a&tags=b&tags=c
-			value.forEach((v) => query.append(key, v));
+			value.forEach((v) => {
+				query.append(key, v);
+			});
 		} else if (typeof value === "object" && value !== null) {
 			// envia objeto como JSON string
 			query.append(key, JSON.stringify(value));
