@@ -1,7 +1,6 @@
 import { fileURLToPath, URL } from "node:url";
 import Vue from "@vitejs/plugin-vue";
 import AutoImport from "unplugin-auto-import/vite";
-import Fonts from "unplugin-fonts/vite";
 import Components from "unplugin-vue-components/vite";
 import { defineConfig } from "vite";
 import Layouts from "vite-plugin-vue-layouts-next";
@@ -24,7 +23,10 @@ export default defineConfig({
 			vueTemplate: true,
 		}),
 		Components({
-			dts: "src/components.d.ts",
+			dirs: ["src/components"],
+			extensions: ["vue"],
+			deep: true,
+			dts: true,
 		}),
 		Vue({
 			template: { transformAssetUrls },
@@ -34,17 +36,6 @@ export default defineConfig({
 			autoImport: true,
 			styles: {
 				configFile: "src/styles/settings.scss",
-			},
-		}),
-		Fonts({
-			fontsource: {
-				families: [
-					{
-						name: "Roboto",
-						weights: [100, 300, 400, 500, 700, 900],
-						styles: ["normal", "italic"],
-					},
-				],
 			},
 		}),
 	],
