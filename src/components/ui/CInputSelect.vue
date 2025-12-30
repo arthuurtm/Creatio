@@ -4,13 +4,11 @@
       <slot :name="slotName"></slot>
     </template>
     <template #default>
-      <b
-        ><span>{{ !onlyIcon ? displayValue : '' }}</span></b
-      >
+      <b><span>{{ !onlyIcon ? displayValue : '' }}</span></b>
     </template>
     <template #trailing>
-      <CButton icon="arrow_drop_down" classes="symbolic no-padding" @click.stop="openMenu"
-    /></template>
+      <CButton icon="arrow_drop_down" classes="symbolic no-padding" @click.stop="openMenu" />
+    </template>
   </component>
 
   <CContextMenu ref="contextMenu" :no-floating="noFloating" @select="selectHandler" />
@@ -18,7 +16,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { baseInputEmits, baseInputProps } from '@/components/base/BaseInput.props'
+import { baseInputEmits, baseInputProps } from '@/components/base/BaseInput.props.js'
 import BaseInput from '../base/BaseInput.vue'
 import BaseButton from '../base/BaseButton.vue'
 const contextMenu = ref(null)

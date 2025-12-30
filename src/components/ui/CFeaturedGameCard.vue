@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import { baseButtonEmits } from '../base/BaseButton.props'
+import { baseButtonEmits } from '../base/BaseButton.props.js'
 import BaseCard from '../base/BaseCard.vue'
 defineEmits(baseButtonEmits)
 defineProps({
@@ -76,25 +76,23 @@ defineProps({
   position: absolute;
   left: 0;
 }
+
 .wrapper::before {
   top: 0;
   height: 100%;
-  background-image: linear-gradient(
-    to top,
-    transparent 46%,
-    rgba(12, 13, 19, 0.5) 68%,
-    rgba(12, 13, 19) 97%
-  );
+  background-image: linear-gradient(to top,
+      transparent 46%,
+      rgba(12, 13, 19, 0.5) 68%,
+      rgba(12, 13, 19) 97%);
 }
+
 .wrapper::after {
   bottom: 0;
   opacity: 1;
-  background-image: linear-gradient(
-    to bottom,
-    transparent 46%,
-    rgba(12, 13, 19, 0.5) 68%,
-    rgba(12, 13, 19) 97%
-  );
+  background-image: linear-gradient(to bottom,
+      transparent 46%,
+      rgba(12, 13, 19, 0.5) 68%,
+      rgba(12, 13, 19) 97%);
 }
 
 .card:hover .wrapper::before,
@@ -105,10 +103,12 @@ defineProps({
 .card:hover .wrapper::after {
   height: 120px;
 }
+
 .title {
   width: 100%;
   transition: transform 0.5s;
 }
+
 .card:hover .title {
   transform: translate3d(0%, -50px, 100px);
 }

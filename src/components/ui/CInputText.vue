@@ -8,7 +8,7 @@
 
 <script setup>
 import BaseInput from '@/components/base/BaseInput.vue'
-import { baseInputProps } from '@/components/base/BaseInput.props'
+import { baseInputProps } from '@/components/base/BaseInput.props.js'
 defineOptions({ inheritAttrs: false })
 defineProps(baseInputProps)
 </script>

@@ -1,28 +1,17 @@
 <template>
-  <div
-    class="input"
-    ref="inputWrapper"
-    :class="[
-      classes,
-      dynamicClasses,
-      { 'has-leading': !!slots.leading, 'has-trailing': !!slots.trailing },
-    ]"
-  >
+  <div class="input" ref="inputWrapper" :class="[
+    classes,
+    dynamicClasses,
+    { 'has-leading': !!slots.leading, 'has-trailing': !!slots.trailing },
+  ]">
     <span v-if="!!slots.leading" class="input-slot-leading">
       <slot name="leading" />
     </span>
     <CButton v-else-if="icon" :icon="icon" classes="symbolic no-scalling no-padding" />
 
-    <component
-      :is="tag"
-      class="input-field"
-      :type="type"
-      :id="id || label"
-      :value="modelValue"
-      :placeholder="!label ? placeholder : ' '"
-      :disabled="disabled || loading"
-      @input="updateValue($event.target.value)"
-    />
+    <component :is="tag" class="input-field" :type="type" :id="id || label" :value="modelValue"
+      :placeholder="!label ? placeholder : ' '" :disabled="disabled || loading"
+      @input="updateValue($event.target.value)" />
 
     <label v-if="label" :for="id || label">{{ label }}</label>
 
@@ -37,7 +26,7 @@
 
 <script setup>
 import { ref, computed, useSlots } from 'vue'
-import { baseInputProps, baseInputEmits } from './BaseInput.props.ts'
+import { baseInputProps, baseInputEmits } from './BaseInput.props.js'
 import CLoading from '../ui/CLoading.vue'
 import CButton from '../ui/CButton.vue'
 

@@ -1,11 +1,12 @@
 <template>
-  <BaseButton v-bind="{ ...$props, ...$attrs }" />
+  <BaseButton v-bind="{ ...$props, ...attrs }" />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import BaseButton from '@/components/base/BaseButton.vue'
-import { baseButtonProps } from '../base/BaseButton.props'
+import type { BaseButtonProps } from '../base/BaseButton.props.ts'
 
+const attrs = useAttrs()
 defineOptions({ inheritAttrs: false })
-defineProps(baseButtonProps)
+defineProps<BaseButtonProps>()
 </script>

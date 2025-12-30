@@ -1,26 +1,13 @@
 <template>
-  <BaseInput
-    v-bind="props"
-    :modelValue="props.modelValue"
-    :type="effectiveInputType"
-    @update:modelValue="updateValue"
-    @emitEvent="reEmit"
-  >
-    <template #trailing>
-      <CButton
-        :icon="eyeIcon"
-        class="symbolic no-padding no-scale"
-        @click="toggleVisibility"
-        tabindex="-1"
-      />
-    </template>
-  </BaseInput>
+  <v-text-field v-bind="props" :modelValue="props.modelValue" :type="effectiveInputType"
+    @update:modelValue="updateValue" @emitEvent="reEmit" :append-inner-icon="eyeIcon"
+    @click:append-inner="toggleVisibility" />
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import BaseInput from '@/components/base/BaseInput.vue'
-import { baseInputProps, baseInputEmits } from '@/components/base/BaseInput.props'
+import { baseInputProps, baseInputEmits } from '@/components/base/BaseInput.props.js'
 
 const props = defineProps(baseInputProps)
 const emits = defineEmits(baseInputEmits)

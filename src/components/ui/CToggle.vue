@@ -1,9 +1,5 @@
 <template>
-  <button
-    class="c-toggle"
-    :class="{ active: modelValue }"
-    @click="$emit('update:modelValue', !modelValue)"
-  >
+  <button class="c-toggle" :class="{ active: modelValue }" @click="$emit('update:modelValue', !modelValue)">
     <slot />
   </button>
 </template>

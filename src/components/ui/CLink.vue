@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { baseButtonEmits, baseButtonProps } from '../base/BaseButton.props'
+import { baseButtonEmits, baseButtonProps } from '../base/BaseButton.props.js'
 defineProps(baseButtonProps)
 defineEmits(baseButtonEmits)
 </script>

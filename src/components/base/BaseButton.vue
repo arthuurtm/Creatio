@@ -1,76 +1,43 @@
 <template>
-  <button
-    :type="type"
-    :class="['btn', { 'is-loading': loading }, classes]"
-    :disabled="disabled || loading"
-    @click="handleClick"
-    @mouseenter="playLottieAnimation"
-    @mouseleave="pauseLottieAnimation"
-  >
-    <span class="btn-content" :class="{ 'is-loading-content': loading }">
-      <!-- se for um arquivo de imagem animado (lottie)-->
-      <template v-if="icon">
-        <div
-          v-if="isLottieUrl"
-          ref="lottieContainer"
-          class="custom-lottie-icon"
-          aria-hidden="true"
-          :style="{ width: '1.5em', height: '1.5em' }"
-        ></div>
+  <v-btn v-bind="attrs" @click="handleClick" @mouseenter="playLottieAnimation" @mouseleave="pauseLottieAnimation">
+    <template v-if="icon" #prepend>
+      <div v-if="isLottieUrl" ref="lottieContainer" class="custom-lottie-icon"
+        :style="{ width: '1.5em', height: '1.5em' }"></div>
 
-        <!--se for uma url-->
-        <img
-          v-else-if="isUrl"
-          :src="icon"
-          alt="Ícone customizado"
-          class="custom-icon-url"
-          aria-hidden="true"
-          style="width: 1.5em; height: auto; border-radius: 0"
-        />
+      <img v-else-if="isUrl" :src="icon" class="custom-icon-url" style="width: 1.5em; height: auto;" />
 
-        <!-- se for um emoji -->
-        <span v-else-if="isEmoji" class="animated-emoji" aria-hidden="true">
-          {{ icon }}
-        </span>
+      <span v-else-if="isEmoji" class="animated-emoji">
+        {{ icon }}
+      </span>
 
-        <!--nenhuma das anteriores, considera-se um material-symbols-->
-        <span v-else class="material-symbols-rounded notranslate" aria-hidden="true">
-          {{ icon }}
-        </span>
-      </template>
+      <v-icon v-else class="material-symbols-rounded">
+        {{ icon }}
+      </v-icon>
+    </template>
 
-      <img
-        v-if="img"
-        :src="img.src"
-        :alt="img.alt || ''"
-        :class="img.class"
-        :style="img.style"
-        aria-hidden="true"
-      />
+    <img v-if="img" :src="img.src" :class="img.class" :style="img.style" />
 
-      <p v-if="text && !hasDefaultSlot" class="btn-text">
-        {{ text || label }}
-      </p>
-      <slot v-else />
-    </span>
+    <template v-if="text && !hasDefaultSlot">
+      {{ text || label }}
+    </template>
+    <slot v-else />
 
-    <BaseLoading
-      v-if="loading"
-      size="1.2em"
-      style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%)"
-    />
-  </button>
+    <template #loader>
+      <BaseLoading size="1.2em" />
+    </template>
+  </v-btn>
 </template>
 
-<script setup>
-import { useSlots, computed, ref, onMounted, watch, onBeforeUnmount } from 'vue'
-import BaseLoading from './BaseLoading.vue'
-import { baseButtonProps, baseButtonEmits } from './BaseButton.props'
-import lottie from 'lottie-web'
+<script setup lang="ts">
+import { useSlots, computed, ref, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
+import { default as lottie, type AnimationItem } from 'lottie-web'
+import type { BaseButtonProps, BaseButtonEmits } from './BaseButton.props.js'
 
-const props = defineProps(baseButtonProps)
-const emits = defineEmits(baseButtonEmits)
+const attrs = useAttrs()
+const props = defineProps<BaseButtonProps>()
+const emits = defineEmits<BaseButtonEmits>()
 const slots = useSlots()
+
 const hasDefaultSlot = computed(() => !!slots.default)
 const isEmoji = computed(() => {
   if (!props.icon || typeof props.icon !== 'string') return false
@@ -82,41 +49,39 @@ const isUrl = computed(() => {
   if (!props.icon || typeof props.icon !== 'string') return false
   return props.icon.startsWith('http://') || props.icon.startsWith('https://')
 })
-const lottieContainer = ref(null)
-let anim = null
+
+const lottieContainer = ref<HTMLElement | null>(null)
+let anim: AnimationItem | null = null
 const isLottieUrl = computed(() => {
   if (!props.icon || typeof props.icon !== 'string') return false
-  // Assumimos que arquivos Lottie terminam com .json e estão em uma URL
   return props.icon.startsWith('http') && props.icon.endsWith('.json')
 })
 
-function initializeLottie() {
+async function initializeLottie() {
+  // Aguarda o próximo tick para garantir que o Vuetify renderizou o slot #prepend
+  await nextTick()
+
   if (lottieContainer.value && isLottieUrl.value) {
-    // 1. Destrói a animação anterior se existir
     if (anim) {
       anim.destroy()
       anim = null
     }
 
-    // 2. Inicializa a nova animação
     anim = lottie.loadAnimation({
-      container: lottieContainer.value, // O elemento HTML (o <div> com ref="lottieContainer")
-      renderer: 'svg', // svg é geralmente o melhor para ícones
-      loop: false, // Começa em false, pois você quer controlar a repetição/play
-      autoplay: false, // Começa em false, para iniciar apenas no hover
-      path: props.icon, // A URL do arquivo .json
+      container: lottieContainer.value,
+      renderer: 'svg',
+      loop: false,
+      autoplay: false,
+      path: props.icon,
     })
 
-    // 3. Define para o primeiro frame (estado pausado)
     anim.goToAndStop(0, true)
     lottieContainer.value.style.filter = 'grayscale(100%)'
   }
 }
 
-// 4. Funções de Controle (para o hover)
 function playLottieAnimation() {
-  if (anim) {
-    // Opcional: Define para loop se for o comportamento desejado no hover
+  if (anim && lottieContainer.value) {
     anim.loop = true
     anim.play()
     lottieContainer.value.style.filter = 'grayscale(0%)'
@@ -124,32 +89,28 @@ function playLottieAnimation() {
 }
 
 function pauseLottieAnimation() {
-  if (anim) {
+  if (anim && lottieContainer.value) {
     anim.pause()
-    // Volta para o primeiro frame quando o mouse sair
     anim.goToAndStop(0, true)
     lottieContainer.value.style.filter = 'grayscale(100%)'
   }
 }
 
-onMounted(() => {
-  initializeLottie()
-})
-
-// Recria a animação se a prop 'icon' mudar
 watch(isLottieUrl, () => {
   if (isLottieUrl.value) {
     initializeLottie()
   }
 })
 
-onBeforeUnmount(() => {
-  if (anim) {
-    anim.destroy()
-  }
+onMounted(() => {
+  initializeLottie()
 })
 
-function handleClick(event) {
+onBeforeUnmount(() => {
+  if (anim) anim.destroy()
+})
+
+function handleClick(event: MouseEvent) {
   emits('click', event)
 }
 </script>
