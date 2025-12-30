@@ -2,42 +2,36 @@
   <component :is="formLayout">
     <template #title>{{ title }}</template>
     <template #subTitle>{{ subTitle }}</template>
-    <template #formInfo><slot name="formInfo" /></template>
-
-    <template #header-actions>
-      <CButton
-        icon="settings"
-        :classes="['symbolic', 'no-scalling']"
-        style="margin-left: auto"
-        @click="settingsVisible = !settingsVisible"
-      />
+    <template #formInfo>
+      <slot name="formInfo" />
     </template>
 
-    <form class="form-container centered" @submit.prevent="$emit('submit')">
+    <template #header-actions>
+      <v-btn icon="settings" variant="text" style="margin-left: auto" @click="settingsVisible = !settingsVisible" />
+    </template>
+
+    <v-form class="form-wrapper" @submit.prevent="$emit('submit')">
       <transition name="slide-left" mode="out-in">
-        <div class="form" :key="currentStep">
+        <v-container class="form-content" :key="currentStep">
           <slot v-if="hasSlot('buttons') && hasSlot('form')" name="form" />
           <p v-else>
-            Não foi possível carregar os dados do formulário. Tente novamente mais tarde!
+            Não foi possível carregar os dados do formulário.
           </p>
-        </div>
+        </v-container>
       </transition>
-      <div class="buttons-container">
+      <v-container class="form-actions">
         <slot v-if="hasSlot('buttons') && hasSlot('form')" name="buttons" />
-        <CButton v-else text="Voltar" @click="$router.back()" />
-      </div>
-    </form>
+        <v-btn v-else text="Voltar" @click="$router.back()" />
+      </v-container>
+    </v-form>
   </component>
-  <ComponentDialog
-    :component="DialogSettings"
-    :fullscreen="true"
-    title="Configurações"
-    v-model:is-visible="settingsVisible"
-  />
+
+  <ComponentDialog :component="DialogSettings" :fullscreen="true" title="Configurações"
+    v-model:is-visible="settingsVisible" />
   <CLoading v-if="loading" :full="true" />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useSlots, ref, shallowRef } from 'vue'
 import LayoutPageForm from '@/layouts/LayoutPageForm.vue'
 import DialogSettings from '../dialogs/DialogSettings.vue'
@@ -59,59 +53,30 @@ function hasSlot(name) {
 </script>
 
 <style>
-.form-container {
+.form-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-sizing: border-box;
-  height: 100%;
-  width: 100%;
+  flex: 1;
+  overflow-x: hidden;
 }
 
-.form {
+.form-content {
   display: flex;
   flex-direction: column;
-  gap: 30px;
   justify-content: center;
+  align-items: stretch;
+  overflow-y: auto;
   height: 100%;
-  width: 100%;
-  word-break: break-word;
-  overflow-wrap: break-word;
 }
 
-.groupElements {
+.form-actions {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: inherit;
-}
-
-.groupElements label,
-.groupElements a {
-  margin-left: 3px;
-}
-
-.show {
-  display: block;
-}
-
-.centered {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
   width: 100%;
-}
-
-.centered > div {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.buttons-container {
-  display: flex;
+  position: sticky;
+  bottom: 0;
+  padding-top: 1rem;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 5px;
+  align-items: center;
+  gap: 12px;
 }
 </style>

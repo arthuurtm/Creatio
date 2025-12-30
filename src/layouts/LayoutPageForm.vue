@@ -1,11 +1,11 @@
 <template>
-  <div class="app-form">
+  <v-main class="app-form">
     <div class="header-actions">
       <slot name="header-actions" />
     </div>
 
-    <div class="main-container">
-      <div class="left">
+    <v-row class="main-container">
+      <v-col>
         <div id="logo">
           <CLogo />
         </div>
@@ -16,13 +16,13 @@
           <slot name="subTitle">{{ subTitle }}</slot>
         </h4>
         <slot name="formInfo" />
-      </div>
+      </v-col>
 
-      <div class="right">
+      <v-col class="d-flex flex-column">
         <slot />
-      </div>
-    </div>
-  </div>
+      </v-col>
+    </v-row>
+  </v-main>
 </template>
 
 <script setup>
@@ -38,11 +38,9 @@ defineProps({
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  align-self: center;
   height: 100%;
   width: 100%;
   background: var(--bg);
-  box-sizing: border-box;
 }
 
 .header-actions {
@@ -54,36 +52,22 @@ defineProps({
 }
 
 .main-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: row;
   border-radius: 30px;
   padding: 35px;
   gap: 5px;
-  width: 840px;
-  height: auto;
+  min-width: 70%;
+  height: 100%;
+  max-height: 60vh;
   background: var(--bg2);
   transition: border 300ms ease-out;
   overflow: hidden;
-  min-height: 300px;
+  min-height: 200px;
   animation: fadeInBlur 0.2s ease-out;
   scrollbar-color: var(--bg) var(--bg);
   scrollbar-width: thin;
   box-shadow: 0 3px 6px var(--primary-shadow);
-}
-
-.main-container .left {
-  grid-column: 1;
-}
-
-.main-container .right {
-  display: grid;
-  position: relative;
-  grid-column: 2;
-  grid-auto-flow: column;
-  overflow-x: clip;
-  min-width: 0;
-  max-height: 800px;
-  overflow-y: auto;
 }
 
 .main-container #logo {
