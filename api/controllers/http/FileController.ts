@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from "express";
-import { forEach } from "lodash-es";
 import { gamePathGenerator, getFileExtension } from "#api/helpers/query.ts";
 import FileService from "#api/services/FileService.ts";
 
@@ -12,8 +11,7 @@ async function getFileController(
 		const path = req.params.filename || req.params.rest || req.query.fileName;
 
 		const { type, file } = await FileService.read.getFile({
-			bucket: req.body.policy,
-			filepath: req.body.file ?? path,
+			filepath: String(path),
 		});
 
 		if (type === "stream") {
