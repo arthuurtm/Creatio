@@ -19,16 +19,6 @@ async function isAuthenticated(
 		}
 
 		if (renewNeeded) createClientCookie(res, accessToken, refreshToken);
-
-		const { passwordHash, ...allData } = user.get({ plain: true });
-
-		const secureData = {
-			allData,
-			accessToken,
-			refreshToken,
-		};
-
-		res.locals.ctx.user = secureData;
 		next();
 	} catch (err) {
 		next(err);

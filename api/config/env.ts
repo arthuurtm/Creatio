@@ -22,7 +22,7 @@ const envSchema = z.object({
 	EMAIL_FROM: z.email("Email inválido!"),
 	VITE_GCLIENT_LOGIN_ID: z.string().optional(),
 	PORT: z.string().default("3000").optional(),
-	MINIO_ENDPOINT: z.string().default("public"),
+	MINIO_ENDPOINT: z.string(),
 	MINIO_USER: z.string().min(1, "Minio user is required"),
 	MINIO_PASSWORD: z.string().min(1, "Minio password is required"),
 });
