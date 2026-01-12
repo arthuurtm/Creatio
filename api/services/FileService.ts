@@ -4,12 +4,13 @@ import { StorageManager } from "@slynova/flydrive";
 import { AmazonWebServicesS3Storage } from "@slynova/flydrive-s3";
 import { debounce } from "lodash-es";
 import { env } from "#api/config/env.ts";
+import log from "#api/helpers/console.ts";
 
 type DiskName = "public" | "private";
 type FileTypes = "stream" | "url";
 
 interface FileManipulationParams {
-	bucket: DiskName;
+	bucket?: DiskName;
 	filepath: string;
 }
 
@@ -24,6 +25,7 @@ interface SaveFunctionOptions {
  * Parâmetros de entrada para a função de salvamento
  */
 interface SaveParams extends FileManipulationParams {
+	bucket: DiskName;
 	payload: Record<string, any> | Buffer | Readable | string;
 	opts?: SaveFunctionOptions;
 }
@@ -33,34 +35,44 @@ type GetFilesReturns =
 	| { type: "stream"; file: FReadable }
 	| { type: "url"; file: string };
 
-const storage = new StorageManager({
-	default: "public",
-	disks: {
-		public: {
-			driver: "s3",
-			config: {
-				key: env.MINIO_USER,
-				secret: env.MINIO_PASSWORD,
-				endpoint: env.MINIO_ENDPOINT,
-				bucket: "public-assets",
-				region: "us-east-1",
-				s3ForcePathStyle: true,
+function initServer(): StorageManager {
+	try {
+		const srv = new StorageManager({
+			default: "public",
+			disks: {
+				public: {
+					driver: "s3",
+					config: {
+						key: env.MINIO_USER,
+						secret: env.MINIO_PASSWORD,
+						endpoint: env.MINIO_ENDPOINT,
+						bucket: "public",
+						region: "us-east-1",
+						s3ForcePathStyle: true,
+					},
+				},
+				private: {
+					driver: "s3",
+					config: {
+						key: env.MINIO_USER,
+						secret: env.MINIO_PASSWORD,
+						endpoint: env.MINIO_ENDPOINT,
+						bucket: "private",
+						region: "us-east-1",
+						s3ForcePathStyle: true,
+					},
+				},
 			},
-		},
-		private: {
-			driver: "s3",
-			config: {
-				key: env.MINIO_USER,
-				secret: env.MINIO_PASSWORD,
-				endpoint: env.MINIO_ENDPOINT,
-				bucket: "private-data",
-				region: "us-east-1",
-				s3ForcePathStyle: true,
-			},
-		},
-	},
-});
+		});
+		log.success("Servidor de arquivos criado/verificado com sucesso!");
+		return srv;
+	} catch (err) {
+		log.error("Ocorreu um erro no servidor de arquivos: ", err);
+		throw err;
+	}
+}
 
+const storage = initServer();
 storage.registerDriver("s3", AmazonWebServicesS3Storage);
 
 export function getDisk(name: DiskName) {
@@ -104,7 +116,7 @@ const read = {
 		}
 	},
 
-	readJson: async ({ bucket, filepath }: GetFileParams) => {
+	readJson: async ({ bucket = "public", filepath }: GetFileParams) => {
 		const disk = getDisk(bucket);
 		return await disk.get(filepath, "utf-8");
 	},
