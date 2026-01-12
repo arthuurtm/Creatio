@@ -1,7 +1,7 @@
 // object.ts
 import { computed } from "vue";
+import { createDefinitions } from "#types/domain/editor/index.ts";
 import { generateId, useEditorStore } from "@/stores/editor.ts";
-import { createDefinitions } from "@/types/editor-config";
 
 export const objects = computed(() => {
 	const editorStore = useEditorStore();
