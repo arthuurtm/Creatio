@@ -11,7 +11,7 @@ interface VerificationCodeEmailParams {
 	email: string;
 	template: string;
 	subject: string;
-	timeout: number;
+	timeout?: number;
 	extraData?: object;
 }
 
@@ -47,6 +47,20 @@ async function getBasicUserData(id: string) {
 		profilePic: user.profilePic,
 		exists: true,
 	};
+}
+
+async function getAllUserData(id: string) {
+	if (!id) throw new Error("Identificação do usuário não informada");
+
+	const query = setUserDatabaseQuery({ value: id });
+	const userData = await User.findOne({
+		where: query,
+		include: [{ model: Session }],
+	});
+	const user = userData?.get({ plain: true });
+	if (!user) return null;
+
+	return user;
 }
 
 async function setVerificationCodeAndSendEmail({
@@ -121,4 +135,5 @@ export {
 	signupUser,
 	setVerificationCodeAndSendEmail,
 	resetUserPassword,
+	getAllUserData,
 };
