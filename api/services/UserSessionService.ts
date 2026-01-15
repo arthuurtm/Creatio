@@ -122,17 +122,15 @@ async function deleteUserSession(accessToken: string) {
 }
 
 async function handleLogin(
-	identification: string,
+	login: string,
 	password: string,
-	userAgent: string,
-	type?: string,
+	userAgent?: string,
 ) {
-	const parser = new UAParser();
-	const device: IResult = parser.setUA(userAgent).getResult();
-	let user: User | null;
+	const parser = new UAParser(userAgent);
+	const device: IResult = parser.getResult();
 
-	user = await User.findOne({
-		where: setUserDatabaseQuery({ value: identification }),
+	const user: User | null = await User.findOne({
+		where: setUserDatabaseQuery({ value: login }),
 	});
 	if (!user) throw new Error("Usuário não encontrado.");
 

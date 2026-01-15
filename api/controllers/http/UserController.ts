@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { validateCodeAndGetUUID } from "#api/services/2FAService.ts";
 import { createClientCookie } from "#api/services/ClientSessionService.ts";
 import {
+	getAllUserData,
 	getBasicUserData,
 	resetUserPassword,
 	setVerificationCodeAndSendEmail,
@@ -15,10 +16,10 @@ async function getBasicUserDataController(
 	next: NextFunction,
 ) {
 	try {
-		const { userId, identification } = req.query;
-		if (!userId && !identification)
+		const { userId, login } = req.query;
+		if (!userId && !login)
 			throw new Error("Nenhum meio de identificação informado");
-		const id = String(userId ?? identification);
+		const id = String(userId ?? login);
 		const data = await getBasicUserData(id);
 		if (!data) return res.status(404).json({ error: "Usuário não encontrado" });
 		res.json(data);
@@ -32,11 +33,12 @@ async function handleLoginController(
 	res: Response,
 	next: NextFunction,
 ) {
-	const { type, identification, password, userAgent } = req.body;
+	const { login, password } = req.body;
+  const userAgent = req.get("User-Agent") ?? "";
+
 	try {
 		const { accessToken, refreshToken } = await handleLogin(
-			type,
-			identification,
+			login,
 			password,
 			userAgent,
 		);
@@ -53,7 +55,9 @@ async function getUserDataController(
 	next: NextFunction,
 ) {
 	try {
-		res.json(res.locals.user);
+		const data = await getAllUserData(req.cookies.accessToken);
+		if (!data) res.status(401);
+		res.status(200).json(data);
 	} catch (err) {
 		next(err);
 	}
@@ -70,7 +74,6 @@ async function setSignupCodeController(
 			email,
 			template: "signupVerify",
 			subject: "Verifique seu e-mail!",
-			timeout: 0,
 		});
 		res.json({ expiresAt: result.expiresAt });
 	} catch (err) {
@@ -89,7 +92,6 @@ async function setResetPasswordCodeController(
 			email,
 			template: "resetPassword",
 			subject: "Seu código para redefinir a senha",
-			timeout: 0,
 		});
 		res.json({ expiresAt: result.expiresAt });
 	} catch (err) {
@@ -121,7 +123,18 @@ async function signupUserController(
 	next: NextFunction,
 ) {
 	try {
-		const user = await signupUser(req.body);
+		const { nickname, username, email, birthdate, password, accessUUID } =
+			req.body;
+		const user = await signupUser({
+			nickname,
+			username,
+			email,
+			birthdate,
+			password,
+			accessUUID,
+		});
+		const { accessToken, refreshToken } = await handleLogin(username, password);
+		await createClientCookie(res, accessToken, refreshToken);
 		res.status(201).json({ user });
 	} catch (err) {
 		next(err);
@@ -136,7 +149,7 @@ async function resetUserPasswordController(
 	try {
 		const { newPassword, accessUUID } = req.body;
 		await resetUserPassword({ newPassword, accessToken: accessUUID });
-		res.send();
+		res.send('Operação concluída com sucesso');
 	} catch (err) {
 		next(err);
 	}

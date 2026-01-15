@@ -27,45 +27,50 @@ const oAuth2Client = new google.auth.OAuth2(
 	redirect_uris[0],
 );
 
-function loadSavedCredentials() {
-	if (fs.existsSync(API_LOCAL_MAIL_CREDENTIAL)) {
-		const tokenData = fs.readFileSync(API_LOCAL_MAIL_CREDENTIAL, "utf8");
-		const tokens = JSON.parse(tokenData);
-		oAuth2Client.setCredentials(tokens);
-		oAuth2Client.on("tokens", (newTokens) => {
-			const updated = { ...tokens, ...newTokens };
-			fs.writeFileSync(API_LOCAL_MAIL_CREDENTIAL, JSON.stringify(updated));
-		});
+async function loadSavedCredentials() {
+	if (!fs.existsSync(API_LOCAL_MAIL_CREDENTIAL)) return false;
+	const tokens = JSON.parse(fs.readFileSync(API_LOCAL_MAIL_CREDENTIAL, "utf8"));
+	oAuth2Client.setCredentials(tokens);
+	try {
+		const { token } = await oAuth2Client.getAccessToken();
+		if (!token) throw new Error("Token inválido");
+		accessToken = token;
+		refreshToken = tokens.refresh_token || refreshToken;
+		log.success("Serviço de email já autenticado!");
 		return true;
+	} catch (err) {
+		log.error("RefreshToken expirado ou revogado");
+		return false;
 	}
-	return false;
 }
 
 // autenticar o serviço automaticamente
 async function authenticateService() {
-	if (!loadSavedCredentials()) {
-		const { codeVerifier: cv, codeChallenge } =
-			await oAuth2Client.generateCodeVerifierAsync();
-		codeVerifier = cv;
+	const valid = await loadSavedCredentials();
 
-		const url = oAuth2Client.generateAuthUrl({
-			access_type: "offline",
-			scope: SCOPES,
-			prompt: "consent",
-			code_challenge: codeChallenge,
-			code_challenge_method: CodeChallengeMethod.S256,
-		});
-
-		await open(url);
+	if (valid) {
 		return {
-			isAuth: false,
-			url,
+			isAuth: true,
+			url: null,
 		};
 	}
-	log.success("Serviço de email já autenticado!");
+
+	const { codeVerifier: cv, codeChallenge } =
+		await oAuth2Client.generateCodeVerifierAsync();
+
+	codeVerifier = cv;
+
+	const url = oAuth2Client.generateAuthUrl({
+		access_type: "offline",
+		scope: SCOPES,
+		prompt: "consent",
+		code_challenge: codeChallenge,
+		code_challenge_method: CodeChallengeMethod.S256,
+	});
+
 	return {
-		isAuth: true,
-		url: "",
+		isAuth: false,
+		url,
 	};
 }
 
@@ -104,35 +109,40 @@ async function sendEmailService({
 	subject,
 	...templateData
 }: EmailParams) {
-	if (!accessToken) throw new Error();
+	if (!(await loadSavedCredentials()))
+		throw new Error("Serviço não autenticado");
 
-	const transporter = nodemailer.createTransport({
-		service: "gmail",
-		auth: {
-			type: "OAuth2",
-			user: process.env.EMAIL_FROM,
-			clientId: client_id,
-			clientSecret: client_secret,
-			refreshToken,
-			accessToken,
-		},
-	});
-
-	const result = await transporter.sendMail({
-		from: process.env.EMAIL_FROM,
-		to,
-		subject,
-		html: loadTemplate(template, templateData),
-		attachments: [
-			{
-				filename: "bitmap.png",
-				path: path.join(API_TEMPLATES, "bitmap.png"),
-				cid: "unique@cid",
+	try {
+		const transporter = nodemailer.createTransport({
+			service: "gmail",
+			auth: {
+				type: "OAuth2",
+				user: process.env.EMAIL_FROM,
+				clientId: client_id,
+				clientSecret: client_secret,
+				refreshToken,
 			},
-		],
-	});
+		});
 
-	return { success: true, message: "E-mail enviado", result };
+		const result = await transporter.sendMail({
+			from: process.env.EMAIL_FROM,
+			to,
+			subject,
+			html: loadTemplate(template, templateData),
+			attachments: [
+				{
+					filename: "bitmap.png",
+					path: path.join(API_TEMPLATES, "bitmap.png"),
+					cid: "unique@cid",
+				},
+			],
+		});
+
+		return { success: true, message: "E-mail enviado", result };
+	} catch (err) {
+		log.error("Erro ao enviar email: ", err);
+		throw err;
+	}
 }
 
 function loadTemplate(name: string, variables: Record<string, any> = {}) {

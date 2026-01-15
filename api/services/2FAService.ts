@@ -1,10 +1,11 @@
+import log from "#api/helpers/console.ts";
 import { generateRandomNumbers } from "#api/helpers/numbers.ts";
 
 interface VerificationEntry {
 	id: string;
 	uuid: string;
 	code: string;
-	expiresAt: Date;
+	expiresAt: number;
 }
 
 const verificationCodesDB: Map<string, VerificationEntry> = new Map();
@@ -23,7 +24,7 @@ async function createVerificationCode(
 		id,
 		uuid: crypto.randomUUID(),
 		code: generateRandomNumbers(),
-		expiresAt: new Date(Date.now() + timeout * 60000),
+		expiresAt: Date.now() + timeout * 60000,
 	};
 
 	const { uuid, ...secureEntry } = newCodeEntry;
@@ -68,12 +69,12 @@ async function consumeVerificationUUID(uuid: string) {
 	if (!foundEntry) {
 		throw new Error("Sessão não encontrada ou inválida");
 	}
-	if (new Date() > foundEntry.expiresAt) {
-		verificationCodesDB.delete(uuid);
+	if (Date.now() > foundEntry.expiresAt) {
+		verificationCodesDB.delete(foundEntry.id);
 		throw new Error("Sessão expirada");
 	}
 
-	verificationCodesDB.delete(uuid);
+	verificationCodesDB.delete(foundEntry.id);
 	return foundEntry;
 }
 
