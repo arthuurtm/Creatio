@@ -1,66 +1,84 @@
 <template>
-  <AppFormPage :title="'Alterar senha'" :currentStep="currentStep" :loading="loading" ref="form">
+  <AppFormPage title="Alterar senha" :currentStep="currentStep" :loading="loading">
+
     <template #form>
-      <template v-if="currentStep === 1">
-        <CInputText label="E-mail" placeholder="Digite seu e-mail" aria-required="true" v-model="formData.email" />
-      </template>
-      <template v-if="currentStep === 2">
-        <CInputText label="Código de verificação" placeholder="Código de verificação recebido no seu e-mail"
-          aria-required="true" v-model="formData.verifyCode" />
-      </template>
-      <template v-if="currentStep === 3">
-        <CInputPassword id="psswd1" label="Sua senha" placeholder="Digite uma senha BEM segura!" aria-required="true"
-          v-model="formData.passwd1" />
-        <CInputPassword id="psswd2" label="Confirme sua senha" placeholder="Re-digite sua senha!" aria-required="true"
-          v-model="formData.passwd2" />
-      </template>
+      <v-container v-if="currentStep === 1">
+        <v-text-field label="E-mail" placeholder="Digite seu e-mail" aria-required="true" v-model="formData.email.val"
+          :error="formData.email.err" :error-messages="formData.email.errVal" variant="outlined" />
+      </v-container>
+
+      <v-container v-if="currentStep === 2">
+        <v-text-field label="Código de verificação" placeholder="Código de verificação recebido no seu e-mail"
+          aria-required="true" v-model="formData.verifyCode.val" :error="formData.verifyCode.err"
+          :error-messages="formData.verifyCode.errVal" variant="outlined" />
+      </v-container>
+
+      <v-container v-if="currentStep === 3">
+        <v-text-field id="psswd1" label="Sua senha" placeholder="Digite uma senha BEM segura!" type="password"
+          aria-required="true" v-model="formData.passwd1.val" :error="formData.passwd1.err"
+          :error-messages="formData.passwd1.errVal" variant="outlined" />
+        <v-text-field id="psswd2" label="Confirme sua senha" placeholder="Re-digite sua senha!" type="password"
+          aria-required="true" v-model="formData.passwd2.val" :error="formData.passwd2.err"
+          :error-messages="formData.passwd2.errVal" variant="outlined" />
+      </v-container>
     </template>
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <CButton text="Cancelar" @click="() => router.back()" />
-        <CButton text="Avançar" class="confirm" @click="() => loaderController(prepareVerifyCode)" />
+        <v-btn text="Cancelar" variant="outlined" @click="() => router.back()" />
+        <v-btn text="Avançar" color="primary" @click="() => loaderController(prepareVerifyCode)" />
       </template>
+
       <template v-if="currentStep === 2">
-        <CButton text="Voltar" @click="() => prevStep()" />
-        <CButton text="Avançar" class="confirm" @click="() => loaderController(verifySecureCode)" />
+        <v-btn text="Voltar" variant="outlined" @click="() => prevStep()" />
+        <v-btn text="Avançar" color="primary" @click="() => loaderController(verifySecureCode)" />
       </template>
+
       <template v-if="currentStep === 3">
-        <CButton text="Voltar" @click="() => prevStep()" />
-        <CButton text="Confirmar" class="confirm" @click="() => loaderController(resetPassword)" />
+        <v-btn text="Voltar" variant="outlined" @click="() => prevStep()" />
+        <v-btn text="Confirmar" color="primary" @click="() => loaderController(resetPassword)" />
       </template>
     </template>
+
   </AppFormPage>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { ref } from 'vue'
-import { http, form as stepForm } from '@/functions'
+import http from '@/functions/http'
+import { default as stepForm, type FieldParams, initField } from '@/functions/form'
 import { useRouter } from 'vue-router'
-import { showToast } from '@/plugins/toast'
 
-const formData = ref({
-  email: null,
-  verifyCode: null,
-  passwd1: null,
-  passwd2: null,
-  accessUUID: null,
+interface Params {
+  email: FieldParams,
+  verifyCode: FieldParams,
+  passwd1: FieldParams,
+  passwd2: FieldParams,
+  accessUUID: string,
+}
+
+const formData = ref<Params>({
+  email: initField(),
+  verifyCode: initField(),
+  passwd1: initField(),
+  passwd2: initField(),
+  accessUUID: '',
 })
 const router = useRouter()
-const form = ref({})
-const { currentStep, nextStep, prevStep, loading, loaderController } = stepForm({
+const { currentStep, nextStep, prevStep, loading, loaderController, setFieldError } = stepForm({
   totalSteps: 3,
 })
 const sentCode = ref(false)
+let sameMail = ''
 
 const prepareVerifyCode = async () => {
-  if (!sentCode.value) {
+  if (!sentCode.value && !(formData.value.email.val === sameMail)) {
     try {
       await http.get({
         type: 'database',
         route: 'getUserBasics',
-        querys: { identification: formData.value.email },
+        querys: { login: formData.value.email.val },
       })
       await http.post(
         {
@@ -68,17 +86,15 @@ const prepareVerifyCode = async () => {
           route: 'setResetPassCode',
         },
         {
-          email: formData.value.email,
+          email: formData.value.email.val,
         },
       )
 
+      sameMail = formData.value.email.val
       sentCode.value = true
       nextStep()
     } catch (error) {
-      showToast({
-        type: 'error',
-        message: error.message,
-      })
+      setFieldError(formData.value.email, error.message)
     }
   } else {
     nextStep()
@@ -93,25 +109,21 @@ const verifySecureCode = async () => {
         route: 'validateSecureSession',
       },
       {
-        secureToken: formData.value.verifyCode,
-        tokenId: formData.value.email,
+        secureToken: formData.value.verifyCode.val,
+        tokenId: formData.value.email.val,
       },
     )
     formData.value.accessUUID = accessUUID
     nextStep()
   } catch (err) {
-    showToast({ type: 'error', message: err.message })
+    setFieldError(formData.value.verifyCode, error.message)
   }
 }
 
 const resetPassword = async () => {
   try {
-    if (formData.value.passwd1 !== formData.value.passwd2) {
-      showToast({
-        type: 'error',
-        message: 'As senhas não coincidem.',
-      })
-      return
+    if (formData.value.passwd1.val !== formData.value.passwd2.val) {
+      setFieldError(formData.value.passwd2, "As senhas não coincidem!")
     }
 
     await http.post(
@@ -120,23 +132,15 @@ const resetPassword = async () => {
         route: 'setUserPassword',
       },
       {
-        newPassword: formData.value.passwd1,
+        newPassword: formData.value.passwd2.val,
         accessUUID: formData.value.accessUUID,
       },
     )
-
-    showToast({
-      type: 'success',
-      message: 'Senha redefinida com sucesso!',
-    })
     setTimeout(() => {
       router.push({ name: 'Login' })
     }, 2000)
   } catch (error) {
-    showToast({
-      type: 'error',
-      message: error.message || 'Erro ao redefinir a senha.',
-    })
+    setFieldError(formData.value.passwd1, String(error) ?? "Erro ao redefinir senha")
   }
 }
 </script>

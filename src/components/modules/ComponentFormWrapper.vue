@@ -26,8 +26,7 @@
     </v-form>
   </component>
 
-  <ComponentDialog :component="DialogSettings" :fullscreen="true" title="Configurações"
-    v-model:is-visible="settingsVisible" />
+  <component-dialog :component="DialogSettings" fullscreen title="Configurações" v-model:is-visible="settingsVisible" />
   <CLoading v-if="loading" :full="true" />
 </template>
 

@@ -1,146 +1,87 @@
 <template>
-  <v-main class="app-form">
+  <v-main class="app-form d-flex align-center justify-center">
     <div class="header-actions">
       <slot name="header-actions" />
     </div>
 
-    <v-row class="main-container">
-      <v-col>
-        <div id="logo">
-          <CLogo />
+    <v-sheet max-width="900" width="100%" rounded="xl" class="main-container d-grid">
+      <!-- left -->
+      <div class="left d-flex flex-column ga-5">
+        <div class="logo">
+          <slot name="logo">
+            <CLogo height="64" />
+          </slot>
         </div>
-        <h1>
-          <slot name="title">{{ title }}</slot>
-        </h1>
-        <h4>
-          <slot name="subTitle">{{ subTitle }}</slot>
-        </h4>
-        <slot name="formInfo" />
-      </v-col>
 
-      <v-col class="d-flex flex-column">
+        <div class="text-h4 font-weight-medium">
+          <slot name="title">{{ title }}</slot>
+        </div>
+
+        <div class="text-body-1 text-medium-emphasis">
+          <slot name="subTitle">{{ subTitle }}</slot>
+        </div>
+
+        <div class="text-body-2">
+          <slot name="formInfo" />
+        </div>
+      </div>
+
+      <!-- right -->
+      <div class="right d-flex flex-column overflow-y-auto">
         <slot />
-      </v-col>
-    </v-row>
+      </div>
+    </v-sheet>
   </v-main>
 </template>
 
 <script setup>
 defineProps({
-  title: { type: String, default: 'Formulário' },
-  subTitle: { type: String },
+  title: String,
+  subTitle: String,
 })
 </script>
 
-<style>
+<style scoped>
 .app-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
   width: 100%;
-  background: var(--bg);
+  height: 100%;
 }
 
 .header-actions {
   position: fixed;
   top: 0;
-  left: 0;
   right: 0;
-  padding: 0.5rem;
+  padding: 8px;
 }
 
 .main-container {
-  display: flex;
-  flex-direction: row;
-  border-radius: 30px;
-  padding: 35px;
-  gap: 5px;
-  min-width: 70%;
-  height: 100%;
-  max-height: 60vh;
-  background: var(--bg2);
-  transition: border 300ms ease-out;
-  overflow: hidden;
-  min-height: 200px;
-  animation: fadeInBlur 0.2s ease-out;
-  scrollbar-color: var(--bg) var(--bg);
-  scrollbar-width: thin;
-  box-shadow: 0 3px 6px var(--primary-shadow);
+  display: grid;
+  grid-template-columns: 0.4fr 0.6fr;
+  gap: 24px;
+  padding: 48px;
+  min-height: 420px;
 }
 
-.main-container #logo {
-  width: fit-content;
-  height: 6rem;
+/* left section */
+.left .logo {
+  height: 64px;
 }
 
-.main-container p {
-  font-size: 15px;
-  margin-bottom: 25px;
-  text-align: justify;
-}
-
-.main-container h1 {
-  margin: 0 0 1rem 0;
-  font-weight: bold;
-}
-
-.main-container h4 {
-  margin: 0;
-  font-weight: normal;
-}
-
-@media (max-width: 900px) {
-  .app-form {
-    flex-direction: column;
-  }
-
+/* responsivo */
+@media (max-width: 960px) {
   .main-container {
-    min-width: 80%;
-    border: none;
-    width: unset;
-    height: none;
+    max-width: 90%;
+    grid-template-columns: 1fr;
+    padding: 32px;
+    border-radius: 16px;
   }
 }
 
 @media (max-width: 600px) {
-  .app-form {
-    background: var(--bg2);
-  }
-
   .main-container {
-    grid-template-rows: auto auto;
-    grid-template-columns: none;
-    border-radius: unset;
-    padding: 0;
-    gap: 0;
-    width: 90%;
-    height: auto;
+    padding: 24px;
+    border-radius: 0;
     box-shadow: none;
-  }
-
-  .main-container .left {
-    display: grid;
-    grid-row: 1;
-    grid-column: 1;
-  }
-
-  .main-container .right {
-    grid-row: 2;
-    grid-column: 1;
-  }
-
-  .main-container .left h1 {
-    text-align: center;
-  }
-
-  .form-container {
-    gap: 30px;
-  }
-
-  #logo {
-    justify-self: center;
   }
 }
 </style>

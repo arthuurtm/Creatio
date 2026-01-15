@@ -1,88 +1,80 @@
 <template>
   <AppFormPage title="Fazer login" subTitle="Acesse sua conta Creatio" :currentStep="currentStep">
     <template #form>
-      <template v-if="currentStep === 1">
+      <v-container v-if="currentStep === 1">
         <v-text-field label="Usuário ou e-mail" placeholder="Digite seu nome de usuário ou e-mail"
-          v-model="formData.identification" />
-      </template>
-
-      <template v-if="currentStep === 2">
-        <v-container>
-          <v-password-field label="Senha" placeholder="Digite sua senha" aria-required="true"
-            v-model="formData.password" />
-          <CLink text="Esqueci minha senha" @click="$router.push({ name: 'PasswordRescue' })" />
-        </v-container>
-      </template>
+          v-model="formData.login.val" :error="formData.login.err" :error-messages="formData.login.errVal"
+          variant="outlined" />
+        <v-password-field label="Senha" placeholder="Digite sua senha" aria-required="true"
+          v-model="formData.password.val" :error="formData.password.err" :error-messages="formData.password.errVal"
+          variant="outlined" />
+        <v-btn variant="text" text="Esqueceu sua senha?" @click="$router.push({ name: 'PasswordRescue' })" />
+      </v-container>
     </template>
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <v-btn style="margin-right: auto" variant="text" text="Criar conta" id="createAnAccountButton"
-          @click="pageRedirect({ name: 'Signup' })" />
-        <v-btn text="Avançar" id="loginButton" autofocus @click="nextStep()" />
-      </template>
-
-      <template v-if="currentStep === 2">
-        <v-btn text="Voltar" variant="outlined" @click="prevStep()" />
-        <v-btn text="Entrar" id="loginButton" type="submit" autofocus @click="() => handleLogin()" />
+        <v-btn variant="text" text="Criar conta" @click="pageRedirect({ name: 'Signup' })" />
+        <v-btn text="Entrar" color="primary" variant="flat" type="submit" autofocus @click="() => handleLogin()" />
       </template>
     </template>
   </AppFormPage>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { http, form as stepForm } from '@/functions'
+import http from '@/functions/http'
+import { default as stepForm, type FieldParams, initField } from "@/functions/form"
 import { showToast } from '@/plugins/toast'
-const { currentStep, nextStep, prevStep, pageRedirect } = stepForm({ totalSteps: 2 })
+const { currentStep, nextStep, prevStep, pageRedirect, setFieldError } = stepForm({ totalSteps: 2 })
+
+interface Params {
+  login: FieldParams,
+  password: FieldParams
+}
 
 // Dados do formulário
-const formData = ref({ identification: null, password: null })
+const formData = ref<Params>({ login: initField(), password: initField() })
 const route = useRoute()
-const redirect = route.query.redirect || false
+const redirect = route.query.redirect || ''
 
 // Funções do formulário
-const handleGoogleLogin = async (response = {}) => {
-  try {
-    await http.post(
-      {
-        type: 'database',
-        route: 'setLogin',
-      },
-      {
-        type: 'google',
-        identification: response.credential,
-      },
-    )
+// const handleGoogleLogin = async (response = {}) => {
+//   try {
+//     await http.post(
+//       {
+//         type: 'database',
+//         route: 'setLogin',
+//       },
+//       {
+//         type: 'google',
+//         identification: response.credential,
+//       },
+//     )
 
-    const query = redirect ? { path: redirect } : { name: 'Home' }
-    pageRedirect(query)
-  } catch (error) {
-    console.error('Erro: ', error.message)
-    showToast({
-      type: 'error',
-      message: error.message,
-    })
-  }
-}
+//     const query = redirect ? { path: redirect } : { name: 'Home' }
+//     pageRedirect(query)
+//   } catch (error) {
+//     console.error('Erro: ', error.message)
+//     showToast({
+//       type: 'error',
+//       message: error.message,
+//     })
+//   }
+// }
 
 const handleLogin = async () => {
   try {
-    if (formData.value.identification === '' || formData.value.identification === undefined) {
-      showToast({
-        type: 'warning',
-        message: 'Digite um nome de usuário ou e-mail!',
-      })
+    if (formData.value.login.val === '') {
+      prevStep()
+      setFieldError(formData.value.login, "Informe um usuário")
       return
     }
 
-    if (formData.value.password === '' || formData.value.password === undefined) {
-      showToast({
-        type: 'warning',
-        message: 'Digite uma senha!',
-      })
+    if (formData.value.password.val === '') {
+      setFieldError(formData.value.password, 'Informe uma senha')
       return
     }
 
@@ -93,38 +85,36 @@ const handleLogin = async () => {
       },
       {
         type: 'traditional',
-        identification: formData.value.identification,
-        password: formData.value.password,
+        login: formData.value.login.val,
+        password: formData.value.password.val,
       },
     )
 
     const query = redirect ? { path: redirect } : { name: 'Home' }
     pageRedirect(query)
   } catch (error) {
-    showToast({
-      type: 'error',
-      message: error.message,
-    })
+    setFieldError(formData.value.password, "Usuário ou senha incorretos.")
+    console.log(formData.value)
   }
 }
 
-onMounted(async () => {
-  google.accounts.id.initialize({
-    client_id: import.meta.env.VITE_GCLIENT_LOGIN_ID,
-    callback: handleGoogleLogin,
-    context: 'signin',
-    ux_mode: 'popup',
-    auto_prompt: false,
-  })
+// onMounted(async () => {
+//   google.accounts.id.initialize({
+//     client_id: import.meta.env.VITE_GCLIENT_LOGIN_ID,
+//     callback: handleGoogleLogin,
+//     context: 'signin',
+//     ux_mode: 'popup',
+//     auto_prompt: false,
+//   })
 
-  google.accounts.id.renderButton(document.getElementById('googleButton'), {
-    size: 'large',
-    type: 'icon',
-    shape: 'pill',
-    text: 'continue_with',
-    logo_alignment: 'left',
-  })
+//   google.accounts.id.renderButton(document.getElementById('googleButton'), {
+//     size: 'large',
+//     type: 'icon',
+//     shape: 'pill',
+//     text: 'continue_with',
+//     logo_alignment: 'left',
+//   })
 
-  google.accounts.id.prompt()
-})
+//   google.accounts.id.prompt()
+// })
 </script>
