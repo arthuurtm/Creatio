@@ -1,14 +1,19 @@
-import type { WebSocket, WebSocketServer } from "ws";
+import type { WebSocketServer } from "ws";
 
-export interface WebSocketMessage {
+export type { WebSocket, WebSocketServer } from "ws";
+
+export interface WebSocketMessage<T = unknown> {
 	event: string;
-	payload?: unknown;
+	payload?: T;
 }
 
 export interface RouteContext<T = unknown> {
 	ws: WebSocket;
 	wss: WebSocketServer;
-	data: T;
+	payload: T;
 }
 
-export type { WebSocket, WebSocketServer };
+export interface WebSocketErrorMessage {
+	raw: object;
+	message: string;
+}

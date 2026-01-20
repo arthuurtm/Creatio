@@ -1,9 +1,10 @@
 // Defina interfaces reais baseadas no que seus objetos têm.
 // Use 'any' APENAS temporariamente onde não tiver certeza ainda.
+export type GameNodeType = "dialog" | "combat" | "event";
 
 export interface GameNode {
 	id: string;
-	type: "dialog" | "combat" | "event";
+	type: GameNodeType;
 	position: { x: number; y: number };
 	[key: string]: any;
 }
@@ -11,13 +12,13 @@ export interface GameConnection {
 	id: string;
 	source: string;
 	target: string;
-	[key: string]: any;
 }
 export interface GameInfo {
-	id: string | null | number;
+	id: string | null;
 	title: string;
 	version: string;
 	description: string | null;
+	updatedAt: Date | number | null;
 }
 export interface GameObject {
 	id: string;
