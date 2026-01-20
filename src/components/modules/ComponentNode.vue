@@ -1,26 +1,18 @@
 <script setup lang="ts">
-import { useConnections } from '@/composables/useDotConnection'
-import type { GameNode } from '@/types/editor-models'
-import type { CSSProperties } from 'vue'
+import { useConnections } from "@/composables/useDotConnection";
+import type { GameNode } from "#types/domain/editor/models.ts";
+import type { CSSProperties } from "vue";
+import CNode from "../ui/Node.vue";
 
 const props = defineProps<{
-  nodes: GameNode[]
-  style?: CSSProperties | CSSProperties[] | string
-}>()
-const emit = defineEmits(['emit-event'])
-const { handleStartConnection, paths } = useConnections()
+  nodes: GameNode[];
+  style?: CSSProperties | CSSProperties[] | string;
+}>();
+const emit = defineEmits(["emit-event", "update:nodes"]);
+const { handleStartConnection, paths } = useConnections();
 
-function emitEventHandler(e: { command: string; [key: string]: any }) {
-  console.log(e)
-  switch (e.command) {
-    case 'NODE.CONNECTION': {
-      handleStartConnection(e.data)
-      break
-    }
-    default: {
-      emit('emit-event', e)
-    }
-  }
+function emitEventHandler(e: { command: string;[key: string]: any }) {
+  emit("emit-event", e);
 }
 </script>
 
@@ -30,26 +22,10 @@ function emitEventHandler(e: { command: string; [key: string]: any }) {
   </svg>
 
   <div class="nodes-layer" :style="style">
-    <ComponentDialog
-      v-for="node in props.nodes"
-      :key="node.id"
-      v-on:contextmenu.stop="
-        emitEventHandler({ command: 'NODE.OPEN_CONTEXT_MENU', data: { node, event: $event } })
-      "
-      v-on:contextmenu.prevent
-      :title="node.id"
-      v-model:x="node.position.x"
-      v-model:y="node.position.y"
-      is-visible
-      no-focus-window
-      is-draggable
-      no-title-bar
-      no-interpolate-size
-      no-overflow
-      background="var(--surface-3)"
-    >
-      <CNode :node="node" @emit-event="emitEventHandler" />
-    </ComponentDialog>
+    <template v-for="node in props.nodes" :key="node.id">
+      <CNode :node="node" v-model:position="node.position" @emit-event="emitEventHandler"
+        @dot-connection="handleStartConnection" />
+    </template>
   </div>
 </template>
 
