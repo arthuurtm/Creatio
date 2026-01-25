@@ -1,239 +1,242 @@
-<script setup>
-import { computed } from 'vue'
-import CInputText from '../ui/CInputText.vue'
-import CButton from '../ui/CButton.vue'
-import CGroup from '../ui/CGroup.vue'
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 
-// Importante: define o nome do componente para permitir recursividade
 defineOptions({
   name: 'RecursiveEditor',
 })
 
 const props = defineProps({
   modelValue: {
-    type: [Object, Array, String, Number, Boolean, null],
+    type: [Object, Array, String, Number, Boolean, null] as any,
     required: true,
   },
   label: {
     type: String,
     default: '',
   },
+  depth: {
+    type: Number,
+    default: 0,
+  },
+  startExpanded: {
+    type: Boolean,
+    default: false, // Por padrão, tudo encolhido
+  },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: any): void
+  (e: 'delete'): void // Emit para deletar a si mesmo (útil em arrays)
+}>()
 
-// --- Utilitários de Tipo ---
+const isExpanded = ref(props.startExpanded)
+
 const isArray = computed(() => Array.isArray(props.modelValue))
-const isObject = computed(
-  () => props.modelValue !== null && typeof props.modelValue === 'object' && !isArray.value,
+const isObject = computed(() =>
+  props.modelValue !== null &&
+  typeof props.modelValue === 'object' &&
+  !isArray.value
 )
 const isBoolean = computed(() => typeof props.modelValue === 'boolean')
 const isPrimitive = computed(() => !isObject.value && !isArray.value && !isBoolean.value)
-const isObjectValue = (v) => v && typeof v === 'object' && !Array.isArray(v)
-const isArrayValue = (v) => Array.isArray(v)
 
-// --- Manipulação de Objetos ---
-function updateObjectKey(key, newValue) {
+// Agrupamento visual
+const groupedKeys = computed(() => {
+  if (!isObject.value) return { primitives: [], complex: [] }
+
+  const primitives: string[] = []
+  const complex: string[] = [] // Juntamos Objetos e Arrays
+
+  Object.keys(props.modelValue).forEach((key) => {
+    const val = props.modelValue[key]
+    if (val !== null && typeof val === 'object') {
+      complex.push(key)
+    } else {
+      primitives.push(key)
+    }
+  })
+
+  return { primitives, complex }
+})
+
+// --- Ações ---
+function updateObjectKey(key: string, newValue: any) {
   const newObj = { ...props.modelValue }
   newObj[key] = newValue
   emit('update:modelValue', newObj)
 }
 
-// --- Manipulação de Arrays ---
-function updateArrayItem(index, newValue) {
+function updateArrayItem(index: number, newValue: any) {
   const newArr = [...props.modelValue]
   newArr[index] = newValue
   emit('update:modelValue', newArr)
 }
 
 function addArrayItem() {
-  // Adiciona uma string vazia por padrão, o usuário pode mudar depois
-  // ou você pode criar lógica para inferir o tipo do item anterior
-  const newItem = ''
+  // Tenta adivinhar o tipo baseado no anterior, ou string vazia
+  const newItem = props.modelValue.length > 0
+    ? (typeof props.modelValue[0] === 'object' ? {} : "")
+    : ""
   emit('update:modelValue', [...props.modelValue, newItem])
 }
 
-function removeArrayItem(index) {
+function removeArrayItem(index: number) {
   const newArr = [...props.modelValue]
   newArr.splice(index, 1)
   emit('update:modelValue', newArr)
 }
 
-// --- Manipulação de Primitivos ---
-function updatePrimitive(value) {
-  // Tenta converter para número se o input for numérico e o valor original era número
+function updatePrimitive(value: string | number) {
   if (typeof props.modelValue === 'number') {
     const num = Number(value)
-    if (!isNaN(num)) return emit('update:modelValue', num)
+    if (!isNaN(num)) {
+      emit('update:modelValue', num)
+      return
+    }
   }
   emit('update:modelValue', value)
 }
+
+// Estilo dinâmico para indentação
+const indentStyle = computed(() => ({
+  paddingLeft: `${props.depth * 12}px`,
+  // Uma cor de fundo sutil que escurece levemente a cada nível
+  backgroundColor: `rgba(var(--v-theme-surface-variant), ${props.depth * 0.02})`
+}))
+
+
+// Watcher para permitir que o pai force o colapso/expansão de todos os níveis
+watch(() => props.startExpanded, (newVal) => {
+  isExpanded.value = newVal
+})
 </script>
 
 <template>
-  <CGroup grow direction="column" gap="8px" padding="10px">
-    <CGroup v-if="isObject" class="editor-block" direction="column">
-      <!-- TITULO DO BLOCO -->
-      <div class="block-title">
-        {{ label || 'Configurações' }}
+  <div class="recursive-editor w-100">
+
+    <div v-if="isObject || isArray" class="complex-container">
+      <div class="d-flex align-center py-1 pr-2 cursor-pointer hover-bg" :style="indentStyle"
+        @click.stop="isExpanded = !isExpanded">
+
+        <v-icon :icon="isExpanded ? 'arrow_drop_down' : 'arrow_right'" size="small" color="medium-emphasis"
+          class="mr-1" />
+
+        <span class="text-caption font-weight-bold text-uppercase text-medium-emphasis">
+          {{ label || (isArray ? 'Lista' : 'Objeto') }}
+        </span>
+        <v-spacer />
+
+        <v-btn v-if="isArray" icon="add" size="x-small" variant="text" density="comfortable" color="primary"
+          @click.stop="addArrayItem" />
+
+        <span v-if="!isExpanded" class="text-caption text-disabled ml-2">
+          {{ isArray ? `${modelValue.length} itens` : '{...}' }}
+        </span>
       </div>
 
-      <!-- PRIMEIRO: CAMPOS PRIMITIVOS -->
-      <div v-if="!isObjectValue(value) && !isArrayValue(value)" class="primitive-row">
-        <RecursiveEditor
-          v-for="(value, key) in modelValue"
-          :key="key + '-primitive'"
-          :label="String(key)"
-          :model-value="value"
-          @update:model-value="(v) => updateObjectKey(key, v)"
-        />
-      </div>
+      <v-expand-transition>
+        <div v-show="isExpanded">
 
-      <!-- OBJETOS -->
-      <div v-if="isObjectValue(value)" class="sub-block">
-        <RecursiveEditor
-          v-for="(value, key) in modelValue"
-          :key="key + '-object'"
-          :label="String(key)"
-          :model-value="value"
-          @update:model-value="(v) => updateObjectKey(key, v)"
-        />
-      </div>
+          <template v-if="isObject">
+            <div v-if="groupedKeys.primitives.length" class="py-1">
+              <RecursiveEditor v-for="key in groupedKeys.primitives" :key="key" :label="key"
+                :model-value="props.modelValue[key]" :depth="depth + 1"
+                @update:model-value="(v) => updateObjectKey(key, v)" />
+            </div>
 
-      <!-- ARRAYS -->
-      <div v-if="isArrayValue(value)" class="sub-block">
-        <RecursiveEditor
-          v-for="(value, key) in modelValue"
-          :key="key + '-array'"
-          :label="String(key)"
-          :model-value="value"
-          @update:model-value="(v) => updateObjectKey(key, v)"
-        />
-      </div>
-    </CGroup>
+            <v-divider v-if="groupedKeys.primitives.length && groupedKeys.complex.length"
+              class="my-1 border-opacity-25" />
 
-    <CGroup v-else-if="isArray" class="editor-block" direction="column">
-      <div class="header-row">
-        <span v-if="label" class="block-title">{{ label }} (Array)</span>
-        <CButton
-          icon="add_circle"
-          classes="symbolic"
-          title="Adicionar"
-          @click="addArrayItem"
-        ></CButton>
-      </div>
+            <RecursiveEditor v-for="key in groupedKeys.complex" :key="key" :label="key"
+              :model-value="props.modelValue[key]" :depth="depth + 1"
+              @update:model-value="(v) => updateObjectKey(key, v)" />
+          </template>
 
-      <div v-for="(item, index) in modelValue" :key="index" class="array-item">
-        <div class="array-content">
-          <RecursiveEditor
-            :label="`Item ${index + 1}`"
-            :model-value="item"
-            @update:model-value="(v) => updateArrayItem(index, v)"
-          />
+          <template v-else-if="isArray">
+            <div v-if="modelValue.length === 0" class="text-caption text-center py-2 text-disabled">
+              (Vazio)
+            </div>
+            <div v-for="(item, index) in modelValue" :key="index" class="d-flex align-start group-hover-parent">
+              <div class="flex-grow-1">
+                <RecursiveEditor :label="String(index)" :model-value="item" :depth="depth + 1"
+                  @update:model-value="(v) => updateArrayItem(index, v)" />
+              </div>
+
+              <v-btn icon="delete" size="x-small" variant="text" color="error" class="mt-1 opacity-50 hover-opacity-100"
+                @click="removeArrayItem(index)" />
+            </div>
+          </template>
         </div>
-        <CButton
-          classes="symbolic destructive"
-          icon="delete"
-          @click="removeArrayItem(index)"
-        ></CButton>
+      </v-expand-transition>
+    </div>
+
+    <div v-else class="d-flex align-center py-1 pr-2 hover-bg property-row" :style="indentStyle">
+      <div class="property-label text-caption text-medium-emphasis text-truncate mr-2" :title="label">
+        {{ label }}
       </div>
 
-      <div v-if="modelValue.length === 0" class="empty-state">Lista vazia</div>
-    </CGroup>
+      <div class="flex-grow-1" style="min-width: 0;">
+        <div v-if="isBoolean" class="d-flex justify-end">
+          <v-switch :model-value="modelValue" color="primary" hide-details density="compact" class="ma-0 scale-switch"
+            @update:model-value="(val) => emit('update:modelValue', val)" />
+        </div>
 
-    <div v-else-if="isBoolean" class="input-wrapper">
-      <label v-if="label">{{ label }}</label>
-      <div class="checkbox-wrapper">
-        <input
-          type="checkbox"
-          :checked="modelValue"
-          @change="(e) => emit('update:modelValue', e.target.checked)"
-        />
-        <span>{{ modelValue ? 'True' : 'False' }}</span>
+        <v-text-field v-else :model-value="modelValue" variant="underlined" density="compact" hide-details
+          class="custom-input centered-input" :class="{ 'text-right': typeof modelValue === 'number' }"
+          @update:model-value="updatePrimitive" />
       </div>
     </div>
 
-    <div v-else class="input-block input-wrapper">
-      <label v-if="label">{{ label }}</label>
-      <div>
-        <CInputText
-          :model-value="modelValue"
-          @update:model-value="updatePrimitive"
-          class="fiel-row"
-        />
-      </div>
-    </div>
-  </CGroup>
+  </div>
 </template>
 
 <style scoped>
-.editor-block {
-  padding: 12px;
-  border-left: 2px solid var(--border-strong);
-  margin-top: 4px;
+/* Remove o outline padrão feio do browser */
+.recursive-editor {
+  font-family: 'Roboto', sans-serif;
+  /* Ou sua fonte padrão */
 }
 
-.block-title {
-  font-weight: bold;
-  font-size: 0.9em;
-  opacity: 0.7;
-  margin-bottom: 8px;
-  display: block;
+/* Hover effect na linha inteira para guiar o olho */
+.hover-bg:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.04) !important;
 }
 
-.field-row {
-  margin-bottom: 10px;
+/* Label com largura fixa ajuda a alinhar visualmente */
+.property-label {
+  width: 120px;
+  /* Ajuste conforme necessário */
+  flex-shrink: 0;
 }
 
-/* Estilo para Array */
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+/* Input customizado para ficar sutil */
+.custom-input :deep(.v-field__input) {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  min-height: 24px;
+  font-size: 0.875rem;
 }
 
-.array-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed var(--border-strong);
+/* Remove padding extra do underline */
+.custom-input :deep(.v-input__details) {
+  display: none;
 }
 
-.array-content {
-  flex-grow: 1;
+/* Switch menorzinho */
+.scale-switch {
+  transform: scale(0.8);
+  transform-origin: right center;
 }
 
-.delete-btn {
-  margin-top: 24px; /* Tenta alinhar com o input */
-  padding: 4px 8px;
-}
-
-/* Inputs Primitivos */
-.input-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.input-wrapper label {
-  font-size: 0.85em;
-  opacity: 0.8;
-}
-
-.checkbox-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-}
-
-.empty-state {
-  font-style: italic;
-  font-size: 0.8em;
+.opacity-50 {
   opacity: 0.5;
-  padding: 8px;
+}
+
+.hover-opacity-100:hover {
+  opacity: 1;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
