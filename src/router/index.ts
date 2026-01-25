@@ -5,28 +5,35 @@ import {
 } from "vue-router";
 import { http } from "@/functions/";
 
-// 1. Definição de Tipos para o Meta (Type Safety)
 declare module "vue-router" {
 	interface RouteMeta {
 		requiresAuth?: boolean;
-		hiddenNavigator?: boolean;
-		fullscreen?: boolean;
+		layout?: {
+			hideNavigator?: boolean;
+			fullscreen?: boolean;
+		};
 	}
 }
 
-// 2. Imports de Componentes e Layouts
 const LayoutBase = () => import("@/layouts/LayoutBase.vue");
 
-// 3. Array de Rotas Tipado
 const routes: RouteRecordRaw[] = [
+	// {
+	// 	path: "/",
+	// 	name: "Landing",
+	// 	component: () => import("@/views/LandingView.vue"),
+	// 	meta: { publicOnly: true },
+	// },
 	{
 		path: "/",
 		component: LayoutBase,
+		meta: { requiresAuth: true },
 		children: [
 			{
 				path: "",
 				name: "About",
 				component: () => import("@/views/about/AboutView.vue"),
+				meta: { publicOnly: true },
 			},
 			{
 				path: "home",
@@ -34,7 +41,7 @@ const routes: RouteRecordRaw[] = [
 				component: () => import("@/views/user/HomeView.vue"),
 			},
 			{
-				path: "user/:username",
+				path: "users/:username",
 				name: "UserProfile",
 				component: () => import("@/views/user/UserProfileView.vue"),
 				props: true,
@@ -43,33 +50,23 @@ const routes: RouteRecordRaw[] = [
 				path: "games",
 				children: [
 					{
+						path: "",
+						name: "GameProjects",
+						component: () => import("@/views/game/edit/ProjectsView.vue"),
+					},
+					{
 						path: ":id",
 						name: "GameDetails",
 						component: () => import("@/views/game/general/GameDetailsView.vue"),
 						props: true,
-						meta: { fullscreen: true, hiddenNavigator: true },
-					},
-				],
-			},
-			{
-				path: "projects",
-				children: [
-					{
-						path: "",
-						name: "CreateHome",
-						component: () => import("@/views/game/edit/ProjectsView.vue"),
-						meta: { requiresAuth: true },
+						meta: { layout: { fullscreen: true, hideNavigator: true } },
 					},
 					{
 						path: ":id/edit",
-						name: "EditGame",
+						name: "GameEdit",
 						component: () => import("@/views/game/edit/GameEditView.vue"),
 						props: true,
-						meta: {
-							requiresAuth: true,
-							hiddenNavigator: true,
-							fullscreen: true,
-						},
+						meta: { layout: { fullscreen: true, hideNavigator: true } },
 					},
 				],
 			},
@@ -77,18 +74,17 @@ const routes: RouteRecordRaw[] = [
 	},
 	{
 		path: "/auth",
+		meta: { publicOnly: true },
 		children: [
 			{
 				path: "login",
 				name: "Login",
 				component: () => import("@/views/auth/FormLoginView.vue"),
-				meta: { requiresAuth: false },
 			},
 			{
 				path: "signup",
 				name: "Signup",
 				component: () => import("@/views/auth/FormSignupView.vue"),
-				meta: { requiresAuth: false },
 			},
 			{
 				path: "password/rescue",
@@ -100,7 +96,7 @@ const routes: RouteRecordRaw[] = [
 	{ path: "/login", redirect: { name: "Login" } },
 	{
 		path: "/:pathMatch(.*)*",
-		name: "ErrNotFound",
+		name: "NotFound",
 		component: () => import("@/views/err/NotFoundView.vue"),
 	},
 ];
@@ -110,7 +106,6 @@ const router = createRouter({
 	routes,
 });
 
-// 4. Navigation Guard
 router.beforeEach(async (to, from, next) => {
 	const isLoggedIn = await http.auth.isAuthenticated();
 
@@ -123,7 +118,6 @@ router.beforeEach(async (to, from, next) => {
 	}
 });
 
-// 5. Tratamento de Erros de Importação (Vuetify/Vite)
 router.onError((err, to) => {
 	if (
 		err?.message?.includes?.("Failed to fetch dynamically imported module") &&
