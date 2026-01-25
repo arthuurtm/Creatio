@@ -15,7 +15,7 @@ import { objects } from "./objects";
 import { quests } from "./quests";
 import { skills } from "./skills";
 
-const metadata: Record<CategoryKey, ComputedRef<CategoryConfig>> = {
+export const categories: Record<CategoryKey, ComputedRef<CategoryConfig>> = {
 	actions,
 	events,
 	conditions,
@@ -33,10 +33,20 @@ const metadata: Record<CategoryKey, ComputedRef<CategoryConfig>> = {
 export function getSubCategories(
 	categoryKey: CategoryKey,
 ): Record<string, EditorDefinition> | FallbackItem[] {
-	return metadata[categoryKey]?.value?.definitions ?? {};
+	return categories[categoryKey]?.value?.definitions ?? {};
 }
 
-// Exporta os dados diretamente
+export function normalizeItems(param: any) {
+	const items = param.items;
+	if (!items) return items;
+	if (typeof items[0] === "string") return items;
+	return items.map((i) => ({
+		title: i.name ?? i.text ?? i.label ?? i.title ?? i.id,
+		value: i.id ?? i.key ?? i.value ?? i.name ?? i.text,
+		raw: i,
+	}));
+}
+
 export {
 	actions,
 	events,
@@ -48,4 +58,3 @@ export {
 	assets,
 	nodes,
 };
-export const categories = metadata;

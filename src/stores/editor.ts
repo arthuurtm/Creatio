@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { EditorState } from "@/types/editor-models";
+import type { EditorState } from "#types/domain/editor/index.ts";
 
 function models(): EditorState {
 	return {
@@ -13,6 +13,7 @@ function models(): EditorState {
 			title: "",
 			version: "1.0.0",
 			description: "",
+			updatedAt: null,
 		},
 		objects: [],
 		avatars: [],
@@ -46,8 +47,16 @@ export const useEditorStore = defineStore("editor", {
 		getModel() {
 			return models();
 		},
+		setGameId(id: string | undefined) {
+			if (!id) return;
+			this.info.id = id;
+		},
 	},
 });
 
 export { generateId };
-export { categories, getSubCategories } from "@/lib/editor/index.ts";
+export {
+	categories,
+	getSubCategories,
+	normalizeItems,
+} from "@/lib/editor/index.ts";
