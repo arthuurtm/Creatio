@@ -1,133 +1,160 @@
 <template>
-  <CGroup direction="column" grow>
-    <CGroup direction="column" max-width="1240px" margin="1rem auto">
-      <CGroup justify="between" :align="'center'" gap="1rem">
-        <CGroup width="400px">
-          <CInputText type="search" placeholder="Buscar por nome..." icon="search" class="fill" />
-        </CGroup>
+  <v-container fluid class="pa-4">
+    <!-- TOP BAR -->
+    <div class="d-flex align-center justify-space-between mb-4 flex-wrap ga-3">
+      <div class="d-flex align-center ga-3 flex-wrap">
+        <v-text-field v-model="searchQuery" type="search" variant="outlined" density="compact" :clearable="true"
+          placeholder="Buscar por nome..." prepend-inner-icon="search" style="min-width: 280px" />
 
-        <CGroup gap="1rem">
-          <CGroup gap="0.5rem" background="var(--bg2)" padding="0.5rem" radius="50px" inline>
-            <CButton
-              v-for="(btn, index) in [
-                {
-                  icon: 'grid_view',
-                  classes: currentView === 'grade' ? 'active' : '',
-                  action: () => setView('grade'),
-                },
-                {
-                  icon: 'view_list',
-                  classes: currentView === 'list' ? 'active' : '',
-                  action: () => setView('list'),
-                },
-                {
-                  icon: 'view_stream',
-                  classes: currentView === 'line' ? 'active' : '',
-                  action: () => setView('line'),
-                },
-              ]"
-              :key="index"
-              :="btn"
-              @click="btn.action"
-            />
-          </CGroup>
-
-          <CButton text="Criar Novo" icon="add" classes="primary" @click="() => criarNovoJogo()" />
-        </CGroup>
-      </CGroup>
-    </CGroup>
-
-    <CGroup direction="column" gap="1rem" class="content-area" grow>
-      <CLoading v-if="loading" />
-      <div v-else-if="filteredCreations.length === 0" class="empty-state">
-        <p v-if="allCreations.length > 0">Nenhum item encontrado para "{{ searchQuery }}"</p>
-        <p v-else>Você ainda não tem criações. Que tal começar uma agora?</p>
+        <v-select v-model="sort" :items="sortItems" label="Ordenar por" density="compact" variant="outlined"
+          style="min-width: 180px" />
       </div>
-      <ComponentLoadSessions
-        v-else
-        :key="currentView"
-        :items="filteredCreations"
-        :style-type="currentView"
-      />
-    </CGroup>
-  </CGroup>
+
+      <div class="d-flex align-center ga-2">
+        <v-btn-toggle v-model="currentView" divided density="comfortable">
+          <v-btn value="grade" icon="grid_view" />
+          <v-btn value="list" icon="view_list" />
+          <v-btn value="line" icon="view_stream" />
+        </v-btn-toggle>
+
+        <v-btn color="primary" density="comfortable" @click="criarNovoJogo" prepend-icon="add" text="Criar novo" />
+      </div>
+    </div>
+
+    <!-- FILTERS / GENRES -->
+    <div v-if="genres.length" class="d-flex align-center justify-space-between mb-2">
+      <div class="text-body-2 text-medium-emphasis">
+        {{ filteredCreations.length }} resultado(s)
+      </div>
+
+      <v-chip-group v-model="selectedGenres" multiple density="comfortable">
+        <v-chip v-for="g in genres" :value="g" variant="outlined" class="text-capitalize">
+          {{ g }}
+        </v-chip>
+      </v-chip-group>
+    </div>
+
+    <!-- DATA -->
+    <div>
+      <v-progress-circular v-if="loading" indeterminate size="32" class="mt-4" />
+
+      <v-empty-state v-else-if="filteredCreations.length === 0"
+        :title="allCreations.length ? 'Nada encontrado' : 'Nenhum jogo criado'" :text="allCreations.length
+          ? `Nenhum item para '${searchQuery}'`
+          : 'Clique em criar novo para começar!'
+          " />
+
+      <!-- VIEW RENDER -->
+      <component-load-sessions v-else :items="filteredCreations" :style-type="currentView" :key="currentView" />
+    </div>
+  </v-container>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import ComponentLoadSessions from '@/components/modules/ComponentLoadSessions.vue'
-import { http } from '@/functions'
-import { showToast } from '@/plugins/toast'
-import { useUserStore } from '@/stores'
-import { useEditorStore } from '@/stores/editor'
+<script setup lang="ts">
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import ComponentLoadSessions from "@/components/modules/ComponentLoadSessions.vue";
+import { http } from "@/functions";
+import { showToast } from "@/plugins/toast";
+import { useUserStore } from "@/stores";
+import { useEditorStore } from "@/stores/editor";
+import { Game } from "#types/models/index.ts";
 
-const userStore = useUserStore()
-const editorStore = useEditorStore()
-const router = useRouter()
-const allCreations = ref([])
-const loading = ref(true)
-const currentView = ref('grade')
-const searchQuery = ref('')
+interface SortItem {
+  title: string;
+  value: string;
+}
+
+const userStore = useUserStore();
+const editorStore = useEditorStore();
+const router = useRouter();
+const allCreations = ref<Game[]>([]);
+const loading = ref(true);
+const currentView = ref("grade");
+const searchQuery = ref("");
+const selectedGenres = ref([]);
+const sort = ref("recent");
+
+const sortItems: SortItem[] = [
+  { title: "Recentes", value: "recent" },
+  { title: "Nome", value: "alpha" },
+  { title: "Atualizados", value: "updated" },
+  { title: "Versão", value: "version" },
+];
+
+const genres = computed(() => {
+  return [...new Set(allCreations.value.map((c) => c.genre).filter(Boolean))];
+});
 
 const filteredCreations = computed(() => {
-  const list = !searchQuery.value
-    ? allCreations.value
-    : allCreations.value.filter((creation) =>
-        creation.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
-      )
+  let list = [...allCreations.value];
 
-  return list.map((creation) => ({
-    ...creation,
-    action: () => loadEditTool(creation),
-  }))
-})
+  // ... filtros de busca e gênero ...
+
+  switch (sort.value) {
+    case "recent":
+      list.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      break;
+    case "updated":
+      list.sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+      break;
+    case "alpha":
+      list.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    case "version":
+      list.sort((a, b) => Number(b.version || 0) - Number(a.version || 0));
+      break;
+  }
+
+  return list.map((c) => ({
+    ...c,
+    action: () => router.push({ name: "GameEdit", params: { id: c.id } }),
+  }));
+});
 
 async function fetchMyCreations() {
-  loading.value = true
+  loading.value = true;
   try {
     allCreations.value = Object.values(
       await http.get({
-        type: 'database',
-        route: 'getGames',
+        type: "database",
+        route: "getGames",
         querys: { filters: { userId: userStore.getId } },
       }),
-    )
+    );
   } catch (error) {
-    showToast({ type: 'error', message: 'Falha ao carregar suas criações.' })
+    showToast({ type: "error", message: "Falha ao carregar suas criações." });
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-function setView(view) {
-  currentView.value = view
-}
-
-function loadEditTool(params) {
-  router.push({ name: 'EditGame', params })
-}
-
 async function criarNovoJogo() {
-  let result
+  let result;
   try {
     result = await http.post(
-      { type: 'database', route: 'setGame' },
-      { title: 'Novo Jogo', state: editorStore.$state, ...editorStore.info },
-    )
+      { type: "database", route: "setGame" },
+      { state: editorStore.$state },
+    );
 
     Object.assign(editorStore.info, {
       id: result.id,
       title: result.title,
-    })
+    });
 
-    router.push({ name: 'EditGame', params: { id: result.id } })
+    router.push({ name: "GameEdit", params: { id: result.id } });
   } catch (error) {
-    showToast({ type: 'error', message: error.message })
+    showToast({ type: "error", message: error.message });
   }
 }
 
 onMounted(async () => {
-  await fetchMyCreations()
-})
+  await fetchMyCreations();
+});
 </script>
