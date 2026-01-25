@@ -1,176 +1,96 @@
-<script setup>
-  import { computed, ref } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'
-  import ComponentNavigator from '@/components/modules/ComponentHeader.vue'
-  import { http } from '@/functions/'
-  import { useUserStore } from '@/stores'
+<script setup lang="ts">
+import { ref, watchEffect } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useUserStore } from "@/stores";
+import { http } from "#src/functions/index.ts";
+import ComponentHeader from "#src/components/modules/ComponentHeader.vue";
+import CButton from "#src/components/ui/CButton.vue";
 
-  const route = useRoute()
-  const router = useRouter()
-  const user = useUserStore()
-  const pageMeta = computed(() => route?.meta)
-  const isAuthenticated = computed(() => user.getIsAuth)
-  const contextMenuRef = ref(null)
-  const dialogData = ref(null)
-  const isDialogVisible = ref(false)
+const route = useRoute();
+const router = useRouter();
+const user = useUserStore();
+const dialog = ref(false)
+const collapsedHeader = ref(false);
 
-  function handleDialogMessageEvent (e) {
-    if (e?.action) {
-      e.action()
-    }
-    isDialogVisible.value = !isDialogVisible.value
-  }
+const navItems = [
+  { link: "Home", text: "Início", icon: "home", color: "primary" },
+  {
+    link: "GamesView",
+    text: "Jogos",
+    icon: "stadia_controller",
+    color: "gold",
+  },
+  { link: "GameProjects", text: "Seus Projetos", icon: "browse", color: "green" },
+];
 
-  function handleLogout () {
-    isDialogVisible.value = true
-    dialogData.value = {
-      title: 'Sair',
-      message: 'Você quer mesmo sair?',
-      buttons: [{ text: 'Não' }, { text: 'Sim', class: 'confirm', action: () => http.auth.logout() }],
-    }
-  }
+watchEffect(() => {
+  collapsedHeader.value = route.meta?.layout?.hideNavigator ?? false
+})
 
-  function openMoreOptions (event) {
-    event.preventDefault()
-    contextMenuRef.value.openContextMenu(
-      [
-        {
-          items: [
-            {
-              text: 'Meu Perfil',
-              icon: 'account_circle',
-              action: () => router.push({ name: 'UserProfile' }),
-            },
-          ],
-        },
-        {
-          items: [
-            { text: 'Configurações', icon: 'settings' },
-            { text: 'Sair', icon: 'logout', action: handleLogout },
-          ],
-        },
-      ],
-      event,
-    )
-  }
-
-  const navLinks = computed(() => {
-    return {
-      left: [
-        { text: 'HOME', action: () => router.push({ name: 'Home' }) },
-        { text: 'JOGOS', action: () => router.push({ name: 'GamesView' }) },
-        { text: 'PROJETOS', action: () => router.push({ name: 'CreateHome' }) },
-        { text: 'SOBRE', action: () => router.push({ name: 'About' }) },
-      ],
-      right: [
-        {
-          icon: 'inbox',
-          text: 'Notificações',
-          action: () => console.log('Abrir notificações'),
-          hidden: !isAuthenticated.value,
-        },
-        {
-          img: {
-            src: user.getProfilePicture,
-            alt: 'Foto de perfil',
-            class: 'profile-picture',
-          },
-          id: 'user-info',
-          action: e => openMoreOptions(e),
-          hidden: !isAuthenticated.value,
-        },
-      ],
-    }
-  })
 </script>
 
 <template>
-  <v-main>
-    <ComponentNavigator :hidden="pageMeta.hiddenNavigator" :nav-links="navLinks" />
-    <div
-      class="app-content"
-      :class="[pageMeta.hiddenNavigator && 'overlay-nav', pageMeta.fullscreen && 'full']"
-    >
+  <v-app>
+    <component-header :hidden="collapsedHeader">
+      <template #left>
+        <v-btn v-for="btn in navItems" @click="router.push({ name: btn.link })" class="ga-2" variant="text"
+          density="compact" :text="btn.text" />
+        <v-text-field placeholder="Pesquisar..." prepend-inner-icon="search" variant="solo" flat hide-details
+          density="compact" style="max-width: 460px" />
+      </template>
+      <template #right>
+        <!-- <v-btn icon="inbox" variant="text" v-if="isAuthenticated" /> -->
+        <v-menu v-if="user.getIsAuth" location="bottom end">
+          <template #activator="{ props }">
+            <c-button v-bind="props" size="38" :icon="user.getProfilePicture" />
+          </template>
+          <v-list density="comfortable" min-width="200" class="pa-2 elevation-4">
+            <v-list-item title="Meu perfil" prepend-icon="account_circle"
+              @click="router.push({ name: 'UserProfile', params: { username: user.username } })" />
+            <v-list-item title="Configurações" prepend-icon="settings" />
+            <v-divider class="my-2" />
+            <v-list-item title="Sair" prepend-icon="logout" @click="dialog = true" />
+          </v-list>
+        </v-menu>
+        <v-btn v-else variant="tonal" rounded="pill" color="primary" @click="router.push({ name: 'Login' })">
+          Entrar
+        </v-btn>
+      </template>
+    </component-header>
+
+    <v-main>
       <router-view v-slot="{ Component }">
-        <transition mode="out-in" name="fastFade">
-          <CGroup :key="Component" grow>
-            <component :is="Component" />
-          </CGroup>
-        </transition>
+        <!-- <transition name="fastFade" mode="out-in"> -->
+        <component :is="Component" />
+        <!-- </transition> -->
       </router-view>
-    </div>
-    <CContextMenu ref="contextMenuRef" />
-    <ComponentDialog v-model:is-visible="isDialogVisible" :title="dialogData?.title">
-      <DialogMessage :dialog-data="dialogData" @click="handleDialogMessageEvent" />
-    </ComponentDialog>
-  </v-main>
+    </v-main>
+
+    <v-dialog v-model="dialog" width="auto">
+      <v-card max-width="400" prepend-icon="logout" title="Sair">
+        <v-card-text>
+          Você deseja encerrar sua sessão?
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="dialog = false">Cancelar</v-btn>
+          <v-btn color="primary" variant="flat" @click="dialog = false, http.auth.logout()">Sair</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+  </v-app>
 </template>
 
 <style scoped>
-.app-container {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  position: relative;
-  flex-direction: column;
+.fastFade-enter-from,
+.fastFade-leave-to {
+  opacity: 0;
 }
 
-.app-header {
-  height: auto;
-}
-
-.app-content {
-  display: flex;
-  overflow: auto;
-  padding: 0.5rem;
-  z-index: 1;
-  height: 100%;
-}
-
-.app-content.full {
-  padding: 0;
-}
-
-.app-navigator {
-  display: grid;
-  position: sticky;
-  grid-column: 1;
-  z-index: 2;
-}
-
-/* --- MODO MENU ESCONDIDO (QUANDO hidden é ativo) --- */
-.app-content.overlay-nav {
-  grid-template-columns: 1fr;
-  position: relative;
-}
-
-@media (max-width: 600px) {
-  .app-container {
-    grid-template-rows: 1fr auto;
-  }
-
-  .app-header {
-    grid-row: 2;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 2;
-    max-height: 70px;
-    padding: 8px 16px;
-    border-radius: 24px;
-  }
-
-  .app-content {
-    grid-row: 1;
-    z-index: 1;
-  }
-
-  .app-view {
-    margin: 0;
-    border-radius: 0 !important;
-    padding: 5px;
-    border-left: none;
-  }
+.fastFade-enter-active,
+.fastFade-leave-active {
+  transition: opacity 0.15s ease;
 }
 </style>
