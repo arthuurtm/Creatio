@@ -1,68 +1,120 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useEditorStore, getSubCategories, categories } from '@/stores/editor'
-import CInputText from '@/components/ui/CInputText.vue'
-import CInputSelect from '@/components/ui/CInputSelect.vue'
-import CButton from '@/components/ui/CButton.vue'
+import { useEditorStore, getSubCategories, categories, normalizeItems } from '@/stores/editor'
+import {
+  VBtn, VSelect, VTextField, VTextarea, VFileInput,
+  VCard, VCardTitle, VCardText, VCardActions,
+  VRow, VCol, VContainer, VDivider, VList, VListItem, VCheckbox, VSwitch, VRadioGroup,
+  VDialog, VIcon, VChip
+} from 'vuetify/components'
+import type { CategoryKey } from '#types/domain/editor/config.ts'
+import CButton from '#src/components/ui/CButton.vue'
+import type { ComponentPublicInstance } from 'vue'
+import ComponentQuickEditPanel from '#src/components/modules/ComponentQuickEditPanel.vue'
+import type { EditorState } from '#types/domain/editor/models.ts'
 
-const searchQuery = ref('')
-const activeCategory = ref(null)
-const formParams = ref([])
-const isDialogOpen = ref(false)
-const createItemExecuteFn = ref(null)
-const editorStore = useEditorStore()
-const allCategories = ref(categories)
+type FormType =
+  | 'text'
+  | 'password'
+  | 'email'
+  | 'number'
+  | 'textarea'
+  | 'select'
+  | 'checkbox'
+  | 'switch'
+  | 'radio'
+  | 'date'
+  | 'time'
+  | 'datetime'
+  | 'file'
+  | 'button'
 
-// --- Map de componentes ---
-const inputParamMap = {
-  text: CInputText,
-  number: CInputText,
-  textarea: CInputText,
-  select: CInputSelect,
-  button: CButton,
-  file: CInputText,
+
+// --- Interfaces ---
+interface FormParam {
+  key: string
+  type: FormType
+  model: any
+  label?: string
+  rules?: ((v: any) => boolean | string)[]
+  options?: any[]
+  icon?: string
+  placeholder?: string
+  disabled?: boolean
+  required?: boolean
+  [key: string]: any
 }
 
-// --- Dados ---
-const activeCategoryDatabase = computed(() =>
-  activeCategory.value ? (editorStore.$state[activeCategory.value] ?? []) : [],
-)
+
+interface SubCategoryItem {
+  text: string
+  params?: FormParam[]
+  execute?: (params: Record<string, any>) => void
+}
+
+type CButtonInstance = ComponentPublicInstance<typeof CButton> & {
+  play: () => void
+  pause: () => void
+}
+
+// --- Estado ---
+const searchQuery = ref('')
+const activeCategory = ref<CategoryKey | null>(null)
+const formParams = ref<FormParam[]>([])
+const isDialogOpen = ref(false)
+const createItemExecuteFn = ref<((params: Record<string, any>) => void) | null>(null)
+const btns = reactive<Array<CButtonInstance | null>>([])
+const editorStore = useEditorStore()
+const allExpanded = ref(false)
+
+// Map de componentes para o formulário dinâmico
+const inputParamMap: Record<FormType, any> = {
+  text: VTextField,
+  email: VTextField,
+  password: VTextField,
+  number: VTextField,
+  textarea: VTextarea,
+  select: VSelect,
+  checkbox: VCheckbox,
+  switch: VSwitch,
+  radio: VRadioGroup,
+  date: VTextField,
+  time: VTextField,
+  datetime: VTextField,
+  file: VFileInput,
+  button: VBtn,
+}
+
+
+// --- Computados ---
+const activeCategoryDatabase = computed(() => {
+  if (!activeCategory.value) return []
+  return (editorStore.$state as EditorState)[activeCategory.value] || []
+})
+
 const activeCategoryConfig = computed(() =>
-  activeCategory.value ? categories[activeCategory.value] : {},
+  activeCategory.value ? categories[activeCategory.value] : null
 )
 
 // --- Ações ---
-function openCategory(categoryKey) {
-  activeCategory.value = categoryKey
+function openCategory(key: CategoryKey) {
+  activeCategory.value = key
 }
-function addButtonHandler(event) {
-  const selectedItem = event
-  formParams.value = selectedItem.params ?? []
-  createItemExecuteFn.value = selectedItem.execute ?? null
-  if (formParams.value.length > 0 && createItemExecuteFn.value) {
-    isDialogOpen.value = true
-  }
+
+function addButtonHandler(item: SubCategoryItem) {
+  formParams.value = item.params ? JSON.parse(JSON.stringify(item.params)) : []
+  createItemExecuteFn.value = item.execute ?? null
+  if (formParams.value.length > 0) isDialogOpen.value = true
 }
+
 function handleCreate() {
   if (createItemExecuteFn.value) {
-    // 1. Transforma o array de parâmetros em um objeto de valores
-    const paramsObject = formParams.value.reduce((acc, param) => {
-      // 'acc' é o objeto que está sendo construído (inicia como {})
-
-      // ✅ Correção: Só adiciona ao objeto se 'param.key'
-      // for uma string válida (não undefined, não um objeto).
-      if (param.key && typeof param.key === 'string') {
-        acc[param.key] = param.model
-      }
-
+    const paramsObject = formParams.value.reduce((acc: Record<string, any>, param) => {
+      acc[param.key] = param.model
       return acc
-    }, {}) // Inicia com um objeto vazio
+    }, {})
 
-    // 2. ✅ Correção: Adiciona a propriedade 'text' APÓS o loop,
-    // usando os valores que acabaram de ser coletados.
-    paramsObject.text = paramsObject.name || paramsObject.label || null
-
-    // 3. Passa o objeto de valores correto
+    paramsObject.text = paramsObject.name || paramsObject.label || 'Novo Item'
     createItemExecuteFn.value(paramsObject)
     isDialogOpen.value = false
   }
@@ -70,132 +122,120 @@ function handleCreate() {
 </script>
 
 <template>
-  <CGroup height="100%" width="100">
-    <!-- Painel lateral -->
-    <CGroup direction="column" padding="1rem" gap="1rem" width="280px">
-      <CInputText v-model="searchQuery" icon="search" placeholder="Buscar categoria..." />
-      <CGroup grow direction="column" gap="0.25rem" align="start" justify="start">
-        <template v-for="(category, index) in allCategories" :key="index">
-          <CButton
-            :text="category.text"
-            :icon="category.icon"
-            :active="activeCategory === index"
-            classes="symbolic category-btn left"
-            @click="openCategory(index)"
-          />
-        </template>
-      </CGroup>
-    </CGroup>
+  <v-card class="floating-panel" elevation="0" variant="text">
+    <v-row no-gutters class="fill-height pa-6 ga-3">
+      <!-- Sidebar -->
+      <v-col cols="auto" permanent border="right" class="d-flex">
+        <v-list nav density="comfortable">
+          <v-list-item v-for="(cat, key, i) in categories" :key="key" rounded="pill" :active="activeCategory === key"
+            @click="openCategory(key as CategoryKey)" class="ga-2" variant="text" density="comfortable">
+            <!--@mouseenter="btns[i]?.play()" @mouseleave="btns[i]?.pause()"-->
+            <template #prepend>
+              <c-button :ref="el => {
+                if (el && '$' in el) btns[i] = el as CButtonInstance
+                else btns[i] = null
+              }" :icon="cat.value.icon" class="ma-0" variant="text" />
+            </template>
+            <v-list-item-title>{{ cat.value.text }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-col>
 
-    <!-- Conteúdo principal -->
-    <CGroup
-      grow
-      direction="column"
-      style="
-        background: var(--surface-2);
-        border-left: 1px solid var(--border);
-        border-top: 1px solid var(--border);
-        border-top-left-radius: 24px;
-      "
-    >
-      <!-- Cabeçalho -->
-      <CGroup
-        justify="between"
-        align="center"
-        padding="1rem 1.5rem"
-        style="border-bottom: 1px solid var(--border)"
-      >
-        <CGroup direction="row" align="center" gap="0.5rem">
-          <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0">
-            {{ activeCategoryConfig?.value?.text ?? 'Itens' }}
-          </h3>
-          <span v-if="activeCategoryDatabase.length" style="font-size: 0.9rem">
-            ({{ activeCategoryDatabase.length }})
-          </span>
-        </CGroup>
+      <!-- Conteúdo principal -->
+      <transition name="tab-anim">
+        <v-col cols="4" v-if="activeCategory" class="tree-column border-right d-flex flex-column"
+          style="height: 100%; overflow: hidden;">
+          <v-toolbar density="compact" flat title="Explorador" class="flex-grow-0">
+            <v-spacer />
+            <v-btn icon variant="text" size="small" @click="allExpanded = !allExpanded"
+              :title="allExpanded ? 'Recolher tudo' : 'Expandir tudo'">
+              <v-icon :icon="allExpanded ? 'unfold_less' : 'unfold_more'" />
+            </v-btn>
+            <v-menu location="bottom end">
+              <template #activator="{ props }">
+                <v-btn v-bind="props" icon="add_circle" variant="text" color="primary" title="Adicionar novo" />
+              </template>
+              <v-list density="comfortable" min-width="220" class="pa-2 border shadow-lg">
+                <v-list-item v-for="(cat, idx) in Object.values(getSubCategories(activeCategory))" :key="idx"
+                  :title="cat.text" :prepend-icon="cat.icon || 'add'" @click="addButtonHandler(cat)" rounded="lg"
+                  class="mb-1" />
+              </v-list>
+            </v-menu>
+            <!-- <v-select :items="" item-title="text" @update:model-value="addButtonHandler" variant="plain" hide-details
+              class="symbolic no-padding" style="width: 40px">
+              <template #activator="{ props }">
+                <v-btn v-bind="props" icon="add_circle" variant="text" color="primary" title="Adicionar novo" />
+              </template>
+            </v-select> -->
+          </v-toolbar>
 
-        <CInputSelect
-          icon="add_circle"
-          title="Adicionar novo"
-          classes="symbolic no-padding"
-          :only-icon="true"
-          :options="Object.values(getSubCategories(activeCategory))"
-          @select="addButtonHandler"
-        />
-      </CGroup>
+          <div class="flex-grow-1 overflow-y-auto pa-2" style="min-height: 0;">
 
-      <!-- Lista de itens -->
-      <CGroup v-if="activeCategory" grow direction="column" padding="1.25rem" gap="0.75rem">
-        <CGroup
-          v-if="activeCategoryDatabase.length === 0"
-          height="100%"
-          align="center"
-          justify="center"
-        >
-          Nenhum item em {{ activeCategoryConfig?.value?.text ?? 'item' }}
-        </CGroup>
+            <v-menu>
+              <v-list>
+                <v-list-item v-for="(sub, idx) in getSubCategories(activeCategory)" :key="idx"
+                  @click="addButtonHandler(sub)">
+                  <v-list-item-title>{{ sub.text }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
 
-        <CGroup
-          v-for="item in activeCategoryDatabase"
-          :key="item.id"
-          justify="between"
-          align="center"
-          padding="0.75rem 1rem"
-          style="
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            background: var(--element-hover);
-            transition:
-              background 0.2s,
-              transform 0.2s;
-          "
-        >
-          <CGroup direction="column">
-            <span style="font-weight: 600">{{ item.text || `Item #${item.id}` }}</span>
-            <span style="font-size: 0.85rem">ID: {{ item.id }}</span>
-          </CGroup>
+            <v-card variant="flat">
+              <ComponentQuickEditPanel :modelValue="editorStore[activeCategory]" :start-expanded="allExpanded"
+                :label="activeCategoryConfig?.value.text" />
+            </v-card>
 
-          <CButton icon="edit" classes="symbolic" title="Editar" />
-        </CGroup>
-      </CGroup>
+          </div>
+        </v-col>
+      </transition>
 
-      <!-- Mensagem padrão -->
-      <CGroup v-else grow align="center" justify="center">
-        <p>Selecione uma categoria à esquerda</p>
-      </CGroup>
-    </CGroup>
-  </CGroup>
-
-  <!-- Diálogo de criação genérica -->
-  <ComponentDialog v-model:is-visible="isDialogOpen" title="Criar Novo Objeto">
-    <CGroup direction="column" gap="1.25rem" padding="1.5rem">
-      <CGroup
-        v-for="(param, index) in formParams"
-        :key="index"
-        direction="column"
-        gap="0.5rem"
-        style="max-width: 600px; width: 100%"
-      >
-        <component :is="inputParamMap[param.type]" v-bind="param" v-model="param.model" />
-      </CGroup>
-
-      <CGroup justify="center" gap="1rem" padding="1rem 0 0">
-        <CButton text="Cancelar" icon="close" classes="ghost" @click="isDialogOpen = false" />
-        <CButton text="Criar" icon="check" class="confirm" @click="handleCreate" />
-      </CGroup>
-    </CGroup>
-  </ComponentDialog>
+      <!-- Dialog -->
+      <v-dialog v-model="isDialogOpen" max-width="500">
+        <v-card>
+          <v-card-title>Criar Novo Objeto</v-card-title>
+          <v-divider />
+          <v-card-text class="pt-4">
+            <v-col>
+              <v-row v-for="(param, index) in formParams" :key="index">
+                <component v-if="inputParamMap[param.type]" :is="inputParamMap[param.type]" v-model="param.model"
+                  :items="normalizeItems(param)" :label="param.label" variant="outlined" density="comfortable" />
+                <div v-else class="text-red">
+                  ⚠ Erro ao carregar componente: "{{ param.type }}".
+                </div>
+              </v-row>
+            </v-col>
+          </v-card-text>
+          <v-divider />
+          <v-card-actions>
+            <v-spacer />
+            <v-btn text="Cancelar" variant="text" @click="isDialogOpen = false" />
+            <v-btn color="primary" text="Criar" @click="handleCreate" />
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-row>
+  </v-card>
 </template>
 
 <style scoped>
-.category-btn {
-  border-radius: 8px;
-  transition:
-    background 0.15s,
-    transform 0.1s;
+.tab-anim-enter-active,
+.tab-anim-leave-active {
+  transition: transform 0.35s ease;
 }
-.category-btn:hover {
-  background: var(--surface-hover);
-  transform: translateX(2px);
+
+.tab-anim-enter-from {
+  transform: translateX(0%);
+}
+
+.tab-anim-enter-to {
+  transform: translateX(100%);
+}
+
+.tab-anim-leave-from {
+  transform: translateX(100%);
+}
+
+.tab-anim-leave-to {
+  transform: translateX(0%);
 }
 </style>
