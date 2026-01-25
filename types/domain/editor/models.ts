@@ -6,7 +6,7 @@ export interface GameNode {
 	id: string;
 	type: GameNodeType;
 	position: { x: number; y: number };
-	[key: string]: any;
+	data: any;
 }
 export interface GameConnection {
 	id: string;
