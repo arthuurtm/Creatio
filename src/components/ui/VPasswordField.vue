@@ -6,7 +6,6 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import BaseInput from '@/components/base/BaseInput.vue'
 import { baseInputProps, baseInputEmits } from '@/components/base/BaseInput.props.js'
 
 const props = defineProps(baseInputProps)
