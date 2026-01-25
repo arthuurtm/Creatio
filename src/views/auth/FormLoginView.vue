@@ -5,6 +5,8 @@
         <v-text-field label="Usuário ou e-mail" placeholder="Digite seu nome de usuário ou e-mail"
           v-model="formData.login.val" :error="formData.login.err" :error-messages="formData.login.errVal"
           variant="outlined" />
+      </v-container>
+      <v-container v-else-if="currentStep === 2">
         <v-password-field label="Senha" placeholder="Digite sua senha" aria-required="true"
           v-model="formData.password.val" :error="formData.password.err" :error-messages="formData.password.errVal"
           variant="outlined" />
@@ -14,8 +16,13 @@
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <v-btn variant="text" text="Criar conta" @click="pageRedirect({ name: 'Signup' })" />
-        <v-btn text="Entrar" color="primary" variant="flat" type="submit" autofocus @click="() => handleLogin()" />
+        <v-btn style="margin-right: auto;" variant="text" text="Criar conta"
+          @click="pageRedirect({ name: 'Signup' })" />
+        <v-btn text="Avançar" color="primary" variant="flat" type="submit" autofocus @click="nextStep()" />
+      </template>
+      <template v-else-if="currentStep === 2">
+        <v-btn variant="outlined" text="Voltar" @click="prevStep()" />
+        <v-btn text="Entrar" color="primary" variant="flat" type="submit" autofocus @click="handleLogin()" />
       </template>
     </template>
   </AppFormPage>
