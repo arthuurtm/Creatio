@@ -3,10 +3,11 @@ import type { EditorState } from "#types/domain/editor/index.ts";
 import type { RouteContext } from "#types/shared/websocket.ts";
 
 export default {
-	async updateJson({ ws, wss, data }: RouteContext<EditorState>) {
+	async updateJson({ ws, wss, payload }: RouteContext<EditorState>) {
 		try {
-			const gameState = data;
+			const gameState = payload;
 			const { id, version } = gameState.info || {};
+			if (!id) throw new Error("ID do jogo não fornecido");
 			const accessToken = ws.cookies.accessToken;
 			const objectName = await GameEditorService.saveState({
 				id,
@@ -17,22 +18,23 @@ export default {
 			ws.send(
 				JSON.stringify({
 					event: "game:lab:update:json:success",
-					data: { objectName },
+					payload: { objectName },
 				}),
 			);
 		} catch (err) {
 			ws.send(
 				JSON.stringify({
 					event: "game:lab:update:json:error",
-					data: { message: err.message },
+					payload: { message: err.message },
 				}),
 			);
 		}
 	},
 
-	async getJson({ ws, wss, data }: RouteContext<EditorState>) {
+	async getJson({ ws, wss, payload }: RouteContext<EditorState>) {
 		try {
-			const { id, version } = data.info || {};
+			const { id, version } = payload.info || {};
+			if (!id) throw new Error("ID do jogo não fornecido");
 			const accessToken = ws.cookies.accessToken;
 			const result = await GameEditorService.getState({
 				id,
@@ -42,14 +44,14 @@ export default {
 			ws.send(
 				JSON.stringify({
 					event: "game:lab:get:json:success",
-					data: result,
+					payload: result,
 				}),
 			);
 		} catch (err) {
 			ws.send(
 				JSON.stringify({
 					event: "game:lab:get:json:error",
-					data: { message: err.message },
+					payload: { message: err.message },
 				}),
 			);
 		}

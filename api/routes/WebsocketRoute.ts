@@ -1,6 +1,5 @@
 import GameLabController from "#api/controllers/ws/GameLabController.ts";
 import log from "#api/helpers/console.ts";
-import type { EditorState } from "#types/domain/editor/models.ts";
 import type {
 	RouteContext,
 	WebSocket,
@@ -22,6 +21,7 @@ const handleConnection = (ws: WebSocket, wss: WebSocketServer): void => {
 		try {
 			const data = JSON.parse(message.toString()) as WebSocketMessage;
 			log.info("Evento WebSocket recebido: ", data.event);
+			log.debug("Event raw: ", data);
 
 			// Encontra a função do controller baseada no evento
 			const handler = routes[data.event as keyof typeof routes];
@@ -31,7 +31,7 @@ const handleConnection = (ws: WebSocket, wss: WebSocketServer): void => {
 				const context: RouteContext<any> = {
 					ws,
 					wss,
-					data: data.payload,
+					payload: data.payload,
 				};
 				await handler(context);
 			} else {

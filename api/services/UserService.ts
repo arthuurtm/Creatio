@@ -29,6 +29,8 @@ interface ResetPasswordParams {
 	accessToken: string;
 }
 
+type IdentificationType = "id" | "username" | "email" | "accessToken";
+
 async function getBasicUserData(id: string) {
 	if (!id) throw new Error("Identificação do usuário não informada");
 
@@ -49,17 +51,15 @@ async function getBasicUserData(id: string) {
 	};
 }
 
-async function getAllUserData(id: string) {
-	if (!id) throw new Error("Identificação do usuário não informada");
-
-	const query = setUserDatabaseQuery({ value: id });
-	const userData = await User.findOne({
-		where: query,
-		include: [{ model: Session }],
+async function getAllUserData(accessToken: string) {
+	if (!accessToken) throw new Error("Identificação do usuário não informada");
+	const userData = await Session.findOne({
+		where: { accessToken },
+		include: [{ model: User }],
 	});
-	const user = userData?.get({ plain: true });
-	if (!user) return null;
+	if (!userData) return null;
 
+	const { passwordHash, ...user } = userData?.User?.get({ plain: true }) ?? {};
 	return user;
 }
 

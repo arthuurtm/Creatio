@@ -11,12 +11,12 @@ import {
 	setResetPasswordCodeController,
 	setSignupCodeController,
 	signupUserController,
-	validateSecureSession,
 } from "#api/controllers/http/UserController.ts";
 import {
 	getAnyUserSessionController,
 	logoutAllSessionsController,
 	logoutUserController,
+	validateSecureSession,
 } from "#api/controllers/http/UserSessionController.ts";
 // import { reqLimiter } from "#api/helpers/limiter.ts";
 import isAuthenticated from "#api/middlewares/isAuthenticated.ts";

@@ -31,11 +31,10 @@ async function saveState({ id, version, state, accessToken }: SaveStateParams) {
 async function getState({ id, version, accessToken }: GetStateParams) {
 	await validateGameOwnership(id, accessToken);
 	const filepath = `${gamePathGenerator(id, version)}/editor.json`;
-	const result = await FileService.read.readJson({
+	return await FileService.read.readJson({
 		bucket: "private",
 		filepath,
 	});
-	return result;
 }
 
 export default { saveState, getState };

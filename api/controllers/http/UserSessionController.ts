@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import log from "#api/helpers/console.ts";
+import { validateCodeAndGetUUID } from "#api/services/2FAService.ts";
 import {
 	getAnyUserSession,
 	getUserIDFromSessionToken,
@@ -49,8 +50,27 @@ async function logoutUserController(
 	}
 }
 
+async function validateSecureSession(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) {
+	try {
+		const { secureToken: token, tokenId: id } = req.body;
+		const { valid, uuid } = await validateCodeAndGetUUID(id, token);
+		if (!valid) {
+			throw new Error("Código inválido ou expirado");
+		}
+
+		res.status(200).json({ accessUUID: uuid });
+	} catch (err) {
+		next(err);
+	}
+}
+
 export {
 	logoutAllSessionsController,
 	getAnyUserSessionController,
 	logoutUserController,
+	validateSecureSession,
 };

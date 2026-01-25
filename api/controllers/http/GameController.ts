@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { getAnyGame, setGameOnDatabase } from "#api/services/GameService.ts";
 import { getUserIDFromSessionToken } from "#api/services/UserSessionService.ts";
+import type { EditorState } from "#types/domain/editor/models.ts";
 
 async function getAnyGameController(
 	req: Request,
@@ -21,18 +22,17 @@ async function setGameOnDatabaseController(
 	next: NextFunction,
 ) {
 	try {
-		// 1. Recebe os dados (state.info.id aqui ainda é null)
 		if (!req.cookies.accessToken) throw new Error("Usuário não autenticado");
-		const { title, description, version, state } = req.body;
+		const state: EditorState = req.body.state;
 		const accessToken = req.cookies.accessToken;
 		const userId = await getUserIDFromSessionToken(accessToken);
 		const result = await setGameOnDatabase({
-			title,
-			description,
+			title: state.info.title,
+			description: state.info.description,
 			userId,
 			accessToken,
 			state,
-			version,
+			version: state.info.version,
 		});
 		res.json(result);
 	} catch (err) {

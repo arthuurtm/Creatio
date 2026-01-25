@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { validateCodeAndGetUUID } from "#api/services/2FAService.ts";
+
 import { createClientCookie } from "#api/services/ClientSessionService.ts";
 import {
 	getAllUserData,
@@ -34,7 +34,7 @@ async function handleLoginController(
 	next: NextFunction,
 ) {
 	const { login, password } = req.body;
-  const userAgent = req.get("User-Agent") ?? "";
+	const userAgent = req.get("User-Agent") ?? "";
 
 	try {
 		const { accessToken, refreshToken } = await handleLogin(
@@ -43,7 +43,7 @@ async function handleLoginController(
 			userAgent,
 		);
 		await createClientCookie(res, accessToken, refreshToken);
-		res.send();
+		res.json({ message: "Autorizado." });
 	} catch (err) {
 		next(err);
 	}
@@ -99,24 +99,6 @@ async function setResetPasswordCodeController(
 	}
 }
 
-async function validateSecureSession(
-	req: Request,
-	res: Response,
-	next: NextFunction,
-) {
-	try {
-		const { secureToken: token, tokenId: id } = req.body;
-		const { valid, uuid } = await validateCodeAndGetUUID(id, token);
-		if (!valid) {
-			throw new Error("Código inválido ou expirado");
-		}
-
-		res.status(200).json({ accessUUID: uuid });
-	} catch (err) {
-		next(err);
-	}
-}
-
 async function signupUserController(
 	req: Request,
 	res: Response,
@@ -149,7 +131,7 @@ async function resetUserPasswordController(
 	try {
 		const { newPassword, accessUUID } = req.body;
 		await resetUserPassword({ newPassword, accessToken: accessUUID });
-		res.send('Operação concluída com sucesso');
+		res.status(200).json({ message: "Senha redefinida com sucesso" });
 	} catch (err) {
 		next(err);
 	}
@@ -161,7 +143,6 @@ export {
 	setSignupCodeController,
 	handleLoginController,
 	getUserDataController,
-	validateSecureSession,
 	setResetPasswordCodeController,
 	resetUserPasswordController,
 };

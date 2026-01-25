@@ -5,7 +5,7 @@ import { getUserIDFromSessionToken } from "./UserSessionService";
 
 interface GameData {
 	title: string;
-	description: string;
+	description?: string | null;
 	userId: number;
 	accessToken: string;
 	state: EditorState;

@@ -26,7 +26,7 @@ interface SaveFunctionOptions {
  */
 interface SaveParams extends FileManipulationParams {
 	bucket: DiskName;
-	payload: Record<string, any> | Buffer | Readable | string;
+	payload: unknown;
 	opts?: SaveFunctionOptions;
 }
 
@@ -79,6 +79,15 @@ export function getDisk(name: DiskName) {
 	return storage.disk(name);
 }
 
+const _debouncedSave = debounce(async (disk, filepath, finalData) => {
+	try {
+		await disk.put(filepath, finalData);
+		log.success(`Arquivo salvo: ${filepath}`);
+	} catch (err) {
+		log.error(`Erro ao salvar ${filepath}:`, err);
+	}
+}, 1000);
+
 const write = {
 	/**
 	 * Executa o salvamento de um arquivo no storage selecionado.
@@ -95,7 +104,7 @@ const write = {
 				? JSON.stringify(payload)
 				: payload;
 
-		return debounce(() => disk.put(filepath, finalData), 1000);
+		return _debouncedSave(disk, filepath, finalData);
 	},
 };
 
@@ -107,18 +116,22 @@ const read = {
 		const disk = getDisk(bucket);
 		if (bucket === "public") {
 			const stream = disk.getStream(filepath) as FReadable;
+			if (!stream) throw new Error("Arquivo não encontrado no servidor");
 			return { type: "stream", file: stream };
 		} else {
 			const { signedUrl: url } = await disk.getSignedUrl(filepath, {
 				expiry: 3600,
 			});
+			if (!url) throw new Error("Arquivo não encontrado no servidor");
 			return { type: "url", file: url };
 		}
 	},
 
 	readJson: async ({ bucket = "public", filepath }: GetFileParams) => {
 		const disk = getDisk(bucket);
-		return await disk.get(filepath, "utf-8");
+		const content = await disk.get(filepath, "utf-8");
+		if (!content) throw new Error("Arquivo não encontrado no servidor");
+		return JSON.parse(content.content);
 	},
 };
 
