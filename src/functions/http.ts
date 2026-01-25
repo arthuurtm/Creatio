@@ -28,8 +28,8 @@ type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 function getApiUrl(
 	type: RouteOptions,
-	route: any,
-	querys: Record<string, any> | null = null,
+	route?: any,
+	querys?: Record<string, any> | null,
 ) {
 	const origin = window.location.origin;
 
@@ -131,21 +131,36 @@ const request = async (
 
 		const res = response ? await response.json() : {};
 
-		console.log(
-			`Requisição para ${endpoint.route} efetuada com sucesso. `,
-			res,
+		console.groupCollapsed(
+			`%cHTTP ← SUCCESS %c${method} ${endpoint.route}`,
+			"color:#3a7;font-weight:bold;",
+			"color:#555;",
 		);
+		console.info("payload:", res);
+		console.debug("endpoint:", endpoint);
+		console.groupEnd();
 
 		return { ...res };
 	} catch (error) {
-		console.error(`Erro na requisição para ${endpoint.route}:`, {
-			endpoint: endpoint.route,
-			method: config?.method || "GET",
-			// error: error.message,
-			details: error,
-		});
+		const err = error as FormError & { status?: number };
 
-		throw error;
+		const status = err.status ?? "N/A";
+		const route = endpoint.route ?? "unknown";
+
+		console.groupCollapsed(
+			`%cHTTP ← ERROR %c${method} ${route} %c(${status})`,
+			"color:#e33;font-weight:bold;",
+			"color:#555;",
+			"color:#999;",
+		);
+		if (err.message) {
+			console.error("message:", err.message);
+		}
+		console.debug("details:", err);
+		console.debug("endpoint:", endpoint);
+		console.groupEnd();
+
+		throw err;
 	}
 };
 const get = (endpoint: EndpointParams) => request(endpoint, "GET");
@@ -184,25 +199,14 @@ async function logout() {
 	const res = await del({ type: "database", route: "logout" });
 	if (res) {
 		useUserStore().clearUserData();
-		showToast({
-			type: "success",
-			message: "Você saiu da sua conta!",
-		});
-		return;
+		return true;
 	} else {
-		showToast({
-			type: "error",
-			message: res.message || "Erro interno no servidor",
-		});
+		return false;
 	}
 }
 async function logoutAll() {
 	del({ type: "database", route: "logoutAll" }).then((result) => {
 		if (result) {
-			showToast({
-				type: "success",
-				message: "Você saiu de todas as outras sessões!",
-			});
 			return true;
 		}
 		return;

@@ -1,208 +1,252 @@
-import { ref, shallowRef, onUnmounted } from 'vue'
+import { onUnmounted, ref, shallowRef } from "vue";
+import type {
+	WebSocketErrorMessage,
+	WebSocketMessage,
+} from "#types/shared/websocket.ts";
 
 /**
- * Composable para gerenciar uma conexão WebSocket com reconexão automática e gerenciamento de ciclo de vida.
- * * @param {string} url O URL do servidor WebSocket.
- * @param {object} [options] Opções de configuração.
- * @param {boolean} [options.autoReconnect=true] Habilita a reconexão automática.
- * @param {number} [options.reconnectLimit=5] Número máximo de tentativas de reconexão. Use Infinity para tentativas ilimitadas.
- * @param {number} [options.reconnectInterval=2000] Intervalo inicial de reconexão em milissegundos.
- * @param {number} [options.maxReconnectInterval=30000] Intervalo máximo de reconexão (teto do backoff exponencial).
+ * @abstract Composable para gerenciar uma conexão WebSocket com reconexão automática e gerenciamento de ciclo de vida.
  */
-export default function useWebSocket(url, options = {}) {
-  const {
-    autoReconnect = true,
-    reconnectLimit = 5,
-    reconnectInterval = 2000,
-    maxReconnectInterval = 30000,
-  } = options
+export default function useWebSocket(
+	url: string,
+	options: {
+		autoReconnect?: boolean;
+		reconnectLimit?: number;
+		reconnectInterval?: number;
+		maxReconnectInterval?: number;
+	} = {},
+) {
+	const {
+		autoReconnect = true,
+		reconnectLimit = 5,
+		reconnectInterval = 2000,
+		maxReconnectInterval = 30000,
+	} = options;
 
-  // --- Estado Reativo ---
-  const data = ref(null)
-  /**
-   * Mostra a saúde do WebSocket
-   * @type {import('vue').Ref<"CONNECTING" | "OPEN" | "CLOSING" | "CLOSED" | "RECONNECTING">('CLOSED')}
-   * */
-  const status = ref('CLOSED')
-  /**
-   * Mostra o estado das requisições com o websocket
-   * @type {import('vue').Ref<'IDLE' | 'SENDING' | 'ERROR' | 'WAITING' | 'SUCCESS'>('IDLE')}
-   */
-  const requestStatus = ref('IDLE')
-  const ws = shallowRef(null)
-  const error = ref(null)
-  const retryCount = ref(0)
-  let explicitClose = false
-  let reconnectTimer = null
+	// --- Estado Reativo ---
+	const data = ref<any>(null);
 
-  const _setupEventListeners = () => {
-    if (!ws.value) return
+	type StatusValues =
+		| "CONNECTING"
+		| "OPEN"
+		| "CLOSING"
+		| "CLOSED"
+		| "RECONNECTING";
+	const status = ref<StatusValues>("CLOSED");
+	type RequestStatusValues =
+		| "IDLE"
+		| "SENDING"
+		| "ERROR"
+		| "WAITING"
+		| "SUCCESS";
+	const requestStatus = ref<RequestStatusValues>("IDLE");
+	const ws = shallowRef<WebSocket>();
+	const error = ref<any>("");
+	const retryCount = ref(0);
+	let explicitClose = false;
+	let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
-    ws.value.onopen = () => {
-      console.log('WebSocket conectado com sucesso! ✅')
-      status.value = 'OPEN'
-      error.value = null
-      retryCount.value = 0 // Reseta o contador ao conectar
-    }
+	const _setupEventListeners = () => {
+		if (!ws.value) return;
 
-    ws.value.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data)
-        data.value = message
-        if (message.event && (message.event === 'error' || message.event.endsWith(':error'))) {
-          const err = new Error(message.data?.message || 'Erro reportado pelo servidor')
-          Object.assign(err, {
-            event: message.event,
-            data: message.data,
-            raw: { ...event },
-          })
-          throw err
-        }
-        console.log(`Requisição para ${message.event} efetuada com sucesso.`, message)
-        requestStatus.value = 'SUCCESS'
-      } catch (err) {
-        console.error(
-          `Erro reportado pelo servidor (${err.event}):`,
-          err.data?.message || 'Nenhuma mensagem de erro provida.',
-          `\nDetalhes: ${err.raw}`,
-        )
-        error.value = err.message
-        requestStatus.value = 'ERROR'
-      }
-    }
+		ws.value.onopen = () => {
+			console.log("WebSocket conectado com sucesso!");
+			status.value = "OPEN";
+			retryCount.value = 0;
+		};
 
-    ws.value.onerror = (e) => {
-      console.error('Erro no WebSocket:', e)
-      error.value = e
-    }
+		ws.value.onmessage = (event: MessageEvent) => {
+			try {
+				const res = JSON.parse(event.data);
+				data.value = res;
 
-    ws.value.onclose = (e) => {
-      ws.value = null
+				const evt = res.event ?? "unknown";
+				const payload = res.payload ?? {};
 
-      if (explicitClose) {
-        console.log('Conexão WebSocket fechada intencionalmente.')
-        status.value = 'CLOSED'
-      } else {
-        console.warn(`WebSocket desconectado. Código: ${e.code}. Motivo: ${e.reason || 'N/A'}`)
-        if (autoReconnect && retryCount.value < reconnectLimit) {
-          _reconnect()
-        } else {
-          status.value = 'CLOSED'
-          if (autoReconnect) {
-            console.error('Limite de tentativas de reconexão atingido.')
-          }
-        }
-      }
-    }
-  }
+				if (evt.endsWith(":error")) {
+					console.groupCollapsed(
+						`%cWS ← ERROR %c${evt}`,
+						"color:#f33;font-weight:bold;",
+						"color:#aaa;",
+					);
 
-  const _reconnect = () => {
-    status.value = 'RECONNECTING'
-    retryCount.value++
+					console.error("message:", payload.message ?? "(no message)");
+					console.debug("raw:", res);
 
-    // Exponential backoff com um "jitter" (fator aleatório) para evitar picos de reconexão
-    const delay =
-      Math.min(reconnectInterval * Math.pow(2, retryCount.value - 1), maxReconnectInterval) *
-      (Math.random() * 0.2 + 0.9) // jitter de 90% a 110% do delay
+					console.groupEnd();
 
-    console.log(
-      `Tentando reconectar em ${Math.round(delay / 1000)}s... (Tentativa ${retryCount.value})`,
-    )
+					requestStatus.value = "ERROR";
+					error.value = payload.message || "Erro reportado pelo servidor";
+					return;
+				}
 
-    reconnectTimer = setTimeout(() => {
-      connect()
-    }, delay)
-  }
+				console.groupCollapsed(
+					`%cWS ← EVENT %c${evt}`,
+					"color:#3a7;font-weight:bold;",
+					"color:#aaa;",
+				);
 
-  /** Inicia a conexão WebSocket. */
-  const connect = async () => {
-    if (ws.value || status.value === 'CONNECTING' || status.value === 'RECONNECTING') return
+				console.info("payload:", payload);
+				console.debug("raw:", res);
 
-    status.value = 'CONNECTING'
-    explicitClose = false
-    error.value = null
+				console.groupEnd();
 
-    return new Promise((resolve, reject) => {
-      try {
-        ws.value = new WebSocket(url)
+				requestStatus.value = "SUCCESS";
+			} catch (err) {
+				console.groupCollapsed(
+					`%cWS ← PARSE ERROR`,
+					"color:#e90;font-weight:bold;",
+				);
+				console.error(err);
+				console.groupEnd();
 
-        ws.value.onopen = () => {
-          status.value = 'OPEN'
-          retryCount.value = 0
-          _setupEventListeners()
-          resolve()
-        }
+				requestStatus.value = "ERROR";
+				error.value = "Erro ao interpretar mensagem do servidor";
+			}
+		};
 
-        ws.value.onerror = (e) => {
-          status.value = 'CLOSED'
-          error.value = e
-          reject(e)
-        }
+		ws.value.onerror = (e) => {
+			console.error("Erro no WebSocket:", e);
+			error.value = e;
+		};
 
-        ws.value.onclose = () => {
-          status.value = 'CLOSED'
-        }
-      } catch (e) {
-        error.value = e
-        status.value = 'CLOSED'
-        reject(e)
-      }
-    })
-  }
+		ws.value.onclose = (e) => {
+			ws.value = undefined;
 
-  const send = async ({ event, payload = {} }) => {
-    console.log(`Enviando evento WebSocket: ${event}`, payload)
-    return new Promise((resolve, reject) => {
-      if (!ws.value || status.value !== 'OPEN') {
-        const err = 'Não conectado ao servidor.'
-        requestStatus.value = 'ERROR'
-        error.value = err
-        console.warn(err, { status: status.value })
-        return reject(err)
-      }
+			if (explicitClose) {
+				console.log("Conexão WebSocket fechada intencionalmente.");
+				status.value = "CLOSED";
+			} else {
+				console.warn(
+					`WebSocket desconectado. Código: ${e.code}. Motivo: ${e.reason || "Desconhecido"}`,
+				);
+				if (autoReconnect && retryCount.value < reconnectLimit) {
+					_reconnect();
+				} else {
+					status.value = "CLOSED";
+					if (autoReconnect) {
+						console.error("Limite de tentativas de reconexão atingido.");
+					}
+				}
+			}
+		};
+	};
 
-      requestStatus.value = 'SENDING'
+	const _reconnect = () => {
+		status.value = "RECONNECTING";
+		retryCount.value++;
 
-      try {
-        const dataToSend = JSON.stringify({ event, payload })
-        ws.value.send(dataToSend)
+		// Exponential backoff com um "jitter" (fator aleatório) para evitar picos de reconexão
+		const delay =
+			Math.min(
+				reconnectInterval * 2 ** (retryCount.value - 1),
+				maxReconnectInterval,
+			) *
+			(Math.random() * 0.2 + 0.9);
 
-        // pronto: enviada ao buffer
-        requestStatus.value = 'WAITING'
-        resolve()
-      } catch (e) {
-        requestStatus.value = 'ERROR'
-        error.value = e
-        console.error('Falha ao enviar mensagem:', e)
-        reject(e)
-      }
-    })
-  }
+		console.log(
+			`Tentando reconectar em ${Math.round(delay / 1000)}s... (Tentativa ${retryCount.value})`,
+		);
 
-  /** Fecha a conexão WebSocket intencionalmente. */
-  const disconnect = () => {
-    if (ws.value) {
-      console.log('Fechando conexão WebSocket...')
-      explicitClose = true
-      status.value = 'CLOSING'
-      clearTimeout(reconnectTimer) // Cancela qualquer reconexão pendente
-      ws.value.close(1000, 'Fechamento intencional pelo cliente.')
-    }
-  }
+		reconnectTimer = setTimeout(() => {
+			connect();
+		}, delay);
+	};
 
-  onUnmounted(() => {
-    disconnect()
-  })
+	/** Inicia a conexão WebSocket. */
+	const connect = async () => {
+		if (
+			ws.value ||
+			status.value === "CONNECTING" ||
+			status.value === "RECONNECTING"
+		)
+			return;
 
-  return {
-    data,
-    status,
-    error,
-    retryCount,
-    requestStatus,
-    connect,
-    send,
-    disconnect,
-    ws,
-  }
+		status.value = "CONNECTING";
+		explicitClose = false;
+		error.value = null;
+
+		return new Promise<void>((resolve, reject) => {
+			try {
+				ws.value = new WebSocket(url);
+
+				ws.value.onopen = () => {
+					status.value = "OPEN";
+					retryCount.value = 0;
+					_setupEventListeners();
+					resolve();
+				};
+
+				ws.value.onerror = (e) => {
+					status.value = "CLOSED";
+					error.value = e;
+					reject(e);
+				};
+
+				ws.value.onclose = () => {
+					status.value = "CLOSED";
+				};
+			} catch (e) {
+				error.value = e;
+				status.value = "CLOSED";
+				reject(e);
+			}
+		});
+	};
+
+	const send = async ({ event, payload = {} }: WebSocketMessage) => {
+		console.log(`Enviando evento WebSocket: ${event}`, payload);
+		return new Promise<void>((resolve, reject) => {
+			if (!ws.value || status.value !== "OPEN") {
+				const err = "Não conectado ao servidor.";
+				requestStatus.value = "ERROR";
+				error.value = err;
+				console.warn(err, { status: status.value });
+				return reject(err);
+			}
+
+			requestStatus.value = "SENDING";
+
+			try {
+				const dataToSend = JSON.stringify({ event, payload });
+				ws.value.send(dataToSend);
+
+				// pronto: enviada ao buffer
+				requestStatus.value = "WAITING";
+				resolve();
+			} catch (e) {
+				requestStatus.value = "ERROR";
+				error.value = e;
+				console.error("Falha ao enviar mensagem:", e);
+				reject(e);
+			}
+		});
+	};
+
+	/** Fecha a conexão WebSocket intencionalmente. */
+	const disconnect = () => {
+		if (ws.value) {
+			console.log("Fechando conexão WebSocket...");
+			explicitClose = true;
+			status.value = "CLOSING";
+			clearTimeout(reconnectTimer);
+			ws.value.close(1000, "Fechamento intencional pelo cliente.");
+		}
+	};
+
+	onUnmounted(() => {
+		disconnect();
+	});
+
+	return {
+		data,
+		status,
+		error,
+		retryCount,
+		requestStatus,
+		connect,
+		send,
+		disconnect,
+		ws,
+	};
 }
