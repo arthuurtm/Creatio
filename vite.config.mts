@@ -5,6 +5,7 @@ import Components from "unplugin-vue-components/vite";
 import { defineConfig } from "vite";
 import Layouts from "vite-plugin-vue-layouts-next";
 import Vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
+import svgLoader from 'vite-svg-loader'
 
 export default defineConfig({
 	plugins: [
@@ -35,9 +36,10 @@ export default defineConfig({
 		Vuetify({
 			autoImport: true,
 			styles: {
-				configFile: "src/styles/settings.scss",
+				configFile: "src/styles/index.scss",
 			},
 		}),
+    svgLoader()
 	],
 	optimizeDeps: {
 		exclude: ["vuetify", "vue-router"],
