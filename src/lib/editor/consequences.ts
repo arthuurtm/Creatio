@@ -27,7 +27,7 @@ export const consequences = computed(() => {
 					key: "targetId",
 					label: "Alvo",
 					type: "select",
-					options: editorStore.avatars, // Alvo pode ser um jogador
+					items: editorStore.avatars, // Alvo pode ser um jogador
 				},
 			],
 			execute: (params) => pushConsequence("heal", params),
@@ -46,7 +46,7 @@ export const consequences = computed(() => {
 					key: "targetId",
 					label: "Alvo",
 					type: "select",
-					options: editorStore.objects, // Alvo pode ser um NPC/Inimigo (filtrar por tipo)
+					items: editorStore.objects, // Alvo pode ser um NPC/Inimigo (filtrar por tipo)
 				},
 			],
 			execute: (params) => pushConsequence("damage", params),
@@ -71,7 +71,7 @@ export const consequences = computed(() => {
 					key: "playerId",
 					label: "Jogador",
 					type: "select",
-					options: editorStore.avatars,
+					items: editorStore.avatars,
 				},
 			],
 			execute: (params) => pushConsequence("modifyCurrency", params),
@@ -84,7 +84,7 @@ export const consequences = computed(() => {
 					key: "statusId",
 					label: "Status",
 					type: "select",
-					options: editorStore.statuses, // Puxa das definições de status
+					items: editorStore.statuses, // Puxa das definições de status
 					required: true,
 				},
 				{
@@ -97,7 +97,7 @@ export const consequences = computed(() => {
 					key: "targetId",
 					label: "Alvo",
 					type: "select",
-					options: editorStore.avatars,
+					items: editorStore.avatars,
 				},
 			],
 			execute: (params) => pushConsequence("addStatus", params),
@@ -110,14 +110,14 @@ export const consequences = computed(() => {
 					key: "statusId",
 					label: "Status",
 					type: "select",
-					options: editorStore.statuses,
+					items: editorStore.statuses,
 					required: true,
 				},
 				{
 					key: "targetId",
 					label: "Alvo",
 					type: "select",
-					options: editorStore.avatars,
+					items: editorStore.avatars,
 				},
 			],
 			execute: (params) => pushConsequence("removeStatus", params),
@@ -132,7 +132,7 @@ export const consequences = computed(() => {
 					key: "itemId",
 					label: "Item",
 					type: "select",
-					options: editorStore.objects, // Componente deve filtrar por type: 'item'
+					items: editorStore.objects, // Componente deve filtrar por type: 'item'
 					required: true,
 				},
 				{ key: "quantity", label: "Quantidade", type: "number", default: 1 },
@@ -140,7 +140,7 @@ export const consequences = computed(() => {
 					key: "playerId",
 					label: "Jogador",
 					type: "select",
-					options: editorStore.avatars,
+					items: editorStore.avatars,
 				},
 			],
 			execute: (params) => pushConsequence("gainItem", params),
@@ -153,7 +153,7 @@ export const consequences = computed(() => {
 					key: "itemId",
 					label: "Item",
 					type: "select",
-					options: editorStore.objects, // Componente deve filtrar por type: 'item'
+					items: editorStore.objects, // Componente deve filtrar por type: 'item'
 					required: true,
 				},
 				{ key: "quantity", label: "Quantidade", type: "number", default: 1 },
@@ -161,7 +161,7 @@ export const consequences = computed(() => {
 					key: "playerId",
 					label: "Jogador",
 					type: "select",
-					options: editorStore.avatars,
+					items: editorStore.avatars,
 				},
 			],
 			execute: (params) => pushConsequence("loseItem", params),
@@ -174,21 +174,21 @@ export const consequences = computed(() => {
 					key: "fromId",
 					label: "De (Contêiner)",
 					type: "select",
-					options: editorStore.objects, // Componente deve filtrar por type: 'container'
+					items: editorStore.objects, // Componente deve filtrar por type: 'container'
 					required: true,
 				},
 				{
 					key: "toId",
 					label: "Para (Contêiner)",
 					type: "select",
-					options: editorStore.objects, // Componente deve filtrar por type: 'container'
+					items: editorStore.objects, // Componente deve filtrar por type: 'container'
 					required: true,
 				},
 				{
 					key: "itemId",
 					label: "Item",
 					type: "select",
-					options: editorStore.objects, // Componente deve filtrar por type: 'item'
+					items: editorStore.objects, // Componente deve filtrar por type: 'item'
 					required: true,
 				},
 				{ key: "quantity", label: "Quantidade", type: "number", default: 1 },
@@ -205,7 +205,7 @@ export const consequences = computed(() => {
 					key: "flagId",
 					label: "Flag",
 					type: "select",
-					options: editorStore.flags,
+					items: editorStore.flags,
 					required: true,
 				},
 				{ key: "value", label: "Valor", type: "text", required: true },
@@ -220,7 +220,7 @@ export const consequences = computed(() => {
 					key: "questId",
 					label: "Missão",
 					type: "select",
-					options: editorStore.quests,
+					items: editorStore.quests,
 					required: true,
 				},
 			],
@@ -234,7 +234,7 @@ export const consequences = computed(() => {
 					key: "questId",
 					label: "Missão",
 					type: "select",
-					options: editorStore.quests,
+					items: editorStore.quests,
 					required: true,
 				},
 				{
@@ -247,7 +247,7 @@ export const consequences = computed(() => {
 					key: "status",
 					label: "Novo Status",
 					type: "select",
-					options: ["active", "completed", "failed"],
+					items: ["active", "completed", "failed"],
 					default: "active",
 				},
 			],
@@ -261,7 +261,7 @@ export const consequences = computed(() => {
 					key: "targetId",
 					label: "Alvo da Relação",
 					type: "select",
-					options: editorStore.objects, // Componente deve filtrar por type: 'npc'
+					items: editorStore.objects, // Componente deve filtrar por type: 'npc'
 					required: true,
 				},
 				{
@@ -284,7 +284,7 @@ export const consequences = computed(() => {
 					key: "style",
 					label: "Estilo",
 					type: "select",
-					options: ["default", "alert", "info", "notification"],
+					items: ["default", "alert", "info", "notification"],
 					default: "default",
 				},
 			],
@@ -303,7 +303,7 @@ export const consequences = computed(() => {
 			icon: "music_note",
 			params: [
 				{ key: "url", label: "URL da Música", type: "text", required: true },
-				{ key: "loop", label: "Repetir?", type: "boolean", default: true },
+				{ key: "loop", label: "Repetir?", type: "switch", default: true },
 			],
 			execute: (params) => pushConsequence("setMusic", params),
 		},
@@ -323,7 +323,7 @@ export const consequences = computed(() => {
 					key: "objectDefId",
 					label: "Objeto (Definição)",
 					type: "select",
-					options: editorStore.objects, // Puxa de uma lista de 'prefabs'
+					items: editorStore.objects, // Puxa de uma lista de 'prefabs'
 					required: true,
 				},
 				{ key: "x", label: "Posição X", type: "number", default: 0 },
@@ -339,7 +339,7 @@ export const consequences = computed(() => {
 					key: "targetNodeId",
 					label: "Nó de Destino",
 					type: "select",
-					options: editorStore.nodes,
+					items: editorStore.nodes,
 					required: true,
 				},
 			],
@@ -353,7 +353,7 @@ export const consequences = computed(() => {
 					key: "nodeId",
 					label: "Nó",
 					type: "select",
-					options: editorStore.nodes,
+					items: editorStore.nodes,
 					required: true,
 				},
 			],

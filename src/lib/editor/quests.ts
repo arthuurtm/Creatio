@@ -23,7 +23,8 @@ export const quests = computed(() => {
 				{
 					key: "startEvent",
 					label: "Evento de Início",
-					type: "complex-array",
+					type: "select",
+					items: editorStore.events,
 				},
 			],
 			execute: (params) => pushDefinition("main_quest", params),

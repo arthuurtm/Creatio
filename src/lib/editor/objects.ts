@@ -24,7 +24,7 @@ export const objects = computed(() => {
 					label: "Ícone (Inventário)",
 					type: "file",
 					assetType: "image",
-					options: editorStore.assets,
+					items: editorStore.assets,
 				},
 				{
 					key: "stackable",

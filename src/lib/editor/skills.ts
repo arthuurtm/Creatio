@@ -23,7 +23,7 @@ export const skills = computed(() => {
 					key: "costType",
 					label: "Custo",
 					type: "select",
-					options: ["Mana", "Energia", "Vida"],
+					items: ["Mana", "Energia", "Vida"],
 				},
 				{
 					key: "costAmount",
