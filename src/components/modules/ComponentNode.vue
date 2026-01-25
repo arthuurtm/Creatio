@@ -1,63 +1,59 @@
 <script setup lang="ts">
-import { useConnections } from "@/composables/useDotConnection";
-import type { GameNode } from "#types/domain/editor/models.ts";
-import type { CSSProperties } from "vue";
-import CNode from "../ui/Node.vue";
+import { VueFlow, type Connection, ConnectionMode, type NodeComponent } from "@vue-flow/core"
+import { Background } from '@vue-flow/background'
+import { MiniMap } from '@vue-flow/minimap'
+import type { GameConnection, GameNode } from "#types/domain/editor/models.ts";
+import Node from "../ui/Node.vue";
 
 const props = defineProps<{
   nodes: GameNode[];
-  style?: CSSProperties | CSSProperties[] | string;
+  edges: GameConnection[]
 }>();
-const emit = defineEmits(["emit-event", "update:nodes"]);
-const { handleStartConnection, paths } = useConnections();
+const emit = defineEmits(["emit-event", "update:nodes", "update:edges"]);
+const nodeTypes: Record<string, NodeComponent> = {
+  dialog: Node as NodeComponent,
+  combat: Node as NodeComponent,
+  event: Node as NodeComponent,
+}
+
 
 function emitEventHandler(e: { command: string;[key: string]: any }) {
   emit("emit-event", e);
 }
+
+function onConnect(connection: Connection) {
+  emit('update:edges', [
+    ...props.edges,
+    {
+      id: crypto.randomUUID(),
+      source: connection.source!,
+      target: connection.target!,
+    },
+  ])
+
+}
 </script>
 
 <template>
-  <svg class="connections-layer">
-    <path v-for="p in paths" :key="p?.id" :d="p?.d" stroke-dasharray="0" />
-  </svg>
-
-  <div class="nodes-layer" :style="style">
-    <template v-for="node in props.nodes" :key="node.id">
-      <CNode :node="node" v-model:position="node.position" @emit-event="emitEventHandler"
-        @dot-connection="handleStartConnection" />
-    </template>
+  <div class="nodes-layer">
+    <VueFlow :nodes="nodes" :edges="edges" :node-types="nodeTypes" :connection-mode="ConnectionMode.Loose"
+      @connect="onConnect">
+      <Background />
+      <MiniMap />
+    </VueFlow>
   </div>
 </template>
 
 <style scoped>
-/* Conexões ficam atrás */
-.connections-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
+@import '@vue-flow/core/dist/style.css';
+@import '@vue-flow/core/dist/theme-default.css';
 
-/* Nodes ficam na frente */
 .nodes-layer {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 2;
-}
-
-path {
-  pointer-events: stroke;
-  fill: none;
-  stroke: var(--text);
-  stroke-width: 2;
-}
-
-path:hover {
-  stroke: aqua;
-  stroke-width: 4 !important;
+  z-index: 5;
 }
 </style>
