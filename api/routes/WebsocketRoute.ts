@@ -21,7 +21,7 @@ const handleConnection = (ws: WebSocket, wss: WebSocketServer): void => {
 		try {
 			const data = JSON.parse(message.toString()) as WebSocketMessage;
 			log.info("Evento WebSocket recebido: ", data.event);
-			log.debug("Event raw: ", data);
+			// log.debug("Event raw: ", data);
 
 			// Encontra a função do controller baseada no evento
 			const handler = routes[data.event as keyof typeof routes];
@@ -37,12 +37,20 @@ const handleConnection = (ws: WebSocket, wss: WebSocketServer): void => {
 			} else {
 				log.warn(`Nenhum handler encontrado para o evento: ${data.event}`);
 				ws.send(
-					JSON.stringify({ error: `Evento '${data.event}' desconhecido.` }),
+					JSON.stringify({
+						event: "server:error",
+						payload: { message: `Evento '${data.event}' desconhecido` },
+					}),
 				);
 			}
 		} catch (error) {
 			log.error("Erro ao processar a mensagem:", error);
-			ws.send(JSON.stringify({ error: "Mensagem inválida." }));
+			ws.send(
+				JSON.stringify({
+					event: "server:error",
+					payload: { message: "Mensagem inválida" },
+				}),
+			);
 		}
 	});
 };
