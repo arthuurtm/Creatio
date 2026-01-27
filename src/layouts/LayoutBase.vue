@@ -12,17 +12,6 @@ const user = useUserStore();
 const dialog = ref(false)
 const collapsedHeader = ref(false);
 
-const navItems = [
-  { link: "Home", text: "Início", icon: "home", color: "primary" },
-  {
-    link: "GamesView",
-    text: "Jogos",
-    icon: "stadia_controller",
-    color: "gold",
-  },
-  { link: "GameProjects", text: "Seus Projetos", icon: "browse", color: "green" },
-];
-
 watchEffect(() => {
   collapsedHeader.value = route.meta?.layout?.hideNavigator ?? false
 })
@@ -33,10 +22,9 @@ watchEffect(() => {
   <v-app>
     <component-header :hidden="collapsedHeader">
       <template #left>
-        <v-btn v-for="btn in navItems" @click="router.push({ name: btn.link })" class="ga-2" variant="text"
-          density="compact" :text="btn.text" />
-        <v-text-field placeholder="Pesquisar..." prepend-inner-icon="search" variant="solo" flat hide-details
-          density="compact" style="max-width: 460px" />
+        <v-btn text="Início" @click="router.push({ name: 'Home' })" />
+        <v-btn text="Seus Projetos" @click="router.push({ name: 'GameProjects' })" />
+        <v-text-field placeholder="Pesquisar..." prepend-inner-icon="search" flat hide-details density="compact" />
       </template>
       <template #right>
         <!-- <v-btn icon="inbox" variant="text" v-if="isAuthenticated" /> -->
