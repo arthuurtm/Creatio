@@ -1,3 +1,4 @@
+import { debounce } from "lodash-es";
 import { computed, watch } from "vue";
 import { useSyncProtection } from "#src/composables/useSyncProtection.ts";
 import type { EditorState } from "#types/domain/editor/models.ts";
@@ -19,6 +20,11 @@ export function editorConnection() {
 	async function start() {
 		await connect();
 	}
+
+	const slowSend = debounce((state) => {
+		const payload = JSON.parse(JSON.stringify(state));
+		send({ event: "game:lab:update:json", payload });
+	}, 500);
 
 	function stop() {
 		disconnect();
@@ -42,8 +48,7 @@ export function editorConnection() {
 		(newState) => {
 			if (status.value === "OPEN") {
 				try {
-					const payload = JSON.parse(JSON.stringify(newState));
-					send({ event: "game:lab:update:json", payload });
+					slowSend(newState);
 				} catch (err) {
 					console.error("Erro ao preparar payload:", err);
 				}

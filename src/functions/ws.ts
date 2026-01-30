@@ -1,8 +1,39 @@
+import { debounce } from "lodash-es";
 import { onUnmounted, ref, shallowRef } from "vue";
 import type {
-	WebSocketErrorMessage,
+	RequestStatusValues,
+	ConnStatusValues as StatusValues,
+	WebSocketError,
 	WebSocketMessage,
 } from "#types/shared/websocket.ts";
+
+function normalizeWsError(err: unknown): WebSocketError {
+	if (typeof err === "object" && err && "message" in err) {
+		return {
+			message: String((err as any).message),
+			raw: err,
+		};
+	}
+
+	if (err instanceof Event) {
+		return {
+			message: "Erro de conexão com o servidor.",
+			raw: err,
+		};
+	}
+
+	if (err instanceof Error) {
+		return {
+			message: err.message,
+			raw: err,
+		};
+	}
+
+	return {
+		message: "Erro desconhecido.",
+		raw: err,
+	};
+}
 
 /**
  * @abstract Composable para gerenciar uma conexão WebSocket com reconexão automática e gerenciamento de ciclo de vida.
@@ -24,36 +55,19 @@ export default function useWebSocket(
 	} = options;
 
 	// --- Estado Reativo ---
-	const data = ref<any>(null);
-
-	type StatusValues =
-		| "CONNECTING"
-		| "OPEN"
-		| "CLOSING"
-		| "CLOSED"
-		| "RECONNECTING";
+	const data = ref<WebSocketMessage>();
 	const status = ref<StatusValues>("CLOSED");
-	type RequestStatusValues =
-		| "IDLE"
-		| "SENDING"
-		| "ERROR"
-		| "WAITING"
-		| "SUCCESS";
 	const requestStatus = ref<RequestStatusValues>("IDLE");
 	const ws = shallowRef<WebSocket>();
-	const error = ref<any>("");
+	const error = ref<WebSocketMessage<
+		WebSocketError | Event | Record<string, unknown>
+	> | null>();
 	const retryCount = ref(0);
 	let explicitClose = false;
 	let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
 	const _setupEventListeners = () => {
 		if (!ws.value) return;
-
-		ws.value.onopen = () => {
-			console.log("WebSocket conectado com sucesso!");
-			status.value = "OPEN";
-			retryCount.value = 0;
-		};
 
 		ws.value.onmessage = (event: MessageEvent) => {
 			try {
@@ -76,8 +90,7 @@ export default function useWebSocket(
 					console.groupEnd();
 
 					requestStatus.value = "ERROR";
-					error.value = payload.message || "Erro reportado pelo servidor";
-					return;
+					return setError(payload, evt || "server:error");
 				}
 
 				console.groupCollapsed(
@@ -101,13 +114,13 @@ export default function useWebSocket(
 				console.groupEnd();
 
 				requestStatus.value = "ERROR";
-				error.value = "Erro ao interpretar mensagem do servidor";
+				setError(err, "server:error");
 			}
 		};
 
 		ws.value.onerror = (e) => {
-			console.error("Erro no WebSocket:", e);
-			error.value = e;
+			console.error("Erro no WebSocket (Runtime):", e);
+			setError(e, "server:error");
 		};
 
 		ws.value.onclose = (e) => {
@@ -124,19 +137,52 @@ export default function useWebSocket(
 					_reconnect();
 				} else {
 					status.value = "CLOSED";
-					if (autoReconnect) {
-						console.error("Limite de tentativas de reconexão atingido.");
-					}
+					console.error("Limite de tentativas de reconexão atingido.");
 				}
 			}
 		};
+	};
+
+	const _request = async ({ event, payload = {} }: WebSocketMessage) => {
+		console.log(`Enviando evento WebSocket: ${event}`, payload);
+		return new Promise<void>((resolve, reject) => {
+			if (!ws.value || status.value !== "OPEN") {
+				const err: WebSocketMessage<WebSocketError> = {
+					event: "client:error",
+					payload: {
+						message: "Não conectado ao servidor.",
+						raw: {},
+					},
+				};
+				requestStatus.value = "ERROR";
+				error.value = err;
+				console.warn(err, { status: status.value });
+				return reject(err);
+			}
+
+			requestStatus.value = "SENDING";
+
+			try {
+				const dataToSend = JSON.stringify({ event, payload });
+				ws.value.send(dataToSend);
+
+				// pronto: enviada ao buffer
+				requestStatus.value = "WAITING";
+				resolve();
+			} catch (err) {
+				const e = err as WebSocketMessage<WebSocketError>;
+				requestStatus.value = "ERROR";
+				error.value = e;
+				console.error("Falha ao enviar mensagem:", e);
+				reject(e);
+			}
+		});
 	};
 
 	const _reconnect = () => {
 		status.value = "RECONNECTING";
 		retryCount.value++;
 
-		// Exponential backoff com um "jitter" (fator aleatório) para evitar picos de reconexão
 		const delay =
 			Math.min(
 				reconnectInterval * 2 ** (retryCount.value - 1),
@@ -168,60 +214,48 @@ export default function useWebSocket(
 
 		return new Promise<void>((resolve, reject) => {
 			try {
-				ws.value = new WebSocket(url);
+				const socket = new WebSocket(url);
+				ws.value = socket;
 
-				ws.value.onopen = () => {
+				socket.onopen = () => {
+					console.log("WebSocket conectado com sucesso!");
 					status.value = "OPEN";
 					retryCount.value = 0;
 					_setupEventListeners();
 					resolve();
 				};
 
-				ws.value.onerror = (e) => {
+				socket.onerror = (e) => {
 					status.value = "CLOSED";
-					error.value = e;
-					reject(e);
+					reject(setError(e, "server:error"));
 				};
 
-				ws.value.onclose = () => {
-					status.value = "CLOSED";
+				socket.onclose = () => {
+					if (status.value === "CONNECTING") {
+						status.value = "CLOSED";
+					}
 				};
 			} catch (e) {
-				error.value = e;
 				status.value = "CLOSED";
-				reject(e);
+				reject(setError(e, "server:error"));
 			}
 		});
 	};
 
-	const send = async ({ event, payload = {} }: WebSocketMessage) => {
-		console.log(`Enviando evento WebSocket: ${event}`, payload);
-		return new Promise<void>((resolve, reject) => {
-			if (!ws.value || status.value !== "OPEN") {
-				const err = "Não conectado ao servidor.";
-				requestStatus.value = "ERROR";
-				error.value = err;
-				console.warn(err, { status: status.value });
-				return reject(err);
-			}
-
-			requestStatus.value = "SENDING";
-
-			try {
-				const dataToSend = JSON.stringify({ event, payload });
-				ws.value.send(dataToSend);
-
-				// pronto: enviada ao buffer
-				requestStatus.value = "WAITING";
-				resolve();
-			} catch (e) {
-				requestStatus.value = "ERROR";
-				error.value = e;
-				console.error("Falha ao enviar mensagem:", e);
-				reject(e);
-			}
-		});
+	const setError = (payload: unknown, eventName: string = "client:error") => {
+		const normalized = normalizeWsError(payload);
+		error.value = {
+			event: eventName,
+			payload: normalized,
+		};
+		requestStatus.value = "ERROR";
+		return normalized;
 	};
+
+	const send = async (endpoint: WebSocketMessage) => {
+		_request(endpoint);
+	};
+	send.slow = debounce((endpoint: WebSocketMessage) => _request(endpoint), 500);
 
 	/** Fecha a conexão WebSocket intencionalmente. */
 	const disconnect = () => {
@@ -248,5 +282,6 @@ export default function useWebSocket(
 		send,
 		disconnect,
 		ws,
+		setError,
 	};
 }

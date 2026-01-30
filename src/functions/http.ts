@@ -140,7 +140,7 @@ const request = async (
 		console.debug("endpoint:", endpoint);
 		console.groupEnd();
 
-		return { ...res };
+		return res;
 	} catch (error) {
 		const err = error as FormError & { status?: number };
 

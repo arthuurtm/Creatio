@@ -13,7 +13,21 @@ export interface RouteContext<T = unknown> {
 	payload: T;
 }
 
-export interface WebSocketErrorMessage {
-	raw: object;
-	message: string;
+export type ConnStatusValues =
+	| "CONNECTING"
+	| "OPEN"
+	| "CLOSING"
+	| "CLOSED"
+	| "RECONNECTING";
+
+export type RequestStatusValues =
+	| "IDLE"
+	| "SENDING"
+	| "ERROR"
+	| "WAITING"
+	| "SUCCESS";
+
+export interface WebSocketError {
+	message?: string;
+	raw: Error | Event | DOMException | Record<string, unknown> | unknown | null;
 }
