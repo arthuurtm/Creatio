@@ -26,14 +26,29 @@
     </v-form>
   </component>
 
-  <component-dialog :component="DialogSettings" fullscreen title="Configurações" v-model:is-visible="settingsVisible" />
-  <CLoading v-if="loading" :full="true" />
+  <v-dialog fullscreen title="Configurações" v-model="settingsVisible" content-class="rounded-0">
+    <v-card rounded="0" style="border-radius: 0 !important;">
+      <v-toolbar title="Configurações">
+        <v-btn icon="close" variant="text" @click="settingsVisible = false"></v-btn>
+      </v-toolbar>
+
+      <v-card-text>
+        <dialog-settings />
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text="Fechar" @click="settingsVisible = false"></v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <!-- <CLoading v-if="loading" :full="true" /> -->
 </template>
 
 <script setup lang="ts">
 import { useSlots, ref, shallowRef } from 'vue'
 import LayoutPageForm from '@/layouts/LayoutPageForm.vue'
-import DialogSettings from '../dialogs/DialogSettings.vue'
+import DialogSettings from '#src/views/global/DialogSettings.vue'
 const props = defineProps({
   title: String,
   subTitle: String,
