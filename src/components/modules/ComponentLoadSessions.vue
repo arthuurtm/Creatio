@@ -1,164 +1,61 @@
 <template>
-  <CGroup justify="between" grow>
-    <div class="scroll-button" id="left">
-      <CButton
-        v-if="isEnableScrollButton"
-        @emitEvent="scrollLeft"
-        icon="arrow_back_ios"
-        classes="symbolic no-padding no-scalling"
-        id="left"
-      />
-    </div>
+  <div class="game-list-loader">
+    <v-slide-group v-if="!isGridMode" v-model="model" class="py-4" selected-class="bg-primary" show-arrows>
+      <template v-slot:next>
+        <v-btn icon="arrow_forward_ios" variant="text" density="comfortable"></v-btn>
+      </template>
+      <template v-slot:prev>
+        <v-btn icon="arrow_back_ios" variant="text" density="comfortable"></v-btn>
+      </template>
 
-    <div v-if="items && items.length > 0" class="sliding" ref="scrollContainer">
-      <CFeaturedGameCard
-        v-for="(card, index) in items"
-        :key="index"
-        :item="card"
-        :styleType="cardsType"
-        @click="card?.action"
-      />
-      <!-- <CFeaturedGameCard
-        :item="{
-          id: 'dark-realm',
-          title: 'The Dark Realm',
-          coverImage: 'https://ggayane.github.io/css-experiments/cards/dark_rider-cover.jpg',
-          characterImage:
-            'https://ggayane.github.io/css-experiments/cards/dark_rider-character.webp',
-        }"
-        size="large"
-      /> -->
-    </div>
+      <v-slide-group-item v-for="(card, index) in items" :key="index">
+        <div class="ma-2">
+          <GameCard :item="card" :width="cardWidth" @click="emitAction(card)" />
+        </div>
+      </v-slide-group-item>
+    </v-slide-group>
 
-    <div class="scroll-button" id="right">
-      <CButton
-        v-if="isEnableScrollButton"
-        @emitEvent="scrollRight"
-        icon="arrow_forward_ios"
-        classes="symbolic no-padding no-scalling left"
-        id="right"
-      />
+    <v-row v-else class="mt-2">
+      <v-col v-for="(card, index) in items" :key="index" cols="6" sm="4" md="3" lg="2">
+        <GameCard :item="card" width="100%" @click="emitAction(card)" />
+      </v-col>
+    </v-row>
+
+    <div v-if="items.length === 0" class="text-center py-10 text-medium-emphasis">
+      <v-icon size="large" class="mb-2">videogame_asset_off</v-icon>
+      <p>Nenhum jogo encontrado nesta seção.</p>
     </div>
-  </CGroup>
+  </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
-import CFeaturedGameCard from '../ui/CFeaturedGameCard.vue'
+<script setup lang="ts">
+import { ref, computed } from "vue";
+import GameCard from "@/components/ui/GameCard.vue";
 
 const props = defineProps({
-  items: {
-    type: Array,
-    required: true,
-  },
-  styleType: {
-    type: String,
-    default: 'line',
-  },
-  cardsType: {
-    type: String,
-  },
-})
-const emits = defineEmits(['emitEvent'])
+  items: { type: Object, required: true },
+  styleType: { type: String, default: "line" },
+  cardsType: { type: String },
+});
 
-const grids = ref({
-  big: ['grade', 'spaced'],
-  medium: ['line'],
-  small: ['reduced', 'list'],
-})
-const scrollContainer = ref(null)
-const scrollAmount = 260
+const emits = defineEmits(["emitEvent"]);
+const model = ref(null);
 
-const isEnableScrollButton = computed(() => {
-  if (grids.value.big.includes(props.styleType) || grids.value.small.includes(props.styleType))
-    return false
-  return true
-})
+const gridModes = ["grade", "spaced", "library"];
 
-function scrollLeft() {
-  if (scrollContainer.value) {
-    scrollContainer.value.scrollLeft -= scrollAmount
+const isGridMode = computed(() => gridModes.includes(props.styleType));
+
+const cardWidth = computed(() => {
+  if (props.cardsType === "reduced") return 160;
+  if (props.cardsType === "large") return 280;
+  return 200; // Padrão
+});
+
+function emitAction(card: any) {
+  if (card.action && typeof card.action === "function") {
+    card.action();
+  } else {
+    emits("emitEvent", { id: card.id, type: "open" });
   }
-}
-
-function scrollRight() {
-  if (scrollContainer.value) {
-    scrollContainer.value.scrollLeft += scrollAmount
-  }
-}
-
-function reEmitEvent(args = {}) {
-  emits('emitEvent', args)
 }
 </script>
-
-<style scoped>
-.grid-man {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: 1fr;
-  align-items: center;
-  width: 100%;
-  box-sizing: border-box;
-  position: relative;
-  scroll-behavior: smooth;
-}
-
-.sliding {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 20px;
-  width: 100%;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  white-space: nowrap;
-  box-sizing: border-box;
-}
-
-.grid-man.grade {
-  scroll-behavior: unset;
-}
-.grid-man.grade .sliding {
-  flex-wrap: wrap;
-  justify-content: center;
-  align-content: flex-start;
-  align-items: flex-start;
-}
-
-.btn#left {
-  display: grid;
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.btn#right {
-  display: grid;
-  grid-column: 3;
-  grid-row: 1;
-}
-
-#play-button {
-  background-color: var(--discovery-play-button);
-  z-index: 1;
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-
-@media (max-width: 600px) {
-  .grid-man .group-button {
-    display: none;
-  }
-  #btn {
-    display: none;
-  }
-  .sliding {
-    gap: 0;
-  }
-}
-</style>

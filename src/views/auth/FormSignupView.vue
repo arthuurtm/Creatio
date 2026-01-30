@@ -1,124 +1,100 @@
 <template>
-  <AppFormPage :title="'Crie sua conta'" :currentStep="currentStep" :loading="loading" ref="form">
+  <AppFormPage title="Crie sua conta" :currentStep="currentStep" :loading="loading">
+
     <template #form>
-      <template v-if="currentStep === 1">
-        <CInputText
-          label="Nome de Exibição"
-          placeholder="Um nome criativo"
-          v-model="formData.nickname"
-        />
-        <CInputText
-          label="Nome de Usuário"
-          placeholder="Seu nome de usuário"
-          aria-required="true"
-          v-model="formData.username"
-        />
-      </template>
+      <v-container v-if="currentStep === 1" class="ga-2">
+        <v-text-field label="Nome de Exibição" placeholder="Um nome criativo" v-model="formData.nickname.val"
+          :error="formData.nickname.err" :error-messages="formData.nickname.errVal" variant="outlined"
+          @input="formData.nickname.err = false; formData.nickname.errVal = ''" />
+        <v-text-field label="Nome de Usuário" placeholder="Seu nome de usuário" v-model="formData.username.val"
+          :error="formData.username.err" :error-messages="formData.username.errVal" variant="outlined"
+          @input="formData.username.err = false; formData.username.errVal = ''" />
+      </v-container>
 
-      <template v-if="currentStep === 2">
-        <CInputText
-          type="email"
-          label="Seu e-mail"
-          placeholder="Seu e-mail"
-          aria-required="true"
-          v-model="formData.email"
-        />
-        <CInputText
-          type="date"
-          label="Data de nascimento"
-          aria-required="true"
-          class="date"
-          v-model="formData.birthdate"
-        />
-      </template>
+      <v-container v-if="currentStep === 2">
+        <v-text-field type="email" label="Seu e-mail" placeholder="Seu e-mail" v-model="formData.email.val"
+          :error="formData.email.err" :error-messages="formData.email.errVal" variant="outlined"
+          @input="formData.email.err = false; formData.email.errVal = ''" />
+        <v-text-field type="date" label="Data de nascimento" v-model="formData.birthdate.val"
+          :error="formData.birthdate.err" :error-messages="formData.birthdate.errVal" variant="outlined"
+          @input="formData.birthdate.err = false; formData.birthdate.errVal = ''" />
+      </v-container>
 
-      <template v-if="currentStep === 3">
-        <CInputText
-          label="Código de verificação"
-          placeholder="Código de verificação recebido no seu e-mail"
-          aria-required="true"
-          v-model="formData.verifyCode"
-        />
-      </template>
+      <v-container v-if="currentStep === 3">
+        <v-text-field label="Código de verificação" placeholder="Código recebido no e-mail"
+          v-model="formData.verifyCode.val" :error="formData.verifyCode.err"
+          :error-messages="formData.verifyCode.errVal" variant="outlined"
+          @input="formData.verifyCode.err = false; formData.verifyCode.errVal = ''" />
+      </v-container>
 
-      <template v-if="currentStep === 4">
-        <CInputPassword
-          id="passwd1"
-          label="Sua senha"
-          placeholder="Digite uma senha BEM segura!"
-          aria-required="true"
-          v-model="formData.passwd1"
-        />
-        <CInputPassword
-          id="passwd2"
-          label="Confirme sua senha"
-          placeholder="Re-digite sua senha!"
-          aria-required="true"
-          v-model="formData.passwd2"
-        />
-      </template>
+      <v-container v-if="currentStep === 4">
+        <v-text-field type="password" label="Sua senha" placeholder="Digite uma senha BEM segura!"
+          v-model="formData.passwd1.val" :error="formData.passwd1.err" :error-messages="formData.passwd1.errVal"
+          variant="outlined" @input="formData.passwd1.err = false; formData.passwd1.errVal = ''" />
+        <v-text-field type="password" label="Confirme sua senha" placeholder="Re-digite sua senha!"
+          v-model="formData.passwd2.val" :error="formData.passwd2.err" :error-messages="formData.passwd2.errVal"
+          variant="outlined" @input="formData.passwd2.err = false; formData.passwd2.errVal = ''" />
+      </v-container>
     </template>
 
     <template #buttons>
-      <template v-if="currentStep === 1">
-        <CButton text="Cancelar" @click="() => pageRedirect({ name: 'Login' })" />
-        <CButton
-          text="Avançar"
-          class="confirm"
-          @click="() => loaderController(verifyIfUserExists)"
-        />
-      </template>
-
-      <template v-if="currentStep === 2">
-        <CButton text="Voltar" @click="() => prevStep()" />
-        <CButton
-          text="Avançar"
-          class="confirm"
-          @click="() => loaderController(prepareVerifyCode)"
-        />
-      </template>
-
-      <template v-if="currentStep === 3">
-        <CButton text="Voltar" @click="() => prevStep()" />
-        <CButton text="Avançar" class="confirm" @click="() => loaderController(verifySecureCode)" />
-      </template>
-
-      <template v-if="currentStep === 4">
-        <CButton text="Voltar" @click="() => prevStep()" />
-        <CButton text="Cadastrar" class="confirm" @click="() => loaderController(signupUser)" />
-      </template>
+      <v-btn :text="formData.username.val ? 'Cancelar' : 'Voltar'"
+        :color="formData.username.val ? 'error' : 'secondary'" :variant="formData.username.val ? 'flat' : 'outlined'"
+        @click="pageRedirect({ name: 'Login' })" />
+      <v-btn text="Avançar" variant="elevated" @click="stepActions[currentStep]?.next()" />
     </template>
   </AppFormPage>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { computed, watch, ref } from 'vue'
-import { http, form as stepForm } from '@/functions'
+import http from '@/functions/http'
+import { default as stepForm, type FieldParams, initField } from '@/functions/form'
 import { useRouter } from 'vue-router'
 import { showToast } from '@/plugins/toast'
 
-const formData = ref({
-  nickname: null,
-  username: null,
-  email: null,
-  birthdate: null,
-  passwd1: null,
-  passwd2: null,
-  verifyCode: null,
-  sessionUUID: null,
+interface Params {
+  nickname: FieldParams,
+  username: FieldParams,
+  email: FieldParams,
+  birthdate: FieldParams,
+  passwd1: FieldParams,
+  passwd2: FieldParams,
+  verifyCode: FieldParams,
+  accessUUID: string,
+}
+interface FormButtonActions {
+  next: () => Promise<void>,
+  back: () => void,
+}
+interface StepActions {
+  [key: number]: FormButtonActions,
+}
+
+const formData = ref<Params>({
+  nickname: initField(),
+  username: initField(),
+  email: initField(),
+  birthdate: initField(),
+  passwd1: initField(),
+  passwd2: initField(),
+  verifyCode: initField(),
+  accessUUID: '',
 })
-const nicknameValue = computed(() => formData.value.nickname)
+
+const nicknameValue = computed(() => formData.value.nickname.val)
 const router = useRouter()
 
-const { currentStep, nextStep, prevStep, pageRedirect, loading, loaderController } = stepForm({
+const { currentStep, nextStep, prevStep, pageRedirect, loading, loaderController, setFieldError } = stepForm({
   totalSteps: 4,
 })
 const sentCode = ref(false)
+let sameMail = ''
 
 watch(nicknameValue, (newNickname) => {
   if (newNickname !== undefined) {
-    formData.value.username = newNickname
+    formData.value.username.val = newNickname
       .toLowerCase()
       .replace(/[^a-z0-9_.]/g, '')
       .replace(/\s+/g, '')
@@ -130,20 +106,20 @@ const verifyIfUserExists = async () => {
     await http.get({
       type: 'database',
       route: 'getUserBasics',
-      querys: { identification: formData.value.username },
+      querys: { login: formData.value.username.val },
     })
-    showToast({ type: 'error', message: 'O usuário já existe' })
+    setFieldError(formData.value.username, "Este nome de usuário já está sendo utilizado")
   } catch (err) {
     if (err?.status === 404) {
       nextStep()
     } else {
-      showToast({ type: 'error', message: err.message })
+      setFieldError(formData.value.username, err.message)
     }
   }
 }
 
 const prepareVerifyCode = async () => {
-  if (!sentCode.value) {
+  if (!sentCode.value && !(formData.value.email.val === sameMail)) {
     try {
       await http.post(
         {
@@ -151,17 +127,15 @@ const prepareVerifyCode = async () => {
           route: 'setSignupCode',
         },
         {
-          email: formData.value.email,
+          email: formData.value.email.val,
         },
       )
 
+      sameMail = formData.value.email.val
       sentCode.value = true
       nextStep()
     } catch (error) {
-      showToast({
-        type: 'error',
-        message: error.message,
-      })
+      setFieldError(formData.value.email, error.message)
     }
   } else {
     nextStep()
@@ -170,30 +144,27 @@ const prepareVerifyCode = async () => {
 
 const verifySecureCode = async () => {
   try {
-    const { sessionUUID } = await http.post(
+    const { accessUUID } = await http.post(
       {
         type: 'database',
         route: 'validateSecureSession',
       },
       {
-        secureToken: formData.value.verifyCode,
-        tokenId: formData.value.email,
+        secureToken: formData.value.verifyCode.val,
+        tokenId: formData.value.email.val,
       },
     )
-    formData.value.sessionUUID = sessionUUID
+    formData.value.accessUUID = accessUUID
     nextStep()
   } catch (err) {
-    showToast({ type: 'error', message: err.message })
+    setFieldError(formData.value.verifyCode, err.message)
   }
 }
 
 const signupUser = async () => {
   try {
-    if (formData.value.passwd1 !== formData.value.passwd2) {
-      showToast({
-        type: 'error',
-        message: 'As senhas não coincidem.',
-      })
+    if (formData.value.passwd1.val !== formData.value.passwd2.val) {
+      setFieldError(formData.value.passwd2, 'As senhas não coincidem!')
       return
     }
 
@@ -203,29 +174,12 @@ const signupUser = async () => {
         route: 'setUser',
       },
       {
-        nickname: formData.value.nickname,
-        username: formData.value.username,
-        email: formData.value.email,
-        birthdate: formData.value.birthdate,
-        password: formData.value.passwd1,
-        sessionUUID: formData.value.sessionUUID,
-      },
-    )
-
-    showToast({
-      type: 'success',
-      message: 'Conta criada com sucesso! Aguarde um momento...',
-    })
-
-    await http.post(
-      {
-        type: 'database',
-        route: 'setLogin',
-      },
-      {
-        type: 'traditional',
-        identification: formData.value.username,
-        password: formData.value.passwd1,
+        nickname: formData.value.nickname.val,
+        username: formData.value.username.val,
+        email: formData.value.email.val,
+        birthdate: formData.value.birthdate.val,
+        password: formData.value.passwd1.val,
+        accessUUID: formData.value.accessUUID,
       },
     )
     router.push({ name: 'Home' })
@@ -236,4 +190,12 @@ const signupUser = async () => {
     })
   }
 }
+
+const stepActions: StepActions = {
+  1: { next: verifyIfUserExists, back: () => pageRedirect({ name: 'Login' }) },
+  2: { next: prepareVerifyCode, back: prevStep },
+  3: { next: verifySecureCode, back: prevStep },
+  4: { next: signupUser, back: prevStep },
+}
+
 </script>

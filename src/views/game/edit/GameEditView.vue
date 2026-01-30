@@ -1,222 +1,87 @@
-<script setup>
-import { ref, shallowRef, markRaw, onMounted, onUnmounted, computed } from 'vue'
-import { useEditorConnection } from '@/composables/useEditorConnection'
-import { useEditorStore } from '@/stores/editor'
-import { categories, nodes } from '@/lib/editor/index'
-import { getNodeContextMenuItems, cloneNode, deleteNode } from '@/composables/useNodeFunctions'
-import TabDataPanelView from './TabDataPanelView.vue'
-import ComponentQuickEditPanel from '@/components/modules/ComponentQuickEditPanel.vue'
-import { useEditorViewport } from '@/composables/useEditorViewport'
+<script setup lang="ts">
+import ComponentNode from "#src/components/modules/ComponentNode.vue";
+import {
+  ref,
+  onMounted,
+  onUnmounted,
+  computed,
+  watch
+} from "vue";
+import { useEditorStore } from "@/stores/editor";
+import { nodes } from "@/lib/editor/index";
+import TabDataPanelView from "./TabDataPanelView.vue";
+import { editorConnection } from "@/composables/useWebsocketConnection.ts";
+import { debounce } from "lodash-es";
+import type { RequestStatusValues } from "#types/shared/websocket.ts";
 
-const MIN_ZOOM = 0.5
-const MAX_ZOOM = 2.0
-const props = defineProps({ id: String })
-const editorStore = useEditorStore()
-const contextMenuRef = ref(null)
-const { start: connect, stop: disconnect, send, error, requestStatus } = useEditorConnection()
-const { zoom, gridStyle, editorStyle, handleZoom } = useEditorViewport(MIN_ZOOM, MAX_ZOOM)
-const connectionInfo = computed(() => {
-  const status = requestStatus.value
-  const currentError = error.value
-  const map = {
-    icon: {
-      IDLE: 'cloud',
-      SENDING: 'cloud_sync',
-      ERROR: 'cloud_alert',
-      WAITING: 'cloud_sync',
-      SUCCESS: 'cloud_done',
-    },
-    message: {
-      IDLE: null,
-      SENDING: 'Sincronizando...',
-      ERROR: currentError ?? 'Desconectado',
-      WAITING: null,
-      SUCCESS: null,
-    },
-  }
-  return { icon: map.icon[status] || 'cloud_alert', message: map.message[status] }
-})
+const props = defineProps({ id: String });
+const editorStore = useEditorStore();
+const wsConn = editorConnection();
+const delayedStatus = ref(wsConn.requestStatus.value)
+const mapStatusIcon: Record<RequestStatusValues, string> = {
+  IDLE: "cloud",
+  SENDING: "cloud_sync",
+  ERROR: "cloud_alert",
+  WAITING: "cloud_sync",
+  SUCCESS: "cloud_done",
+};
+const connectionIcon = computed(() => mapStatusIcon[delayedStatus.value]);
 const tabData = ref({
-  isVisible: false,
-  fullscreen: true,
-  component: null,
-  noFocusWindow: true,
-  title: 'Editor',
-})
-const quickPanelData = ref({
-  visible: false,
-  data: {},
-})
-const navLinks = computed(() => ({
-  left: [
-    {
-      text: 'Painel de dados',
-      action: () => handleGameEditorTab(TabDataPanelView, 'Painel de dados'),
-    },
-  ],
-  right: [
-    {
-      icon: connectionInfo.value.icon,
-      text: connectionInfo.value.message,
-      classes: ['symbolic', 'no-padding', 'no-scalling'],
-    },
-    { icon: `help`, action: (e) => openContextMenu({ text: 'Ajuda...' }, e) },
-  ],
-}))
-
-function openContextMenu(items, event) {
-  contextMenuRef.value.openContextMenu(items, event)
-}
-
-function handleGameEditorTab(tab, title) {
-  tabData.value.component = shallowRef(markRaw(tab)) ?? {}
-  tabData.value.title = title ?? ''
-  if (!tabData.value.isVisible) tabData.value.isVisible = true
-}
-
-function handleCloseEditorTab() {
-  tabData.value.isVisible = false
-  tabData.value.component = null
-}
-
-function handleCommandListAction(item) {
-  console.log(item)
-  switch (item.command) {
-    case 'NODE.CLONE': {
-      cloneNode(item.data.node)
-      break
-    }
-
-    case 'NODE.DELETE': {
-      deleteNode(item.data.node.id)
-      break
-    }
-
-    case 'NODE.OPEN_PROPERTIES_SCREEN': {
-      quickPanelData.value = {
-        visible: true,
-        data: item.data.node,
-      }
-      break
-    }
-
-    case 'NODE.OPEN_ADD_DATA_MENU': {
-      openContextMenu(
-        Object.values(categories).map((c) => c.value),
-        item.data.event,
-      )
-      break
-    }
-
-    case 'NODE.OPEN_CONTEXT_MENU': {
-      openContextMenu(getNodeContextMenuItems(item.data.node), item.data.event)
-      break
-    }
-
-    default: {
-      console.log('Comando desconhecido para o menu de contexto: ', item)
-    }
+  properties: {
+    visible: false
   }
-}
+});
+
+const updateDelayed = debounce((status: any) => {
+  delayedStatus.value = status
+}, 500)
+
+watch(wsConn.requestStatus, (newStatus) => updateDelayed(newStatus))
 
 onMounted(async () => {
-  await connect()
-  send({ event: 'game:lab:get:json', payload: { ...editorStore.info, id: props.id } })
-})
+  editorStore.setGameId(props.id);
+  await wsConn.start();
+  wsConn.send({ event: "game:lab:get:json", payload: editorStore });
+});
+
 onUnmounted(() => {
-  disconnect()
-  editorStore.$reset()
-})
+  wsConn.stop();
+  editorStore.$reset();
+});
+
+watch(wsConn.requestStatus, (newStatus) => debounce(() => {
+  delayedStatus.value = newStatus
+}, 500))
 </script>
 
 <template>
-  <CGroup grow direction="column" style="height: 100vh; overflow: hidden">
-    <ComponentHeader :nav-links="navLinks" title="EDITOR DO JOGO" />
+  <v-layout style="height: 100%">
+    <v-container fluid class="pa-0">
+      <ComponentNode v-model:nodes="editorStore.nodes" v-model:edges="editorStore.connections" />
+    </v-container>
 
-    <CGroup
-      grow
-      direction="column"
-      style="position: relative"
-      class="editor-grid"
-      :style="gridStyle"
-    >
-      <CGroup v-if="!tabData.isVisible" direction="row" align="center" margin="1rem" gap="1rem">
-        <CButton
-          text="Adicionar Nova Linha do Tempo"
-          icon="add"
-          @click="nodes.definitions.createDialogBlock.execute($event)"
-        />
-        <CButton text="Seleção" icon="arrow_selector_tool" />
-        <CButton text="Conexão Direta" icon="linear_scale" />
-        <CButton text="Conexão Condicional" icon="alt_route" />
-        <CButton text="Comentário" icon="chat" />
-        <CButton text="teste" @click="quickPanelData.visible = !quickPanelData.visible" />
-      </CGroup>
+    <v-fade-transition>
+      <div class="hud-top-tools d-flex justify-space-between pa-4"
+        style="position: absolute; top: 0; left: 0; z-index: 1000; pointer-events: none; width: 100%;">
 
-      <CGroup
-        v-if="!tabData.isVisible"
-        grow
-        direction="row"
-        style="position: relative; height: calc(100% - 64px); overflow: hidden"
-      >
-        <ComponentNode
-          :nodes="editorStore.nodes"
-          :zoom="zoom"
-          @emit-event="handleCommandListAction"
-          :style="editorStyle"
-          style="flex: 1; overflow: auto"
-        />
-      </CGroup>
+        <div class="d-flex ga-2">
+          <v-btn class="elevation-4" style="pointer-events: auto;" text="Propriedades" prepend-icon="flowchart"
+            @click="tabData.properties.visible = true" variant="outlined" color="surface-variant" />
 
-      <CGroup
-        direction="column"
-        gap="0.5rem"
-        radius="50px"
-        align="center"
-        style="position: absolute; bottom: 1rem; right: 2rem; z-index: 2"
-        background="var(--surface-1)"
-      >
-        <CButton icon="add" @click="handleZoom('in')" title="Aumentar Zoom" classes="symbolic" />
-        <div class="zoom-display" style="font-variant-numeric: tabular-nums">
-          {{ Math.round(zoom * 100) }}%
+          <v-btn class="elevation-4" style="pointer-events: auto;" text="Linha do Tempo" prepend-icon="add"
+            @click="nodes.definitions.createDialogBlock.execute($event)" variant="outlined" color="surface-variant" />
         </div>
-        <CButton
-          icon="remove"
-          @click="handleZoom('out')"
-          title="Diminuir Zoom"
-          classes="symbolic"
-        />
-      </CGroup>
 
-      <CGroup
-        style="position: absolute; top: 0; right: 0; pointer-events: none"
-        min-width="30vw"
-        width="auto"
-        height="95%"
-        margin="1rem"
-        overflow="hidden"
-        radius="24px"
-      >
-        <ComponentDialog
-          title="Painel Rápido"
-          v-model:is-visible="quickPanelData.visible"
-          fullscreen
-          background="var(--bg2)"
-        >
-          <ComponentQuickEditPanel v-model="quickPanelData.data" />
-        </ComponentDialog>
-      </CGroup>
+        <div class="d-flex ga-2">
+          <!-- <v-btn :icon="connectionIcon ?? undefined"
+            :prepend-icon="wsConn.requestStatus ===  connectionIcon : undefined" variant="outlined"
+            :color="wsConn.error ? 'red' : undefined" /> -->
+        </div>
+      </div>
+    </v-fade-transition>
 
-      <ComponentDialog v-bind="tabData" @close="handleCloseEditorTab" />
-    </CGroup>
-    <CContextMenu @contextMenu.stop @select="handleCommandListAction" ref="contextMenuRef" />
-  </CGroup>
+    <v-dialog v-model="tabData.properties.visible" fullscreen transition="slide-x-transition">
+      <TabDataPanelView />
+    </v-dialog>
+  </v-layout>
 </template>
-
-<style scoped>
-.editor-grid {
-  background-image:
-    linear-gradient(to right, var(--surface-2) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--surface-2) 1px, transparent 1px);
-}
-</style>

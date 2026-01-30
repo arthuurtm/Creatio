@@ -1,87 +1,54 @@
 <script setup lang="ts">
-import { useConnections } from '@/composables/useDotConnection'
-import type { GameNode } from '@/types/editor-models'
-import type { CSSProperties } from 'vue'
+import { VueFlow, type Connection, ConnectionMode, type NodeComponent } from "@vue-flow/core"
+import { Background } from '@vue-flow/background'
+import { MiniMap } from '@vue-flow/minimap'
+import type { GameConnection, GameNode } from "#types/domain/editor/models.ts";
+import Node from "../ui/Node.vue";
+import { markRaw } from "vue";
 
-const props = defineProps<{
-  nodes: GameNode[]
-  style?: CSSProperties | CSSProperties[] | string
-}>()
-const emit = defineEmits(['emit-event'])
-const { handleStartConnection, paths } = useConnections()
+const nodes = defineModel<GameNode[]>('nodes', { required: true, default: [] })
+const edges = defineModel<GameConnection[]>('edges', { required: true, default: [] })
 
-function emitEventHandler(e: { command: string; [key: string]: any }) {
-  console.log(e)
-  switch (e.command) {
-    case 'NODE.CONNECTION': {
-      handleStartConnection(e.data)
-      break
-    }
-    default: {
-      emit('emit-event', e)
-    }
-  }
+const emit = defineEmits<{ (e: "open-panel", nodeId: string): void }>();
+
+const nodeTypes: Record<string, NodeComponent> = {
+  dialog: markRaw(Node) as NodeComponent,
+  combat: markRaw(Node) as NodeComponent,
+  event: markRaw(Node) as NodeComponent,
+}
+
+function onConnect(connection: Connection) {
+  edges.value = [
+    ...edges.value,
+    {
+      id: crypto.randomUUID(),
+      source: connection.source!,
+      target: connection.target!,
+    },
+  ]
 }
 </script>
 
 <template>
-  <svg class="connections-layer">
-    <path v-for="p in paths" :key="p?.id" :d="p?.d" stroke-dasharray="0" />
-  </svg>
-
-  <div class="nodes-layer" :style="style">
-    <ComponentDialog
-      v-for="node in props.nodes"
-      :key="node.id"
-      v-on:contextmenu.stop="
-        emitEventHandler({ command: 'NODE.OPEN_CONTEXT_MENU', data: { node, event: $event } })
-      "
-      v-on:contextmenu.prevent
-      :title="node.id"
-      v-model:x="node.position.x"
-      v-model:y="node.position.y"
-      is-visible
-      no-focus-window
-      is-draggable
-      no-title-bar
-      no-interpolate-size
-      no-overflow
-      background="var(--surface-3)"
-    >
-      <CNode :node="node" @emit-event="emitEventHandler" />
-    </ComponentDialog>
+  <div class="nodes-layer">
+    <VueFlow v-model:nodes="nodes" v-model:edges="edges" :node-types="nodeTypes" :connection-mode="ConnectionMode.Loose"
+      :fit-view-on-init="true" @connect="onConnect" @node:open-panel="emit('open-panel', $event)">
+      <Background />
+      <MiniMap />
+    </VueFlow>
   </div>
 </template>
 
 <style scoped>
-/* Conexões ficam atrás */
-.connections-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
+@import '@vue-flow/core/dist/style.css';
+@import '@vue-flow/core/dist/theme-default.css';
 
-/* Nodes ficam na frente */
 .nodes-layer {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 2;
-}
-
-path {
-  pointer-events: stroke;
-  fill: none;
-  stroke: var(--text);
-  stroke-width: 2;
-}
-
-path:hover {
-  stroke: aqua;
-  stroke-width: 4 !important;
+  z-index: 5;
 }
 </style>

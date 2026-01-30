@@ -1,52 +1,44 @@
-# Dependências e builds
+.DS_Store
+Thumbs.db
+
 node_modules/
+.pnp/
+.pnp.js
+
 dist/
-dist-ssr/
+build/
+out/
 coverage/
 *.tsbuildinfo
 
-# Logs e caches
-logs/
-*.log
+.cache/
+.eslintcache
+.parcel-cache/
+.vite/
+.turbo/
+.next/
+.nuxt/
+
+**/*.env
+!.env.example
+**/*credentials*.json
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-.cache/
-.temp/
-*.local
 
-# Testes
-/cypress/videos/
-/cypress/screenshots/
-/cypress/downloads/
-
-# Configurações locais de IDE
-.vscode/*
-!.vscode/extensions.json
 .idea/
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.code-workspace
 
-# Arquivos sensíveis
-.env
-.env.*
-*credentials.json
+jest.config.ts.snap
+.nyc_output/
 
-# Arquivos binários e temporários
-*.zip
-*.tar
-*.tar.gz
-*.tmp
-*.bak
-
-# Arquivos gerados ou específicos do build
-*components.d.ts
-
-# Outros
-.DS_Store
-Thumbs.db
+*.map
