@@ -34,7 +34,7 @@
   </v-main>
 </template>
 
-<script setup>
+<script setup lang="ts">
 defineProps({
   title: String,
   subTitle: String,

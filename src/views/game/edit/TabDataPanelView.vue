@@ -181,7 +181,7 @@ function handleCreate() {
             </v-menu>
 
             <v-card variant="flat">
-              <ComponentQuickEditPanel :modelValue="editorStore[activeCategory]" :start-expanded="allExpanded"
+              <ComponentQuickEditPanel v-model:modelValue="editorStore[activeCategory]" :start-expanded="allExpanded"
                 :label="activeCategoryConfig?.value.text" />
             </v-card>
 
