@@ -9,6 +9,10 @@ const props = defineProps<{
   data: any;
   selected?: boolean;
 }>();
+const emit = defineEmits<{
+  (e: 'open-panel', nodeId: string): void
+  (e: 'delete-node', nodeId: string): void
+}>()
 
 // Lógica de Cores baseada no tipo
 const nodeStyle = computed(() => {
@@ -52,7 +56,7 @@ const typeIcon = computed(() => {
 
         <v-spacer />
 
-        <v-btn icon="add" variant="text" size="small" />
+        <v-btn icon="add_circle" variant="text" size="small" v-bind="props" @click="emit('open-panel', props.id)" />
         <v-btn icon="edit" variant="text" size="small" />
       </v-toolbar>
 

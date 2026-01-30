@@ -4,40 +4,35 @@ import { Background } from '@vue-flow/background'
 import { MiniMap } from '@vue-flow/minimap'
 import type { GameConnection, GameNode } from "#types/domain/editor/models.ts";
 import Node from "../ui/Node.vue";
+import { markRaw } from "vue";
 
-const props = defineProps<{
-  nodes: GameNode[];
-  edges: GameConnection[]
-}>();
-const emit = defineEmits(["emit-event", "update:nodes", "update:edges"]);
+const nodes = defineModel<GameNode[]>('nodes', { required: true, default: [] })
+const edges = defineModel<GameConnection[]>('edges', { required: true, default: [] })
+
+const emit = defineEmits<{ (e: "open-panel", nodeId: string): void }>();
+
 const nodeTypes: Record<string, NodeComponent> = {
-  dialog: Node as NodeComponent,
-  combat: Node as NodeComponent,
-  event: Node as NodeComponent,
-}
-
-
-function emitEventHandler(e: { command: string;[key: string]: any }) {
-  emit("emit-event", e);
+  dialog: markRaw(Node) as NodeComponent,
+  combat: markRaw(Node) as NodeComponent,
+  event: markRaw(Node) as NodeComponent,
 }
 
 function onConnect(connection: Connection) {
-  emit('update:edges', [
-    ...props.edges,
+  edges.value = [
+    ...edges.value,
     {
       id: crypto.randomUUID(),
       source: connection.source!,
       target: connection.target!,
     },
-  ])
-
+  ]
 }
 </script>
 
 <template>
   <div class="nodes-layer">
-    <VueFlow :nodes="nodes" :edges="edges" :node-types="nodeTypes" :connection-mode="ConnectionMode.Loose"
-      @connect="onConnect">
+    <VueFlow v-model:nodes="nodes" v-model:edges="edges" :node-types="nodeTypes" :connection-mode="ConnectionMode.Loose"
+      :fit-view-on-init="true" @connect="onConnect" @node:open-panel="emit('open-panel', $event)">
       <Background />
       <MiniMap />
     </VueFlow>

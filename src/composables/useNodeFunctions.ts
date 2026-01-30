@@ -18,8 +18,7 @@ function createNode(x: number, y: number, params: CreateNodeParams) {
 		id,
 		position: { x, y },
 		type: params.type || "dialog",
-		content: params.content || {},
-		links: params.links || [],
+		data: params.content || {},
 	};
 	editorStore.nodes.push(node);
 	return id;
@@ -36,7 +35,7 @@ const deleteNode = (nodeId: string) => {
 };
 
 const cloneNode = (node: GameNode) => {
-	createNode(node.x + 20, node.y + 20, {
+	createNode(node.position.x + 20, node.position.y + 20, {
 		type: node.type,
 	});
 };
