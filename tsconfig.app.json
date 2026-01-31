@@ -1,6 +1,6 @@
 {
 	"extends": "@vue/tsconfig/tsconfig.dom.json",
-	"include": ["env.d.ts", "src/**/*", "src/**/*.vue", "types"],
+	"include": ["env.d.ts", "src/**/*", "src/**/*.vue", "packages/types", "apps/web/composables", "apps/web/App.vue", "apps/web/stores", "apps/web/router", "apps/web/plugins", "apps/web/lib", "apps/web/functions", "apps/web/main.ts", "apps/web/auto-imports.d.ts"],
 	"exclude": ["src/**/__tests__/*"],
 	"skipLibCheck": true,
 	"moduleResolution": "Bundler",
