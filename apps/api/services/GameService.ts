@@ -1,5 +1,5 @@
 import { Game } from "#api/models/index.ts";
-import type { EditorState } from "#types/domain/editor/index.ts";
+import type { EditorState } from "@projeto/types";
 import GameEditorService from "./EditorService";
 import { getUserIDFromSessionToken } from "./UserSessionService";
 

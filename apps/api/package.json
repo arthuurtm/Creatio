@@ -4,7 +4,7 @@
     "type": "module",
     "version": "0.0.0",
     "scripts": {
-        "dev": "tsx watch src/server.mts",
+        "dev": "tsx watch server.mts",
         "build": "tsc",
         "start": "node dist/server.mjs",
         "lint": "biome check ."
@@ -33,6 +33,7 @@
         "nodemailer": "^7.0.12",
         "open": "^11.0.0",
         "sequelize": "^6.37.7",
+        "ua-parser-js": "^2.0.7",
         "uuid": "^13.0.0",
         "validator": "^13.15.26",
         "ws": "^8.18.3",

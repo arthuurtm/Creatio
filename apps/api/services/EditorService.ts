@@ -1,5 +1,5 @@
 import { gamePathGenerator } from "#api/helpers/query.ts";
-import type { EditorState } from "#types/domain/editor/index.ts";
+import type { EditorState } from "@projeto/types";
 import FileService from "./FileService";
 import { validateGameOwnership } from "./GameService";
 
@@ -13,7 +13,7 @@ interface SaveStateParams extends BasicObjectData {
 	state: EditorState;
 }
 
-interface GetStateParams extends BasicObjectData {}
+type GetStateParams = BasicObjectData
 
 async function saveState({ id, version, state, accessToken }: SaveStateParams) {
 	await validateGameOwnership(id, accessToken);

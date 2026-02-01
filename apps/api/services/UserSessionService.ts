@@ -11,7 +11,7 @@ import {
 	type BackendUserAuth,
 	type DeviceData,
 	mapUAResultToDeviceData,
-} from "#types/domain/index.ts";
+} from "@projeto/types";
 import { createClientSession } from "./ClientSessionService.ts";
 
 async function createUserSession(userId: number, deviceRaw: IResult) {

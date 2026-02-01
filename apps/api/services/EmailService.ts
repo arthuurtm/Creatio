@@ -3,10 +3,12 @@ import path from "node:path";
 import { CodeChallengeMethod } from "google-auth-library";
 import { google } from "googleapis";
 import nodemailer from "nodemailer";
-import open from "open";
 import log from "../helpers/console.ts";
+import { fileURLToPath } from "node:url";
 
-const API_ROOT = path.join(process.cwd(), "api");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const API_ROOT = path.resolve(__dirname, "..");
 const API_CONFIG = path.join(API_ROOT, "config");
 const API_TEMPLATES = path.join(API_ROOT, "templates");
 const API_MAIL_CREDENTIAL = path.join(API_CONFIG, "credentials.json");

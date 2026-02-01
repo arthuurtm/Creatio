@@ -5,7 +5,7 @@ import type {
 	WebSocket,
 	WebSocketMessage,
 	WebSocketServer,
-} from "#types/shared/websocket.ts";
+} from "@projeto/types";
 
 type RouteHandler<T = any> = (context: RouteContext<T>) => Promise<any>;
 const routes: Record<string, RouteHandler | null> = {

@@ -10,9 +10,6 @@
         "type-check": "vue-tsc --build --force",
         "lint": "eslint . --fix"
     },
-    "imports": {
-        "#src/*": "./*"
-    },
     "dependencies": {
         "@projeto/types": "workspace:*",
         "@fontsource/cantarell": "^5.2.8",

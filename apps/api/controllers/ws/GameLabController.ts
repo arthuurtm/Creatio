@@ -1,6 +1,6 @@
 import GameEditorService from "#api/services/EditorService.ts";
-import type { EditorState } from "#types/domain/editor/index.ts";
-import type { RouteContext } from "#types/shared/websocket.ts";
+import type { EditorState } from "@projeto/types";
+import type { RouteContext } from "@projeto/types";
 
 export default {
 	async updateJson({ ws, wss, payload }: RouteContext<EditorState>) {

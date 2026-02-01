@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { getAnyGame, setGameOnDatabase } from "#api/services/GameService.ts";
 import { getUserIDFromSessionToken } from "#api/services/UserSessionService.ts";
-import type { EditorState } from "#types/domain/editor/models.ts";
+import type { EditorState } from "@projeto/types";
 
 async function getAnyGameController(
 	req: Request,
