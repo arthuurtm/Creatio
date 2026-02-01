@@ -7,12 +7,12 @@ import {
 	Model,
 } from "sequelize";
 import sequelize from "#api/config/db.ts";
-import type { DeviceData } from "#types/domain/index.ts";
+import type { DeviceData, SessionAttributes, SessionCreationAttributes  } from "@projeto/types";
 import User from "./User.ts";
 
-class Session extends Model<
-	InferAttributes<Session>,
-	InferCreationAttributes<Session>
+export class Session extends Model<
+  SessionAttributes,
+  SessionCreationAttributes
 > {
 	declare id: CreationOptional<number>;
 	declare accessToken: string;

@@ -6,8 +6,9 @@ import {
 	Model,
 } from "sequelize";
 import sequelize from "#api/config/db.ts";
+import { UserAttributes, UserCreationAttributes } from "@projeto/types";
 
-class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
+export class User extends Model<UserAttributes, UserCreationAttributes> {
 	declare id: CreationOptional<number>;
 	declare email: string;
 	declare birthdate: Date;

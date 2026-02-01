@@ -7,10 +7,10 @@ import {
 	Model,
 } from "sequelize";
 import sequelize from "#api/config/db.ts";
-import type { Genres } from "#types/domain/game.ts";
+import type { Genres, GameAttributes, GameCreationAttributes } from "@projeto/types";
 import User from "./User.ts";
 
-class Game extends Model<InferAttributes<Game>, InferCreationAttributes<Game>> {
+export class Game extends Model<GameAttributes, GameCreationAttributes> {
 	declare id: string;
 	declare title: string;
 	declare description: CreationOptional<string | null>;
