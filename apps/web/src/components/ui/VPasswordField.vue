@@ -1,33 +1,32 @@
-<template>
-  <v-text-field v-bind="props" :modelValue="props.modelValue" :type="effectiveInputType"
-    @update:modelValue="updateValue" @emitEvent="reEmit" :append-inner-icon="eyeIcon"
-    @click:append-inner="toggleVisibility" />
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
+import { VTextField } from 'vuetify/components'
 
-// const props = defineProps(baseInputProps)
-// const emits = defineEmits(baseInputEmits)
+defineOptions({
+  extends: VTextField
+})
+
 const isPasswordVisible = ref(false)
 
-const effectiveInputType = computed(() => {
-  return isPasswordVisible.value ? 'text' : 'password'
-})
+const effectiveInputType = computed(() =>
+  isPasswordVisible.value ? 'text' : 'password'
+)
 
-const eyeIcon = computed(() => {
-  return isPasswordVisible.value ? 'visibility_off' : 'visibility'
-})
+const eyeIcon = computed(() =>
+  isPasswordVisible.value ? 'visibility_off' : 'visibility'
+)
 
 function toggleVisibility() {
   isPasswordVisible.value = !isPasswordVisible.value
 }
-
-function updateValue(newValue) {
-  emits('update:modelValue', newValue)
-}
-
-function reEmit(event) {
-  emits('emitEvent', event)
-}
 </script>
+
+<template>
+  <VTextField
+    v-bind="$props"
+    :type="effectiveInputType"
+    :append-inner-icon="eyeIcon"
+    @click:append-inner="toggleVisibility"
+    @update:modelValue="$emit('update:modelValue', $event)"
+  />
+</template>
