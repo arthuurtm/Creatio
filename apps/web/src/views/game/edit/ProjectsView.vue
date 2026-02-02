@@ -58,7 +58,7 @@ import { http } from "@/functions";
 import { showToast } from "@/plugins/toast";
 import { useUserStore } from "@/stores";
 import { useEditorStore } from "@/stores/editor";
-import { Game } from "@projeto/types";
+import type { GameAttributes as Game } from "@projeto/types";
 
 interface SortItem {
   title: string;

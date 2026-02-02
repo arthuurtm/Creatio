@@ -123,7 +123,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { http } from "@/functions"; // Sua função http
-import type { Game, GameState } from "@projeto/types"; // Ajuste para o path dos seus types
+import type { GameAttributes } from "@projeto/types"; // Ajuste para o path dos seus types
 
 const route = useRoute();
 const router = useRouter();
@@ -135,11 +135,11 @@ const error = ref<string | null>(null);
 const tab = ref(null);
 
 // Dados Reativos (Tipagem implícita ou explícita recomendada)
-const game = ref<Game | null>(null);
-const gameState = ref<GameState | null>(null);
+const game = ref<GameAttributes | null>(null);
+const gameState = ref<any>(null);
 
 // Computado: Verifica se existe sessão válida
-const hasSession = computed(() => !!gameState.value && !!gameState.value.id);
+// const hasSession = computed(() => !!gameState.value && !!gameState.value.id);
 
 // Computado: Formata os dados crus do banco para a UI
 const computedStats = computed(() => {

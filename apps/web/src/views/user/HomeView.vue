@@ -79,7 +79,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import ComponentLoadSessions from "@/components/modules/ComponentLoadSessions.vue";
 import { useUserStore } from "@/stores";
-import { Game } from "#types/models/index.ts";
+import type { GameAttributes as Game } from "@projeto/types";
 import { http } from "@/functions";
 
 const userStore = useUserStore();
