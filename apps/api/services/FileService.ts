@@ -1,8 +1,7 @@
 import type { Readable } from "node:stream";
-import { Readable as FReadable } from "node:stream";
-import { StorageManager } from "@slynova/flydrive";
-import { AmazonWebServicesS3Storage } from "@slynova/flydrive-s3";
+import { text } from "node:stream/consumers";
 import { debounce } from "lodash-es";
+import * as Minio from "minio";
 import { env } from "#api/config/env.ts";
 import log from "#api/helpers/console.ts";
 
@@ -14,97 +13,102 @@ interface FileManipulationParams {
 	filepath: string;
 }
 
-/**
- * Opções específicas para a operação no Storage
- */
 interface SaveFunctionOptions {
 	meta?: Record<string, any>;
 }
 
-/**
- * Parâmetros de entrada para a função de salvamento
- */
 interface SaveParams extends FileManipulationParams {
 	bucket: DiskName;
-	payload: unknown;
+	payload: Buffer | Readable | string | Record<string, any>;
 	opts?: SaveFunctionOptions;
 }
 
-interface GetFileParams extends FileManipulationParams {}
+type GetFileParams = FileManipulationParams;
 type GetFilesReturns =
-	| { type: "stream"; file: FReadable }
+	| { type: "stream"; file: Readable }
 	| { type: "url"; file: string };
 
-function initServer(): StorageManager {
+async function main() {
 	try {
-		const srv = new StorageManager({
-			default: "public",
-			disks: {
-				public: {
-					driver: "s3",
-					config: {
-						key: env.MINIO_USER,
-						secret: env.MINIO_PASSWORD,
-						endpoint: env.MINIO_ENDPOINT,
-						bucket: "public",
-						region: "us-east-1",
-						s3ForcePathStyle: true,
-					},
-				},
-				private: {
-					driver: "s3",
-					config: {
-						key: env.MINIO_USER,
-						secret: env.MINIO_PASSWORD,
-						endpoint: env.MINIO_ENDPOINT,
-						bucket: "private",
-						region: "us-east-1",
-						s3ForcePathStyle: true,
-					},
-				},
-			},
+		const minioClient = new Minio.Client({
+			endPoint: env.MINIO_ENDPOINT,
+			port: env.MINIO_PORT,
+			useSSL: process.env.NODE_ENV === "production",
+			accessKey: env.MINIO_USER,
+			secretKey: env.MINIO_PASSWORD,
 		});
-		log.success("Servidor de arquivos criado/verificado com sucesso!");
-		return srv;
+		const disks: DiskName[] = ["private", "public"];
+		for (const disk of disks) {
+			if (!(await minioClient.bucketExists(disk))) {
+				await minioClient.makeBucket(disk, "us-east-1");
+				if (disk === "public") {
+					const policy = {
+						Version: "2012-10-17",
+						Statement: [
+							{
+								Effect: "Allow",
+								Principal: "*",
+								Action: ["s3:GetObject"],
+								Resource: [`arn:aws:s3:::${disk}/*`],
+							},
+						],
+					};
+					await minioClient.setBucketPolicy(disk, JSON.stringify(policy));
+				}
+				log.success(`Bucket ${disk} criado com sucesso!`);
+			} else {
+				log.info(`Bucket ${disk} já existe, pulando criação.`);
+			}
+		}
+		log.success("Storage inicializado com sucesso!");
+		return minioClient;
 	} catch (err) {
-		log.error("Ocorreu um erro no servidor de arquivos: ", err);
+		log.error("Erro ao inicializar o storage:", err);
 		throw err;
 	}
 }
 
-const storage = initServer();
-storage.registerDriver("s3", AmazonWebServicesS3Storage);
+const storage = await main();
 
-export function getDisk(name: DiskName) {
-	return storage.disk(name);
+async function getDisk(name: DiskName) {
+	try {
+		const disk = storage.bucketExists(name);
+		return disk;
+	} catch (err) {
+		log.error(`Erro ao acessar o disco ${name}:`, err);
+		return null;
+	}
 }
 
-const _debouncedSave = debounce(async (disk, filepath, finalData) => {
-	try {
-		await disk.put(filepath, finalData);
-		log.success(`Arquivo salvo: ${filepath}`);
-	} catch (err) {
-		log.error(`Erro ao salvar ${filepath}:`, err);
-	}
-}, 1000);
+const _debouncedSave = debounce(
+	async (bucket: DiskName, filepath: string, payload: any) => {
+		try {
+			await storage.putObject(bucket, filepath, payload);
+			log.success(`Arquivo salvo: ${filepath}`);
+		} catch (err) {
+			log.error(`Erro ao salvar ${filepath}:`, err);
+		}
+	},
+	1000,
+);
 
 const write = {
 	/**
 	 * Executa o salvamento de um arquivo no storage selecionado.
-	 * * @param params - Objeto contendo key, payload e opções de bucket/nome.
-	 * @returns Promise com o resultado da operação do Flydrive.
 	 */
 	queueSave: async ({ bucket, filepath, payload }: SaveParams) => {
-		const disk = getDisk(bucket);
-
-		const finalData =
+		let data: Buffer | Readable | string;
+		if (!(await getDisk(bucket))) throw new Error("Parâmetros inválidos");
+		if (
 			typeof payload === "object" &&
 			!Buffer.isBuffer(payload) &&
-			!(payload instanceof FReadable)
-				? JSON.stringify(payload)
-				: payload;
-
-		return _debouncedSave(disk, filepath, finalData);
+			!(payload as any).pipe
+		) {
+			data = JSON.stringify(payload);
+		} else {
+			data = payload as Buffer | Readable | string;
+		}
+		return _debouncedSave(bucket, filepath, data);
 	},
 };
 
@@ -113,25 +117,31 @@ const read = {
 		bucket = "public",
 		filepath,
 	}: GetFileParams): Promise<GetFilesReturns> => {
-		const disk = getDisk(bucket);
+		const disk = await getDisk(bucket);
+		if (!disk)
+			throw new Error(
+				"Não foi possível obter o arquivo: Erro interno no servidor",
+			);
 		if (bucket === "public") {
-			const stream = disk.getStream(filepath) as FReadable;
+			const stream = await storage.getObject(bucket, filepath);
 			if (!stream) throw new Error("Arquivo não encontrado no servidor");
 			return { type: "stream", file: stream };
 		} else {
-			const { signedUrl: url } = await disk.getSignedUrl(filepath, {
-				expiry: 3600,
-			});
+			const url = await storage.presignedGetObject(bucket, filepath, 60 * 60);
 			if (!url) throw new Error("Arquivo não encontrado no servidor");
 			return { type: "url", file: url };
 		}
 	},
 
 	readJson: async ({ bucket = "public", filepath }: GetFileParams) => {
-		const disk = getDisk(bucket);
-		const content = await disk.get(filepath, "utf-8");
+		const disk = await getDisk(bucket);
+		if (!disk)
+			throw new Error(
+				"Não foi possível recuperar o arquivo: Erro interno no servidor",
+			);
+		const content = await storage.getObject(bucket, filepath);
 		if (!content) throw new Error("Arquivo não encontrado no servidor");
-		return JSON.parse(content.content);
+		return JSON.parse(await text(content));
 	},
 };
 
