@@ -22,7 +22,8 @@ coverage/
 **/*.env
 !.env.example
 **/*credentials*.json
-components.d.ts
+**/*components.d.ts
+**/*auto-imports.d.ts
 
 npm-debug.log*
 yarn-debug.log*
