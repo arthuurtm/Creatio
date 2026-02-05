@@ -1,7 +1,7 @@
+import type { EditorState } from "@projeto/types";
 import type { NextFunction, Request, Response } from "express";
 import { getAnyGame, setGameOnDatabase } from "#api/services/GameService.ts";
 import { getUserIDFromSessionToken } from "#api/services/UserSessionService.ts";
-import type { EditorState } from "@projeto/types";
 
 async function getAnyGameController(
 	req: Request,
@@ -9,7 +9,7 @@ async function getAnyGameController(
 	next: NextFunction,
 ) {
 	try {
-		const { filters } = req.query;
+		const filters = req.query;
 		res.json(await getAnyGame(filters));
 	} catch (err) {
 		next(err);
