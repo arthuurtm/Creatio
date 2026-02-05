@@ -28,15 +28,6 @@
             </v-col>
 
             <v-col cols="12" md="9" lg="8" class="text-white pl-md-8">
-              <div class="d-flex align-center mb-2">
-                <v-chip color="secondary" variant="flat" size="small" class="mr-2 font-weight-bold">
-                  {{ game?.genre || "Gênero Desconhecido" }}
-                </v-chip>
-                <v-chip variant="outlined" size="small" class="mr-2 border-opacity-50 text-white">
-                  v{{ game?.version || "1.0" }}
-                </v-chip>
-              </div>
-
               <h1 class="text-h3 text-md-h1 font-weight-black text-uppercase game-title-gradient">
                 {{ game?.title }}
               </h1>
@@ -91,17 +82,74 @@
               <v-tabs v-model="tab" bg-color="transparent" color="primary">
                 <v-tab value="about">Sobre</v-tab>
                 <v-tab value="media">Galeria</v-tab>
-                <v-tab value="reqs">Requisitos</v-tab>
               </v-tabs>
 
               <v-window v-model="tab" class="mt-4">
                 <v-window-item value="about">
-                  <div class="text-body-1 text-grey-lighten-1" style="white-space: pre-line">
-                    {{ game?.description }}
-                    <br /><br />
-                    <strong>Data de Lançamento:</strong>
-                    {{ formatDate(game?.createdAt) }}<br />
-                    <strong>ID da Versão:</strong> {{ game?.version }}
+                  <div class="mt-6 d-flex flex-column ga-8">
+
+                    <!-- DESCRIÇÃO -->
+                    <div>
+                      <div class="text-caption text-high-emphasis mb-2">
+                        Descrição
+                      </div>
+
+                      <div
+                        class="text-body-1"
+                        style="white-space: pre-line; line-height: 1.7"
+                      >
+                        {{ game?.description || "Nenhuma descrição longa disponível." }}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class="text-caption text-high-emphasis mb-4">
+                        Dados do jogo
+                      </div>
+
+                      <v-row dense>
+                        <v-col cols="12" sm="6" md="4">
+                          <div class="text-caption text-medium-emphasis">Gênero</div>
+                          <v-chip
+                            color="secondary"
+                            variant="flat"
+                            size="small"
+                            class="mt-1 font-weight-bold"
+                          >
+                            {{ game?.genre || "Desconhecido" }}
+                          </v-chip>
+                        </v-col>
+
+                        <v-col cols="12" sm="6" md="4">
+                          <div class="text-caption text-medium-emphasis">Versão</div>
+                          <div class="text-body-2 mt-1">
+                            v{{ game?.version || "1.0" }}
+                          </div>
+                        </v-col>
+
+                        <v-col cols="12" sm="6" md="4">
+                          <div class="text-caption text-medium-emphasis">Criado em</div>
+                          <div class="text-body-2 mt-1">
+                            {{ formatDate(game?.createdAt) }}
+                          </div>
+                        </v-col>
+
+                        <v-col cols="12" sm="6" md="4">
+                          <div class="text-caption text-medium-emphasis">Atualizado em</div>
+                          <div class="text-body-2 mt-1">
+                            {{ formatDate(game?.updatedAt) }}
+                          </div>
+                        </v-col>
+
+                        <v-col cols="12" md="8">
+                          <div class="text-caption text-medium-emphasis">ID do jogo</div>
+                          <div class="text-body-2 mt-1 text-truncate">
+                            {{ game?.id }}
+                          </div>
+                        </v-col>
+                      </v-row>
+                    </div>
+
                   </div>
                 </v-window-item>
 
@@ -122,26 +170,21 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { http } from "@/functions"; // Sua função http
-import type { GameAttributes } from "@projeto/types"; // Ajuste para o path dos seus types
+import { http } from "@/functions";
+import type { GameAttributes } from "@projeto/types";
 
 const route = useRoute();
 const router = useRouter();
 
-// Estados de UI
 const loading = ref(true);
 const btnLoading = ref(false);
 const error = ref<string | null>(null);
 const tab = ref(null);
 
-// Dados Reativos (Tipagem implícita ou explícita recomendada)
 const game = ref<GameAttributes | null>(null);
 const gameState = ref<any>(null);
+const hasSession = computed(() => !!gameState.value && !!gameState.value.id);
 
-// Computado: Verifica se existe sessão válida
-// const hasSession = computed(() => !!gameState.value && !!gameState.value.id);
-
-// Computado: Formata os dados crus do banco para a UI
 const computedStats = computed(() => {
   if (!gameState.value)
     return { percent: 0, level: 1, timePlayed: "0h", location: "-" };
@@ -170,30 +213,25 @@ onMounted(async () => {
   }
 
   try {
-    // 1. Buscar Detalhes do Jogo
     const gameRes = await http.get({
       type: "database",
-      route: "games",
-      querys: { id: gameId }, // Ajuste conforme sua API (pode ser params direto na rota)
+      route: "getGames",
+      querys: { id: gameId },
     });
 
-    // Tratativa se retornar array ou objeto
     const gameData = Array.isArray(gameRes) ? gameRes[0] : gameRes;
 
     if (!gameData) throw new Error("Jogo não encontrado");
     game.value = gameData;
 
-    // 2. Buscar GameState (Sessão do Usuário)
-    // Normalmente isso retorna 404 ou null se não tiver save. Tratamos com try/catch silencioso ou verificação.
     try {
       const stateRes = await http.get({
         type: "database",
-        route: "gamestate",
+        route: "getGameState",
         querys: { gameId: gameId },
       });
       gameState.value = Array.isArray(stateRes) ? stateRes[0] : stateRes;
     } catch (e) {
-      // Se der erro aqui, assumimos que não tem sessão (Novo Jogo)
       console.log("Nenhuma sessão ativa encontrada.");
       gameState.value = null;
     }
@@ -207,9 +245,6 @@ onMounted(async () => {
 
 function handlePlay() {
   btnLoading.value = true;
-
-  // Aqui você chamaria a lógica para abrir o jogo/engine
-  // Exemplo: router.push(`/play/${game.value.id}`)
 
   console.log(
     `Iniciando jogo ID: ${game.value?.id} | Save: ${gameState.value?.id || "NOVO"}`,
@@ -230,19 +265,16 @@ function formatDate(dateString?: string | Date) {
 .game-wrapper {
   position: relative;
   min-height: 100vh;
-  /* Fallback color + varável de tema para suportar Light/Dark */
   background-color: rgb(var(--v-theme-background));
   overflow-x: hidden;
 }
 
-/* Fundo desfocado para dar profundidade */
 .background-ambience {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 70vh;
-  /* Máscara suave para transição */
   mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
   z-index: 0;
