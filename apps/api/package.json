@@ -14,8 +14,6 @@
     },
     "dependencies": {
         "@projeto/types": "workspace:*",
-        "@slynova/flydrive": "^1.0.3",
-        "@slynova/flydrive-s3": "^1.0.3",
         "bcrypt": "^6.0.0",
         "cookie": "^1.1.1",
         "cookie-parser": "^1.4.7",
