@@ -77,6 +77,9 @@ importers:
       ua-parser-js:
         specifier: ^2.0.7
         version: 2.0.8
+      ulid:
+        specifier: ^3.0.2
+        version: 3.0.2
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
@@ -2315,6 +2318,10 @@ packages:
 
   ufo@1.6.3:
     resolution: {integrity: sha512-yDJTmhydvl5lJzBmy/hyOAA0d+aqCBuwl818haVdYCRrWV84o7YyeVm4QlVHStqNrrJSTb6jKuFAVqAFsr+K3Q==}
+
+  ulid@3.0.2:
+    resolution: {integrity: sha512-yu26mwteFYzBAot7KVMqFGCVpsF6g8wXfJzQUHvu1no3+rRRSFcSV2nKeYvNPLD2J4b08jYBDhHUjeH0ygIl9w==}
+    hasBin: true
 
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
@@ -4578,6 +4585,8 @@ snapshots:
       ua-is-frozen: 0.1.2
 
   ufo@1.6.3: {}
+
+  ulid@3.0.2: {}
 
   undici-types@6.21.0: {}
 
