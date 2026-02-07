@@ -15,7 +15,7 @@ const GameState = sequelize.define(
 			onDelete: "CASCADE",
 		},
 		gameId: {
-			type: DataTypes.STRING,
+			type: DataTypes.INTEGER,
 			allowNull: false,
 			references: { model: Game, key: "id" },
 			onDelete: "CASCADE",

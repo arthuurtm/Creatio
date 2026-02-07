@@ -28,7 +28,7 @@ function setUserDatabaseQuery(
 	}
 }
 
-function gamePathGenerator(gameId: string, version: string) {
+function gamePathGenerator(gameId: number, version: string) {
 	return `games/${gameId}/v${version}`;
 }
 

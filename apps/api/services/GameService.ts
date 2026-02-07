@@ -1,5 +1,6 @@
-import { Game } from "#api/models/index.ts";
 import type { EditorState } from "@projeto/types";
+import { ulid } from "ulid";
+import { Game } from "#api/models/index.ts";
 import GameEditorService from "./EditorService";
 import { getUserIDFromSessionToken } from "./UserSessionService";
 
@@ -39,7 +40,7 @@ async function setGameOnDatabase({
 	version,
 }: GameData) {
 	const game = await Game.create({
-		id: crypto.randomUUID(),
+		gameId: ulid(),
 		title,
 		description,
 		userId,
@@ -63,9 +64,9 @@ async function setGameOnDatabase({
 	return game;
 }
 
-async function validateGameOwnership(gameId: string, accessToken: string) {
+async function validateGameOwnership(id: number, accessToken: string) {
 	const userId = await getUserIDFromSessionToken(accessToken);
-	const game = await Game.findOne({ where: { id: gameId, userId } });
+	const game = await Game.findOne({ where: { id, userId } });
 	if (!game)
 		throw new Error(
 			"Jogo não encontrado ou você não tem permissão para acessá-lo",
