@@ -13,19 +13,18 @@ export type Genres =
 	| "Sandbox";
 
 export interface GameAttributes {
-	id: number;
-	gameId: string;
-	title: string;
-	description: string | null;
-	genre: Genres | null;
-	version: string | null;
-	thumbnails: Record<string, string> | null;
-	userId: number;
-	createdAt: Date;
-	updatedAt: Date;
+  id: string;
+  title: string;
+  description: string | null;
+  genre: Genres | null;
+  version: string | null;
+  thumbnails: Record<string, string> | null;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type GameCreationAttributes = Omit<
-	GameAttributes,
-	"id" | "createdAt" | "updatedAt"
+  GameAttributes,
+  "id" | "createdAt" | "updatedAt"
 >;
