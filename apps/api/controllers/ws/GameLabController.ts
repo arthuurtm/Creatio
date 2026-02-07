@@ -1,17 +1,15 @@
+import type { EditorState, RouteContext } from "@projeto/types";
 import GameEditorService from "#api/services/EditorService.ts";
-import type { EditorState } from "@projeto/types";
-import type { RouteContext } from "@projeto/types";
 
 export default {
 	async updateJson({ ws, wss, payload }: RouteContext<EditorState>) {
 		try {
 			const gameState = payload;
-			const { id, version } = gameState.info || {};
-			if (!id) throw new Error("ID do jogo não fornecido");
+			if (!gameState.info?.id) throw new Error("ID do jogo não fornecido");
 			const accessToken = ws.cookies.accessToken;
 			const objectName = await GameEditorService.saveState({
-				id,
-				version,
+				id: gameState.info.id,
+				version: gameState.info.version,
 				state: gameState,
 				accessToken,
 			});

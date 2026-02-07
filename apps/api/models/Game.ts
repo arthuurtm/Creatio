@@ -1,17 +1,20 @@
+import type {
+	GameAttributes,
+	GameCreationAttributes,
+	Genres,
+} from "@projeto/types";
 import {
 	type CreationOptional,
 	DataTypes,
 	type ForeignKey,
-	type InferAttributes,
-	type InferCreationAttributes,
 	Model,
 } from "sequelize";
 import sequelize from "#api/config/db.ts";
-import type { Genres, GameAttributes, GameCreationAttributes } from "@projeto/types";
 import User from "./User.ts";
 
 export class Game extends Model<GameAttributes, GameCreationAttributes> {
-	declare id: string;
+	declare id: CreationOptional<number>;
+	declare gameId: string;
 	declare title: string;
 	declare description: CreationOptional<string | null>;
 	declare genre: CreationOptional<Genres | null>;
@@ -24,7 +27,8 @@ export class Game extends Model<GameAttributes, GameCreationAttributes> {
 
 Game.init(
 	{
-		id: { type: DataTypes.STRING, primaryKey: true, allowNull: false },
+		id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+		gameId: { type: DataTypes.STRING, primaryKey: true, allowNull: false },
 		title: { type: DataTypes.STRING, allowNull: false },
 		description: { type: DataTypes.TEXT, allowNull: true },
 		genre: { type: DataTypes.STRING, allowNull: true },

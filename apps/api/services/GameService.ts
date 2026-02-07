@@ -1,5 +1,6 @@
-import { Game } from "#api/models/index.ts";
 import type { EditorState } from "@projeto/types";
+import { ulid } from "ulid";
+import { Game } from "#api/models/index.ts";
 import GameEditorService from "./EditorService";
 import { getUserIDFromSessionToken } from "./UserSessionService";
 
@@ -39,7 +40,7 @@ async function setGameOnDatabase({
 	version,
 }: GameData) {
 	const game = await Game.create({
-		id: crypto.randomUUID(),
+		gameId: ulid(),
 		title,
 		description,
 		userId,
@@ -47,13 +48,13 @@ async function setGameOnDatabase({
 
 	if (state) {
 		state.info = state.info || {};
-		state.info.id = game.id;
+		state.info.id = game.gameId;
 		state.info.title = game.title;
 		state.info.description = game.description;
 	}
 
 	await GameEditorService.saveState({
-		id: game.id,
+		id: game.gameId,
 		version,
 		state,
 		accessToken,
