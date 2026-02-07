@@ -1,12 +1,6 @@
-import {
-	type CreationOptional,
-	DataTypes,
-	type InferAttributes,
-	type InferCreationAttributes,
-	Model,
-} from "sequelize";
+import type { UserAttributes, UserCreationAttributes } from "@projeto/types";
+import { type CreationOptional, DataTypes, Model } from "sequelize";
 import sequelize from "#api/config/db.ts";
-import { UserAttributes, UserCreationAttributes } from "@projeto/types";
 
 export class User extends Model<UserAttributes, UserCreationAttributes> {
 	declare id: CreationOptional<number>;

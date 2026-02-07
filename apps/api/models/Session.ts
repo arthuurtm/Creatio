@@ -1,18 +1,20 @@
+import type {
+	DeviceData,
+	SessionAttributes,
+	SessionCreationAttributes,
+} from "@projeto/types";
 import {
 	type CreationOptional,
 	DataTypes,
 	type ForeignKey,
-	type InferAttributes,
-	type InferCreationAttributes,
 	Model,
 } from "sequelize";
 import sequelize from "#api/config/db.ts";
-import type { DeviceData, SessionAttributes, SessionCreationAttributes  } from "@projeto/types";
 import User from "./User.ts";
 
 export class Session extends Model<
-  SessionAttributes,
-  SessionCreationAttributes
+	SessionAttributes,
+	SessionCreationAttributes
 > {
 	declare id: CreationOptional<number>;
 	declare accessToken: string;
