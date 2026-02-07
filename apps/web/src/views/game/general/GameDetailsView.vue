@@ -205,7 +205,7 @@ const computedStats = computed(() => {
 });
 
 onMounted(async () => {
-  const gameId = route.params.id as string;
+  const gameId = route.params.id;
   if (!gameId) {
     error.value = "ID do jogo não fornecido.";
     loading.value = false;
@@ -228,7 +228,7 @@ onMounted(async () => {
       const stateRes = await http.get({
         type: "database",
         route: "getGameState",
-        querys: { gameId: gameId },
+        querys: { id: gameId },
       });
       gameState.value = Array.isArray(stateRes) ? stateRes[0] : stateRes;
     } catch (e) {

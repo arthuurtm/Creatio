@@ -125,7 +125,7 @@ async function fetchMyCreations() {
       await http.get({
         type: "database",
         route: "getGames",
-        querys: { filters: { userId: userStore.getId } },
+        querys: { userId: userStore.getId },
       }),
     );
   } catch (error) {

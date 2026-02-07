@@ -132,7 +132,7 @@ onMounted(async () => {
     const libraryRes = await http.get({
       type: "database",
       route: "getGames",
-      querys: { filters: { userId: userStore.getId } },
+      querys: { userId: userStore.getId },
     });
 
     // 2. Buscar Histórico Recente
