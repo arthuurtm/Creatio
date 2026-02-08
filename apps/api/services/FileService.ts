@@ -83,7 +83,19 @@ async function getDisk(name: DiskName) {
 const _debouncedSave = debounce(
 	async (bucket: DiskName, filepath: string, payload: any) => {
 		try {
-			await storage.putObject(bucket, filepath, payload);
+			let data: Buffer;
+			if (
+				typeof payload === "object" &&
+				!Buffer.isBuffer(payload) &&
+				!(payload as any).pipe
+			) {
+				data = Buffer.from(JSON.stringify(payload));
+			} else if (typeof payload === "string") {
+				data = Buffer.from(payload);
+			} else {
+				data = payload as Buffer;
+			}
+			await storage.putObject(bucket, filepath, data, data.length);
 			log.success(`Arquivo salvo: ${filepath}`);
 		} catch (err) {
 			log.error(`Erro ao salvar ${filepath}:`, err);
@@ -97,18 +109,8 @@ const write = {
 	 * Executa o salvamento de um arquivo no storage selecionado.
 	 */
 	queueSave: async ({ bucket, filepath, payload }: SaveParams) => {
-		let data: Buffer | Readable | string;
 		if (!(await getDisk(bucket))) throw new Error("Parâmetros inválidos");
-		if (
-			typeof payload === "object" &&
-			!Buffer.isBuffer(payload) &&
-			!(payload as any).pipe
-		) {
-			data = JSON.stringify(payload);
-		} else {
-			data = payload as Buffer | Readable | string;
-		}
-		return _debouncedSave(bucket, filepath, data);
+		return _debouncedSave(bucket, filepath, payload);
 	},
 };
 
