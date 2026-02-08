@@ -24,6 +24,7 @@ function onConnect(connection: Connection) {
       id: crypto.randomUUID(),
       source: connection.source!,
       target: connection.target!,
+      markerEnd: 'arrowclosed',
     },
   ]
 }
@@ -51,4 +52,18 @@ function onConnect(connection: Connection) {
   height: 100%;
   z-index: 5;
 }
+</style>
+
+<style>
+/* espessura da linha */
+.vue-flow__edge-path {
+  stroke-width: 3px;
+}
+
+/* tamanho da seta */
+.vue-flow__edge-marker {
+  transform: scale(1.6);
+  transform-origin: center;
+}
+
 </style>

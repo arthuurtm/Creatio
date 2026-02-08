@@ -12,6 +12,8 @@ export interface GameConnection {
 	id: string;
 	source: string;
 	target: string;
+	markerEnd?: string;
+	type?: string;
 }
 export interface GameInfo {
 	id: number | null;
