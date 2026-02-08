@@ -25,32 +25,24 @@ async function getFileController(
 }
 
 async function uploadFiles(req: Request, res: Response, next: NextFunction) {
-	try {
-		const { gameId, version } = req.body;
-		if (!gameId || !version) throw new Error("gameId ou version faltando");
-
-		const files = req.files as Express.Multer.File[];
-		if (!files || !Array.isArray(files) || files.length === 0) {
-			throw new Error("Nenhum arquivo enviado");
-		}
-
-		const pathName = `${gamePathGenerator(gameId, version)}/assets`;
-
-		const uploadPromises = files.map(async (file) => {
-			const ext = getFileExtension(file.originalname) || "bin";
-			return await FileService.write.queueSave({
-				bucket: "private",
-				filepath: `${pathName}/${Date.now()}_${file.originalname || "asset"}.${ext}`,
-				payload: file.buffer,
-			});
-		});
-
-		const urls = await Promise.all(uploadPromises);
-
-		res.json({ urls });
-	} catch (err) {
-		next(err);
-	}
+	// try {
+	// 	const files = req.files as Express.Multer.File[];
+	// 	if (!files || !Array.isArray(files) || files.length === 0) {
+	// 		throw new Error("Nenhum arquivo enviado");
+	// 	}
+	// 	const uploadPromises = files.map(async (file) => {
+	// 		const ext = getFileExtension(file.originalname) || "bin";
+	// 		return await FileService.write.queueSave({
+	// 			bucket: "private",
+	// 			filepath: `${pathName}/${Date.now()}_${file.originalname || "asset"}.${ext}`,
+	// 			payload: file.buffer,
+	// 		});
+	// 	});
+	// 	const urls = await Promise.all(uploadPromises);
+	// 	res.json({ urls });
+	// } catch (err) {
+	// 	next(err);
+	// }
 }
 
 export { getFileController, uploadFiles };

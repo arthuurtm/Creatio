@@ -12,6 +12,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.get("/public/:filename", getFileController);
 router.get("/public/{0,}", getFileController);
 router.get("/public", getFileController);
-router.post("/upload", isAuthenticated, upload.array("files"), uploadFiles);
+// router.post("/upload", isAuthenticated, upload.array("files"), uploadFiles);
 
 export default router;
