@@ -4,7 +4,7 @@ import FileService from "./FileService";
 import { validateGameOwnership } from "./GameService";
 
 interface BasicObjectData {
-	id: string;
+	id: number;
 	version: string;
 	accessToken: string;
 }
@@ -17,7 +17,7 @@ type GetStateParams = BasicObjectData;
 
 async function saveState({ id, version, state, accessToken }: SaveStateParams) {
 	await validateGameOwnership(id, accessToken);
-	const filepath = `${gamePathGenerator(id, version)}/editor.json`;
+	const filepath = `${gamePathGenerator(String(id), version)}/editor.json`;
 	return await FileService.write.queueSave({
 		bucket: "private",
 		filepath,
@@ -30,7 +30,7 @@ async function saveState({ id, version, state, accessToken }: SaveStateParams) {
  */
 async function getState({ id, version, accessToken }: GetStateParams) {
 	await validateGameOwnership(id, accessToken);
-	const filepath = `${gamePathGenerator(id, version)}/editor.json`;
+	const filepath = `${gamePathGenerator(String(id), version)}/editor.json`;
 	return await FileService.read.readJson({
 		bucket: "private",
 		filepath,

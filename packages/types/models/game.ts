@@ -14,7 +14,6 @@ export type Genres =
 
 export interface GameAttributes {
 	id: number;
-	gameId: string;
 	title: string;
 	description: string | null;
 	genre: Genres | null;

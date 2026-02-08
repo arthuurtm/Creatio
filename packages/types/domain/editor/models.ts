@@ -14,7 +14,7 @@ export interface GameConnection {
 	target: string;
 }
 export interface GameInfo {
-	id: string | null;
+	id: number | null;
 	title: string;
 	version: string;
 	description: string | null;

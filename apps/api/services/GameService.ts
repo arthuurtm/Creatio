@@ -40,7 +40,6 @@ async function setGameOnDatabase({
 	version,
 }: GameData) {
 	const game = await Game.create({
-		gameId: ulid(),
 		title,
 		description,
 		userId,
@@ -48,13 +47,13 @@ async function setGameOnDatabase({
 
 	if (state) {
 		state.info = state.info || {};
-		state.info.id = game.gameId;
+		state.info.id = game.id;
 		state.info.title = game.title;
 		state.info.description = game.description;
 	}
 
 	await GameEditorService.saveState({
-		id: game.gameId,
+		id: game.id,
 		version,
 		state,
 		accessToken,
@@ -64,9 +63,9 @@ async function setGameOnDatabase({
 	return game;
 }
 
-async function validateGameOwnership(gameId: string, accessToken: string) {
+async function validateGameOwnership(id: number, accessToken: string) {
 	const userId = await getUserIDFromSessionToken(accessToken);
-	const game = await Game.findOne({ where: { id: gameId, userId } });
+	const game = await Game.findOne({ where: { id, userId } });
 	if (!game)
 		throw new Error(
 			"Jogo não encontrado ou você não tem permissão para acessá-lo",
