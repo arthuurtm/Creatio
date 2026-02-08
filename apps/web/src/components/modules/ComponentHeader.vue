@@ -1,5 +1,5 @@
 <template>
-  <transition name="slide-top">
+  <v-slide-y-transition leave-absolute>
     <v-app-bar v-if="!hidden" class="px-4" elevation="0" style="border-radius: 0 !important" scroll-behavior="hide">
       <v-container class="d-flex align-center pa-0" style="max-width: 1280px">
         <div class="d-flex align-center gap-4">
@@ -23,7 +23,7 @@
         </div>
       </v-container>
     </v-app-bar>
-  </transition>
+  </v-slide-y-transition>
 </template>
 
 <script setup lang="ts">

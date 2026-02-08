@@ -138,22 +138,22 @@
 .slide-top-enter-active,
 .slide-top-leave-active {
   transition:
-    transform 0.3s ease,
-    opacity 0.2s ease;
+    transform 0.1s ease,
+    // opacity 0.2s ease;
 }
 .slide-top-enter-from {
   transform: translateY(-100%) scaleY(0.6);
-  opacity: 0;
+  // opacity: 0;
 }
 .slide-top-enter-to {
   transform: translateY(0) scale(1);
-  opacity: 1;
+  // opacity: 1;
 }
 .slide-top-leave-from {
   transform: translateY(0) scale(1);
-  opacity: 1;
+  // opacity: 1;
 }
 .slide-top-leave-to {
   transform: translateY(-40%) scaleY(0.6);
-  opacity: 0;
+  // opacity: 0;
 }

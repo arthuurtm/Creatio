@@ -1,10 +1,10 @@
-import { unref } from "vue";
 import type { EditorState } from "@projeto/types";
+import { unref } from "vue";
 
 /**
  * Helper para obter o timestamp.
  */
-const getTimestamp = (obj: EditorState) => obj.info?.updatedAt || 0;
+const getTimestamp = (obj: EditorState) => obj.info?.updatedAt || Date.now();
 
 export function useSyncProtection(localState: any) {
 	/**
