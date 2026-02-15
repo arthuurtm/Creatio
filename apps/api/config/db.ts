@@ -40,7 +40,7 @@ async function initialize() {
 		return sequelizeInstance;
 	} catch (error) {
 		log.error("Não foi possível conectar ao banco de dados: ", error);
-		process.exit(1);
+		throw error;
 	}
 }
 
