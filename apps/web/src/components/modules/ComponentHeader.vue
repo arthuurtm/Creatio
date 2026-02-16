@@ -1,6 +1,13 @@
 <template>
   <v-slide-y-transition leave-absolute>
-    <v-app-bar v-if="!hidden" class="px-4" elevation="0" style="border-radius: 0 !important" scroll-behavior="hide">
+    <v-app-bar
+      v-if="!hidden"
+      class="px-4"
+      elevation="0"
+      style="border-radius: 0 !important; border-bottom: 1px solid rgba(0,0,0,0.05);"
+      color="background"
+      scroll-behavior="elevate"
+    >
       <v-container class="d-flex align-center pa-0" style="max-width: 1280px">
         <div class="d-flex align-center gap-4">
           <logo style="cursor: pointer; height: 38px" @click="router.push({ name: 'Home' })" />
@@ -30,7 +37,6 @@
 import router from "@/router";
 import Logo from "@/components/ui/Logo.vue";
 
-// Props
 const props = defineProps<{
   hidden?: Boolean;
   title?: String;
