@@ -7,25 +7,26 @@
     <v-sheet max-width="900" width="100%" rounded="xl" class="main-container d-grid">
       <!-- left -->
       <div class="left d-flex flex-column ga-5">
-        <div class="logo">
+        <div class="logo" style="flex: 0 1; justify-content: start; align-items: start; display: flex;">
           <slot name="logo">
-            <CLogo height="64" />
+            <Logo />
           </slot>
         </div>
 
-        <div class="text-h4 font-weight-medium">
-          <slot name="title">{{ title }}</slot>
-        </div>
+        <v-container>
+          <div class="text-h4 font-weight-medium">
+            <slot name="title">{{ title }}</slot>
+          </div>
 
-        <div class="text-body-1 text-medium-emphasis">
-          <slot name="subTitle">{{ subTitle }}</slot>
-        </div>
+          <div class="text-body-1 text-medium-emphasis">
+            <slot name="subTitle">{{ subTitle }}</slot>
+          </div>
+        </v-container>
 
         <div class="text-body-2">
           <slot name="formInfo" />
         </div>
       </div>
-
       <!-- right -->
       <div class="right d-flex flex-column overflow-y-auto">
         <slot />
@@ -35,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+import Logo from '@/components/ui/Logo.vue';
 defineProps({
   title: String,
   subTitle: String,

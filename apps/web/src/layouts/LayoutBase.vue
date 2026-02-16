@@ -5,6 +5,7 @@ import { useUserStore } from "@/stores";
 import { http } from "@/functions/index.ts";
 import ComponentHeader from "@/components/modules/ComponentHeader.vue";
 import CButton from "@/components/ui/CButton.vue";
+import DialogSettings from "@/views/global/DialogSettings.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -35,7 +36,35 @@ watchEffect(() => {
           <v-list density="comfortable" min-width="200" class="pa-2 elevation-4">
             <v-list-item title="Meu perfil" prepend-icon="account_circle"
               @click="router.push({ name: 'UserProfile', params: { username: user.username } })" />
-            <v-list-item title="Configurações" prepend-icon="settings" />
+            <v-dialog
+              fullscreen
+            >
+              <template #activator="{ props }">
+                <v-list-item
+                  v-bind="props"
+                  title="Configurações"
+                  prepend-icon="settings"
+                />
+              </template>
+
+              <template #default="{ isActive }">
+                <v-card rounded="false">
+                  <v-toolbar title="Configurações" class="rounded-0" rounded="false" density="compact">
+                    <v-spacer />
+                    <v-btn icon="close" variant="text" @click="isActive.value = false"></v-btn>
+                  </v-toolbar>
+
+                  <v-card-text>
+                    <dialog-settings />
+                  </v-card-text>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn text="Fechar" @click="isActive.value = false"></v-btn>
+                  </v-card-actions>
+                </v-card>
+              </template>
+            </v-dialog>
             <v-divider class="my-2" />
             <v-list-item title="Sair" prepend-icon="logout" @click="dialog = true" />
           </v-list>
@@ -67,7 +96,6 @@ watchEffect(() => {
         </v-card-actions>
       </v-card>
     </v-dialog>
-
   </v-app>
 </template>
 
