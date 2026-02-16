@@ -1,19 +1,24 @@
 import mysql from "mysql2/promise";
 import { Sequelize } from "sequelize";
 import log from "#api/helpers/console.ts";
+import { env } from "./env.ts";
 
 async function initialize() {
 	try {
 		// garantir que o banco de dados exista
-		const connection = await mysql.createConnection({
-			host: process.env.DB_HOST || "localhost",
-			user: process.env.DB_USER,
-			password: process.env.DB_PASSWORD,
+		const connection = mysql.createPool({
+			host: env.DB_HOST,
+			user: env.DB_USER,
+			password: env.DB_PASSWORD,
+			database: env.DATABASE,
+			waitForConnections: true,
+			connectionLimit: 10,
+			queueLimit: 0,
 		});
 
 		try {
 			await connection.query(
-				`CREATE DATABASE IF NOT EXISTS \`${process.env.DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;`,
+				`CREATE DATABASE IF NOT EXISTS \`${env.DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;`,
 			);
 			log.success("Banco de dados verificado/criado com sucesso!");
 		} catch (err) {
@@ -24,11 +29,11 @@ async function initialize() {
 
 		// criar e autenticar a instância do Sequelize
 		const sequelizeInstance = new Sequelize(
-			process.env.DATABASE ?? "",
-			process.env.DB_USER ?? "",
-			process.env.DB_PASSWORD ?? "",
+			env.DATABASE ?? "",
+			env.DB_USER ?? "",
+			env.DB_PASSWORD ?? "",
 			{
-				host: process.env.DB_HOST || "localhost",
+				host: env.DB_HOST || "localhost",
 				dialect: "mysql",
 			},
 		);
