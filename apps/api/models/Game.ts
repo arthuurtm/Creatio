@@ -18,7 +18,7 @@ export class Game extends Model<GameAttributes, GameCreationAttributes> {
 	declare description: CreationOptional<string | null>;
 	declare genre: CreationOptional<Genres | null>;
 	declare version: CreationOptional<string | null>;
-	declare thumbnails: CreationOptional<Record<string, string> | null>;
+	declare thumbnails: CreationOptional<string[] | null>;
 	declare userId: ForeignKey<User["id"]>;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
@@ -31,7 +31,7 @@ Game.init(
 		description: { type: DataTypes.TEXT, allowNull: true },
 		genre: { type: DataTypes.STRING, allowNull: true },
 		version: { type: DataTypes.STRING, allowNull: true },
-		thumbnails: { type: DataTypes.JSON, allowNull: true },
+		thumbnails: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
 		userId: {
 			type: DataTypes.INTEGER,
 			allowNull: false,

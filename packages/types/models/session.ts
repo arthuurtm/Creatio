@@ -1,4 +1,4 @@
-import { DeviceData } from "../domain";
+import type { DeviceData } from "../domain";
 
 export interface SessionAttributes {
 	id: number;
@@ -10,4 +10,7 @@ export interface SessionAttributes {
 	updatedAt: Date;
 }
 
-export type SessionCreationAttributes = Omit<SessionAttributes, 'id' | 'createdAt' | 'updatedAt'>
+export type SessionCreationAttributes = Omit<
+	SessionAttributes,
+	"id" | "createdAt" | "updatedAt"
+>;

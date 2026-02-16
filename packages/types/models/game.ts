@@ -18,7 +18,7 @@ export interface GameAttributes {
 	description: string | null;
 	genre: Genres | null;
 	version: string | null;
-	thumbnails: Record<string, string> | null;
+	thumbnails: string[] | null;
 	userId: number;
 	createdAt: Date;
 	updatedAt: Date;
