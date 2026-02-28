@@ -1,20 +1,16 @@
+import type { EditorState } from "@projeto/types";
 import { debounce } from "lodash-es";
 import { computed, watch } from "vue";
 import { useSyncProtection } from "@/composables/useSyncProtection.ts";
-import type { EditorState, WebSocketMessage } from "@projeto/types";
 import { http, ws } from "@/functions";
 import { useEditorStore } from "@/stores/editor";
 
 export function editorConnection() {
 	const store = useEditorStore();
-
-	// 1. Computed para observar o estado
 	const base = computed(() => store.$state);
-
 	const { isLocalStateNewer } = useSyncProtection(base);
-	const { data, status, connect, send, disconnect, error, requestStatus } = ws(
-		http.getApiUrl("ws"),
-	);
+	const { data, status, connect, send, disconnect, error, requestStatus } =
+		ws<EditorState>(http.getApiUrl("ws"));
 
 	async function start() {
 		await connect();
@@ -29,19 +25,17 @@ export function editorConnection() {
 		disconnect();
 	}
 
-	// Recebe do servidor
-	watch(data, (msg: WebSocketMessage<EditorState>) => {
+	// observa as respostas do servidor
+	watch(data, (msg) => {
 		if (!msg || !msg.event) return;
-
 		if (msg.event === "game:lab:get:json:success") {
-			// Passa o dado recebido para verificação
 			if (msg.payload && !isLocalStateNewer(msg.payload)) {
 				store.setState(msg.payload);
 			}
 		}
 	});
 
-	// Envia quando algo muda
+	// atualiza em tempo real
 	watch(
 		base,
 		(newState) => {
