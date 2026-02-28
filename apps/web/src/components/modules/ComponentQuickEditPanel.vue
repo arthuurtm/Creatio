@@ -1,100 +1,103 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch } from "vue";
 
 defineOptions({
-  name: 'RecursiveEditor',
-})
+	name: "RecursiveEditor",
+});
 
 const props = defineProps({
-  label: {
-    type: String,
-    default: '',
-  },
-  depth: {
-    type: Number,
-    default: 0,
-  },
-  startExpanded: {
-    type: Boolean,
-    default: false,
-  },
-})
+	label: {
+		type: String,
+		default: "",
+	},
+	depth: {
+		type: Number,
+		default: 0,
+	},
+	startExpanded: {
+		type: Boolean,
+		default: false,
+	},
+});
 
-const modelValue = defineModel<any>('modelValue', { required: true })
-const isExpanded = ref(props.startExpanded)
-const isArray = computed(() => Array.isArray(modelValue.value))
-const isObject = computed(() =>
-  modelValue.value !== null &&
-  typeof modelValue.value === 'object' &&
-  !isArray.value
-)
-const isBoolean = computed(() => typeof modelValue.value === 'boolean')
+const modelValue = defineModel<any>("modelValue", { required: true });
+const isExpanded = ref(props.startExpanded);
+const isArray = computed(() => Array.isArray(modelValue.value));
+const isObject = computed(
+	() =>
+		modelValue.value !== null &&
+		typeof modelValue.value === "object" &&
+		!isArray.value,
+);
+const isBoolean = computed(() => typeof modelValue.value === "boolean");
 const groupedKeys = computed(() => {
-  if (!isObject.value) return { primitives: [], complex: [] }
+	if (!isObject.value) return { primitives: [], complex: [] };
 
-  const primitives: string[] = []
-  const complex: string[] = []
+	const primitives: string[] = [];
+	const complex: string[] = [];
 
-  const rawObj = modelValue.value as Record<string, any>
+	const rawObj = modelValue.value as Record<string, any>;
 
-  Object.keys(rawObj).forEach((key) => {
-    const val = rawObj[key]
-    if (val !== null && typeof val === 'object') {
-      complex.push(key)
-    } else {
-      primitives.push(key)
-    }
-  })
+	Object.keys(rawObj).forEach((key) => {
+		const val = rawObj[key];
+		if (val !== null && typeof val === "object") {
+			complex.push(key);
+		} else {
+			primitives.push(key);
+		}
+	});
 
-  return { primitives, complex }
-})
+	return { primitives, complex };
+});
 
 function updateObjectKey(key: string, newValue: any) {
-  const newObj = { ...modelValue.value }
-  newObj[key] = newValue
-  modelValue.value = newObj
+	const newObj = { ...modelValue.value };
+	newObj[key] = newValue;
+	modelValue.value = newObj;
 }
 
 function updateArrayItem(index: number, newValue: any) {
-  const newArr = [...modelValue.value]
-  newArr[index] = newValue
-  modelValue.value = newArr
+	const newArr = [...modelValue.value];
+	newArr[index] = newValue;
+	modelValue.value = newArr;
 }
 
 function addArrayItem() {
-  const current = modelValue.value as any[]
-  const newItem = current.length > 0
-    ? (typeof current[0] === 'object' ? {} : "")
-    : ""
+	const current = modelValue.value as any[];
+	const newItem =
+		current.length > 0 ? (typeof current[0] === "object" ? {} : "") : "";
 
-  modelValue.value = [...current, newItem]
+	modelValue.value = [...current, newItem];
 }
 
 function removeArrayItem(index: number) {
-  const newArr = [...modelValue.value]
-  newArr.splice(index, 1)
-  modelValue.value = newArr
+	const newArr = [...modelValue.value];
+	newArr.splice(index, 1);
+	modelValue.value = newArr;
 }
 
 function updatePrimitive(value: string | number) {
-  if (typeof modelValue.value === 'number') {
-    const num = Number(value)
-    if (!isNaN(num)) {
-      modelValue.value = num
-      return
-    }
-  }
-  modelValue.value = value
+	if (typeof modelValue.value === "number") {
+		const num = Number(value);
+		if (!isNaN(num)) {
+			modelValue.value = num;
+			return;
+		}
+	}
+	modelValue.value = value;
 }
 
 const indentStyle = computed(() => ({
-  paddingLeft: `${props.depth * 12}px`,
-  backgroundColor: `rgba(var(--v-theme-surface-variant), ${props.depth * 0.02})`
-}))
+	paddingLeft: `${props.depth * 12}px`,
+	backgroundColor: `rgba(var(--v-theme-surface-variant), ${props.depth * 0.02})`,
+}));
 
-watch(() => props.startExpanded, (newVal) => {
-  isExpanded.value = newVal
-})
+watch(
+	() => props.startExpanded,
+	(newVal) => {
+		isExpanded.value = newVal;
+	},
+);
 </script>
 
 <template>
