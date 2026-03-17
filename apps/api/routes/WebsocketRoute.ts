@@ -1,19 +1,19 @@
-import GameLabController from "#api/controllers/ws/GameLabController.ts";
-import log from "#api/helpers/console.ts";
 import type {
 	RouteContext,
 	WebSocket,
 	WebSocketMessage,
 	WebSocketServer,
 } from "@projeto/types";
+import ProjectLabController from "#api/controllers/ws/ProjectLABController.ts";
+import log from "#api/helpers/console.ts";
 
 type RouteHandler<T = any> = (context: RouteContext<T>) => Promise<any>;
 const routes: Record<string, RouteHandler | null> = {
-	"game:lab:get:json": GameLabController.getJson,
-	"game:lab:update:json": GameLabController.updateJson,
-	"game:lab:upgrade": null,
-	"game:join": null,
-	"game:leave": null,
+	"project:lab:get:json": ProjectLabController.getJson,
+	"project:lab:update:json": ProjectLabController.updateJson,
+	"project:lab:upgrade": null,
+	"project:join": null,
+	"project:leave": null,
 };
 
 const handleConnection = (ws: WebSocket, wss: WebSocketServer): void => {

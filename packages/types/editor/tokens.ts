@@ -13,17 +13,23 @@ export const Keywords = {
 /**
  * Operadores aritméticos, lógicos e de comparação
  * **/
-export const Operators = {
+export const AritmeticOperators = {
 	ADD: "+",
 	SUB: "-",
 	MUL: "*",
 	DIV: "/",
+} as const;
+
+export const ComparisonOperators = {
 	EQ: "===",
 	NEQ: "!==",
 	GT: ">",
 	LT: "<",
 	GTE: ">=",
 	LTE: "<=",
+} as const;
+
+export const LogicalOperators = {
 	AND: "&&",
 	OR: "||",
 	NOT: "!",

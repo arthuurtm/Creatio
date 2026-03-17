@@ -1,11 +1,11 @@
-import type { DeviceData } from "../domain";
+import type { DeviceData } from "../";
 
 export interface SessionAttributes {
 	id: number;
 	accessToken: string;
 	refreshToken: string;
 	deviceData: DeviceData;
-	userId: string;
+	userId: number;
 	createdAt: Date;
 	updatedAt: Date;
 }

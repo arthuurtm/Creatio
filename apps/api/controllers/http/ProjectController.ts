@@ -1,22 +1,25 @@
 import type { EditorState } from "@projeto/types";
 import type { NextFunction, Request, Response } from "express";
-import { getAnyGame, setGameOnDatabase } from "#api/services/GameService.ts";
+import {
+	getAnyProject,
+	setProjectOnDatabase,
+} from "#api/services/ProjectService.ts";
 import { getUserIDFromSessionToken } from "#api/services/UserSessionService.ts";
 
-async function getAnyGameController(
+async function getAnyProjectController(
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ) {
 	try {
 		const filters = req.query;
-		res.json(await getAnyGame(filters));
+		res.json(await getAnyProject(filters));
 	} catch (err) {
 		next(err);
 	}
 }
 
-async function setGameOnDatabaseController(
+async function setProjectOnDatabaseController(
 	req: Request,
 	res: Response,
 	next: NextFunction,
@@ -26,7 +29,7 @@ async function setGameOnDatabaseController(
 		const state: EditorState = req.body.state;
 		const accessToken = req.cookies.accessToken;
 		const userId = await getUserIDFromSessionToken(accessToken);
-		const result = await setGameOnDatabase({
+		const result = await setProjectOnDatabase({
 			title: state.info.title,
 			description: state.info.description,
 			userId,
@@ -40,4 +43,4 @@ async function setGameOnDatabaseController(
 	}
 }
 
-export { getAnyGameController, setGameOnDatabaseController };
+export { getAnyProjectController, setProjectOnDatabaseController };

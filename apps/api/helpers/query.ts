@@ -28,8 +28,8 @@ function setUserDatabaseQuery(
 	}
 }
 
-function gamePathGenerator(id: string, version: string) {
-	return `games/${id}/v${version}`;
+function projectPathGenerator(id: string, version: string) {
+	return `projects/${id}/v${version}`;
 }
 
 function getFileExtension(filename: string) {
@@ -37,4 +37,4 @@ function getFileExtension(filename: string) {
 	return parts.length > 1 ? (parts.pop()?.toLowerCase() ?? "") : "";
 }
 
-export { setUserDatabaseQuery, gamePathGenerator, getFileExtension };
+export { setUserDatabaseQuery, projectPathGenerator, getFileExtension };

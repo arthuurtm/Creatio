@@ -1,7 +1,7 @@
 import type { EditorState } from "@projeto/types";
-import { gamePathGenerator } from "#api/helpers/query.ts";
+import { projectPathGenerator } from "#api/helpers/query.ts";
 import FileService from "./FileService";
-import { validateGameOwnership } from "./GameService";
+import { validateProjectOwnership } from "./ProjectService";
 
 interface BasicObjectData {
 	id: number;
@@ -16,8 +16,8 @@ interface SaveStateParams extends BasicObjectData {
 type GetStateParams = BasicObjectData;
 
 async function saveState({ id, version, state, accessToken }: SaveStateParams) {
-	await validateGameOwnership(id, accessToken);
-	const filepath = `${gamePathGenerator(String(id), version)}/editor.json`;
+	await validateProjectOwnership(id, accessToken);
+	const filepath = `${projectPathGenerator(String(id), version)}/editor.json`;
 	return await FileService.write.queueSave({
 		bucket: "private",
 		filepath,
@@ -29,8 +29,8 @@ async function saveState({ id, version, state, accessToken }: SaveStateParams) {
  * Recupera o estado do editor do storage.
  */
 async function getState({ id, version, accessToken }: GetStateParams) {
-	await validateGameOwnership(id, accessToken);
-	const filepath = `${gamePathGenerator(String(id), version)}/editor.json`;
+	await validateProjectOwnership(id, accessToken);
+	const filepath = `${projectPathGenerator(String(id), version)}/editor.json`;
 	return await FileService.read.readJson({
 		bucket: "private",
 		filepath,

@@ -1,10 +1,9 @@
 import type { EditorState } from "@projeto/types";
-import { ulid } from "ulid";
-import { Game } from "#api/models/index.ts";
-import GameEditorService from "./EditorService";
+import { Project } from "#api/models/index.ts";
+import EditorService from "./EditorService";
 import { getUserIDFromSessionToken } from "./UserSessionService";
 
-interface GameData {
+interface ProjectData {
 	title: string;
 	description?: string | null;
 	userId: number;
@@ -13,7 +12,7 @@ interface GameData {
 	version: string;
 }
 
-async function getAnyGame(filters = {}) {
+async function getAnyProject(filters = {}) {
 	let where = {};
 
 	if (filters) {
@@ -27,19 +26,19 @@ async function getAnyGame(filters = {}) {
 			where = filters;
 		}
 	}
-	const games = await Game.findAll({ where });
-	return games;
+	const projects = await Project.findAll({ where });
+	return projects;
 }
 
-async function setGameOnDatabase({
+async function setProjectOnDatabase({
 	title,
 	description,
 	userId,
 	accessToken,
 	state,
 	version,
-}: GameData) {
-	const game = await Game.create({
+}: ProjectData) {
+	const project = await Project.create({
 		title,
 		description,
 		userId,
@@ -47,30 +46,30 @@ async function setGameOnDatabase({
 
 	if (state) {
 		state.info = state.info || {};
-		state.info.id = game.id;
-		state.info.title = game.title;
-		state.info.description = game.description;
+		state.info.id = project.id;
+		state.info.title = project.title;
+		state.info.description = project.description;
 	}
 
-	await GameEditorService.saveState({
-		id: game.id,
+	await EditorService.saveState({
+		id: project.id,
 		version,
 		state,
 		accessToken,
 	});
 
-	if (!game) throw new Error("Erro ao criar o jogo");
-	return game;
+	if (!project) throw new Error("Erro ao criar o jogo");
+	return project;
 }
 
-async function validateGameOwnership(id: number, accessToken: string) {
+async function validateProjectOwnership(id: number, accessToken: string) {
 	const userId = await getUserIDFromSessionToken(accessToken);
-	const game = await Game.findOne({ where: { id, userId } });
-	if (!game)
+	const project = await Project.findOne({ where: { id, userId } });
+	if (!project)
 		throw new Error(
 			"Jogo não encontrado ou você não tem permissão para acessá-lo",
 		);
-	return game;
+	return project;
 }
 
-export { getAnyGame, setGameOnDatabase, validateGameOwnership };
+export { getAnyProject, setProjectOnDatabase, validateProjectOwnership };
