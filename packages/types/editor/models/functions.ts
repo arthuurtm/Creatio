@@ -1,7 +1,11 @@
-import { AritmeticOperators, ComparisonOperators, LogicalOperators } from "../";
-import type { EditorState } from ".";
+import {
+	AritmeticOperators,
+	ComparisonOperators,
+	LogicalOperators,
+	type SDKNode,
+} from "../";
 
-export default (ctx: EditorState) => ({
+export default (ctx: { variables: SDKNode[]; functions: SDKNode[] }) => ({
 	text: "Funções",
 	icon: "functions",
 	definitions: {

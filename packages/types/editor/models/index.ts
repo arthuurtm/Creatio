@@ -1,25 +1,27 @@
-export type SDKNodeType =
-	| "event" // blocos de início (verde) - ex: ao Iniciar
-	| "statement" // blocos de ação (azul) - ex: atribuir variável, chamar função
-	| "logic" // blocos de controle (laranja)
-	| "loop" // blocos de repetição (roxo)
-	| "expression"; // blocos de valor (cinza)
+export type SDKNodeType = "variables" | "functions" | "logics";
 
-export interface SDKNode {
+export interface NodeBlueprint {
+	type: string;
+	params: Record<string, unknown>;
+	hasScope?: boolean;
+}
+
+export interface SDKNode extends NodeBlueprint {
 	id: string;
 	type: string;
 	category: SDKNodeType;
 	position: { x: number; y: number };
-	data: Record<string, any>;
+	data?: Record<string, any>;
 }
 
 export interface NodeConnection {
 	id: string;
-	sourceNode: string;
+	source: string;
 	sourceHandle?: string;
-	targetNode: string;
+	target: string;
 	targetHandle?: string;
 	type?: "execution" | "data";
+	markerEnd?: string;
 }
 
 // export interface UserVariable {
@@ -46,16 +48,6 @@ export interface FileInfo {
 	updatedAt: Date | number | null;
 }
 
-export interface EditorState {
-	info: FileInfo;
-	variables: any[];
-	functions: any[];
-	logics: any[];
-	nodes: SDKNode[];
-	connections: NodeConnection[];
-}
-
 export { default as functions } from "./functions";
 export { default as logics } from "./logics";
-export { default as nodes } from "./nodes";
 export { default as variables } from "./variables";

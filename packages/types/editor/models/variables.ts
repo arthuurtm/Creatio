@@ -1,6 +1,6 @@
-import type { EditorState } from ".";
+import type { SDKNode } from "../models";
 
-export default (ctx: EditorState) => ({
+export default (ctx: { variables: SDKNode[]; logics: SDKNode[] }) => ({
 	text: "Variáveis",
 	icon: "abc",
 	definitions: {
@@ -50,7 +50,7 @@ export default (ctx: EditorState) => ({
 			execute: (p: any) => ({
 				type: "VARIABLE_ASSIGNMENT",
 				params: {
-					varId: p.name,
+					varId: p.varId,
 					value: p.value,
 				},
 			}),
