@@ -1,8 +1,8 @@
 import { Router } from "express";
 import {
-	getAnyGameController,
-	setGameOnDatabaseController,
-} from "#api/controllers/http/GameController.ts";
+	getAnyProjectController,
+	setProjectOnDatabaseController,
+} from "#api/controllers/http/ProjectController.ts";
 import {
 	getBasicUserDataController,
 	getUserDataController,
@@ -29,15 +29,15 @@ router.get("/getAllUserSessions", isAuthenticated, getAnyUserSessionController);
 router.delete("/logoutAll", isAuthenticated, logoutAllSessionsController);
 router.delete("/logout", isAuthenticated, logoutUserController);
 router.post(
-	"/setGame",
+	"/setProject",
 	/*reqLimiter(1, 12),*/ isAuthenticated,
-	setGameOnDatabaseController,
+	setProjectOnDatabaseController,
 );
 
 // não precisa de autenticação
 router.post("/setLogin", handleLoginController);
 router.get("/getUserBasics", getBasicUserDataController);
-router.get("/getGames", getAnyGameController);
+router.get("/getProjects", getAnyProjectController);
 router.post("/setSignupCode", setSignupCodeController);
 router.post("/setResetPassCode", setResetPasswordCodeController);
 router.post("/setUser", signupUserController);

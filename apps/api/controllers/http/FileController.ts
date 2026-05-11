@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { gamePathGenerator, getFileExtension } from "#api/helpers/query.ts";
+import { projectPathGenerator, getFileExtension } from "#api/helpers/query.ts";
 import FileService from "#api/services/FileService.ts";
 
 async function getFileController(

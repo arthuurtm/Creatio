@@ -18,7 +18,7 @@ export function editorConnection() {
 
 	const slowSend = debounce((state) => {
 		const payload = JSON.parse(JSON.stringify(state));
-		send({ event: "game:lab:update:json", payload });
+		send({ event: "project:lab:update:json", payload });
 	}, 500);
 
 	function stop() {
@@ -28,7 +28,7 @@ export function editorConnection() {
 	// observa as respostas do servidor
 	watch(data, (msg) => {
 		if (!msg || !msg.event) return;
-		if (msg.event === "game:lab:get:json:success") {
+		if (msg.event === "project:lab:get:json:success") {
 			if (msg.payload && !isLocalStateNewer(msg.payload)) {
 				store.setState(msg.payload);
 			}

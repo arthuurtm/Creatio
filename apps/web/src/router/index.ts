@@ -47,24 +47,17 @@ const routes: RouteRecordRaw[] = [
 				props: true,
 			},
 			{
-				path: "games",
+				path: "code",
 				children: [
 					{
 						path: "",
-						name: "GameProjects",
-						component: () => import("@/views/game/edit/ProjectsView.vue"),
-					},
-					{
-						path: ":id",
-						name: "GameDetails",
-						component: () => import("@/views/game/general/GameDetailsView.vue"),
-						props: true,
-						meta: { layout: { fullscreen: true, hideNavigator: true } },
+						name: "CodeProjects",
+						component: () => import("@/views/code/ProjectsView.vue"),
 					},
 					{
 						path: ":id/edit",
-						name: "GameEdit",
-						component: () => import("@/views/game/edit/GameEditView.vue"),
+						name: "CodeEdit",
+						component: () => import("@/views/code/CodeEditView.vue"),
 						props: true,
 						meta: { layout: { fullscreen: true, hideNavigator: true } },
 					},
