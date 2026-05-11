@@ -1,8 +1,11 @@
 import {
-	type EditorState,
+	type FileInfo,
 	functions,
 	logics,
-	nodes,
+	type NodeBlueprint,
+	type NodeConnection,
+	type SDKNode,
+	type SDKNodeType,
 	variables,
 } from "./models";
 
@@ -21,22 +24,38 @@ export interface CategoryConfig<
 	definitions: T;
 }
 
-export interface EditorDefinition<T = Record<string, any>> {
+export interface EditorDefinitionParams {
+	key: string;
+	label: string;
+	type: string;
+	items?: any[];
+	required?: boolean;
+}
+
+export interface EditorDefinition {
 	text: string;
 	icon: string;
-	category?: string;
-	params?: any[];
-	execute: (params: T) => ASTNode;
+	category: SDKNodeType;
+	params?: EditorDefinitionParams[];
+	execute?: (p: Record<string, any>) => NodeBlueprint;
 }
 
 export const categories = {
 	functions,
 	logics,
 	variables,
-	nodes,
 };
 
 export type CategoryKey = keyof typeof categories;
+
+export interface EditorState {
+	info: FileInfo;
+	nodes: Record<string, SDKNode>;
+	indexes: {
+		[K in CategoryKey]: string[];
+	};
+	connections: NodeConnection[];
+}
 
 /**
  * @abstract Extrai o mapa de definições (subcategorias) de uma categoria principal.

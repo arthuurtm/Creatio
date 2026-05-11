@@ -1,7 +1,6 @@
 export interface UserAttributes {
 	id: number;
 	email: string;
-	birthdate: Date;
 	username: string;
 	nickname: string | null;
 	passwordHash: string;
@@ -10,4 +9,7 @@ export interface UserAttributes {
 	updatedAt: Date;
 }
 
-export type UserCreationAttributes = Omit<UserAttributes,  "id" | "createdAt" | "updatedAt">
+export type UserCreationAttributes = Omit<
+	UserAttributes,
+	"id" | "createdAt" | "updatedAt"
+>;
