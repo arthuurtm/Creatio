@@ -51,18 +51,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import type { GameAttributes as Game } from "@projeto/types";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import ComponentLoadSessions from "@/components/modules/ComponentLoadSessions.vue";
 import { http } from "@/functions";
 import { showToast } from "@/plugins/toast";
 import { useUserStore } from "@/stores";
 import { useEditorStore } from "@/stores/editor";
-import type { GameAttributes as Game } from "@projeto/types";
 
 interface SortItem {
-  title: string;
-  value: string;
+	title: string;
+	value: string;
 }
 
 const userStore = useUserStore();
@@ -76,85 +76,85 @@ const selectedGenres = ref([]);
 const sort = ref("recent");
 
 const sortItems: SortItem[] = [
-  { title: "Recentes", value: "recent" },
-  { title: "Nome", value: "alpha" },
-  { title: "Atualizados", value: "updated" },
-  { title: "Versão", value: "version" },
+	{ title: "Recentes", value: "recent" },
+	{ title: "Nome", value: "alpha" },
+	{ title: "Atualizados", value: "updated" },
+	{ title: "Versão", value: "version" },
 ];
 
 const genres = computed(() => {
-  return [...new Set(allCreations.value.map((c) => c.genre).filter(Boolean))];
+	return [...new Set(allCreations.value.map((c) => c.genre).filter(Boolean))];
 });
 
 const filteredCreations = computed(() => {
-  let list = [...allCreations.value];
+	const list = [...allCreations.value];
 
-  // ... filtros de busca e gênero ...
+	// ... filtros de busca e gênero ...
 
-  switch (sort.value) {
-    case "recent":
-      list.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-      break;
-    case "updated":
-      list.sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      );
-      break;
-    case "alpha":
-      list.sort((a, b) => a.title.localeCompare(b.title));
-      break;
-    case "version":
-      list.sort((a, b) => Number(b.version || 0) - Number(a.version || 0));
-      break;
-  }
+	switch (sort.value) {
+		case "recent":
+			list.sort(
+				(a, b) =>
+					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+			);
+			break;
+		case "updated":
+			list.sort(
+				(a, b) =>
+					new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+			);
+			break;
+		case "alpha":
+			list.sort((a, b) => a.title.localeCompare(b.title));
+			break;
+		case "version":
+			list.sort((a, b) => Number(b.version || 0) - Number(a.version || 0));
+			break;
+	}
 
-  return list.map((c) => ({
-    ...c,
-    action: () => router.push({ name: "GameEdit", params: { id: c.id } }),
-  }));
+	return list.map((c) => ({
+		...c,
+		action: () => router.push({ name: "CodeEdit", params: { id: c.id } }),
+	}));
 });
 
 async function fetchMyCreations() {
-  loading.value = true;
-  try {
-    allCreations.value = Object.values(
-      await http.get({
-        type: "database",
-        route: "getGames",
-        querys: { userId: userStore.getId },
-      }),
-    );
-  } catch (error) {
-    showToast({ type: "error", message: "Falha ao carregar suas criações." });
-  } finally {
-    loading.value = false;
-  }
+	loading.value = true;
+	try {
+		allCreations.value = Object.values(
+			await http.get({
+				type: "database",
+				route: "getProjects",
+				querys: { userId: userStore.getId },
+			}),
+		);
+	} catch (error) {
+		showToast({ type: "error", message: "Falha ao carregar suas criações." });
+	} finally {
+		loading.value = false;
+	}
 }
 
 async function criarNovoJogo() {
-  let result;
-  try {
-    result = await http.post(
-      { type: "database", route: "setGame" },
-      { state: editorStore.$state },
-    );
+	let result;
+	try {
+		result = await http.post(
+			{ type: "database", route: "setProject" },
+			{ state: editorStore.$state },
+		);
 
-    Object.assign(editorStore.info, {
-      id: result.id,
-      title: result.title,
-    });
+		Object.assign(editorStore.info, {
+			id: result.id,
+			title: result.title,
+		});
 
-    router.push({ name: "GameEdit", params: { id: result.id } });
-  } catch (error) {
-    showToast({ type: "error", message: error.message });
-  }
+		router.push({ name: "CodeEdit", params: { id: result.id } });
+	} catch (error) {
+		showToast({ type: "error", message: error.message });
+	}
 }
 
 onMounted(async () => {
-  await fetchMyCreations();
+	await fetchMyCreations();
 });
 </script>

@@ -1,22 +1,21 @@
 <script setup lang="ts">
 import { ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useUserStore } from "@/stores";
-import { http } from "@/functions/index.ts";
 import ComponentHeader from "@/components/modules/ComponentHeader.vue";
 import CButton from "@/components/ui/CButton.vue";
+import { http } from "@/functions/index.ts";
+import { useUserStore } from "@/stores";
 import DialogSettings from "@/views/global/DialogSettings.vue";
 
 const route = useRoute();
 const router = useRouter();
 const user = useUserStore();
-const dialog = ref(false)
+const dialog = ref(false);
 const collapsedHeader = ref(false);
 
 watchEffect(() => {
-  collapsedHeader.value = route.meta?.layout?.hideNavigator ?? false
-})
-
+	collapsedHeader.value = route.meta?.layout?.hideNavigator ?? false;
+});
 </script>
 
 <template>
@@ -24,7 +23,7 @@ watchEffect(() => {
     <component-header :hidden="collapsedHeader">
       <template #left>
         <v-btn text="Início" @click="router.push({ name: 'Home' })" />
-        <v-btn text="Seus Projetos" @click="router.push({ name: 'GameProjects' })" />
+        <v-btn text="Seus Projetos" @click="router.push({ name: 'CodeProjects' })" />
         <v-text-field placeholder="Pesquisar..." prepend-inner-icon="search" flat hide-details density="compact" />
       </template>
       <template #right>

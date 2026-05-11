@@ -1,69 +1,85 @@
 <script setup lang="ts">
-import { VueFlow, type Connection, ConnectionMode, type NodeComponent } from "@vue-flow/core"
-import { Background } from '@vue-flow/background'
-import { MiniMap } from '@vue-flow/minimap'
-import type { GameConnection, GameNode } from "@projeto/types";
-import Node from "../ui/Node.vue";
-import { markRaw } from "vue";
+import type { SDKNode } from "@projeto/types";
+import { Background } from "@vue-flow/background";
+import { type Connection, ConnectionMode, VueFlow } from "@vue-flow/core";
+import { MiniMap } from "@vue-flow/minimap";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { editorConnection } from "@/composables/useWebsocketConnection.ts";
+import { useEditorStore } from "@/stores/editor";
 
-const nodes = defineModel<GameNode[]>('nodes', { required: true, default: [] })
-const edges = defineModel<GameConnection[]>('edges', { required: true, default: [] })
+const props = defineProps({ id: String });
+const editorStore = useEditorStore();
+const wsConn = editorConnection();
 
-const emit = defineEmits<{ (e: "open-panel", nodeId: string): void }>();
-
-const nodeTypes: Record<string, NodeComponent> = {
-  dialog: markRaw(Node) as NodeComponent,
-  combat: markRaw(Node) as NodeComponent,
-  event: markRaw(Node) as NodeComponent,
-}
+const flowNodes = computed({
+	get: () =>
+		Object.values(editorStore.nodes).map((node) => ({
+			...node,
+			label: node.params?.name || node.params?.varId || node.type.toUpperCase(),
+		})),
+	set: (newNodesArray) => {
+		const newNodesDict: Record<string, SDKNode> = {};
+		newNodesArray.forEach((node) => {
+			const { label, ...cleanNode } = node as any;
+			newNodesDict[cleanNode.id] = cleanNode;
+		});
+		editorStore.setState({ nodes: newNodesDict });
+	},
+});
 
 function onConnect(connection: Connection) {
-  edges.value = [
-    ...edges.value,
-    {
-      id: crypto.randomUUID(),
-      source: connection.source!,
-      target: connection.target!,
-      markerEnd: 'arrowclosed',
-    },
-  ]
+	editorStore.connections.push({
+		id: crypto.randomUUID(),
+		source: connection.source,
+		target: connection.target,
+	});
 }
+
+onMounted(async () => {
+	editorStore.setId(Number(props.id));
+	await wsConn.start();
+	wsConn.send({ event: "project:lab:get:json", payload: editorStore });
+});
+
+onUnmounted(() => {
+	wsConn.stop();
+	editorStore.$reset();
+});
 </script>
 
 <template>
-  <div class="nodes-layer">
-    <VueFlow v-model:nodes="nodes" v-model:edges="edges" :node-types="nodeTypes" :connection-mode="ConnectionMode.Loose"
-      :fit-view-on-init="true" @connect="onConnect" @node:open-panel="emit('open-panel', $event)">
-      <Background />
-      <MiniMap />
-    </VueFlow>
-  </div>
+  <v-layout full-height>
+    <v-container fluid class="pa-0 position-relative h-100">
+
+      <VueFlow
+        v-model:nodes="flowNodes"
+        v-model:edges="editorStore.connections"
+        :connection-mode="ConnectionMode.Loose"
+        :fit-view-on-init="true"
+        @connect="onConnect"
+      >
+        <Background />
+        <MiniMap />
+      </VueFlow>
+
+    </v-container>
+  </v-layout>
 </template>
 
-<style scoped>
+<style>
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
 
-.nodes-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 5;
-}
-</style>
-
-<style>
-/* espessura da linha */
-.vue-flow__edge-path {
-  stroke-width: 3px;
+.vue-flow__node.selected {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
 }
 
-/* tamanho da seta */
-.vue-flow__edge-marker {
-  transform: scale(1.6);
-  transform-origin: center;
-}
+.vue-flow__node-event { background-color: #4CAF50; }      /* Verde */
+.vue-flow__node-statement { background-color: #2196F3; }  /* Azul */
+.vue-flow__node-logic { background-color: #FF9800; }      /* Laranja */
+.vue-flow__node-loop { background-color: #9C27B0; }       /* Roxo */
+.vue-flow__node-expression { background-color: #9E9E9E; } /* Cinza */
 
+.vue-flow__edge-path { stroke-width: 3px; }
+.vue-flow__handle { width: 10px; height: 10px; }
 </style>
