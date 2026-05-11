@@ -5,7 +5,6 @@ import sequelize from "#api/config/db.ts";
 export class User extends Model<UserAttributes, UserCreationAttributes> {
 	declare id: CreationOptional<number>;
 	declare email: string;
-	declare birthdate: Date;
 	declare username: string;
 	declare nickname: string | null;
 	declare passwordHash: string;
@@ -18,7 +17,6 @@ User.init(
 	{
 		id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
 		email: { type: DataTypes.STRING, unique: true, allowNull: false },
-		birthdate: { type: DataTypes.DATEONLY, allowNull: false },
 		username: { type: DataTypes.STRING, unique: true, allowNull: false },
 		nickname: { type: DataTypes.STRING, allowNull: true },
 		passwordHash: { type: DataTypes.STRING, allowNull: false },

@@ -19,7 +19,6 @@ interface SignupUserParams {
 	nickname: string;
 	username: string;
 	email: string;
-	birthdate: Date;
 	password: string;
 	accessUUID: string;
 }
@@ -86,14 +85,10 @@ async function signupUser({
 	nickname,
 	username,
 	email,
-	birthdate,
 	password,
 	accessUUID,
 }: SignupUserParams) {
 	await consumeVerificationUUID(accessUUID);
-	const birthDateObj = new Date(birthdate);
-	if (isNaN(birthDateObj.getTime()))
-		throw new Error("Data de nascimento inválida");
 
 	const passwordHash = await bcrypt.hash(password, 10);
 
@@ -101,7 +96,6 @@ async function signupUser({
 		nickname,
 		username,
 		email,
-		birthdate,
 		passwordHash,
 	});
 

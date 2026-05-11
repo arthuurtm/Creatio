@@ -105,13 +105,11 @@ async function signupUserController(
 	next: NextFunction,
 ) {
 	try {
-		const { nickname, username, email, birthdate, password, accessUUID } =
-			req.body;
+		const { nickname, username, email, password, accessUUID } = req.body;
 		const user = await signupUser({
 			nickname,
 			username,
 			email,
-			birthdate,
 			password,
 			accessUUID,
 		});
