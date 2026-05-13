@@ -1,62 +1,81 @@
+import type {
+	CategoryKey,
+	EditorState,
+	FileInfo,
+	NodeConnection,
+	SDKNode,
+} from "@projeto/types";
 import { defineStore } from "pinia";
-import type { EditorState } from "@projeto/types";
+import { computed, reactive } from "vue";
 
-function models(): EditorState {
-	return {
-		// Estrutura
-		nodes: [],
-		connections: [],
+export const useEditorStore = defineStore("editor", () => {
+	const variables = reactive<SDKNode[]>([]);
+	const functions = reactive<SDKNode[]>([]);
+	const logics = reactive<SDKNode[]>([]);
+	const connections = reactive<NodeConnection[]>([]);
 
-		// Dados do Jogo
-		info: {
-			id: null,
-			title: "",
-			version: "1.0.0",
-			description: "",
-			updatedAt: null,
-		},
-		objects: [],
-		avatars: [],
-		flags: [],
-		statuses: [],
-		skills: [],
-		companions: [],
-		quests: [],
-		assets: [],
+	const info = reactive<FileInfo>({
+		id: null,
+		title: "Untitled",
+		version: "1.0.0",
+		description: null,
+		updatedAt: null,
+	});
 
-		// Lógica (Instâncias)
-		conditions: [],
-		consequences: [],
-		events: [],
-		actions: [],
+	const categoryMap: Record<CategoryKey, SDKNode[]> = {
+		variables,
+		functions,
+		logics,
 	};
-}
 
-function generateId(prefix: string) {
-	const time = Date.now().toString(36);
-	const rand = Math.floor(Math.random() * 1e6).toString(36);
-	return `${prefix}_${time}_${rand}`;
-}
+	const nodes = computed({
+		get: () => [...variables, ...functions, ...logics],
+		set: (newNodesArray) => {
+			const newVars = newNodesArray.filter((n) => n.category === "variables");
+			const newFuncs = newNodesArray.filter((n) => n.category === "functions");
+			const newLogics = newNodesArray.filter((n) => n.category === "logics");
 
-export const useEditorStore = defineStore("editor", {
-	state: () => models(),
-	actions: {
-		setState(newState: Partial<EditorState>) {
-			this.$patch(newState);
+			variables.splice(0, variables.length, ...newVars);
+			functions.splice(0, functions.length, ...newFuncs);
+			logics.splice(0, logics.length, ...newLogics);
 		},
-		getModel() {
-			return models();
-		},
-		setGameId(id: string | undefined) {
-			if (!id) return;
-			this.info.id = id;
-		},
-	},
+	});
+
+	function addNode(category: CategoryKey, nodeData: SDKNode) {
+		const id = `${category}_${Math.random().toString(36)}`;
+		const newNode = { ...nodeData, id, category };
+		categoryMap[category].push(newNode);
+	}
+
+	function setId(id: number) {
+		info.id = id;
+	}
+
+	function setState(newState: Partial<EditorState>) {
+		if (newState.info) Object.assign(info, newState.info);
+
+		if (newState.variables)
+			variables.splice(0, variables.length, ...newState.variables);
+		if (newState.functions)
+			functions.splice(0, functions.length, ...newState.functions);
+		if (newState.logics) logics.splice(0, logics.length, ...newState.logics);
+
+		if (newState.connections) {
+			connections.splice(0, connections.length, ...newState.connections);
+		}
+	}
+
+	return {
+		variables,
+		functions,
+		logics,
+		connections,
+		info,
+
+		nodes,
+
+		addNode,
+		setId,
+		setState,
+	};
 });
-
-export { generateId };
-export {
-	categories,
-	getSubCategories,
-	normalizeItems,
-} from "@/lib/editor/index.ts";
