@@ -31,7 +31,7 @@ Project.init(
 		title: { type: DataTypes.STRING, allowNull: false },
 		description: { type: DataTypes.TEXT, allowNull: true },
 		version: { type: DataTypes.STRING, allowNull: true },
-		thumbnails: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
+		thumbnails: { type: DataTypes.JSON, allowNull: true },
 		userId: {
 			type: DataTypes.INTEGER,
 			allowNull: false,

@@ -15,9 +15,6 @@
         <v-text-field type="email" label="Seu e-mail" placeholder="Seu e-mail" v-model="formData.email.val"
           :error="formData.email.err" :error-messages="formData.email.errVal" variant="outlined"
           @input="formData.email.err = false; formData.email.errVal = ''" />
-        <v-text-field type="date" label="Data de nascimento" v-model="formData.birthdate.val"
-          :error="formData.birthdate.err" :error-messages="formData.birthdate.errVal" variant="outlined"
-          @input="formData.birthdate.err = false; formData.birthdate.errVal = ''" />
       </v-container>
 
       <v-container v-if="currentStep === 3">
@@ -58,7 +55,6 @@ interface Params {
   nickname: FieldParams,
   username: FieldParams,
   email: FieldParams,
-  birthdate: FieldParams,
   passwd1: FieldParams,
   passwd2: FieldParams,
   verifyCode: FieldParams,
@@ -76,7 +72,6 @@ const formData = ref<Params>({
   nickname: initField(),
   username: initField(),
   email: initField(),
-  birthdate: initField(),
   passwd1: initField(),
   passwd2: initField(),
   verifyCode: initField(),
@@ -177,7 +172,6 @@ const signupUser = async () => {
         nickname: formData.value.nickname.val,
         username: formData.value.username.val,
         email: formData.value.email.val,
-        birthdate: formData.value.birthdate.val,
         password: formData.value.passwd1.val,
         accessUUID: formData.value.accessUUID,
       },
@@ -197,5 +191,4 @@ const stepActions: StepActions = {
   3: { next: verifySecureCode, back: prevStep },
   4: { next: signupUser, back: prevStep },
 }
-
 </script>
