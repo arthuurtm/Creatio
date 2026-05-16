@@ -115,9 +115,6 @@ watch(
         </span>
         <v-spacer />
 
-        <v-btn v-if="isArray" icon="add" size="x-small" variant="text" density="comfortable" color="primary"
-          @click.stop="addArrayItem" />
-
         <span v-if="!isExpanded" class="text-caption text-disabled ml-2">
           {{ isArray ? `${modelValue.length} itens` : '{...}' }}
         </span>
