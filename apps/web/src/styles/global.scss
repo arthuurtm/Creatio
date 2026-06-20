@@ -34,3 +34,62 @@ body {
     "GRAD" 0,
     "opsz" 24;
 }
+
+/* Micro-interações e Estética Material You Expressive 3.0 */
+
+// Botões com física de mola (Spring Scale)
+.v-btn {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, box-shadow 0.2s !important;
+  
+  &:hover:not(.v-btn--loading):not(.v-btn--disabled) {
+    transform: scale(1.02) translateY(-1px);
+  }
+  
+  &:active:not(.v-btn--loading):not(.v-btn--disabled) {
+    transform: scale(0.96) translateY(0);
+  }
+}
+
+// Inputs Outlined com Glow no Foco
+.v-field--variant-outlined {
+  transition: box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s !important;
+  
+  &.v-field--focused {
+    box-shadow: 0 0 0 4px rgba(var(--v-theme-primary), 0.15) !important;
+  }
+}
+
+// Correção e estilização de itens de lista ativos (Workspace Google Style)
+.v-list-item--active {
+  background-color: rgba(var(--v-theme-primary), 0.12) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  font-weight: 500;
+  
+  .v-btn {
+    background-color: rgb(var(--v-theme-primary)) !important;
+    color: rgb(var(--v-theme-on-primary)) !important;
+  }
+}
+
+// Estilo para o Dialog de Configurações e Overlays Globais
+.v-dialog {
+  .v-card {
+    border-radius: 28px !important;
+  }
+}
+
+// Scrollbars modernas e discretas
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-on-surface), 0.15);
+  border-radius: 99px;
+  &:hover {
+    background: rgba(var(--v-theme-on-surface), 0.25);
+  }
+}
