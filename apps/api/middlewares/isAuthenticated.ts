@@ -18,6 +18,11 @@ async function isAuthenticated(
 			return res.status(401).json({ error: "Não autorizado" });
 		}
 
+		if (req.cookies) {
+			req.cookies.accessToken = accessToken;
+			req.cookies.refreshToken = refreshToken;
+		}
+
 		if (renewNeeded) createClientCookie(res, accessToken, refreshToken);
 		next();
 	} catch (err) {

@@ -95,18 +95,40 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach(async (to, from, next) => {
-  const isLoggedIn = await http.auth.isAuthenticated();
+// Estado de inicialização — fetch do servidor só acontece uma vez
+let appInitialized = false;
 
-  // Se a rota requer auth e NÃO é publicOnly
+router.beforeEach(async (to, from, next) => {
+  const userStore = (await import("@/stores/user")).useUserStore();
+
+  // Na primeira navegação, busca os dados do servidor se não tiver no store
+  if (!appInitialized) {
+    if (!userStore.checkAuth()) {
+      // Tenta recuperar sessão do servidor uma única vez
+      try {
+        await http.auth.isAuthenticated();
+      } catch {
+        // Servidor inacessível ou sessão expirada — store limpo já foi tratado em isAuthenticated()
+      }
+    }
+    appInitialized = true;
+  }
+
+  // Verificação local instantânea (sem fetch) para todas as navegações seguintes
+  const isLoggedIn = userStore.checkAuth();
+
   if (to.meta.requiresAuth && !to.meta.publicOnly && !isLoggedIn) {
     next({ name: "Login", query: { redirect: to.fullPath } });
-  } else if ((to.name === "Login" || to.name === "Signup" || to.name === "PasswordRescue" || to.name === "About") && isLoggedIn) {
+  } else if (
+    (to.name === "Login" || to.name === "Signup" || to.name === "PasswordRescue" || to.name === "About") &&
+    isLoggedIn
+  ) {
     next({ name: "Home" });
   } else {
     next();
   }
 });
+
 
 router.onError((err, to) => {
 	if (

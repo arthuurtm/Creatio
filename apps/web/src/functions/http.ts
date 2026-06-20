@@ -123,6 +123,16 @@ const request = async (
 			const errorData = await response.json().catch(() => ({}));
 			const serverMessage =
 				errorData.message || getHttpStatusMessage(response.status);
+
+			// 401 — sessão expirada ou não autenticado: limpa store e redireciona
+			if (response.status === 401) {
+				useUserStore().clearUserData();
+				const { default: router } = await import('@/router');
+				if (router.currentRoute.value.name !== 'Login') {
+					router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } });
+				}
+			}
+
 			throw new FormError(serverMessage, {
 				...errorData,
 				status: response.status,
@@ -185,7 +195,7 @@ async function handleUserData() {
 			});
 			return true;
 		}
-		throw new Error(res.message || "Dados do usuário não encontrados");
+		throw new Error("Dados do usuário não encontrados");
 	} catch (error) {
 		console.error(`Erro ao recuperar dados: ${error}`);
 		useUserStore().clearUserData();

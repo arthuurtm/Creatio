@@ -56,7 +56,7 @@ async function getUserDataController(
 ) {
 	try {
 		const data = await getAllUserData(req.cookies.accessToken);
-		if (!data) res.status(401);
+		if (!data) return res.status(401).json({ error: "Sessão inválida ou expirada" });
 		res.status(200).json(data);
 	} catch (err) {
 		next(err);
