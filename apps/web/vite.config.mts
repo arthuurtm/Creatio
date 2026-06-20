@@ -51,7 +51,7 @@ export default defineConfig({
 		extensions: [".ts", ".json", ".jsx", ".mjs", ".ts", ".tsx", ".vue"],
 	},
 	server: {
-		allowedHosts: [],
+		allowedHosts: ['jveil-138-0-81-167.run.pinggy-free.link'],
 		proxy: {
 			"/api": {
 				target: "http://localhost:3000",

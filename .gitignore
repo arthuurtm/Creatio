@@ -3,6 +3,8 @@ Thumbs.db
 
 node_modules/
 .pnp/
+minio-data/
+pma_themes/
 .pnp.js
 
 dist/
