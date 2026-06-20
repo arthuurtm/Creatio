@@ -144,11 +144,11 @@ watch(
             <div v-for="(item, index) in modelValue" :key="index" class="d-flex align-start group-hover-parent">
               <div class="flex-grow-1">
                 <RecursiveEditor :label="String(index)" :model-value="item" :depth="depth + 1"
-                  @update:model-value="(v: any) => updateArrayItem(index, v)" />
+                  @update:model-value="(v: any) => updateArrayItem(Number(index), v)" />
               </div>
 
               <v-btn icon="delete" size="x-small" variant="text" color="error" class="mt-1 opacity-50 hover-opacity-100"
-                @click="removeArrayItem(index)" />
+                @click="removeArrayItem(Number(index))" />
             </div>
           </template>
         </div>

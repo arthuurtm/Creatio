@@ -147,7 +147,7 @@ type Session = {
 const router = useRouter()
 const user = useUserStore()
 const fileInput = ref<HTMLInputElement | null>(null)
-const localProfilePic = ref<string | ArrayBuffer | null>(null)
+const localProfilePic = ref<string | null>(null)
 const activeTab = ref('personal')
 const connectedDevices = ref<Session[] | null>(null)
 const theme = useTheme()
@@ -240,7 +240,7 @@ function onFileChange(e: Event) {
 
   const reader = new FileReader()
   reader.onload = async () => {
-    localProfilePic.value = reader.result
+    localProfilePic.value = reader.result as string
 
     try {
       await http.post({ type: 'database', route: 'updateProfilePic' }, { image: reader.result })

@@ -84,7 +84,9 @@ export default function useMultiStepForm(options: MultiStepFormOptions = {}) {
 		path,
 		params = {},
 	}: RedirectOptions) => {
-		const target = path ? { path, params } : { name, params };
+		const target = path
+			? { path: Array.isArray(path) ? (path[0] || "") : path, params }
+			: { name, params };
 		return router.push(target);
 	};
 

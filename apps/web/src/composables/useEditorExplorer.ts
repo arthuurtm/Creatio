@@ -20,7 +20,7 @@ export function useEditorExplorer() {
 
   const sidebarItems = computed(() =>
     (Object.keys(categories) as CategoryKey[]).map((key) => {
-      const config = getCategory(key, editorStore);
+      const config = getCategory(key, editorStore as any);
       return {
         key,
         text: config.text,
@@ -31,7 +31,7 @@ export function useEditorExplorer() {
 
   const activeCategoryConfig = computed(() => {
     if (!activeCategory.value) return null;
-    return getCategory(activeCategory.value, editorStore);
+    return getCategory(activeCategory.value, editorStore as any);
   });
 
   const activeDefinitions = computed(

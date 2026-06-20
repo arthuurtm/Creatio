@@ -28,6 +28,8 @@ export interface ASTNode {
   isExpression?: boolean;
   /** ID do nó PAI no Vue Flow — apenas para aninhamento visual de escopo */
   parentId?: string;
+  /** Se verdadeiro, insere automaticamente um comando break/retorno no fim do bloco */
+  autoBreak?: boolean;
 }
 
 export interface ExecuteResult extends ASTNode {

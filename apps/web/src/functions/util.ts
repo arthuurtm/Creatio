@@ -1,4 +1,4 @@
-function handleImage(file, isPublic = true) {
+function handleImage(file: any, isPublic = true): string | null {
   if (file instanceof File || file instanceof Blob) {
     return URL.createObjectURL(file)
   }
@@ -18,9 +18,9 @@ function handleImage(file, isPublic = true) {
 /**
  *
  * @param {string} type
- * @returns {Promise<{file: File, url: string}>}
+ * @returns {Promise<{file: File, url: string} | null>}
  */
-const selectFile = (type) => {
+const selectFile = (type: string): Promise<{file: File, url: string} | null> => {
   return new Promise((resolve) => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -28,7 +28,8 @@ const selectFile = (type) => {
     input.style.display = 'none'
 
     input.onchange = (event) => {
-      const file = event.target.files[0]
+      const target = event.target as HTMLInputElement | null;
+      const file = target?.files ? target.files[0] : null;
       if (file) {
         const url = URL.createObjectURL(file) // gera URL temporária
         resolve({ file, url })
@@ -47,7 +48,7 @@ const selectFile = (type) => {
   })
 }
 
-function deepFindById(data, id) {
+function deepFindById(data: any, id: any): any {
   if (Array.isArray(data)) {
     for (const item of data) {
       const result = deepFindById(item, id)

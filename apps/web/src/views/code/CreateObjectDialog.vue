@@ -113,7 +113,7 @@ function handleCreate() {
             v-model="param.model"
             :items="
               param.type === 'select'
-                ? normalizeItems(param)
+                ? normalizeItems(param as any)
                 : param.items
             "
             :label="param.label"

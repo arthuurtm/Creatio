@@ -258,7 +258,23 @@ importers:
         version: 3.2.6(typescript@5.9.3)
 
   packages/types:
+    dependencies:
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      ua-parser-js:
+        specifier: ^2.0.7
+        version: 2.0.9
+      ws:
+        specifier: ^8.18.3
+        version: 8.19.0
     devDependencies:
+      '@types/express':
+        specifier: ^5.0.6
+        version: 5.0.6
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       '@vue-flow/core':
         specifier: ^1.48.2
         version: 1.48.2(vue@3.5.31(typescript@5.9.3))
@@ -3033,11 +3049,11 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 22.19.7
+      '@types/node': 22.19.15
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 22.19.7
+      '@types/node': 22.19.15
 
   '@types/cookie-parser@1.4.10(@types/express@5.0.6)':
     dependencies:
@@ -3055,7 +3071,7 @@ snapshots:
 
   '@types/express-serve-static-core@5.1.1':
     dependencies:
-      '@types/node': 22.19.7
+      '@types/node': 22.19.15
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -3109,12 +3125,12 @@ snapshots:
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 22.19.7
+      '@types/node': 22.19.15
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 22.19.7
+      '@types/node': 22.19.15
 
   '@types/validator@13.15.10': {}
 
@@ -3124,7 +3140,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.19.7
+      '@types/node': 22.19.15
 
   '@vitejs/plugin-vue@6.0.5(vite@7.3.1(@types/node@22.19.15)(sass-embedded@1.98.0)(sass@1.98.0)(tsx@4.21.0))(vue@3.5.31(typescript@5.9.3))':
     dependencies:
@@ -4971,7 +4987,7 @@ snapshots:
 
   wkx@0.5.0:
     dependencies:
-      '@types/node': 22.19.7
+      '@types/node': 22.19.15
 
   wrap-ansi@7.0.0:
     dependencies:
