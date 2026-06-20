@@ -94,6 +94,12 @@ export default createVuetify({
 			size: "large",
 			rounded: "pill",
 		},
+		VBtnToggle: {
+			rounded: "pill",
+			variant: "outlined",
+			color: "primary",
+			density: "comfortable",
+		},
 		VCard: {
 			rounded: "xl",
 		},
@@ -118,6 +124,9 @@ export default createVuetify({
 		VTextarea: {
 			variant: "outlined",
 			rounded: "xl",
+		},
+		VChip: {
+			rounded: "lg",
 		},
 		VList: {
 			border: false,

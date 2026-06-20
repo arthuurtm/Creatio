@@ -3,13 +3,13 @@
 
 html {
   overflow-y: auto !important; 
-  // scrollbar-gutter: stable;
 }
 
 body {
   transition: background-color 0.3s, color 0.3s;
 }
 
+/* Gradientes globais reutilizáveis */
 .gradient-primary {
   background: linear-gradient(
     135deg,
@@ -27,6 +27,7 @@ body {
   );
 }
 
+/* Ícones Material Symbols arredondados */
 .material-symbols-rounded {
   font-variation-settings:
     "FILL" 0,
@@ -35,7 +36,7 @@ body {
     "opsz" 24;
 }
 
-/* Micro-interações e Estética Material You Expressive 3.0 */
+/* === MICRO-INTERAÇÕES (Material You Expressive 3.0) === */
 
 // Botões com física de mola (Spring Scale)
 .v-btn {
@@ -59,19 +60,14 @@ body {
   }
 }
 
-// Correção e estilização de itens de lista ativos (Workspace Google Style)
+// Itens de lista ativos (Google Workspace Style)
 .v-list-item--active {
   background-color: rgba(var(--v-theme-primary), 0.12) !important;
   color: rgb(var(--v-theme-primary)) !important;
   font-weight: 500;
-  
-  .v-btn {
-    background-color: rgb(var(--v-theme-primary)) !important;
-    color: rgb(var(--v-theme-on-primary)) !important;
-  }
 }
 
-// Estilo para o Dialog de Configurações e Overlays Globais
+// Dialogs com borda arredondada consistente
 .v-dialog {
   .v-card {
     border-radius: 28px !important;
@@ -93,3 +89,12 @@ body {
     background: rgba(var(--v-theme-on-surface), 0.25);
   }
 }
+
+/* === SKELETON LOADERS === */
+
+// Skeleton card que imita o ProjectCard durante carregamento
+.skeleton-card {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+

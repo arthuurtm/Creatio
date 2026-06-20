@@ -1,6 +1,14 @@
 <template>
   <div class="project-list-loader">
-    <v-slide-group v-if="!isGridMode" v-model="model" class="py-4" selected-class="bg-primary" show-arrows>
+    <!-- SKELETON LOADER — exibido durante carregamento -->
+    <v-row v-if="loading" class="mt-2">
+      <v-col v-for="n in 4" :key="n" cols="12" sm="6" md="4" lg="3">
+        <v-skeleton-loader type="card" class="skeleton-card rounded-xl" height="180" />
+      </v-col>
+    </v-row>
+
+    <!-- CARROSSEL HORIZONTAL (não-grid) -->
+    <v-slide-group v-else-if="!isGridMode" v-model="model" class="py-4" selected-class="bg-primary" show-arrows>
       <template v-slot:next>
         <v-btn icon="arrow_forward_ios" variant="text" density="comfortable"></v-btn>
       </template>
@@ -15,15 +23,17 @@
       </v-slide-group-item>
     </v-slide-group>
 
+    <!-- GRID DE CARDS -->
     <v-row v-else class="mt-2">
-      <v-col v-for="(card, index) in items" :key="index" cols="12" sm="6" md="4" lg="3">
+      <v-col v-for="(card, index) in items" :key="card.id ?? index" cols="12" sm="6" md="4" lg="3">
         <ProjectCard :item="card" width="100%" @click="emitAction(card)" />
       </v-col>
     </v-row>
 
-    <div v-if="items.length === 0" class="text-center py-10 text-medium-emphasis">
-      <v-icon size="large" class="mb-2">folder_off</v-icon>
-      <p>Nenhum código encontrado nesta seção.</p>
+    <!-- ESTADO VAZIO -->
+    <div v-if="!loading && items.length === 0" class="text-center py-12 text-medium-emphasis">
+      <v-icon size="48" class="mb-3 opacity-40">folder_off</v-icon>
+      <p class="text-body-1">Nenhum código encontrado nesta seção.</p>
     </div>
   </div>
 </template>
@@ -36,6 +46,7 @@ const props = defineProps({
   items: { type: Object, required: true },
   styleType: { type: String, default: "line" },
   cardsType: { type: String },
+  loading: { type: Boolean, default: false },
 });
 
 const emits = defineEmits(["emitEvent"]);
@@ -48,7 +59,7 @@ const isGridMode = computed(() => gridModes.includes(props.styleType));
 const cardWidth = computed(() => {
   if (props.cardsType === "reduced") return 220;
   if (props.cardsType === "large") return 320;
-  return 280; // Projetos de código precisam de um pouco mais de largura para títulos e dados
+  return 280;
 });
 
 function emitAction(card: any) {

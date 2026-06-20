@@ -174,3 +174,25 @@
     transform: scale(1) translateY(0);
   }
 }
+
+/* Transição de rota entre páginas */
+.page-fade-enter-active {
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.page-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.page-fade-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+.page-fade-leave-from {
+  opacity: 1;
+}
+.page-fade-leave-to {
+  opacity: 0;
+}

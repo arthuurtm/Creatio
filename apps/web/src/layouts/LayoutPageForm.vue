@@ -38,6 +38,16 @@
           </slot>
         </div>
 
+        <!-- INDICADOR DE PROGRESSO MULTI-STEP (dots) -->
+        <div v-if="totalSteps && totalSteps > 1" class="step-dots d-flex justify-center ga-2 mb-6">
+          <div
+            v-for="step in totalSteps"
+            :key="step"
+            class="step-dot"
+            :class="{ 'step-dot--active': step === currentStep, 'step-dot--done': step < (currentStep ?? 1) }"
+          />
+        </div>
+
         <!-- TITLE & SUBTITLE -->
         <div class="text-center mb-8">
           <h2 class="text-h5 font-weight-bold tracking-tight mb-2 text-high-emphasis">
@@ -220,5 +230,29 @@ onBeforeUnmount(() => {
   .glow-orb, .mouse-glow {
     display: none;
   }
+}
+
+/* STEP DOTS — indicador de progresso */
+.step-dots {
+  margin-bottom: 4px;
+}
+
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(var(--v-theme-on-surface), 0.2);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.step-dot--done {
+  background-color: rgba(var(--v-theme-primary), 0.5);
+  width: 8px;
+}
+
+.step-dot--active {
+  background-color: rgb(var(--v-theme-primary));
+  width: 24px;
+  border-radius: 4px;
 }
 </style>

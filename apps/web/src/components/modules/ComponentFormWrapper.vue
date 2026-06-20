@@ -59,11 +59,12 @@ function hasSlot(name: string) {
   align-items: stretch;
 }
 
+/* Ações de formulário centralizadas — botões block preenchem toda a largura */
 .form-actions {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
+  align-items: stretch;
+  gap: 8px;
 }
 </style>
