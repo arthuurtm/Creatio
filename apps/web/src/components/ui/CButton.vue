@@ -37,7 +37,7 @@ const props = defineProps({
 const emit = defineEmits(["click"])
 const slots = useSlots()
 
-const iconRef = ref(null)
+const iconRef = ref<any>(null)
 const hasDefaultSlot = computed(() => !!slots.default)
 
 const hasContent = computed(() =>
