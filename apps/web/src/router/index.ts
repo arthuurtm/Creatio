@@ -65,50 +65,47 @@ const routes: RouteRecordRaw[] = [
 			},
 		],
 	},
-	{
-		path: "/auth",
-		meta: { publicOnly: true },
-		children: [
-			{
-				path: "login",
-				name: "Login",
-				component: () => import("@/views/auth/FormLoginView.vue"),
-			},
-			{
-				path: "signup",
-				name: "Signup",
-				component: () => import("@/views/auth/FormSignupView.vue"),
-			},
-			{
-				path: "password/rescue",
-				name: "PasswordRescue",
-				component: () => import("@/views/auth/FormPasswordRescueView.vue"),
-			},
-		],
-	},
-	{ path: "/login", redirect: { name: "Login" } },
-	{
-		path: "/:pathMatch(.*)*",
-		name: "NotFound",
-		component: () => import("@/views/err/NotFoundView.vue"),
-	},
+  {
+    path: "/login",
+    name: "Login",
+    component: () => import("@/views/auth/FormLoginView.vue"),
+    meta: { publicOnly: true },
+  },
+  {
+    path: "/signup",
+    name: "Signup",
+    component: () => import("@/views/auth/FormSignupView.vue"),
+    meta: { publicOnly: true },
+  },
+  {
+    path: "/rescue",
+    name: "PasswordRescue",
+    component: () => import("@/views/auth/FormPasswordRescueView.vue"),
+    meta: { publicOnly: true },
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: () => import("@/views/err/NotFoundView.vue"),
+  },
 ];
 
 const router = createRouter({
-	history: createWebHistory(import.meta.env.BASE_URL),
-	routes,
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
 });
 
 router.beforeEach(async (to, from, next) => {
-	const isLoggedIn = await http.auth.isAuthenticated();
+  const isLoggedIn = await http.auth.isAuthenticated();
 
-	if (to.meta.requiresAuth && !isLoggedIn) {
-		next({ name: "Login", query: { redirect: to.fullPath } });
-	} else if ((to.name === "Login" || to.name === "About") && isLoggedIn) {
-		next({ name: "Home" });
-	} else {
-		next();
-	}
+  // Se a rota requer auth e NÃO é publicOnly
+  if (to.meta.requiresAuth && !to.meta.publicOnly && !isLoggedIn) {
+    next({ name: "Login", query: { redirect: to.fullPath } });
+  } else if ((to.name === "Login" || to.name === "Signup" || to.name === "PasswordRescue" || to.name === "About") && isLoggedIn) {
+    next({ name: "Home" });
+  } else {
+    next();
+  }
 });
 
 router.onError((err, to) => {

@@ -1,44 +1,66 @@
 <template>
-  <AppFormPage title="Crie sua conta" :currentStep="currentStep" :loading="loading">
-
+  <AppFormPage title="Crie sua conta" :currentStep="currentStep" :totalSteps="4" :loading="loading">
     <template #form>
-      <v-container v-if="currentStep === 1" class="ga-2">
-        <v-text-field label="Nome de Exibição" placeholder="Um nome criativo" v-model="formData.nickname.val"
+      <div v-if="currentStep === 1" class="d-flex flex-column ga-3 w-100">
+        <v-text-field label="Nome de Exibição" v-model="formData.nickname.val"
           :error="formData.nickname.err" :error-messages="formData.nickname.errVal" variant="outlined"
-          @input="formData.nickname.err = false; formData.nickname.errVal = ''" />
-        <v-text-field label="Nome de Usuário" placeholder="Seu nome de usuário" v-model="formData.username.val"
+          hide-details="auto" rounded="pill" @input="formData.nickname.err = false; formData.nickname.errVal = ''" />
+        <v-text-field label="Nome de Usuário" v-model="formData.username.val"
           :error="formData.username.err" :error-messages="formData.username.errVal" variant="outlined"
-          @input="formData.username.err = false; formData.username.errVal = ''" />
-      </v-container>
+          hide-details="auto" rounded="pill" @input="formData.username.err = false; formData.username.errVal = ''" />
+      </div>
 
-      <v-container v-if="currentStep === 2">
-        <v-text-field type="email" label="Seu e-mail" placeholder="Seu e-mail" v-model="formData.email.val"
+      <div v-if="currentStep === 2" class="d-flex flex-column ga-3 w-100">
+        <v-text-field type="email" label="Seu e-mail" v-model="formData.email.val"
           :error="formData.email.err" :error-messages="formData.email.errVal" variant="outlined"
-          @input="formData.email.err = false; formData.email.errVal = ''" />
-      </v-container>
+          hide-details="auto" rounded="pill" @input="formData.email.err = false; formData.email.errVal = ''" />
+      </div>
 
-      <v-container v-if="currentStep === 3">
-        <v-text-field label="Código de verificação" placeholder="Código recebido no e-mail"
+      <div v-if="currentStep === 3" class="d-flex flex-column ga-3 w-100">
+        <v-text-field label="Código de verificação"
           v-model="formData.verifyCode.val" :error="formData.verifyCode.err"
           :error-messages="formData.verifyCode.errVal" variant="outlined"
-          @input="formData.verifyCode.err = false; formData.verifyCode.errVal = ''" />
-      </v-container>
+          hide-details="auto" rounded="pill" @input="formData.verifyCode.err = false; formData.verifyCode.errVal = ''" />
+      </div>
 
-      <v-container v-if="currentStep === 4">
-        <v-text-field type="password" label="Sua senha" placeholder="Digite uma senha BEM segura!"
+      <div v-if="currentStep === 4" class="d-flex flex-column ga-3 w-100">
+        <v-text-field type="password" label="Sua senha"
           v-model="formData.passwd1.val" :error="formData.passwd1.err" :error-messages="formData.passwd1.errVal"
-          variant="outlined" @input="formData.passwd1.err = false; formData.passwd1.errVal = ''" />
-        <v-text-field type="password" label="Confirme sua senha" placeholder="Re-digite sua senha!"
+          variant="outlined" hide-details="auto" rounded="pill" @input="formData.passwd1.err = false; formData.passwd1.errVal = ''" />
+        <v-text-field type="password" label="Confirme sua senha"
           v-model="formData.passwd2.val" :error="formData.passwd2.err" :error-messages="formData.passwd2.errVal"
-          variant="outlined" @input="formData.passwd2.err = false; formData.passwd2.errVal = ''" />
-      </v-container>
+          variant="outlined" hide-details="auto" rounded="pill" @input="formData.passwd2.err = false; formData.passwd2.errVal = ''" />
+      </div>
     </template>
 
     <template #buttons>
-      <v-btn :text="formData.username.val ? 'Cancelar' : 'Voltar'"
-        :color="formData.username.val ? 'error' : 'secondary'" :variant="formData.username.val ? 'flat' : 'outlined'"
-        @click="pageRedirect({ name: 'Login' })" />
-      <v-btn text="Avançar" variant="elevated" @click="stepActions[currentStep]?.next()" />
+      <div class="d-flex flex-column ga-2 w-100">
+        <v-btn
+          :text="currentStep === 4 ? 'Criar Conta' : 'Avançar'"
+          color="primary"
+          variant="flat"
+          block
+          class="text-none rounded-pill"
+          :loading="loading"
+          @click="loaderController(stepActions[currentStep]?.next as any)"
+        />
+        <v-btn
+          variant="text"
+          :text="currentStep === 1 ? 'Cancelar' : 'Voltar'"
+          class="text-none rounded-pill text-medium-emphasis"
+          block
+          @click="stepActions[currentStep]?.back()"
+        />
+      </div>
+    </template>
+
+    <template #formInfo>
+      <span class="text-body-2 text-medium-emphasis">
+        Já tem uma conta?
+        <a href="#" class="text-primary font-weight-bold ml-1 text-decoration-none" @click.prevent="router.push({ name: 'Login' })">
+          Fazer login
+        </a>
+      </span>
     </template>
   </AppFormPage>
 </template>
@@ -104,7 +126,7 @@ const verifyIfUserExists = async () => {
       querys: { login: formData.value.username.val },
     })
     setFieldError(formData.value.username, "Este nome de usuário já está sendo utilizado")
-  } catch (err) {
+  } catch (err: any) {
     if (err?.status === 404) {
       nextStep()
     } else {
@@ -129,7 +151,7 @@ const prepareVerifyCode = async () => {
       sameMail = formData.value.email.val
       sentCode.value = true
       nextStep()
-    } catch (error) {
+    } catch (error: any) {
       setFieldError(formData.value.email, error.message)
     }
   } else {
@@ -151,7 +173,7 @@ const verifySecureCode = async () => {
     )
     formData.value.accessUUID = accessUUID
     nextStep()
-  } catch (err) {
+  } catch (err: any) {
     setFieldError(formData.value.verifyCode, err.message)
   }
 }
@@ -177,7 +199,7 @@ const signupUser = async () => {
       },
     )
     router.push({ name: 'Home' })
-  } catch (error) {
+  } catch (error: any) {
     showToast({
       type: 'error',
       message: error.message,
@@ -186,7 +208,7 @@ const signupUser = async () => {
 }
 
 const stepActions: StepActions = {
-  1: { next: verifyIfUserExists, back: () => pageRedirect({ name: 'Login' }) },
+  1: { next: verifyIfUserExists, back: () => router.push({ name: 'Login' }) },
   2: { next: prepareVerifyCode, back: prevStep },
   3: { next: verifySecureCode, back: prevStep },
   4: { next: signupUser, back: prevStep },
