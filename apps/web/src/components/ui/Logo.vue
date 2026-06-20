@@ -9,6 +9,8 @@ import LogoSVG from '@/assets/logo.svg'
 
 <style scoped>
 .logo {
-  fill: black;
+  display: block;
+  max-height: 100%;
+  width: auto;
 }
 </style>
