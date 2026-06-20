@@ -8,11 +8,11 @@ import type {
   SDKNode,
 } from "@projeto/types";
 import { defineStore } from "pinia";
-import { computed, reactive } from "vue";
+import { computed, reactive, shallowReactive } from "vue";
 
 export const useEditorStore = defineStore("editor", () => {
-  const nodes = reactive<SDKNode[]>([]);
-  const connections = reactive<NodeConnection[]>([]);
+  const nodes = shallowReactive<SDKNode[]>([]);
+  const connections = shallowReactive<NodeConnection[]>([]);
 
   const info = reactive<FileInfo>({
     id: null,
@@ -102,6 +102,18 @@ export const useEditorStore = defineStore("editor", () => {
     }
   }
 
+  function clearState() {
+    nodes.splice(0, nodes.length);
+    connections.splice(0, connections.length);
+    Object.assign(info, {
+      id: null,
+      title: "Untitled",
+      version: "1.0.0",
+      description: null,
+      updatedAt: null,
+    });
+  }
+
   return {
     // Estado
     nodes,
@@ -119,5 +131,6 @@ export const useEditorStore = defineStore("editor", () => {
     removeConnection,
     setId,
     setState,
+    clearState,
   };
 });

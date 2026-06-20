@@ -23,12 +23,12 @@ const connectionIcon = computed(() => mapStatusIcon[delayedStatus.value]);
 const updateDelayed = debounce((status: any) => { delayedStatus.value = status; }, 500);
 watch(wsConn.requestStatus, (s) => updateDelayed(s));
 
-const flowNodes = computed({
+const flowNodes = computed<any>({
   get: () => editorStore.nodes,
   set: (val) => editorStore.setState({ nodes: val }),
 });
 
-const flowEdges = computed({
+const flowEdges = computed<any>({
   get: () => editorStore.connections,
   set: (val) => editorStore.setState({ connections: val }),
 });
@@ -41,7 +41,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   wsConn.stop();
-  editorStore.$reset();
+  editorStore.clearState();
 });
 </script>
 
