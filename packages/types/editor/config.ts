@@ -1,84 +1,63 @@
 import {
-	type FileInfo,
-	functions,
-	logics,
-	type NodeBlueprint,
-	type NodeConnection,
-	type SDKNode,
-	type SDKNodeType,
-	variables,
-} from "./models";
+  functions,
+  logics,
+  variables,
+  type SDKNodeType,
+  type ExecuteResult,
+  type EditorContext,
+  type CategoryKey,
+} from './models';
 
-export interface ASTNode {
-	type: string;
-	params?: Record<string, any>;
-	hasScope?: boolean;
-	isExpression?: boolean;
-}
-
-export interface CategoryConfig<
-	T extends Record<string, EditorDefinition> = Record<string, EditorDefinition>,
-> {
-	text: string;
-	icon: string;
-	definitions: T;
-}
-
-export interface EditorDefinitionParams {
-	key: string;
-	label: string;
-	type: string;
-	items?: any[];
-	required?: boolean;
+export interface EditorDefinitionParam {
+  key: string;
+  label: string;
+  type: string;
+  items?: any[];
+  required?: boolean;
+  default?: any;
 }
 
 export interface EditorDefinition {
-	text: string;
-	icon: string;
-	category: SDKNodeType;
-	params?: EditorDefinitionParams[];
-	execute?: (p: Record<string, any>) => NodeBlueprint;
+  text: string;
+  icon: string;
+  params?: EditorDefinitionParam[];
+  execute?: (p: Record<string, any>) => ExecuteResult;
 }
 
-export const categories = {
-	functions,
-	logics,
-	variables,
+export interface CategoryConfig<
+  T extends Record<string, EditorDefinition> = Record<string, EditorDefinition>,
+> {
+  text: string;
+  icon: string;
+  definitions: T;
+}
+
+
+export const categories: Record<SDKNodeType, (ctx: EditorContext) => CategoryConfig> = {
+  functions,
+  logics,
+  variables,
 };
 
-export type CategoryKey = keyof typeof categories;
-
-export interface EditorState {
-	info: FileInfo;
-	nodes: Record<string, SDKNode>;
-	indexes: {
-		[K in CategoryKey]: string[];
-	};
-	connections: NodeConnection[];
+/**
+ * Retorna a configuração de uma categoria com suas definições.
+ */
+export function getCategory(categoryKey: CategoryKey, context: EditorContext): CategoryConfig {
+  return categories[categoryKey](context);
 }
 
 /**
- * @abstract Extrai o mapa de definições (subcategorias) de uma categoria principal.
+ * Normaliza items de parâmetros para os Selects da UI.
+ * Aceita strings puras ou objetos com diferentes formas.
  */
-export function getCategory(
-	categoryKey: CategoryKey,
-	context: EditorState,
-): CategoryConfig | [] {
-	return categories[categoryKey](context) ?? [];
-}
+export function normalizeItems(param: EditorDefinitionParam) {
+  const items = param.items;
+  if (!items || items.length === 0) return items;
+  if (typeof items[0] === 'string') return items;
 
-/**
- * @abstract Normaliza itens para os Selects da Interface do Usuário
- */
-export function normalizeItems(param: any) {
-	const items = param.items;
-	if (!items) return items;
-	if (typeof items[0] === "string") return items;
-	return items.map((i: any) => ({
-		title: i.name ?? i.text ?? i.label ?? i.title ?? i.id,
-		value: i.id ?? i.key ?? i.value ?? i.name ?? i.text,
-		items: i.items ?? undefined,
-		raw: i,
-	}));
+  return items.map((i: any) => ({
+  title: i.data?.ast?.params?.name ?? i.data?.ast?.category ?? i.id,
+  value: i.id,
+  raw: i,
+}));
 }
-export interface EditorContext extends EditorState {}

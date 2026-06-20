@@ -1,97 +1,98 @@
 import {
-	type CategoryKey,
-	categories,
-	type EditorDefinition,
-	getCategory,
-	type NodeBlueprint,
+  type CategoryKey,
+  categories,
+  type EditorDefinition,
+  getCategory,
 } from "@projeto/types";
 
 import { computed, ref } from "vue";
-import type { Blueprint } from "vuetify";
 import { useEditorStore } from "@/stores/editor";
 
 export function useEditorExplorer() {
-	const editorStore = useEditorStore();
+  const editorStore = useEditorStore();
 
-	const activeCategory = ref<CategoryKey | null>(null);
-	const allExpanded = ref(false);
+  const activeCategory = ref<CategoryKey | undefined>();
+  const allExpanded = ref(false);
 
-	const isDialogOpen = ref(false);
-	const formParams = ref([]);
-	const createItemExecuteFn = ref<
-		((params: Record<string, any>) => NodeBlueprint) | null
-	>(null);
+  const isDialogOpen = ref(false);
+  const formParams = ref<any[]>([]);
+  const createItemExecuteFn = ref<EditorDefinition["execute"] | null>(null);
 
-	const sidebarItems = computed(() => {
-		return (Object.keys(categories) as CategoryKey[]).map((key) => {
-			const config = getCategory(key, editorStore);
-			const isArray = Array.isArray(config);
+  const sidebarItems = computed(() =>
+    (Object.keys(categories) as CategoryKey[]).map((key) => {
+      const config = getCategory(key, editorStore);
+      return {
+        key,
+        text: config.text,
+        icon: config.icon,
+      };
+    }),
+  );
 
-			return {
-				key,
-				text: isArray ? key : config.text,
-				icon: isArray ? "folder" : config.icon,
-			};
-		});
-	});
+  const activeCategoryConfig = computed(() => {
+    if (!activeCategory.value) return null;
+    return getCategory(activeCategory.value, editorStore);
+  });
 
-	const activeCategoryConfig = computed(() => {
-		if (!activeCategory.value) return null;
+  const activeDefinitions = computed(
+    () => activeCategoryConfig.value?.definitions ?? {},
+  );
 
-		const config = getCategory(activeCategory.value, editorStore);
+  async function addButtonHandler(item: EditorDefinition) {
+    formParams.value = item.params
+      ? JSON.parse(JSON.stringify(item.params))
+      : [];
+    createItemExecuteFn.value = item.execute ?? null;
 
-		return Array.isArray(config) ? null : config;
-	});
+    if (formParams.value.length) {
+      isDialogOpen.value = true;
+    } else {
+      await _submitCreate();
+    }
+  }
 
-	const activeDefinitions = computed(
-		() => activeCategoryConfig.value?.definitions ?? {},
-	);
+  async function handleCreate() {
+   await _submitCreate();
+  }
 
-	function addButtonHandler(item: EditorDefinition) {
-		formParams.value = item.params
-			? JSON.parse(JSON.stringify(item.params))
-			: [];
+  async function _submitCreate() {
+    if (!createItemExecuteFn.value || !activeCategory.value) return;
 
-		createItemExecuteFn.value = item.execute ?? null;
+    // Coleta valores preenchidos no formulário
+    const payload = formParams.value.reduce(
+      (acc, param: any) => {
+        acc[param.key] = param.model;
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
 
-		if (formParams.value.length) isDialogOpen.value = true;
-	}
+    const result = createItemExecuteFn.value(payload);
+    await editorStore.addNode(result);
 
-	function handleCreate() {
-		const payload = formParams.value.reduce((acc, param: any) => {
-			acc[param.key] = param.model;
-			return acc;
-		}, {});
+    _reset();
+  }
 
-		if (createItemExecuteFn.value) {
-			const newNode = createItemExecuteFn.value(payload) as Blueprint;
+  function _reset() {
+    isDialogOpen.value = false;
+    formParams.value = [];
+    createItemExecuteFn.value = null;
+  }
 
-			editorStore.addNode(activeCategory.value!, {
-				...newNode,
-				position: { x: 100, y: 100 },
-				category: activeCategory.value,
-			});
-		}
+  return {
+    editorStore,
 
-		isDialogOpen.value = false;
-		formParams.value = [];
-		createItemExecuteFn.value = null;
-	}
+    activeCategory,
+    activeCategoryConfig,
+    activeDefinitions,
+    sidebarItems,
 
-	return {
-		editorStore,
+    allExpanded,
 
-		activeCategory,
-		activeCategoryConfig,
-		activeDefinitions,
-		sidebarItems,
+    isDialogOpen,
+    formParams,
 
-		allExpanded,
-
-		isDialogOpen,
-		formParams,
-
-		addButtonHandler,
-		handleCreate,
-	};
+    addButtonHandler,
+    handleCreate,
+  };
 }

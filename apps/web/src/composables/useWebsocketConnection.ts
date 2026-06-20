@@ -1,54 +1,57 @@
 import type { EditorState } from "@projeto/types";
 import { debounce } from "lodash-es";
-import { computed, watch } from "vue";
-import { useSyncProtection } from "@/composables/useSyncProtection.ts";
+import { watch } from "vue";
 import { http, ws } from "@/functions";
 import { useEditorStore } from "@/stores/editor";
 
 export function editorConnection() {
-	const store = useEditorStore();
-	const base = computed(() => store.$state);
-	const { isLocalStateNewer } = useSyncProtection(base);
-	const { data, status, connect, send, disconnect, error, requestStatus } =
-		ws<EditorState>(http.getApiUrl("ws"));
+  const store = useEditorStore();
+  const { data, status, connect, send, disconnect, error, requestStatus } =
+    ws<EditorState>(http.getApiUrl("ws"));
 
-	async function start() {
-		await connect();
-	}
+  async function start() {
+    await connect();
+  }
 
-	const slowSend = debounce((state) => {
-		const payload = JSON.parse(JSON.stringify(state));
-		send({ event: "project:lab:update:json", payload });
-	}, 500);
+  function stop() {
+    disconnect();
+  }
 
-	function stop() {
-		disconnect();
-	}
+  // Serializa apenas os campos que o servidor precisa — sem Proxy, sem computed
+  const slowSend = debounce(() => {
+    const payload = {
+      info: JSON.parse(JSON.stringify(store.info)),
+      nodes: JSON.parse(JSON.stringify(store.nodes)),
+      connections: JSON.parse(JSON.stringify(store.connections)),
+    };
+    send({ event: "project:lab:update:json", payload });
+  }, 500);
 
-	// observa as respostas do servidor
-	watch(data, (msg) => {
-		if (!msg || !msg.event) return;
-		if (msg.event === "project:lab:get:json:success") {
-			if (msg.payload && !isLocalStateNewer(msg.payload)) {
-				store.setState(msg.payload);
-			}
-		}
-	});
+  // Resposta do servidor ao get inicial
+  watch(data, (msg) => {
+    if (!msg?.event) return;
+    if (msg.event === "project:lab:get:json:success" && msg.payload) {
+      // Só hidrata se o servidor realmente tiver dados (nodes não vazio)
+      // Evita sobrescrever estado local com snapshot vazia na reconexão
+      const remote = msg.payload as EditorState;
+      const hasRemoteData = remote.nodes?.length > 0 || remote.connections?.length > 0;
+      if (hasRemoteData) {
+        store.setState(remote);
+      }
+    }
+  });
 
-	// atualiza em tempo real
-	watch(
-		base,
-		(newState) => {
-			if (status.value === "OPEN") {
-				try {
-					slowSend(newState);
-				} catch (err) {
-					console.error("Erro ao preparar payload:", err);
-				}
-			}
-		},
-		{ deep: true },
-	);
+  // Envia ao servidor sempre que nodes ou connections mudarem
+  // flush:'post' garante que roda depois de todas as mutations da microtask
+  watch(
+    () => [store.nodes, store.connections],
+    () => {
+      if (status.value === "OPEN") {
+        slowSend();
+      }
+    },
+    { deep: true, flush: "post" },
+  );
 
-	return { start, stop, connStatus: status, send, data, error, requestStatus };
+  return { start, stop, connStatus: status, send, data, error, requestStatus };
 }

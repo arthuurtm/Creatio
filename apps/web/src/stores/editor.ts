@@ -1,81 +1,123 @@
 import type {
-	CategoryKey,
-	EditorState,
-	FileInfo,
-	NodeConnection,
-	SDKNode,
+  CategoryKey,
+  EditorState,
+  ExecuteResult,
+  AutoConnectIntent,
+  FileInfo,
+  NodeConnection,
+  SDKNode,
 } from "@projeto/types";
 import { defineStore } from "pinia";
 import { computed, reactive } from "vue";
 
 export const useEditorStore = defineStore("editor", () => {
-	const variables = reactive<SDKNode[]>([]);
-	const functions = reactive<SDKNode[]>([]);
-	const logics = reactive<SDKNode[]>([]);
-	const connections = reactive<NodeConnection[]>([]);
+  const nodes = reactive<SDKNode[]>([]);
+  const connections = reactive<NodeConnection[]>([]);
 
-	const info = reactive<FileInfo>({
-		id: null,
-		title: "Untitled",
-		version: "1.0.0",
-		description: null,
-		updatedAt: null,
-	});
+  const info = reactive<FileInfo>({
+    id: null,
+    title: "Untitled",
+    version: "1.0.0",
+    description: null,
+    updatedAt: null,
+  });
 
-	const categoryMap: Record<CategoryKey, SDKNode[]> = {
-		variables,
-		functions,
-		logics,
-	};
+  const variables = computed(() => nodes.filter((n) => n.type === "variables"));
+  const functions = computed(() => nodes.filter((n) => n.type === "functions"));
+  const logics    = computed(() => nodes.filter((n) => n.type === "logics"));
 
-	const nodes = computed({
-		get: () => [...variables, ...functions, ...logics],
-		set: (newNodesArray) => {
-			const newVars = newNodesArray.filter((n) => n.category === "variables");
-			const newFuncs = newNodesArray.filter((n) => n.category === "functions");
-			const newLogics = newNodesArray.filter((n) => n.category === "logics");
+  async function addNode(result: ExecuteResult, position = { x: 100, y: 100 }): Promise<SDKNode> {
+    const id = `${result.type}_${Math.random().toString(36).slice(2, 9)}`;
+    const { connectData, connectExecution, ...astData } = result;
 
-			variables.splice(0, variables.length, ...newVars);
-			functions.splice(0, functions.length, ...newFuncs);
-			logics.splice(0, logics.length, ...newLogics);
-		},
-	});
+    const newNode: SDKNode = {
+      id,
+      type: result.type,
+      position,
+      data: { ast: astData },
+      ...(astData.parentId ? { parentNode: astData.parentId, expandParent: true } : {}),
+    };
 
-	function addNode(category: CategoryKey, nodeData: SDKNode) {
-		const id = `${category}_${Math.random().toString(36)}`;
-		const newNode = { ...nodeData, id, category };
-		categoryMap[category].push(newNode);
-	}
+    nodes.push(newNode);
 
-	function setId(id: number) {
-		info.id = id;
-	}
+    if (connectData) {
+      const targets = Array.isArray(connectData) ? connectData : [connectData];
+      targets.forEach(targetId => _createAutoEdge(id, { kind: 'data', targetId }));
+    }
 
-	function setState(newState: Partial<EditorState>) {
-		if (newState.info) Object.assign(info, newState.info);
+    if (connectExecution) {
+      const targets = Array.isArray(connectExecution) ? connectExecution : [connectExecution];
+      targets.forEach(targetId => _createAutoEdge(id, { kind: 'execution', targetId }));
+    }
 
-		if (newState.variables)
-			variables.splice(0, variables.length, ...newState.variables);
-		if (newState.functions)
-			functions.splice(0, functions.length, ...newState.functions);
-		if (newState.logics) logics.splice(0, logics.length, ...newState.logics);
+    return newNode;
+  }
 
-		if (newState.connections) {
-			connections.splice(0, connections.length, ...newState.connections);
-		}
-	}
+  function _createAutoEdge(newNodeId: string, intent: AutoConnectIntent) {
+  // Temporariamente: cria o edge sem validar
+  // (para isolar se o problema é na validação ou no targetId)
+  const [source, target] =
+    intent.kind === 'data'
+      ? [newNodeId, intent.targetId]
+      : [intent.targetId, newNodeId];
 
-	return {
-		variables,
-		functions,
-		logics,
-		connections,
-		info,
+  console.log('[autoConnect] criando edge', { source, target, nodes: nodes.map(n => n.id) });
 
-		nodes,
+  connections.push({
+    id: `${source}→${target}`,
+    source,
+    target,
+    data: { type: intent.kind },
+  } as NodeConnection);
+}
 
-		addNode,
-		setId,
-		setState,
-	};
+  function setId(id: number) {
+    info.id = id;
+  }
+
+  function removeNode(id: string) {
+    const idx = nodes.findIndex((n) => n.id === id);
+    if (idx !== -1) nodes.splice(idx, 1);
+    // Remove edges órfãos
+    const toRemove = connections
+      .map((e, i) => (e.source === id || e.target === id ? i : -1))
+      .filter((i) => i !== -1)
+      .reverse();
+    toRemove.forEach((i) => connections.splice(i, 1));
+  }
+
+  function removeConnection(id: string) {
+    const idx = connections.findIndex((e) => e.id === id);
+    if (idx !== -1) connections.splice(idx, 1);
+  }
+
+  function setState(newState: Partial<EditorState>) {
+    if (newState.info) Object.assign(info, newState.info);
+
+    if (newState.nodes) {
+      nodes.splice(0, nodes.length, ...newState.nodes);
+    }
+    if (newState.connections) {
+      connections.splice(0, connections.length, ...newState.connections);
+    }
+  }
+
+  return {
+    // Estado
+    nodes,
+    connections,
+    info,
+
+    // Getters filtrados (para os models / ctx)
+    variables,
+    functions,
+    logics,
+
+    // Ações
+    addNode,
+    removeNode,
+    removeConnection,
+    setId,
+    setState,
+  };
 });

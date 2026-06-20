@@ -1,53 +1,83 @@
-export type SDKNodeType = "variables" | "functions" | "logics";
+import type { Node, Edge } from '@vue-flow/core';
 
-export interface NodeBlueprint {
-	type: string;
-	params: Record<string, unknown>;
-	hasScope?: boolean;
+export type SDKNodeType = 'variables' | 'functions' | 'logics';
+
+
+//    Usada em execute() para dizer à Store
+//    "quando eu nascer, me conecte a X".
+
+export type AutoConnectIntent =
+  | {
+      /** Conecta este nó como "filho de execução" de outro nó já existente */
+      kind: 'execution';
+      targetId: string;
+    }
+  | {
+      kind: 'data';
+      targetId: string;
+      handleId?: string;
+    };
+
+export interface ASTNode {
+  type: SDKNodeType;
+  category: string;
+  params?: Record<string, any>;
+  /** Verdadeiro se este nó abre um bloco de escopo (If, For, etc.) */
+  hasScope?: boolean;
+  /** Quando verdadeiro, o transpilador trata este nó como expressão inline */
+  isExpression?: boolean;
+  /** ID do nó PAI no Vue Flow — apenas para aninhamento visual de escopo */
+  parentId?: string;
 }
 
-export interface SDKNode extends NodeBlueprint {
-	id: string;
-	type: string;
-	category: SDKNodeType;
-	position: { x: number; y: number };
-	data?: Record<string, any>;
+export interface ExecuteResult extends ASTNode {
+  connectData?: string | string[];
+  connectExecution?: string | string[];
 }
 
-export interface NodeConnection {
-	id: string;
-	source: string;
-	sourceHandle?: string;
-	target: string;
-	targetHandle?: string;
-	type?: "execution" | "data";
-	markerEnd?: string;
+export interface NodeBlueprintData {
+  ast: ASTNode; // ← ASTNode puro, sem autoConnect
 }
 
-// export interface UserVariable {
-// 	id: string;
-// 	name: string;
-// 	dataType: "string" | "number" | "boolean" | "array" | "object";
-// 	defaultValue: any;
-// 	isConstant: boolean;
-// }
+export type SDKNode = Node<NodeBlueprintData, any, SDKNodeType>;
 
-// export interface UserFunction {
-// 	id: string;
-// 	name: string;
-// 	parameters: { name: string; type: string }[];
-// 	returnType: string | null;
-// 	entryNodeId: string;
-// }
+export interface ConnectionData {
+  type: 'execution' | 'data';
+}
+
+export type NodeConnection = Edge<ConnectionData>;
 
 export interface FileInfo {
-	id: number | null;
-	title: string;
-	version: string;
-	description: string | null;
-	updatedAt: Date | number | null;
+  id: number | null;
+  title: string;
+  version: string;
+  description: string | null;
+  updatedAt: Date | number | null;
 }
 
-export { default as functions } from "./functions";
-export { default as logics } from "./logics";
-export { default as variables } from "./variables";
+export interface EditorState {
+  info: FileInfo;
+  /**
+   * Array único de todos os nós.
+   * Para filtrar por tipo: nodes.filter(n => n.type === 'variables')
+   * Simplifica indexação, busca e serialização.
+   */
+  nodes: SDKNode[];
+  connections: NodeConnection[];
+}
+
+// Atalhos de leitura que a config.ts (e os models) usam via ctx
+export interface EditorContext extends EditorState {
+  /** Conveniência: nós de variáveis já filtrados */
+  variables: SDKNode[];
+  /** Conveniência: nós de funções já filtrados */
+  functions: SDKNode[];
+  /** Conveniência: nós de lógica já filtrados */
+  logics: SDKNode[];
+}
+
+export type CategoryKey = SDKNodeType;
+
+export { default as functions } from './functions';
+export { default as logics } from './logics';
+export { default as variables } from './variables';

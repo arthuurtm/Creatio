@@ -6,6 +6,8 @@ interface ContextMenuItem {
 	value?: any;
 	icon?: string;
 	items?: ContextMenuItem[];
+	disabled?: boolean;
+	category?: string;
 }
 
 interface ContextMenuGroup {
@@ -30,13 +32,15 @@ function normalizeItem(item: any): ContextMenuItem {
 		return { text: String(item), value: item };
 	}
 
-	const { text, label, value, icon, items, id, key } = item;
+	const { text, label, value, icon, items, id, key, disabled, category } = item;
 
 	return {
 		text: text ?? label ?? key ?? id ?? String(value ?? "-"),
 		value: value ?? id ?? key ?? text ?? label ?? null,
 		icon,
 		items,
+		disabled,
+		category,
 	};
 }
 
@@ -68,11 +72,18 @@ function normalizeGroups(input: any): ContextMenuGroup[] {
 
 	// Se o objeto tem "items", ele é um grupo real
 	if (arr.length && typeof arr[0] === "object" && "items" in arr[0]) {
-		return arr.map((g: any) => ({
-			key: g.key ?? g.label,
-			label: g.label ?? g.text ?? g.key,
-			items: normalizeItems(g.items),
-		}));
+		return arr.map((g: any) => {
+			const groupLabel = g.label ?? g.text ?? g.key;
+			return {
+				key: g.key ?? g.label,
+				label: groupLabel,
+				items: normalizeItems(g.items).map((i) => ({
+					...i,
+					category: groupLabel,
+					disabled: g.disabled || i.disabled,
+				})),
+			};
+		});
 	}
 
 	return [
@@ -95,6 +106,7 @@ const groups = computed(() => normalizeGroups(props.items));
           v-for="item in group.items"
           :key="item.value ?? item.text"
           :title="item.text"
+          :disabled="item.disabled"
           @click="emit('select', item)"
           link
         />
@@ -104,6 +116,7 @@ const groups = computed(() => normalizeGroups(props.items));
           v-for="item in group.items"
           :key="item.value ?? item.text"
           :title="item.text"
+          :disabled="item.disabled"
           @click="emit('select', item)"
           link
         />

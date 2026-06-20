@@ -19,6 +19,7 @@ import {
 } from "vuetify/components";
 
 import ComplexArrayBuilder from "@/components/ui/ComplexArrayBuilder.vue";
+import ExpressionBuilder from "@/components/ui/ExpressionBuilder.vue";
 import { normalizeItems } from "@projeto/types";
 
 type FormType =
@@ -36,7 +37,8 @@ type FormType =
   | "datetime"
   | "file"
   | "button"
-  | "complex-array";
+  | "complex-array"
+  | "expression";
 
 interface FormParam {
   key: string;
@@ -78,6 +80,7 @@ const inputParamMap: Record<FormType, any> = {
   file: VFileInput,
   button: VBtn,
   "complex-array": ComplexArrayBuilder,
+  expression: ExpressionBuilder,
 };
 
 function handleCreate() {

@@ -9,7 +9,7 @@ defineProps<{
 		icon: string;
 	}[];
 
-	activeCategory: CategoryKey | null;
+	activeCategory: CategoryKey | undefined;
 }>();
 
 const emit = defineEmits<{
