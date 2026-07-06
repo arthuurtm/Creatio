@@ -9,12 +9,13 @@ import { VBtn, VInput } from "vuetify/components";
 import { aliases, md } from "vuetify/iconsets/md";
 import colors from "vuetify/util/colors";
 
-const lightGoogle: ThemeDefinition = {
+const light: ThemeDefinition = {
 	dark: false,
 	colors: {
 		primary: "#0b57d0",
 		"primary-darken-1": "#0842a0",
 		secondary: "#00639b",
+		tertiary: "#7d5260",
 		background: "#f0f4f9",
 		surface: "#ffffff",
 		"surface-container": "#e9eef6",
@@ -25,17 +26,19 @@ const lightGoogle: ThemeDefinition = {
 		warning: "#b06000",
 		"on-primary": "#ffffff",
 		"on-secondary": "#ffffff",
+		"on-tertiary": "#ffffff",
 		"on-background": "#1f1f1f",
 		"on-surface": "#1f1f1f",
 	},
 };
 
-const darkGoogle: ThemeDefinition = {
+const dark: ThemeDefinition = {
 	dark: true,
 	colors: {
 		primary: "#a8c7fa",
 		"primary-darken-1": "#7cacf8",
 		secondary: "#7fcfff",
+		tertiary: "#efb8c8",
 		background: "#0f0f11",
 		surface: "#18181c",
 		"surface-container": "#202125",
@@ -46,6 +49,7 @@ const darkGoogle: ThemeDefinition = {
 		warning: "#ffd54f",
 		"on-primary": "#062e6f",
 		"on-secondary": "#003554",
+		"on-tertiary": "#492532",
 		"on-background": "#e3e3e3",
 		"on-surface": "#e3e3e3",
 	},
@@ -57,8 +61,8 @@ export default createVuetify({
 	theme: {
 		defaultTheme: "system",
 		themes: {
-      light: lightGoogle,
-      dark: darkGoogle,
+      light: light,
+      dark: dark,
 		},
 	},
 
@@ -127,6 +131,9 @@ export default createVuetify({
 		},
 		VChip: {
 			rounded: "lg",
+		},
+		VAvatar: {
+			rounded: "circle",
 		},
 		VList: {
 			border: false,

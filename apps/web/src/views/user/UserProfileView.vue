@@ -77,7 +77,7 @@
               <div class="text-h4 font-weight-bold text-high-emphasis">
                 {{ myProjects.length }}
               </div>
-              <div class="text-body-2 text-medium-emphasis mt-1">Projetos de Código</div>
+              <div class="text-body-2 text-medium-emphasis mt-1">Projetos de código</div>
             </v-card>
           </v-col>
           <v-col cols="12" sm="6">
@@ -86,7 +86,7 @@
               <div class="text-h4 font-weight-bold text-high-emphasis">
                 {{ lastUpdatedText }}
               </div>
-              <div class="text-body-2 text-medium-emphasis mt-1">Última Atualização</div>
+              <div class="text-body-2 text-medium-emphasis mt-1">Última atualização</div>
             </v-card>
           </v-col>
         </v-row>
@@ -96,7 +96,7 @@
         <div>
           <h3 class="text-h5 font-weight-bold mb-6 d-flex align-center">
             <v-icon start color="primary">terminal</v-icon>
-            Meus Códigos
+            Meus códigos
             <v-chip size="small" color="primary" variant="tonal" class="ml-3 font-weight-bold">
               {{ myProjects.length }}
             </v-chip>

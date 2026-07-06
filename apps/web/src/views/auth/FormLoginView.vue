@@ -1,5 +1,6 @@
 <template>
-  <AppFormPage title="Fazer login" subTitle="Acesse sua conta Creatio" :currentStep="currentStep" :totalSteps="2">
+  <AppFormPage title="Fazer login" subTitle="Acesse sua conta Creatio" :currentStep="currentStep" :totalSteps="2"
+    @submit="currentStep === 1 ? nextStep() : loaderController(handleLogin)">
     <template #form>
       <div v-if="currentStep === 1" class="d-flex flex-column w-100 ga-4">
         <v-text-field label="Usuário ou e-mail"
@@ -85,7 +86,6 @@ const handleLogin = async () => {
     pageRedirect(query)
   } catch (error) {
     setFieldError(formData.value.password, "Usuário ou senha incorretos.")
-    console.log(formData.value)
   }
 }
 </script>

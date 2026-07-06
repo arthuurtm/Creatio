@@ -1,15 +1,57 @@
 <template>
-  <AppFormPage title="Alterar senha" :currentStep="currentStep" :totalSteps="3" :loading="loading">
+  <AppFormPage title="Alterar senha" :currentStep="currentStep" :totalSteps="3" :loading="loading"
+    @submit="
+      currentStep === 1 ? loaderController(prepareVerifyCode) :
+      currentStep === 2 ? loaderController(verifySecureCode) :
+      loaderController(resetPassword)
+    ">
     <template #form>
       <div v-if="currentStep === 1" class="d-flex flex-column ga-3 w-100">
         <v-text-field label="E-mail" aria-required="true" v-model="formData.email.val"
           :error="formData.email.err" :error-messages="formData.email.errVal" variant="outlined" hide-details="auto" rounded="pill" />
       </div>
 
-      <div v-if="currentStep === 2" class="d-flex flex-column ga-3 w-100">
-        <v-text-field label="Código de verificação"
-          aria-required="true" v-model="formData.verifyCode.val" :error="formData.verifyCode.err"
-          :error-messages="formData.verifyCode.errVal" variant="outlined" hide-details="auto" rounded="pill" />
+      <div
+        v-if="currentStep === 2"
+        class="d-flex flex-column align-center ga-4 w-100"
+      >
+        <div class="text-center">
+          <h3 class="text-h6 mb-1">Verificação de e-mail</h3>
+          <p class="text-body-2 text-medium-emphasis">
+            Código de verificação enviado para seu e-mail.
+          </p>
+        </div>
+
+        <v-container>
+          <v-otp-input
+            v-model="formData.verifyCode.val"
+            aria-required="true"
+            :error="formData.verifyCode.err"
+          />
+
+          <div v-if="formData.verifyCode.err" class="text-center">
+            <span class="text-body-2 text-error">
+              {{ formData.verifyCode.errVal }}
+            </span>
+          </div>
+        </v-container>
+
+        <div class="text-center">
+          <span class="text-body-2 text-medium-emphasis">
+            Não recebeu o código?
+          </span>
+          <v-btn
+            text
+            color="primary"
+            variant="text"
+            size="small"
+            @click="prepareVerifyCode(true)"
+            :loading="loading"
+            class="ml-1 text-none"
+          >
+            Reenviar código
+          </v-btn>
+        </div>
       </div>
 
       <div v-if="currentStep === 3" class="d-flex flex-column ga-3 w-100">
@@ -20,10 +62,49 @@
           aria-required="true" v-model="formData.passwd2.val" :error="formData.passwd2.err"
           :error-messages="formData.passwd2.errVal" variant="outlined" hide-details="auto" rounded="pill" />
       </div>
+
+      <div
+        v-if="currentStep === 4"
+        class="d-flex flex-column align-center justify-center text-center ga-4 w-100 py-8"
+      >
+        <v-avatar
+          size="96"
+          color="success"
+          variant="tonal"
+        >
+          <v-icon
+            icon="check_circle"
+            size="56"
+          />
+        </v-avatar>
+
+        <div>
+          <h2 class="text-h5 font-weight-bold mb-2">
+            Senha redefinida!
+          </h2>
+
+          <p class="text-body-1 text-medium-emphasis">
+            Sua senha foi alterada com sucesso.
+            Agora você pode fazer login utilizando sua nova senha.
+          </p>
+        </div>
+
+        <v-btn
+          color="primary"
+          variant="flat"
+          rounded="pill"
+          @click="router.push({ name: 'Login' })"
+        >
+          Ir para o login
+        </v-btn>
+      </div>
     </template>
 
     <template #buttons>
-      <div class="d-flex flex-column ga-2 w-100">
+      <div
+        v-if="currentStep !== 4"
+        class="d-flex flex-column ga-2 w-100"
+      >
         <v-btn
           :text="currentStep === 3 ? 'Confirmar' : 'Avançar'"
           color="primary"
@@ -37,6 +118,7 @@
             loaderController(resetPassword)
           "
         />
+
         <v-btn
           variant="text"
           :text="currentStep === 1 ? 'Cancelar' : 'Voltar'"
@@ -47,14 +129,14 @@
       </div>
     </template>
 
-    <template #formInfo>
+    <!-- <template #formInfo>
       <span class="text-body-2 text-medium-emphasis">
         Lembrou sua senha?
         <a href="#" class="text-primary font-weight-bold ml-1 text-decoration-none" @click.prevent="router.push({ name: 'Login' })">
           Fazer login
         </a>
       </span>
-    </template>
+    </template> -->
   </AppFormPage>
 </template>
 
@@ -81,14 +163,14 @@ const formData = ref<Params>({
   accessUUID: '',
 })
 const router = useRouter()
-const { currentStep, nextStep, prevStep, loading, loaderController, setFieldError } = stepForm({
-  totalSteps: 3,
+const { currentStep, prevStep, loading, loaderController, setFieldError, goToStep } = stepForm({
+  totalSteps: 4,
 })
 const sentCode = ref(false)
 let sameMail = ''
 
-const prepareVerifyCode = async () => {
-  if (!sentCode.value && !(formData.value.email.val === sameMail)) {
+const prepareVerifyCode = async (resent: Boolean = false) => {
+  if (resent || !sentCode.value && !(formData.value.email.val === sameMail)) {
     try {
       await http.get({
         type: 'database',
@@ -107,12 +189,12 @@ const prepareVerifyCode = async () => {
 
       sameMail = formData.value.email.val
       sentCode.value = true
-      nextStep()
+      goToStep(2)
     } catch (error: any) {
       setFieldError(formData.value.email, error.message)
     }
   } else {
-    nextStep()
+    goToStep(2)
   }
 }
 
@@ -129,7 +211,7 @@ const verifySecureCode = async () => {
       },
     )
     formData.value.accessUUID = accessUUID
-    nextStep()
+    goToStep(3)
   } catch (err: any) {
     setFieldError(formData.value.verifyCode, err.message)
   }
@@ -139,6 +221,7 @@ const resetPassword = async () => {
   try {
     if (formData.value.passwd1.val !== formData.value.passwd2.val) {
       setFieldError(formData.value.passwd2, "As senhas não coincidem!")
+      return
     }
 
     await http.post(
@@ -151,11 +234,9 @@ const resetPassword = async () => {
         accessUUID: formData.value.accessUUID,
       },
     )
-    setTimeout(() => {
-      router.push({ name: 'Login' })
-    }, 2000)
-  } catch (error) {
-    setFieldError(formData.value.passwd1, String(error) ?? "Erro ao redefinir senha")
+    goToStep(4)
+  } catch (error: any) {
+    setFieldError(formData.value.passwd1, error?.message ?? "Erro ao redefinir senha")
   }
 }
 </script>

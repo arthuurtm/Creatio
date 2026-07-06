@@ -98,7 +98,7 @@ function handleCreate() {
       <v-card-title
         class="text-center text-subtitle-1 font-weight-bold pt-4 pb-2"
       >
-        Criar Novo Objeto
+        Criar novo objeto
       </v-card-title>
 
       <v-card-text class="pt-4 pb-0">

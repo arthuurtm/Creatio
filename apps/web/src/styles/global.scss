@@ -1,5 +1,6 @@
 @use 'anim.scss';
 @use 'bubbles.scss';
+@use 'expressive.scss';
 
 html {
   overflow-y: auto !important; 
@@ -38,16 +39,16 @@ body {
 
 /* === MICRO-INTERAÇÕES (Material You Expressive 3.0) === */
 
-// Botões com física de mola (Spring Scale)
+// Botões com leve elevação ao interagir (sutil, sem "mola" exagerada)
 .v-btn {
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, box-shadow 0.2s !important;
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s, box-shadow 0.2s !important;
   
   &:hover:not(.v-btn--loading):not(.v-btn--disabled) {
-    transform: scale(1.02) translateY(-1px);
+    transform: translateY(-1px);
   }
   
   &:active:not(.v-btn--loading):not(.v-btn--disabled) {
-    transform: scale(0.96) translateY(0);
+    transform: translateY(0) scale(0.99);
   }
 }
 
@@ -97,4 +98,3 @@ body {
   border-radius: 16px !important;
   overflow: hidden;
 }
-

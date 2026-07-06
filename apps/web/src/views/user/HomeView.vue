@@ -1,24 +1,32 @@
 <template>
   <div class="home-view">
     <v-container class="px-4 px-md-8 py-6 py-md-8">
-      <div class="page-shell pa-5 pa-md-8 rounded-xl mb-6 position-relative overflow-hidden">
-        <div class="glow-bg"></div>
+      <div class="hero-shell pa-5 pa-md-8 mb-6 position-relative overflow-hidden">
+        <div class="blob-cluster" aria-hidden="true">
+          <span class="blob blob-a"></span>
+          <span class="blob blob-b"></span>
+          <span class="blob blob-c"></span>
+        </div>
+
         <v-row align="center" class="position-relative" style="z-index: 2;">
           <v-col cols="12" md="8">
-            <div class="d-flex align-center ga-2 mb-3">
-              <v-chip size="small" variant="tonal" color="primary" class="font-weight-medium">Comunidade</v-chip>
-              <span class="text-caption text-medium-emphasis">Conteúdos públicos e projetos compartilhados</span>
-            </div>
-            <h1 class="text-h3 text-md-h2 font-weight-bold tracking-tight mb-3">
-              Explorar Códigos Públicos
+            <v-chip size="small" variant="tonal" color="tertiary" class="font-weight-medium mb-4">
+              <span class="dot mr-2"></span>
+              Comunidade
+            </v-chip>
+
+            <h1 class="display-text text-h3 text-md-h2 mb-3">
+              <span class="d-block">Explorar</span>
+              <span class="d-block text-gradient-brand">códigos públicos</span>
             </h1>
+
             <p class="text-body-1 text-md-h6 text-medium-emphasis font-weight-regular max-width-680 mb-0">
               Estude a lógica de blocos, importe códigos de outros desenvolvedores e colabore na comunidade Creatio.
             </p>
           </v-col>
 
           <v-col cols="12" md="4" class="d-flex justify-md-end mt-4 mt-md-0">
-            <v-card class="pa-4 search-card" width="100%" max-width="360" rounded="xl" elevation="0">
+            <v-card class="pa-4 search-card" width="100%" max-width="360" elevation="0">
               <div class="text-overline text-medium-emphasis mb-2">Buscar na comunidade</div>
               <v-text-field
                 v-model="searchQuery"
@@ -35,35 +43,36 @@
         </v-row>
       </div>
 
-      <v-card class="pa-4 pa-md-5 mb-6" rounded="xl" elevation="0">
-        <div class="d-flex flex-wrap align-center justify-space-between ga-4">
-          <div>
-            <div class="text-overline text-medium-emphasis mb-1">Organização</div>
-            <div class="d-flex align-center ga-3 flex-wrap">
-              <span class="text-body-1 font-weight-medium">Ordenar por</span>
-              <v-btn-toggle v-model="sortBy" mandatory divided variant="outlined" density="comfortable">
-                <v-btn value="recent" class="text-none">Recentes</v-btn>
-                <v-btn value="name" class="text-none">Nome</v-btn>
-              </v-btn-toggle>
-            </div>
+      <div class="d-flex flex-wrap align-center justify-space-between ga-4 toolbar-row pa-2 mb-6">
+        <div>
+          <div class="text-overline text-medium-emphasis mb-1">Organização</div>
+          <div class="d-flex align-center ga-3 flex-wrap">
+            <span class="text-body-1 font-weight-medium">Ordenar por</span>
+            <v-btn-toggle v-model="sortBy" mandatory variant="text" class="segmented-pill">
+              <v-btn value="recent" class="text-none">Recentes</v-btn>
+              <v-btn value="name" class="text-none">Nome</v-btn>
+            </v-btn-toggle>
           </div>
-
-          <v-chip color="primary" variant="tonal" class="font-weight-bold">
-            {{ filteredProjects.length }} projeto(s)
-          </v-chip>
         </div>
-      </v-card>
+
+        <div class="count-badge d-flex flex-column align-center justify-center px-5 py-2">
+          <span class="count-number">{{ filteredProjects.length }}</span>
+          <span class="count-label text-caption">projeto(s)</span>
+        </div>
+      </div>
 
       <section>
         <div class="d-flex flex-wrap justify-space-between align-center mb-4 ga-3">
-          <div>
-            <h2 class="text-h5 font-weight-bold d-flex align-center ga-2 mb-1">
-              <v-icon color="primary">hub</v-icon>
-              Feed da Comunidade
-            </h2>
-            <p class="text-body-2 text-medium-emphasis mb-0">
-              Projetos públicos publicados por outros usuários.
-            </p>
+          <div class="d-flex align-center ga-3">
+            <div class="icon-squircle">
+              <v-icon color="primary" size="22">hub</v-icon>
+            </div>
+            <div>
+              <h2 class="text-h5 font-weight-bold mb-1">Feed da comunidade</h2>
+              <p class="text-body-2 text-medium-emphasis mb-0">
+                Projetos públicos publicados por outros usuários.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -142,9 +151,12 @@ const filteredProjects = computed(() => {
 </script>
 
 <style scoped>
-.page-shell {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.12), rgba(var(--v-theme-surface), 0.96));
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .search-card {
@@ -152,23 +164,11 @@ const filteredProjects = computed(() => {
   background: rgba(var(--v-theme-surface), 0.78) !important;
 }
 
-.glow-bg {
-  position: absolute;
-  top: -45%;
-  right: -18%;
-  width: 60%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-  transform: rotate(-15deg);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.tracking-tight {
-  letter-spacing: -0.02em !important;
-}
-
 .max-width-680 {
   max-width: 680px;
+}
+
+.toolbar-row {
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
 </style>

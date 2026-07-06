@@ -18,23 +18,17 @@ declare module "vue-router" {
 const LayoutBase = () => import("@/layouts/LayoutBase.vue");
 
 const routes: RouteRecordRaw[] = [
-	// {
-	// 	path: "/",
-	// 	name: "Landing",
-	// 	component: () => import("@/views/LandingView.vue"),
-	// 	meta: { publicOnly: true },
-	// },
+	{
+		path: "/",
+		name: "About",
+		component: () => import("@/views/about/LandingView.vue"),
+		meta: { requiresAuth: false },
+	},
 	{
 		path: "/",
 		component: LayoutBase,
 		meta: { requiresAuth: true },
 		children: [
-			{
-				path: "",
-				name: "About",
-				component: () => import("@/views/about/AboutView.vue"),
-				meta: { publicOnly: true },
-			},
 			{
 				path: "home",
 				name: "Home",
@@ -101,28 +95,26 @@ let appInitialized = false;
 router.beforeEach(async (to, from, next) => {
   const userStore = (await import("@/stores/user")).useUserStore();
 
-  // Na primeira navegação, busca os dados do servidor se não tiver no store
   if (!appInitialized) {
     if (!userStore.checkAuth()) {
-      // Tenta recuperar sessão do servidor uma única vez
       try {
         await http.auth.isAuthenticated();
       } catch {
-        // Servidor inacessível ou sessão expirada — store limpo já foi tratado em isAuthenticated()
+        // Servidor inacessível ou sessão expirada
       }
     }
     appInitialized = true;
   }
 
-  // Verificação local instantânea (sem fetch) para todas as navegações seguintes
   const isLoggedIn = userStore.checkAuth();
 
   if (to.meta.requiresAuth && !to.meta.publicOnly && !isLoggedIn) {
     next({ name: "Login", query: { redirect: to.fullPath } });
   } else if (
-    (to.name === "Login" || to.name === "Signup" || to.name === "PasswordRescue" || to.name === "About") &&
+    (to.name === "Login" || to.name === "Signup" || to.name === "PasswordRescue") &&
     isLoggedIn
   ) {
+    // Telas de autenticação continuam bloqueadas pra quem já está logado
     next({ name: "Home" });
   } else {
     next();

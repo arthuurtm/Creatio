@@ -69,7 +69,7 @@
                         <v-icon color="primary" icon="lock" />
                      </v-avatar>
                   </template>
-                  <v-card-title class="text-h6">Senha e Autenticação</v-card-title>
+                  <v-card-title class="text-h6">Senha e autenticação</v-card-title>
                   <v-card-subtitle>Gerencie como você entra na sua conta</v-card-subtitle>
                 </v-card-item>
 
@@ -131,6 +131,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { http } from '@/functions/'
+import { showToast } from '@/plugins/toast'
 import type { DeviceData } from "@projeto/types"
 import { useTheme } from 'vuetify'
 
@@ -244,9 +245,10 @@ function onFileChange(e: Event) {
 
     try {
       await http.post({ type: 'database', route: 'updateProfilePic' }, { image: reader.result })
-      alert('Foto atualizada!')
+      showToast({ type: 'success', message: 'Foto atualizada!' })
     } catch (err) {
       console.error('Erro upload', err)
+      showToast({ type: 'error', message: 'Não foi possível atualizar a foto. Tente novamente.' })
     }
   }
   reader.readAsDataURL(file)

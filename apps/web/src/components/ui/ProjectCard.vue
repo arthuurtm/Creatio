@@ -13,8 +13,8 @@
     <div class="pa-5 d-flex flex-column fill-height">
       <!-- CABEÇALHO: ícone + título + data -->
       <div class="d-flex align-start ga-4 mb-4">
-        <v-avatar color="primary" variant="tonal" rounded="lg" size="44" class="project-icon flex-shrink-0">
-          <v-icon color="primary">terminal</v-icon>
+        <v-avatar :color="accentColor" variant="tonal" rounded="lg" size="44" class="project-icon flex-shrink-0">
+          <v-icon :color="accentColor">terminal</v-icon>
         </v-avatar>
         <div class="flex-grow-1 min-width-0">
           <div class="text-subtitle-1 font-weight-bold text-truncate leading-tight">
@@ -31,9 +31,9 @@
         {{ item.description || "Sem descrição disponível." }}
       </div>
 
-      <!-- RODAPÉ: versão + ação -->
+      <!-- RODAPÉ: versão (metadado, discreto) + ação (destaque) -->
       <div class="d-flex align-center justify-space-between pt-2">
-        <v-chip size="small" variant="tonal" color="primary" label>
+        <v-chip size="small" variant="outlined" color="default" label>
           v{{ item.version || "1.0.0" }}
         </v-chip>
         <v-chip
@@ -51,11 +51,25 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
+import { computed } from 'vue';
+
+const props = defineProps({
   item: { type: Object, required: true },
   width: { type: [String, Number], default: '100%' },
 });
 defineEmits(['click']);
+
+// Alterna a cor do ícone entre primary/secondary/tertiary com base no item,
+// pra grade de cards não parecer um bloco monocromático repetido.
+const accentPalette = ['primary', 'secondary', 'tertiary'];
+const accentColor = computed(() => {
+  const key = String(props.item?.id ?? props.item?.title ?? '');
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash + key.charCodeAt(i)) % accentPalette.length;
+  }
+  return accentPalette[hash];
+});
 
 function formatDate(date: any) {
   if (!date) return '';
@@ -70,7 +84,7 @@ function formatDate(date: any) {
 
 <style scoped>
 .project-card {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
   cursor: pointer;
   background-color: rgb(var(--v-theme-surface)) !important;
   display: flex;
@@ -79,10 +93,10 @@ function formatDate(date: any) {
   outline: none;
 }
 
-/* Hover com elevação e cor de borda */
+/* Hover com elevação sutil e cor de borda */
 .project-card:hover {
-  transform: translateY(-4px) scale(1.015);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07) !important;
   border-color: rgb(var(--v-theme-primary)) !important;
 }
 
@@ -91,14 +105,6 @@ function formatDate(date: any) {
   outline: 2px solid rgb(var(--v-theme-primary)) !important;
   outline-offset: 2px;
   transform: translateY(-2px);
-}
-
-.project-icon {
-  transition: transform 0.25s ease;
-}
-
-.project-card:hover .project-icon {
-  transform: rotate(-5deg) scale(1.08);
 }
 
 .project-description {

@@ -37,6 +37,8 @@ declare module 'vue' {
     ProjectCard: typeof import('./src/components/ui/ProjectCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SidebarProjects: typeof import('./src/components/modules/SidebarProjects.vue')['default']
+    UserProfileMenu: typeof import('./src/components/modules/UserProfileMenu.vue')['default']
     VPasswordField: typeof import('./src/components/ui/VPasswordField.vue')['default']
   }
 }
