@@ -34,7 +34,7 @@ export const useEditorStore = defineStore("editor", () => {
       id,
       type: result.type,
       position,
-      data: { ast: astData },
+      data: astData,
       ...(astData.parentId ? { parentNode: astData.parentId, expandParent: true } : {}),
     };
 

@@ -12,9 +12,9 @@ const typeColors: Record<string, string> = {
   functions: "#E91E63", // Pink
 };
 
-const astType = computed(() => props.data?.ast?.type || 'unknown');
-const astCategory = computed(() => props.data?.ast?.category || 'Unknown Node');
-const astParams = computed(() => props.data?.ast?.params || {});
+const astType = computed(() => props.data?.type || 'unknown');
+const astCategory = computed(() => props.data?.category || 'Unknown Node');
+const astParams = computed(() => props.data?.params || {});
 
 const astTypeClass = computed(() => `type-${astType.value}`);
 
@@ -35,14 +35,14 @@ const nodeStyles = computed(() => {
 
 // Um rótulo inteligente para encabeçar o card
 const label = computed(() => {
-  const params = props.data?.ast?.params;
+  const params = props.data?.params;
   return (
     params?.name ??
     params?.varId ??
     params?.funcName ??
     params?.targetVar ??
-    props.data?.ast?.category ??
-    props.data?.ast?.type ??
+    props.data?.category ??
+    props.data?.type ??
     "Node"
   );
 });
