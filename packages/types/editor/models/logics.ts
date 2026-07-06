@@ -33,6 +33,16 @@ export default (ctx: EditorContext) => ({
         category: 'IF_STATEMENT',
         params: { condition: p.condition },
         hasScope: true,
+        // Nó ESTree correspondente
+        estree: {
+          type: "IfStatement",
+          test: { type: "Identifier", name: p.condition },
+          consequent: {
+            type: "BlockStatement",
+            body: [] // Preenchido recursivamente pelo compilador
+          },
+          alternate: null
+        }
       }),
     },
 
@@ -58,6 +68,15 @@ export default (ctx: EditorContext) => ({
         category: 'ELSEIF_STATEMENT',
         params: { condition: p.condition },
         hasScope: true,
+        // Nó ESTree temporário. O compilador mescla isso no If anterior.
+        estree: {
+          type: "ElseIfStatement",
+          test: { type: "Identifier", name: p.condition },
+          consequent: {
+            type: "BlockStatement",
+            body: []
+          }
+        }
       }),
     },
 
@@ -83,6 +102,25 @@ export default (ctx: EditorContext) => ({
         category: 'FOR_LOOP',
         params: { iterator: p.iteratorName, start: p.startValue, condition: p.condition, step: p.step },
         hasScope: true,
+        // Nó ESTree correspondente
+        estree: {
+          type: "ForStatement",
+          init: {
+            type: "VariableDeclaration",
+            kind: "let",
+            declarations: [{
+              type: "VariableDeclarator",
+              id: { type: "Identifier", name: p.iteratorName },
+              init: { type: "Identifier", name: p.startValue }
+            }]
+          },
+          test: { type: "Identifier", name: p.condition },
+          update: { type: "Identifier", name: p.step },
+          body: {
+            type: "BlockStatement",
+            body: []
+          }
+        }
       }),
     },
 
@@ -108,6 +146,15 @@ export default (ctx: EditorContext) => ({
         category: 'WHILE_LOOP',
         params: { condition: p.condition },
         hasScope: true,
+        // Nó ESTree correspondente
+        estree: {
+          type: "WhileStatement",
+          test: { type: "Identifier", name: p.condition },
+          body: {
+            type: "BlockStatement",
+            body: []
+          }
+        }
       }),
     },
 
@@ -119,6 +166,11 @@ export default (ctx: EditorContext) => ({
         type: 'logics' as SDKNodeType,
         category: 'BREAK_STATEMENT',
         params: {},
+        // Nó ESTree correspondente
+        estree: {
+          type: "BreakStatement",
+          label: null
+        }
       }),
     },
 
@@ -130,6 +182,11 @@ export default (ctx: EditorContext) => ({
         type: 'logics' as SDKNodeType,
         category: 'CONTINUE_STATEMENT',
         params: {},
+        // Nó ESTree correspondente
+        estree: {
+          type: "ContinueStatement",
+          label: null
+        }
       }),
     },
 
@@ -144,6 +201,12 @@ export default (ctx: EditorContext) => ({
         category: 'SWITCH_STATEMENT',
         params: { expression: p.expression },
         hasScope: true,
+        // Nó ESTree correspondente
+        estree: {
+          type: "SwitchStatement",
+          discriminant: { type: "Identifier", name: p.expression },
+          cases: []
+        }
       }),
     },
 
@@ -157,10 +220,16 @@ export default (ctx: EditorContext) => ({
       execute: (p: any): ExecuteResult => ({
         type: 'logics' as SDKNodeType,
         category: 'CASE_CONDITION',
-        // ✅ parentId aqui é CORRETO — Case é visualmente filho do Switch
         parentId: p.parentId,
         params: { value: p.value },
         autoBreak: true,
+        hasScope: true,
+        // Nó ESTree correspondente (SwitchCase)
+        estree: {
+          type: "SwitchCase",
+          test: { type: "Identifier", name: p.value },
+          consequent: []
+        }
       }),
     },
 
@@ -173,10 +242,16 @@ export default (ctx: EditorContext) => ({
       execute: (p: any): ExecuteResult => ({
         type: 'logics' as SDKNodeType,
         category: 'CASE_DEFAULT',
-        // ✅ parentId aqui é CORRETO — Default é visualmente filho do Switch
         parentId: p.parentId,
         params: {},
         autoBreak: true,
+        hasScope: true,
+        // Nó ESTree correspondente (SwitchCase Default)
+        estree: {
+          type: "SwitchCase",
+          test: null,
+          consequent: []
+        }
       }),
     },
   },

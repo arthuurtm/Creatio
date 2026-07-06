@@ -16,7 +16,18 @@ export default (ctx: EditorContext) => ({
         type: 'variables' as SDKNodeType,
         category: 'VARIABLE_DECLARATION',
         params: { kind: p.kind, name: p.name, value: p?.value ?? 'null' },
-        // Sem autoConnect: declaração é o "root" de uma variável
+        // AST ESTree nativa para o compilador genérico
+        estree: {
+          type: "VariableDeclaration",
+          kind: p.kind || "let",
+          declarations: [
+            {
+              type: "VariableDeclarator",
+              id: { type: "Identifier", name: p.name },
+              init: { type: "Identifier", name: p.value ?? "null" }
+            }
+          ]
+        }
       }),
     },
 
@@ -32,6 +43,16 @@ export default (ctx: EditorContext) => ({
         category: 'VARIABLE_ASSIGNMENT',
         params: { varId: p.varId, value: p.value },
         connectData: p.varId,
+        // AST ESTree nativa para o compilador genérico
+        estree: {
+          type: "ExpressionStatement",
+          expression: {
+            type: "AssignmentExpression",
+            operator: "=",
+            left: { type: "Identifier", name: p.varId },
+            right: { type: "Identifier", name: p.value }
+          }
+        }
       }),
     },
 
@@ -49,6 +70,21 @@ export default (ctx: EditorContext) => ({
         category: 'MATH_OPERATION',
         params: { targetVar: p.targetVar, valA: p.valA, operator: p.operator, valB: p.valB },
         connectData: p.targetVar,
+        // AST ESTree nativa para o compilador genérico
+        estree: {
+          type: "ExpressionStatement",
+          expression: {
+            type: "AssignmentExpression",
+            operator: "=",
+            left: { type: "Identifier", name: p.targetVar },
+            right: {
+              type: "BinaryExpression",
+              operator: p.operator,
+              left: { type: "Identifier", name: p.valA },
+              right: { type: "Identifier", name: p.valB }
+            }
+          }
+        }
       }),
     },
   },

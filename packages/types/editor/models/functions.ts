@@ -29,16 +29,30 @@ export default (ctx: EditorContext) => ({
           ],
         },
       ],
-      execute: (p: any): ExecuteResult => ({
-        type: 'functions' as SDKNodeType,
-        category: 'FUNCTION_DEFINITION',
-        params: {
-          name: p.name,
-          isAsync: p.isAsync,
-          arguments: p.args ? p.args.split(',').map((a: string) => a.trim()) : [],
-        },
-        hasScope: true,
-      }),
+      execute: (p: any): ExecuteResult => {
+        const parsedArgs = p.args ? p.args.split(',').map((a: string) => a.trim()) : [];
+        return {
+          type: 'functions' as SDKNodeType,
+          category: 'FUNCTION_DEFINITION',
+          params: {
+            name: p.name,
+            isAsync: p.isAsync,
+            arguments: parsedArgs,
+          },
+          hasScope: true,
+          // Nó ESTree correspondente
+          estree: {
+            type: "FunctionDeclaration",
+            id: { type: "Identifier", name: p.name },
+            params: parsedArgs.map((arg: string) => ({ type: "Identifier", name: arg })),
+            async: p.isAsync || false,
+            body: {
+              type: "BlockStatement",
+              body: [] // Preenchido recursivamente pelo compilador genérico
+            }
+          }
+        };
+      },
     },
 
     callFunction: {
@@ -49,13 +63,38 @@ export default (ctx: EditorContext) => ({
         { key: 'shouldAwait', label: 'Esperar (await)?', type: 'switch', default: false },
         { key: 'args', label: 'Valores', type: 'text' },
       ],
-      execute: (p: any): ExecuteResult => ({
-        type: 'functions' as SDKNodeType,
-        category: 'FUNCTION_CALL',
-        params: { name: p.funcName, await: p.shouldAwait, arguments: p.args },
-        isExpression: true,
-        connectExecution: p.funcName,
-      }),
+      execute: (p: any): ExecuteResult => {
+        const parsedArgs = p.args ? p.args.split(',').map((a: string) => a.trim()) : [];
+        
+        const callExpression: any = {
+          type: "CallExpression",
+          callee: { type: "Identifier", name: p.funcName },
+          arguments: parsedArgs.map((arg: string) => ({ type: "Identifier", name: arg }))
+        };
+
+        const estreeNode = p.shouldAwait
+          ? {
+              type: "ExpressionStatement",
+              expression: {
+                type: "AwaitExpression",
+                argument: callExpression
+              }
+            }
+          : {
+              type: "ExpressionStatement",
+              expression: callExpression
+            };
+
+        return {
+          type: 'functions' as SDKNodeType,
+          category: 'FUNCTION_CALL',
+          params: { name: p.funcName, await: p.shouldAwait, arguments: p.args },
+          isExpression: true,
+          connectExecution: p.funcName,
+          // Nó ESTree correspondente
+          estree: estreeNode
+        };
+      },
     },
 
     returnValue: {
@@ -66,6 +105,11 @@ export default (ctx: EditorContext) => ({
         type: 'functions' as SDKNodeType,
         category: 'FUNCTION_RETURN',
         params: { value: p.value || 'undefined' },
+        // Nó ESTree correspondente
+        estree: {
+          type: "ReturnStatement",
+          argument: p.value ? { type: "Identifier", name: p.value } : null
+        }
       }),
     },
 
@@ -77,6 +121,20 @@ export default (ctx: EditorContext) => ({
         type: 'functions' as SDKNodeType,
         category: 'CONSOLE_LOG',
         params: { message: p.message },
+        // Nó ESTree correspondente
+        estree: {
+          type: "ExpressionStatement",
+          expression: {
+            type: "CallExpression",
+            callee: {
+              type: "MemberExpression",
+              object: { type: "Identifier", name: "console" },
+              property: { type: "Identifier", name: "log" },
+              computed: false
+            },
+            arguments: [{ type: "Identifier", name: p.message }]
+          }
+        }
       }),
     },
   },

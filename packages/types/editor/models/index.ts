@@ -30,6 +30,8 @@ export interface ASTNode {
   parentId?: string;
   /** Se verdadeiro, insere automaticamente um comando break/retorno no fim do bloco */
   autoBreak?: boolean;
+  /** Representação em formato AST padrão ESTree para geração direta via Astring */
+  estree?: Record<string, any>;
 }
 
 export interface ExecuteResult extends ASTNode {
