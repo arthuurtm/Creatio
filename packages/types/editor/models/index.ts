@@ -39,9 +39,7 @@ export interface ExecuteResult extends ASTNode {
   connectExecution?: string | string[];
 }
 
-export interface NodeBlueprintData {
-  ast: ASTNode; // ← ASTNode puro, sem autoConnect
-}
+export type NodeBlueprintData = ASTNode;
 
 export type SDKNode = Node<NodeBlueprintData, any, SDKNodeType>;
 

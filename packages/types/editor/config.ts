@@ -56,7 +56,7 @@ export function normalizeItems(param: EditorDefinitionParam) {
   if (typeof items[0] === 'string') return items;
 
   return items.map((i: any) => ({
-  title: i.data?.ast?.params?.name ?? i.data?.ast?.category ?? i.id,
+  title: i.data?.params?.name ?? i.data?.category ?? i.id,
   value: i.id,
   raw: i,
 }));
