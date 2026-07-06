@@ -36,7 +36,14 @@ const flowEdges = computed<any>({
 onMounted(async () => {
   editorStore.setId(Number(props.id));
   await wsConn.start();
-  wsConn.send({ event: "project:lab:get:json", payload: editorStore });
+  wsConn.send({
+    event: "project:lab:get:json",
+    payload: {
+      info: editorStore.info,
+      nodes: editorStore.nodes,
+      connections: editorStore.connections,
+    } as any,
+  });
 });
 
 onUnmounted(() => {
