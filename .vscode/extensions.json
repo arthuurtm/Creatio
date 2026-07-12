@@ -1,9 +1,8 @@
 {
   "recommendations": [
     "Vue.volar",
-    "vitest.explorer",
+    "biomejs.biome",
     "dbaeumer.vscode-eslint",
-    "EditorConfig.EditorConfig",
-    "esbenp.prettier-vscode"
+    "EditorConfig.EditorConfig"
   ]
 }

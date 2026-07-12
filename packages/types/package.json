@@ -1,0 +1,20 @@
+{
+    "name": "@projeto/types",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.ts",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "express": "^5.2.1",
+        "ua-parser-js": "^2.0.7",
+        "ws": "^8.18.3"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.6",
+        "@types/ws": "^8.18.1",
+        "@vue-flow/core": "^1.48.2"
+    }
+}

@@ -1,36 +1,48 @@
-# Logs
-logs
-*.log
+.DS_Store
+Thumbs.db
+
+node_modules/
+.pnp/
+minio-data/
+pma_themes/
+.pnp.js
+
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+
+.cache/
+.eslintcache
+.parcel-cache/
+.vite/
+.turbo/
+.next/
+.nuxt/
+
+**/*.env
+!.env.example
+**/*credentials*.json
+**/*components.d.ts
+**/*auto-imports.d.ts
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
-*.local
-
-/cypress/videos/
-/cypress/screenshots/
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+.idea/
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.code-workspace
 
-# critical files and folders
-*.env
-*credentials.json
-*.venv
+jest.config.ts.snap
+.nyc_output/
 
-*.tsbuildinfo
-*/__pycache__
+*.map

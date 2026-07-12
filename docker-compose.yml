@@ -1,0 +1,51 @@
+services:
+  db:
+    image: mysql:8
+    container_name: backend
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: Creatio
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: pma
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      ARBITRARY_SERVER_CONNECTION: 1 
+    ports:
+      - "8080:80"
+    networks:
+      - app-network
+      
+  minio:
+    image: minio/minio
+    container_name: minio-dev
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+    volumes:
+      - ./minio-data:/data:Z
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge

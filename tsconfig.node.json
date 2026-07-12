@@ -1,0 +1,15 @@
+{
+	"extends": "@tsconfig/node22/tsconfig.json",
+	"include": [
+ 		"apps/web/vite.config.mts"	
+	],
+	"compilerOptions": {
+		"composite": true,
+		"noEmit": true,
+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+		"typeRoots": ["./node_modules/@types", "./types"],
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"types": ["node"]
+	}
+}
