@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 import {
 	getAnyProject,
 	setProjectOnDatabase,
+	validateProjectOwnership,
 } from "#api/services/ProjectService.ts";
 import { getUserIDFromSessionToken } from "#api/services/UserSessionService.ts";
 
@@ -43,4 +44,25 @@ async function setProjectOnDatabaseController(
 	}
 }
 
-export { getAnyProjectController, setProjectOnDatabaseController };
+async function deleteProjectController(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) {
+	try {
+		const { id } = req.body;
+		if (!id) throw new Error("ID do projeto não fornecido");
+		const accessToken = req.cookies.accessToken;
+		const project = await validateProjectOwnership(Number(id), accessToken);
+		await project.destroy();
+		res.json({ message: "Projeto deletado com sucesso" });
+	} catch (err) {
+		next(err);
+	}
+}
+
+export {
+	getAnyProjectController,
+	setProjectOnDatabaseController,
+	deleteProjectController,
+};

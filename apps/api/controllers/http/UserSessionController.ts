@@ -6,6 +6,7 @@ import {
 	getUserIDFromSessionToken,
 	logoutAllSessions,
 } from "#api/services/UserSessionService.ts";
+import { Session } from "#api/models/index.ts";
 
 async function logoutAllSessionsController(
 	req: Request,
@@ -68,9 +69,31 @@ async function validateSecureSession(
 	}
 }
 
+async function deleteSessionController(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) {
+	try {
+		const accessToken = req.cookies.accessToken;
+		const userId = await getUserIDFromSessionToken(accessToken);
+		const { sessionId } = req.body;
+		if (!sessionId) throw new Error("ID da sessão não fornecido");
+
+		const session = await Session.findOne({ where: { id: sessionId, userId } });
+		if (!session) throw new Error("Sessão não encontrada");
+
+		await session.destroy();
+		res.json({ message: "Sessão revogada com sucesso" });
+	} catch (err) {
+		next(err);
+	}
+}
+
 export {
 	logoutAllSessionsController,
 	getAnyUserSessionController,
 	logoutUserController,
 	validateSecureSession,
+	deleteSessionController,
 };

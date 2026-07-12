@@ -178,7 +178,7 @@ const post = (endpoint: EndpointParams, body: EndpointBody) =>
 	request(endpoint, "POST", body);
 const put = (endpoint: EndpointParams, body: EndpointBody) =>
 	request(endpoint, "PUT", body);
-const del = (endpoint: EndpointParams) => request(endpoint, "DELETE");
+const del = (endpoint: EndpointParams, body: EndpointBody = null) => request(endpoint, "DELETE", body);
 get.slow = debounce((endpoint) => request(endpoint, "GET"), 500);
 
 async function handleUserData() {

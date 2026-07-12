@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+	deleteProjectController,
 	getAnyProjectController,
 	setProjectOnDatabaseController,
 } from "#api/controllers/http/ProjectController.ts";
@@ -13,6 +14,7 @@ import {
 	signupUserController,
 } from "#api/controllers/http/UserController.ts";
 import {
+	deleteSessionController,
 	getAnyUserSessionController,
 	logoutAllSessionsController,
 	logoutUserController,
@@ -25,9 +27,10 @@ const router = Router();
 // precisa de autenticação
 router.get("/getUserData", isAuthenticated, getUserDataController);
 router.get("/getAllUserSessions", isAuthenticated, getAnyUserSessionController);
-// router.delete("/deleteSession", isAuthenticated, async (req, res) => {});
+router.delete("/deleteSession", isAuthenticated, deleteSessionController);
 router.delete("/logoutAll", isAuthenticated, logoutAllSessionsController);
 router.delete("/logout", isAuthenticated, logoutUserController);
+router.delete("/deleteProject", isAuthenticated, deleteProjectController);
 router.post(
 	"/setProject",
 	/*reqLimiter(1, 12),*/ isAuthenticated,

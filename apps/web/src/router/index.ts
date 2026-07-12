@@ -20,20 +20,10 @@ const LayoutBase = () => import("@/layouts/LayoutBase.vue");
 const routes: RouteRecordRaw[] = [
 	{
 		path: "/",
-		name: "About",
-		component: () => import("@/views/about/LandingView.vue"),
-		meta: { requiresAuth: false },
-	},
-	{
-		path: "/",
 		component: LayoutBase,
 		meta: { requiresAuth: true },
+    redirect: { name: "CodeProjects" },
 		children: [
-			{
-				path: "home",
-				name: "Home",
-				component: () => import("@/views/user/HomeView.vue"),
-			},
 			{
 				path: "users/:username",
 				name: "UserProfile",
@@ -82,6 +72,16 @@ const routes: RouteRecordRaw[] = [
     name: "NotFound",
     component: () => import("@/views/err/NotFoundView.vue"),
   },
+  {
+    path: "/home",
+    name: "Home",
+    redirect: { name: "CodeProjects" },
+  },
+  {
+    path: "/about",
+    name: "About",
+    redirect: { name: "CodeProjects" },
+  },
 ];
 
 const router = createRouter({
@@ -115,7 +115,7 @@ router.beforeEach(async (to, from, next) => {
     isLoggedIn
   ) {
     // Telas de autenticação continuam bloqueadas pra quem já está logado
-    next({ name: "Home" });
+    next({ name: "CodeProjects" });
   } else {
     next();
   }
