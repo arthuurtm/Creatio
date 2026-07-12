@@ -1,23 +1,23 @@
 import type {
-	GameConnection,
-	GameNode,
-	GameNodeType,
+	NodeConnection,
+	SDKNode,
+	SDKNodeType,
 } from "@projeto/types";
 import { useEditorStore } from "@/stores/editor";
 
 interface CreateNodeParams {
-	type?: GameNodeType;
+	type?: SDKNodeType;
 	content?: any;
-	links?: GameConnection;
+	links?: NodeConnection;
 }
 
 function createNode(x: number, y: number, params: CreateNodeParams) {
 	const editorStore = useEditorStore();
 	const id = `node${Date.now()}`;
-	const node: GameNode = {
+	const node: SDKNode = {
 		id,
 		position: { x, y },
-		type: params.type || "dialog",
+		type: params.type || "logics",
 		data: params.content || {},
 	};
 	editorStore.nodes.push(node);
@@ -27,20 +27,20 @@ function createNode(x: number, y: number, params: CreateNodeParams) {
 // Função interna para deletar (exemplo simples)
 const deleteNode = (nodeId: string) => {
 	const editorStore = useEditorStore();
-	const index = editorStore.nodes.findIndex((n: GameNode) => n.id === nodeId);
+	const index = editorStore.nodes.findIndex((n: SDKNode) => n.id === nodeId);
 	if (index > -1) {
 		editorStore.nodes.splice(index, 1);
 		// Nota: Idealmente você também deve remover os links conectados a este node aqui
 	}
 };
 
-const cloneNode = (node: GameNode) => {
+const cloneNode = (node: SDKNode) => {
 	createNode(node.position.x + 20, node.position.y + 20, {
 		type: node.type,
 	});
 };
 
-function getNodeContextMenuItems(node: GameNode) {
+function getNodeContextMenuItems(node: SDKNode) {
 	return [
 		{ text: "Duplicar", icon: "content_copy", command: "NODE.CLONE", node },
 		{

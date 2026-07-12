@@ -9,21 +9,61 @@ import { VBtn, VInput } from "vuetify/components";
 import { aliases, md } from "vuetify/iconsets/md";
 import colors from "vuetify/util/colors";
 
+const light: ThemeDefinition = {
+	dark: false,
+	colors: {
+		primary: "#0b57d0",
+		"primary-darken-1": "#0842a0",
+		secondary: "#00639b",
+		tertiary: "#7d5260",
+		background: "#f0f4f9",
+		surface: "#ffffff",
+		"surface-container": "#e9eef6",
+		"surface-variant": "#e1e2e9",
+		error: "#b3261e",
+		info: "#0b57d0",
+		success: "#146c36",
+		warning: "#b06000",
+		"on-primary": "#ffffff",
+		"on-secondary": "#ffffff",
+		"on-tertiary": "#ffffff",
+		"on-background": "#1f1f1f",
+		"on-surface": "#1f1f1f",
+	},
+};
+
+const dark: ThemeDefinition = {
+	dark: true,
+	colors: {
+		primary: "#a8c7fa",
+		"primary-darken-1": "#7cacf8",
+		secondary: "#7fcfff",
+		tertiary: "#efb8c8",
+		background: "#0f0f11",
+		surface: "#18181c",
+		"surface-container": "#202125",
+		"surface-variant": "#444746",
+		error: "#f2b8b5",
+		info: "#a8c7fa",
+		success: "#81c784",
+		warning: "#ffd54f",
+		"on-primary": "#062e6f",
+		"on-secondary": "#003554",
+		"on-tertiary": "#492532",
+		"on-background": "#e3e3e3",
+		"on-surface": "#e3e3e3",
+	},
+};
+
 export default createVuetify({
 	blueprint: md3,
 
 	theme: {
-		defaultTheme: "dark",
-		// themes: {
-		// 	light: lightTheme,
-		// 	dark: darkTheme,
-		// },
-
-		// variations: {
-		// 	colors: ["primary", "secondary"],
-		// 	lighten: 2,
-		// 	darken: 2,
-		// },
+		defaultTheme: "system",
+		themes: {
+      light: light,
+      dark: dark,
+		},
 	},
 
 	icons: {
@@ -54,23 +94,49 @@ export default createVuetify({
 		global: {
 			rounded: "xl",
 		},
-		VTextField: {
+		VBtn: {
+			size: "large",
+			rounded: "pill",
+		},
+		VBtnToggle: {
 			rounded: "pill",
 			variant: "outlined",
+			color: "primary",
 			density: "comfortable",
+		},
+		VCard: {
+			rounded: "xl",
+		},
+		VDialog: {
+			rounded: "xl",
+		},
+		VSheet: {
+			rounded: "xl",
+		},
+		VTextField: {
+			variant: "outlined",
+			rounded: "pill",
 		},
 		VSelect: {
-			rounded: "pill",
 			variant: "outlined",
-			density: "comfortable",
+			rounded: "pill",
 		},
 		VAutocomplete: {
-			rounded: "pill",
 			variant: "outlined",
-			density: "comfortable",
+			rounded: "pill",
 		},
 		VTextarea: {
+			variant: "outlined",
 			rounded: "xl",
+		},
+		VChip: {
+			rounded: "lg",
+		},
+		VAvatar: {
+			rounded: "circle",
+		},
+		VList: {
+			border: false,
 		},
 	},
 });

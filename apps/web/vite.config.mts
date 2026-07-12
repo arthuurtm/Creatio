@@ -51,7 +51,7 @@ export default defineConfig({
 		extensions: [".ts", ".json", ".jsx", ".mjs", ".ts", ".tsx", ".vue"],
 	},
 	server: {
-		allowedHosts: [],
+		allowedHosts: ['lead-twiki-dad-min.trycloudflare.com'],
 		proxy: {
 			"/api": {
 				target: "http://localhost:3000",

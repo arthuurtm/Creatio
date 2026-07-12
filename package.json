@@ -2,7 +2,7 @@
   "name": "creatio",
   "version": "0.0.0",
   "private": true,
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@11.5.2",
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
     "build": "pnpm -r run build",
@@ -13,6 +13,6 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.10",
     "typescript": "~5.9.3",
-    "vue-tsc": "^3.2.1"
+    "vue-tsc": "^3.3.3"
   }
 }

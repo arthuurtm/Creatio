@@ -52,9 +52,4 @@ export const useUserStore = defineStore("user", {
 			return this.isAuth && this.id !== 0;
 		},
 	},
-	persist: {
-		key: "user",
-		storage: localStorage,
-		pick: ["isAuth", "id"],
-	},
 });

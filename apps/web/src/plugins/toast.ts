@@ -5,8 +5,8 @@ export function showToast ({ type = 'default', message = '', timeout = 3000 }) {
   const validTypes = ['success', 'error', 'info', 'warning', 'default']
 
   try {
-    if (validTypes.includes(type) && typeof toast[type] === 'function') {
-      toast[type](message, {
+    if (validTypes.includes(type) && typeof (toast as any)[type] === 'function') {
+      (toast as any)[type](message, {
         timeout,
         position: 'top-right',
       })

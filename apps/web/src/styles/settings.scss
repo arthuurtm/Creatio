@@ -1,15 +1,18 @@
 @use 'vuetify/settings' with (
   // Defina a fonte diretamente aqui
   $body-font-family: (
-    Ubuntu,
+    "Inter",
+    "Roboto",
+    "Outfit",
+    "Google Sans",
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
+    Ubuntu,
     Oxygen,
     Cantarell,
     'Fira Sans',
     'Droid Sans',
     'Helvetica Neue',
-    "Inter",
     sans-serif)
 );

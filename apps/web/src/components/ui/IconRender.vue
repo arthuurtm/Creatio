@@ -1,7 +1,7 @@
 <template>
   <div v-if="isLottieUrl" ref="container" class="lottie-icon" />
 
-  <img v-else-if="isUrl" :src="icon" style="width: 1.5em; height: auto;" />
+  <img v-else-if="isUrl" :src="icon as string" style="width: 1.5em; height: auto;" />
 
   <span v-else-if="isEmoji" style="font-size: 1.2em;">
     {{ icon }}
@@ -16,9 +16,9 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue"
 import lottie from "lottie-web"
 
-const props = defineProps({
-  icon: [String, Object]
-})
+const props = defineProps<{
+  icon?: string | Record<string, any>;
+}>()
 
 const container = ref<HTMLElement | null>(null)
 let lottieInstance: any = null
@@ -42,7 +42,7 @@ onMounted(() => {
       renderer: "svg",
       loop: true,
       autoplay: false,
-      path: props.icon
+      path: props.icon as string
     })
   }
 })

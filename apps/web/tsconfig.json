@@ -1,11 +1,11 @@
 {
-  "extends": ["../../tsconfig.json", "@vue/tsconfig/tsconfig.dom.json"],
-  "include": ["env.d.ts", "src/**/*"],
-  "exclude": ["src/**/__tests__/*"],
-  "compilerOptions": {
-     "baseUrl": ".",
-      "paths": {
-        "@/*": ["src/*"]
-      }
-  }
+	"extends": ["../../tsconfig.json", "@vue/tsconfig/tsconfig.dom.json"],
+	"include": ["env.d.ts", "src/**/*", "../../packages/lib"],
+	"exclude": ["src/**/__tests__/*"],
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		}
+	}
 }

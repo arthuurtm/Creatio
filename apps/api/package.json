@@ -4,13 +4,13 @@
     "type": "module",
     "version": "0.0.0",
     "scripts": {
-        "dev": "tsx watch server.mts",
+        "dev": "tsx watch src/server.mts",
         "build": "tsc",
         "start": "node dist/server.mjs",
         "lint": "biome check ."
     },
     "imports": {
-        "#api/*": "./*"
+        "#api/*": "./src/*"
     },
     "dependencies": {
         "@projeto/types": "workspace:*",

@@ -1,60 +1,57 @@
+import type { EditorState } from "@projeto/types";
 import { debounce } from "lodash-es";
-import { computed, watch } from "vue";
-import { useSyncProtection } from "@/composables/useSyncProtection.ts";
-import type { EditorState, WebSocketMessage } from "@projeto/types";
-import { http, ws } from "@/functions";
+import { watch } from "vue";
+import { http, ws } from "@/utils";
 import { useEditorStore } from "@/stores/editor";
 
 export function editorConnection() {
-	const store = useEditorStore();
+  const store = useEditorStore();
+  const { data, status, connect, send, disconnect, error, requestStatus } =
+    ws<EditorState>(http.getApiUrl("ws"));
 
-	// 1. Computed para observar o estado
-	const base = computed(() => store.$state);
+  async function start() {
+    await connect();
+  }
 
-	const { isLocalStateNewer } = useSyncProtection(base);
-	const { data, status, connect, send, disconnect, error, requestStatus } = ws(
-		http.getApiUrl("ws"),
-	);
+  function stop() {
+    disconnect();
+  }
 
-	async function start() {
-		await connect();
-	}
+  // Serializa apenas os campos que o servidor precisa — sem Proxy, sem computed
+  const slowSend = debounce(() => {
+    const payload = {
+      info: JSON.parse(JSON.stringify(store.info)),
+      nodes: JSON.parse(JSON.stringify(store.nodes)),
+      connections: JSON.parse(JSON.stringify(store.connections)),
+    };
+    send({ event: "project:lab:update:json", payload });
+  }, 500);
 
-	const slowSend = debounce((state) => {
-		const payload = JSON.parse(JSON.stringify(state));
-		send({ event: "game:lab:update:json", payload });
-	}, 500);
+  // Resposta do servidor ao get inicial
+  watch(data, (msg) => {
+    if (!msg?.event) return;
+    if (msg.event === "project:lab:get:json:success" && msg.payload) {
+      // Só hidrata se o servidor realmente tiver dados (nodes não vazio)
+      // Evita sobrescrever estado local com snapshot vazia na reconexão
+      const remote = msg.payload as EditorState;
+      const hasRemoteData = remote.nodes?.length > 0 || remote.connections?.length > 0;
+      if (hasRemoteData) {
+        store.setState(remote);
+      }
+    }
+  });
 
-	function stop() {
-		disconnect();
-	}
+  // Envia ao servidor sempre que nodes ou connections mudarem
+  // flush:'post' garante que roda depois de todas as mutations da microtask
+  watch(
+    () => [store.nodes, store.connections],
+    () => {
+      if (status.value === "OPEN") {
+        slowSend();
+      }
+    },
+    { deep: true, flush: "post" },
+  );
 
-	// Recebe do servidor
-	watch(data, (msg: WebSocketMessage<EditorState>) => {
-		if (!msg || !msg.event) return;
-
-		if (msg.event === "game:lab:get:json:success") {
-			// Passa o dado recebido para verificação
-			if (msg.payload && !isLocalStateNewer(msg.payload)) {
-				store.setState(msg.payload);
-			}
-		}
-	});
-
-	// Envia quando algo muda
-	watch(
-		base,
-		(newState) => {
-			if (status.value === "OPEN") {
-				try {
-					slowSend(newState);
-				} catch (err) {
-					console.error("Erro ao preparar payload:", err);
-				}
-			}
-		},
-		{ deep: true },
-	);
-
-	return { start, stop, connStatus: status, send, data, error, requestStatus };
+  return { start, stop, connStatus: status, send, data, error, requestStatus };
 }
