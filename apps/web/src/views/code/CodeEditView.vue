@@ -5,7 +5,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import ComponentNode from "@/components/modules/ComponentNode.vue";
 import { editorConnection } from "@/composables/useWebsocketConnection.ts";
 import { useEditorExplorer } from "@/composables/useEditorExplorer.ts";
-import Properties from "./Properties.vue";
+import Properties from "@/components/modules/Properties.vue";
 
 const props = defineProps({ id: String });
 const { editorStore } = useEditorExplorer();

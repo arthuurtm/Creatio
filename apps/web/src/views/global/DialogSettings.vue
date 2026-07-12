@@ -4,7 +4,7 @@
 
       <v-col cols="12" md="3" lg="2" class="pt-4 px-2">
         <v-list nav density="comfortable" bg-color="transparent" border="false">
-          <v-list-item v-for="btn in navItems" :key="btn.id" rounded="pill" :active="activeTab === btn.id"
+          <v-list-item v-for="btn in navItems" :key="btn.id" rounded="lg" :active="activeTab === btn.id"
             color="secondary" @click="activeTab = btn.id" class="ga-2" variant="text" density="comfortable">
             <template #prepend>
               <v-btn :icon="btn.icon" class="ma-0" variant="tonal" :color="btn.color" />
@@ -104,6 +104,17 @@
                       <template #prepend>
                         <v-icon :icon="getDeviceIcon(session.deviceData)" color="medium-emphasis" class="mr-2" />
                       </template>
+                      <template #append>
+                        <v-btn
+                          icon="logout"
+                          variant="text"
+                          color="error"
+                          size="small"
+                          @click="disconnectDevice(session.id)"
+                        >
+                          <v-tooltip activator="parent" location="top">Desconectar dispositivo</v-tooltip>
+                        </v-btn>
+                      </template>
                     </v-list-item>
                   </template>
                   <v-list-item v-if="!connectedDevices || connectedDevices.length === 0">
@@ -113,9 +124,9 @@
 
                 <v-divider />
 
-                <v-card-actions class="pa-4 bg-grey-lighten-5">
+                <v-card-actions class="pa-4">
                    <v-spacer />
-                   <v-btn color="error" variant="text" @click="disconnectAllDevices">Sair de tudo</v-btn>
+                   <v-btn color="error" variant="outlined" class="text-none" @click="disconnectAllDevices">Desconectar outros dispositivos</v-btn>
                 </v-card-actions>
               </v-card>
             </v-col>
@@ -154,10 +165,8 @@ const connectedDevices = ref<Session[] | null>(null)
 const theme = useTheme()
 
 const navItems = [
-  { id: 'home', text: 'Início', icon: 'home', color: 'primary' },
-  { id: 'personal', text: 'Informações pessoais', icon: 'assignment_ind', color: 'secondary' }, // ou 'badge'
+  { id: 'personal', text: 'Informações pessoais', icon: 'assignment_ind', color: 'secondary' },
   { id: 'security', text: 'Segurança', icon: 'lock', color: 'error' },
-  { id: 'data', text: 'Dados e privacidade', icon: 'grid_view', color: 'success' },
 ]
 
 const currentTabTitle = computed(() => {
@@ -264,9 +273,30 @@ function handleEdit(field: any) {
   // router.push({ name: 'EditField', params: { field: field.key } })
 }
 
-function disconnectAllDevices() {
-  if (!confirm('Desconectar todas as sessões?')) return
-  http.auth.logoutAll()
+async function disconnectDevice(sessionId: number) {
+  if (!confirm("Tem certeza de que deseja desconectar este dispositivo?")) return;
+  try {
+    await http.del({
+      type: "database",
+      route: "deleteSession",
+    }, { sessionId });
+    showToast({ type: 'success', message: 'Dispositivo desconectado!' });
+    await loadData();
+  } catch (err) {
+    console.error("Falha ao revogar sessão", err);
+    showToast({ type: 'error', message: 'Não foi possível desconectar o dispositivo.' });
+  }
+}
+
+async function disconnectAllDevices() {
+  if (!confirm('Desconectar todos os outros dispositivos?')) return
+  try {
+    await http.auth.logoutAll()
+    showToast({ type: 'success', message: 'Outros dispositivos desconectados!' })
+    await loadData();
+  } catch (err) {
+    showToast({ type: 'error', message: 'Erro ao desconectar dispositivos.' })
+  }
 }
 
 const getDeviceIcon = (d: DeviceData) =>

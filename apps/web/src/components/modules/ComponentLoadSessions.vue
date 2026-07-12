@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import ProjectCard from "@/components/ui/ProjectCard.vue";
+import ProjectCard from "@/components/modules/ProjectCard.vue";
 
 const props = defineProps({
   items: { type: Object, required: true },

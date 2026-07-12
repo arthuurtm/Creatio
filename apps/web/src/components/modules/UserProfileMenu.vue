@@ -92,33 +92,34 @@ async function handleLogout() {
 			</v-card>
 		</v-menu>
 
-		<!-- Dialogs -->
-		<v-dialog v-model="logoutDialog" width="auto">
-			<v-card max-width="400" prepend-icon="logout" title="Sair da conta" rounded="xl" elevation="10" border="true">
-				<v-card-text>Você deseja encerrar sua sessão atual?</v-card-text>
-				<v-card-actions class="px-4 pb-4">
-					<v-spacer />
-					<v-btn variant="text" rounded="pill" :disabled="logoutLoading" @click="logoutDialog = false">Cancelar</v-btn>
-					<v-btn color="error" variant="flat" rounded="pill" :loading="logoutLoading" @click="handleLogout">Sair</v-btn>
-				</v-card-actions>
-			</v-card>
-		</v-dialog>
+		<COverlay
+			v-model="logoutDialog"
+			title="Sair da conta"
+			icon="logout"
+			max-width="400"
+      glass
+		>
+			Você deseja encerrar sua sessão atual?
+			<template #actions>
+				<v-spacer />
+				<v-btn variant="text" rounded="pill" :disabled="logoutLoading" @click="logoutDialog = false">Cancelar</v-btn>
+				<v-btn color="error" variant="flat" rounded="pill" :loading="logoutLoading" @click="handleLogout">Sair</v-btn>
+			</template>
+		</COverlay>
 
-		<v-dialog v-model="settingsDialog" fullscreen transition="dialog-bottom-transition">
-			<v-card rounded="0">
-				<v-toolbar title="Configurações" class="rounded-0" density="compact">
-					<v-spacer />
-					<v-btn icon="close" variant="text" @click="settingsDialog = false"></v-btn>
-				</v-toolbar>
-				<v-card-text class="pa-0">
-					<dialog-settings />
-				</v-card-text>
-				<v-card-actions>
-					<v-spacer></v-spacer>
-					<v-btn text="Fechar" @click="settingsDialog = false"></v-btn>
-				</v-card-actions>
-			</v-card>
-		</v-dialog>
+		<COverlay
+			v-model="settingsDialog"
+			type="fullscreen"
+			title="Configurações"
+			body-class="pa-0"
+			:divider="false"
+		>
+			<dialog-settings />
+			<template #actions>
+				<v-spacer />
+				<v-btn text="Fechar" @click="settingsDialog = false"></v-btn>
+			</template>
+		</COverlay>
 	</div>
 </template>
 
