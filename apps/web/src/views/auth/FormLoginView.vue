@@ -42,8 +42,8 @@
 import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
-import http from '@/functions/http'
-import { default as stepForm, type FieldParams, initField } from "@/functions/form"
+import http from '@/utils/http'
+import { default as stepForm, type FieldParams, initField } from "@/utils/form"
 
 const { currentStep, nextStep, prevStep, pageRedirect, setFieldError, loading, loaderController } = stepForm({ totalSteps: 2 })
 

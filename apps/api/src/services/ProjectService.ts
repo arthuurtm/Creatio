@@ -1,4 +1,4 @@
-import type { EditorState } from "@projeto/types";
+import type { EditorState, FileInfo } from "@projeto/types";
 import { Project } from "#api/models/index.ts";
 import EditorService from "./EditorService";
 import { getUserIDFromSessionToken } from "./UserSessionService";
@@ -45,7 +45,7 @@ async function setProjectOnDatabase({
 	});
 
 	if (state) {
-		state.info = state.info || {};
+		state.info = state.info || ({} as FileInfo);
 		state.info.id = project.id;
 		state.info.title = project.title;
 		state.info.description = project.description;

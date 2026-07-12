@@ -3,9 +3,9 @@
     "version": "1.0.0",
     "private": true,
     "type": "module",
-    "main": "./index.ts",
+    "main": "./src/index.ts",
     "exports": {
-        ".": "./index.ts"
+        ".": "./src/index.ts"
     },
     "dependencies": {
         "express": "^5.2.1",

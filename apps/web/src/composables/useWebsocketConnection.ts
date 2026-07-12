@@ -1,7 +1,7 @@
 import type { EditorState } from "@projeto/types";
 import { debounce } from "lodash-es";
 import { watch } from "vue";
-import { http, ws } from "@/functions";
+import { http, ws } from "@/utils";
 import { useEditorStore } from "@/stores/editor";
 
 export function editorConnection() {

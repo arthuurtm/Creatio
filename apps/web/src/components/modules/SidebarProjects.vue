@@ -2,7 +2,7 @@
 import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import type { ProjectAttributes as Game } from "@projeto/types";
-import { http } from "@/functions";
+import { http } from "@/utils";
 import { useUserStore } from "@/stores";
 import { useEditorExplorer } from "@/composables/useEditorExplorer.ts";
 import { showToast } from "@/plugins/toast";

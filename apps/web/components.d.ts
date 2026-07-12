@@ -21,6 +21,7 @@ declare module 'vue' {
     COverlay: typeof import('./src/components/ui/COverlay.vue')['default']
     CreateNodeMenu: typeof import('./src/components/modules/CreateNodeMenu.vue')['default']
     CreateObjectDialog: typeof import('./src/components/modules/CreateObjectDialog.vue')['default']
+    DialogSettings: typeof import('./src/components/modules/DialogSettings.vue')['default']
     ExplorerPanel: typeof import('./src/components/modules/ExplorerPanel.vue')['default']
     ExplorerRail: typeof import('./src/components/modules/ExplorerRail.vue')['default']
     ExpressionBuilder: typeof import('./src/components/ui/ExpressionBuilder.vue')['default']

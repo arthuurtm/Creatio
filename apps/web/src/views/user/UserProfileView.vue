@@ -221,7 +221,7 @@
 import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores";
-import { http } from "@/functions";
+import { http } from "@/utils";
 import type { ProjectAttributes } from "@projeto/types";
 
 const props = defineProps<{ username?: string }>();

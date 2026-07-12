@@ -125,7 +125,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { http } from '@/functions';
+import { http } from '@/utils';
 
 const router = useRouter();
 const isOpen = ref(false);

@@ -1,4 +1,4 @@
-import type { WebSocketServer } from "ws";
+import type { WebSocket, WebSocketServer } from "ws";
 
 export type { WebSocket, WebSocketServer } from "ws";
 

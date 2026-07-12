@@ -141,7 +141,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { http } from '@/functions/'
+import { http } from '@/utils/'
 import { showToast } from '@/plugins/toast'
 import type { DeviceData } from "@projeto/types"
 import { useTheme } from 'vuetify'

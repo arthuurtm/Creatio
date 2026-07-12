@@ -106,7 +106,7 @@ import type { ProjectAttributes as Game } from "@projeto/types";
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import ComponentLoadSessions from "@/components/modules/ComponentLoadSessions.vue";
-import { http } from "@/functions";
+import { http } from "@/utils";
 import { showToast } from "@/plugins/toast";
 import { useUserStore } from "@/stores";
 import { useEditorExplorer } from "@/composables/useEditorExplorer.ts";

@@ -195,8 +195,8 @@
 <script setup lang="ts">
 import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { computed, watch, ref } from 'vue'
-import http from '@/functions/http'
-import { default as stepForm, type FieldParams, initField } from '@/functions/form'
+import http from '@/utils/http'
+import { default as stepForm, type FieldParams, initField } from '@/utils/form'
 import { useRouter } from 'vue-router'
 
 interface Params {

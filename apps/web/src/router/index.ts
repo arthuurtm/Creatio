@@ -3,7 +3,7 @@ import {
 	createWebHistory,
 	type RouteRecordRaw,
 } from "vue-router";
-import { http } from "@/functions/";
+import { http } from "@/utils/";
 
 declare module "vue-router" {
 	interface RouteMeta {

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { http } from "@/functions/index.ts";
+import { http } from "@/utils/index.ts";
 import { useUserStore } from "@/stores";
-import DialogSettings from "@/views/global/DialogSettings.vue";
+import DialogSettings from "@/components/modules/DialogSettings.vue";
 
 const router = useRouter();
 const user = useUserStore();
