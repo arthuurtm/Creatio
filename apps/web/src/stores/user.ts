@@ -16,7 +16,7 @@ function models(): UserState {
 		name: "",
 		username: "",
 		email: "",
-		profilePicture: `${window.location.origin}/api/file/public/default-profile-pic.png`,
+		profilePicture: "",
 		additionalData: null,
 		isAuth: false,
 	};
@@ -40,9 +40,7 @@ export const useUserStore = defineStore("user", {
 			this.username = userData.username;
 			this.email = userData.email;
 			this.additionalData = userData.additionalData || {};
-			this.profilePicture =
-				userData.profilePicture ??
-				`${window.location.origin}/api/file/public/default-profile-pic.png`;
+			this.profilePicture = userData.profilePicture;
 			this.isAuth = true;
 		},
 		clearUserData() {

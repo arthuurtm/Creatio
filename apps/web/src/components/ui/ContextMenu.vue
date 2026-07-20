@@ -8,6 +8,7 @@ interface ContextMenuItem {
 	items?: ContextMenuItem[];
 	disabled?: boolean;
 	category?: string;
+	color?: string;
 }
 
 interface ContextMenuGroup {
@@ -32,7 +33,7 @@ function normalizeItem(item: any): ContextMenuItem {
 		return { text: String(item), value: item };
 	}
 
-	const { text, label, value, icon, items, id, key, disabled, category } = item;
+	const { text, label, value, icon, items, id, key, disabled, category, color } = item;
 
 	return {
 		text: text ?? label ?? key ?? id ?? String(value ?? "-"),
@@ -41,6 +42,7 @@ function normalizeItem(item: any): ContextMenuItem {
 		items,
 		disabled,
 		category,
+		color,
 	};
 }
 
@@ -92,35 +94,54 @@ function normalizeGroups(input: any): ContextMenuGroup[] {
 		},
 	];
 }
+
 const groups = computed(() => normalizeGroups(props.items));
 </script>
 
 <template>
-  <v-list v-if="isVisible" density="compact">
-    <template v-for="group in groups" :key="group.key ?? group.label">
-      <v-list-group v-if="group.label">
-        <template #activator="{ props }">
-          <v-list-item v-bind="props" :title="group.label" />
+  <v-list v-if="isVisible !== false" density="compact" class="context-menu-list">
+    <!-- Slot de cabeçalho opcional -->
+    <slot name="header" />
+
+    <!-- Slot default: se fornecido conteúdo manual, exibe ele; se não, renderiza via :items -->
+    <slot>
+      <template v-for="group in groups" :key="group.key ?? group.label">
+        <v-list-group v-if="group.label">
+          <template #activator="{ props: groupProps }">
+            <v-list-item v-bind="groupProps" :title="group.label" />
+          </template>
+          <template v-for="item in group.items" :key="item.value ?? item.text">
+            <slot name="item" :item="item" :select="(i?: ContextMenuItem) => emit('select', i ?? item)">
+              <v-list-item
+                :title="item.text"
+                :prepend-icon="item.icon"
+                :disabled="item.disabled"
+                :color="item.color"
+                @click="emit('select', item)"
+                link
+              />
+            </slot>
+          </template>
+        </v-list-group>
+
+        <template v-else>
+          <template v-for="item in group.items" :key="item.value ?? item.text">
+            <slot name="item" :item="item" :select="(i?: ContextMenuItem) => emit('select', i ?? item)">
+              <v-list-item
+                :title="item.text"
+                :prepend-icon="item.icon"
+                :disabled="item.disabled"
+                :color="item.color"
+                @click="emit('select', item)"
+                link
+              />
+            </slot>
+          </template>
         </template>
-        <v-list-item
-          v-for="item in group.items"
-          :key="item.value ?? item.text"
-          :title="item.text"
-          :disabled="item.disabled"
-          @click="emit('select', item)"
-          link
-        />
-      </v-list-group>
-      <template v-else>
-        <v-list-item
-          v-for="item in group.items"
-          :key="item.value ?? item.text"
-          :title="item.text"
-          :disabled="item.disabled"
-          @click="emit('select', item)"
-          link
-        />
       </template>
-    </template>
+    </slot>
+
+    <!-- Slot de rodapé opcional -->
+    <slot name="footer" />
   </v-list>
 </template>

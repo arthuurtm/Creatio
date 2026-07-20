@@ -12,8 +12,11 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     CButton: typeof import('./src/components/ui/CButton.vue')['default']
+    CContextMenu: typeof import('./src/components/ui/CContextMenu.vue')['default']
     ComplexArrayBuilder: typeof import('./src/components/ui/ComplexArrayBuilder.vue')['default']
     ComponentFormWrapper: typeof import('./src/components/modules/ComponentFormWrapper.vue')['default']
+    ComponentGamepad: typeof import('./src/components/modules/ComponentGamepad.vue')['default']
+    ComponentHeader: typeof import('./src/components/modules/ComponentHeader.vue')['default']
     ComponentLoadSessions: typeof import('./src/components/modules/ComponentLoadSessions.vue')['default']
     ComponentNode: typeof import('./src/components/modules/ComponentNode.vue')['default']
     ComponentQuickEditPanel: typeof import('./src/components/modules/ComponentQuickEditPanel.vue')['default']
@@ -25,6 +28,8 @@ declare module 'vue' {
     ExplorerPanel: typeof import('./src/components/modules/ExplorerPanel.vue')['default']
     ExplorerRail: typeof import('./src/components/modules/ExplorerRail.vue')['default']
     ExpressionBuilder: typeof import('./src/components/ui/ExpressionBuilder.vue')['default']
+    FeaturedGameCard: typeof import('./src/components/ui/FeaturedGameCard.vue')['default']
+    GameCard: typeof import('./src/components/ui/GameCard.vue')['default']
     GlobalOverlays: typeof import('./src/components/global/GlobalOverlays.vue')['default']
     GlobalSearch: typeof import('./src/components/modules/GlobalSearch.vue')['default']
     IconRender: typeof import('./src/components/ui/IconRender.vue')['default']

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -101,6 +101,51 @@ function close() {
   isOpen.value = false;
   emit("close");
 }
+
+// ─── Swipe-to-close (bottom-sheet e dialog no mobile) ───────────────────
+const dialogCardRef = ref<HTMLElement | null>(null);
+const swipeStartY = ref(0);
+const swipeCurrentY = ref(0);
+const isSwiping = ref(false);
+let swipeTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function onSwipeStart(event: TouchEvent) {
+  if (!event.touches[0]) return;
+  swipeStartY.value = event.touches[0].clientY;
+  isSwiping.value = false;
+  swipeTimeout = setTimeout(() => {
+    isSwiping.value = true;
+  }, 120);
+}
+
+function onSwipeMove(event: TouchEvent) {
+  if (!isSwiping.value || !event.touches[0]) return;
+  swipeCurrentY.value = event.touches[0].clientY;
+  const deltaY = Math.max(0, swipeCurrentY.value - swipeStartY.value);
+  if (dialogCardRef.value) {
+    dialogCardRef.value.style.transform = `translateY(${deltaY}px)`;
+    dialogCardRef.value.style.transition = 'none';
+  }
+}
+
+function onSwipeEnd() {
+  if (!isSwiping.value) {
+    if (swipeTimeout) clearTimeout(swipeTimeout);
+    return;
+  }
+  isSwiping.value = false;
+  if (swipeTimeout) clearTimeout(swipeTimeout);
+
+  if (dialogCardRef.value) {
+    dialogCardRef.value.style.transform = '';
+    dialogCardRef.value.style.transition = '';
+  }
+
+  const deltaY = swipeCurrentY.value - swipeStartY.value;
+  if (deltaY > 60 && !props.persistent) {
+    close();
+  }
+}
 </script>
 
 <template>
@@ -115,6 +160,7 @@ function close() {
     class="c-overlay-dialog"
   >
     <v-card
+      ref="dialogCardRef"
       :class="[
         glass ? 'glass-overlay-card' : 'flat-overlay-card',
         { 'c-overlay-card--search': type === 'search' }
@@ -122,6 +168,11 @@ function close() {
       :rounded="computedRounded"
       elevation="24"
       class="c-overlay-card overflow-hidden position-relative"
+      v-bind="(type === 'bottom-sheet' || type === 'dialog') ? {
+        onTouchstart: onSwipeStart,
+        onTouchmove: onSwipeMove,
+        onTouchend: onSwipeEnd,
+      } : {}"
     >
       <v-progress-linear
         v-if="loading"
@@ -132,6 +183,18 @@ function close() {
         top
         class="z-index-1"
       />
+
+      <!-- Drag handle para bottom-sheet e dialog no mobile -->
+      <div
+        v-if="type === 'bottom-sheet' || type === 'dialog'"
+        class="c-overlay-drag-zone"
+        @touchstart.passive="onSwipeStart"
+        @touchmove="onSwipeMove"
+        @touchend.passive="onSwipeEnd"
+        @click="!persistent && type === 'bottom-sheet' ? close() : null"
+      >
+        <div class="c-overlay-drag-handle" />
+      </div>
 
       <div
         v-if="$slots.header || title || subtitle || showClose"
@@ -241,4 +304,33 @@ function close() {
 .z-index-1 {
   z-index: 1;
 }
+
+/* Drag handle para bottom-sheet e dialog no mobile */
+.c-overlay-drag-zone {
+  display: none; /* oculto no desktop */
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0 4px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.c-overlay-drag-handle {
+  width: 100px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(var(--v-theme-on-surface), 0.2);
+  transition: background 0.2s ease;
+}
+
+.c-overlay-drag-zone:hover .c-overlay-drag-handle {
+  background: rgba(var(--v-theme-on-surface), 0.35);
+}
+
+@media (max-width: 600px) {
+  .c-overlay-drag-zone {
+    display: flex;
+  }
+}
+
 </style>
