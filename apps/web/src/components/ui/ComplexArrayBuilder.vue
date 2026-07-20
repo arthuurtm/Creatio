@@ -103,6 +103,10 @@ function getChipColor(category: string) {
       <!-- Menu flutuante de seleção -->
       <context-menu
         is-visible
+        searchable
+        search-placeholder="Filtrar blocos..."
+        min-width="280"
+        variant="flat"
         :items="items"
         @select="$emit('update:modelValue', [...selectedParams, $event])"
       />
