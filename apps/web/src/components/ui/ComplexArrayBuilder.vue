@@ -176,34 +176,44 @@ function selectItem(item: any) {
 
         <v-divider />
 
-        <!-- Lista de blocos -->
+        <!-- Lista de blocos colapsáveis -->
         <div class="flex-grow-1 overflow-y-auto px-1">
-          <template v-if="filteredGroups.length === 0">
-            <div class="pa-4 text-center text-caption text-medium-emphasis">
-              Nenhum item encontrado
-            </div>
-          </template>
+          <v-list density="compact" class="pa-0">
+            <template v-if="filteredGroups.length === 0">
+              <div class="pa-4 text-center text-caption text-medium-emphasis">
+                Nenhum item encontrado
+              </div>
+            </template>
 
-          <template v-else v-for="group in filteredGroups" :key="group.label">
-            <v-list-subheader class="text-uppercase text-caption font-weight-bold opacity-70 px-3 pt-2 pb-1">
-              {{ group.label }}
-            </v-list-subheader>
+            <template v-else>
+              <v-list-group
+                v-for="group in filteredGroups"
+                :key="group.label"
+                :value="group.label"
+              >
+                <template #activator="{ props: groupProps }">
+                  <v-list-item
+                    v-bind="groupProps"
+                    :title="group.label"
+                    class="font-weight-bold text-caption text-uppercase opacity-70"
+                  />
+                </template>
 
-            <v-list density="compact" class="pa-0">
-              <v-list-item
-                v-for="item in group.items"
-                :key="item.value ?? item.text"
-                :title="item.text"
-                :subtitle="item.subtitle"
-                :prepend-icon="item.icon"
-                :disabled="item.disabled"
-                class="rounded-lg mb-1"
-                color="primary"
-                link
-                @click="selectItem(item)"
-              />
-            </v-list>
-          </template>
+                <v-list-item
+                  v-for="item in group.items"
+                  :key="item.value ?? item.text"
+                  :title="item.text"
+                  :subtitle="item.subtitle"
+                  :prepend-icon="item.icon"
+                  :disabled="item.disabled"
+                  class="rounded-lg pl-6 mb-1"
+                  color="primary"
+                  link
+                  @click="selectItem(item)"
+                />
+              </v-list-group>
+            </template>
+          </v-list>
         </div>
       </v-card>
     </v-menu>

@@ -1,66 +1,72 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import GlobalSearch from "@/components/modules/GlobalSearch.vue";
+import DialogSettings from "@/components/modules/DialogSettings.vue";
+import type GlobalSearch from "@/components/modules/GlobalSearch.vue";
 import Logo from "@/components/ui/Logo.vue";
+import { useUserStore } from "@/stores";
 import { useEditorStore } from "@/stores/editor";
 import { http } from "@/utils/index.ts";
-import { useUserStore } from "@/stores";
-import DialogSettings from "@/components/modules/DialogSettings.vue";
 
-const route       = useRoute();
-const router      = useRouter();
-const user        = useUserStore();
+const route = useRoute();
+const router = useRouter();
+const user = useUserStore();
 const editorStore = useEditorStore();
 
 const settingsDialog = ref(false);
-const searchRef      = ref<InstanceType<typeof GlobalSearch> | null>(null);
+const searchRef = ref<InstanceType<typeof GlobalSearch> | null>(null);
 
-// ── Breadcrumb dinâmico ───────────────────────────────────────────────────────
 const breadcrumbs = computed(() => {
-  const crumbs: any[] = [
-    { label: 'Projetos', to: { name: 'CodeProjects' }, disabled: route.name === 'CodeProjects' },
-  ];
+	const crumbs: any[] = [
+		{
+			label: "Projetos",
+			to: { name: "CodeProjects" },
+			disabled: route.name === "CodeProjects",
+		},
+	];
 
-  if (route.name === 'CodeEdit') {
-    const title = editorStore.info.title || 'Sem título';
-    crumbs.push({ label: title, to: null, disabled: true });
-  } else if (route.name === 'CodeNew') {
-    crumbs.push({ label: 'Novo projeto', to: null, disabled: true, muted: true });
-  }
+	if (route.name === "CodeEdit") {
+		const title = editorStore.info.title || "Sem título";
+		crumbs.push({ label: title, to: null, disabled: true });
+	} else if (route.name === "CodeNew") {
+		crumbs.push({
+			label: "Novo projeto",
+			to: null,
+			disabled: true,
+			muted: true,
+		});
+	}
 
-  return crumbs;
+	return crumbs;
 });
 
-// ── Menu do usuário ───────────────────────────────────────────────────────────
 const menuItems = computed(() => [
-  { text: "Meu perfil",    value: "profile",  icon: "account_circle" },
-  { text: "Configurações", value: "settings", icon: "settings"        },
-  { text: "Sair da conta", value: "logout",   icon: "logout"          },
+	{ text: "Meu perfil", value: "profile", icon: "account_circle" },
+	{ text: "Configurações", value: "settings", icon: "settings" },
+	{ text: "Sair da conta", value: "logout", icon: "logout" },
 ]);
 
 function handleMenuSelect(item: any) {
-  if (item.value === "profile")  router.push({ name: "UserProfile", params: { username: user.username } });
-  if (item.value === "settings") settingsDialog.value = true;
-  if (item.value === "logout")   http.auth.logout();
+	if (item.value === "profile")
+		router.push({ name: "UserProfile", params: { username: user.username } });
+	if (item.value === "settings") settingsDialog.value = true;
+	if (item.value === "logout") http.auth.logout();
 }
 
 const collapsed = ref(false);
 watchEffect(() => {
-  collapsed.value = route.meta?.layout?.hideNavigator ?? false;
+	collapsed.value = route.meta?.layout?.hideNavigator ?? false;
 });
 </script>
 
 <template>
   <v-layout class="fill-viewport">
 
-    <!-- ══ HEADER BAR ══════════════════════════════════════════════════════ -->
     <v-app-bar v-if="!collapsed" flat rounded="0" border="b" :height="47">
 
       <template #prepend>
         <div class="d-flex align-center pl-3 ga-1">
 
-          <!-- Logo clicável -->
           <v-btn
             variant="text"
             density="comfortable"
@@ -71,11 +77,9 @@ watchEffect(() => {
             <Logo height="24" />
           </v-btn>
 
-          <!-- Itens do Breadcrumb -->
           <template v-for="(crumb, i) in breadcrumbs" :key="i">
             <v-icon size="14" class="text-disabled mx-1">chevron_right</v-icon>
 
-            <!-- Item clicável -->
             <v-btn
               v-if="!crumb.disabled"
               variant="text"
@@ -87,7 +91,6 @@ watchEffect(() => {
               {{ crumb.label }}
             </v-btn>
 
-            <!-- Item atual (não clicável) -->
             <span
               v-else
               class="text-body-2 font-weight-medium text-truncate"
@@ -101,7 +104,6 @@ watchEffect(() => {
         </div>
       </template>
 
-      <!-- Direita: busca + avatar -->
       <template #append>
         <div class="d-flex align-center ga-1 pr-2">
 
@@ -149,16 +151,13 @@ watchEffect(() => {
 
     </v-app-bar>
 
-    <!-- ══ CONTEÚDO ════════════════════════════════════════════════════════ -->
     <v-main>
       <router-view v-slot="{ Component }">
         <component :is="Component" />
       </router-view>
     </v-main>
 
-    <!-- ══ GLOBAIS ═════════════════════════════════════════════════════════ -->
     <GlobalSearch ref="searchRef" />
-    <!-- <DialogSettings v-model="settingsDialog" /> -->
 
   </v-layout>
 </template>

@@ -85,49 +85,47 @@ function handleCreate() {
 
 <template>
   <v-dialog v-model="dialog" max-width="450">
-    <v-card rounded="xl" flat border class="pa-2">
-      <!-- Título -->
+    <v-card flat border>
+
       <v-card-title class="d-flex align-center justify-space-between pa-5 pb-2">
         <span class="text-h6 font-weight-bold">Criar novo objeto</span>
         <v-btn icon="close" variant="text" density="comfortable" @click="dialog = false" />
       </v-card-title>
 
-      <v-divider class="mb-4" />
+      <v-divider/>
 
-      <!-- Parâmetros do Formulário -->
-      <v-card-text class="px-5 py-0 overflow-y-auto" style="max-height: 400px;">
-        <v-row
-          v-for="(param, index) in formParams"
-          :key="index"
-          class="mb-3"
-        >
-          <component
-            v-slot:default
-            v-if="inputParamMap[param.type]"
-            :is="inputParamMap[param.type]"
-            v-model="param.model"
-            :items="
-              param.type === 'select'
-                ? normalizeItems(param as any)
-                : param.items
-            "
-            :label="param.label"
-            variant="outlined"
-            density="comfortable"
-            bg-color="surface"
-            hide-details="auto"
-            class="w-100"
-          />
+      <v-container class="pa-4">
+        <v-card-text>
+          <v-row
+            v-for="(param, index) in formParams"
+            :key="index"
+            class="mb-3"
+          >
+            <component
+              v-slot:default
+              v-if="inputParamMap[param.type]"
+              :is="inputParamMap[param.type]"
+              v-model="param.model"
+              :items="
+                param.type === 'select'
+                  ? normalizeItems(param as any)
+                  : param.items
+              "
+              :label="param.label"
+              variant="outlined"
+              density="comfortable"
+              bg-color="surface"
+              hide-details="auto"
+              class="w-100"
+            />
 
-          <div v-else class="text-error text-caption px-2">
-            ⚠ Componente não suportado: "{{ param.type }}"
-          </div>
-        </v-row>
-      </v-card-text>
+            <div v-else class="text-error text-caption px-2">
+              ⚠ Componente não suportado: "{{ param.type }}"
+            </div>
+          </v-row>
+        </v-card-text>
+      </v-container>
 
-      <v-divider class="mt-4" />
-
-      <!-- Ações -->
       <v-card-actions class="px-5 py-4 justify-end ga-2">
         <v-btn
           text="Cancelar"
