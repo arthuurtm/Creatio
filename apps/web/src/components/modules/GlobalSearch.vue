@@ -1,125 +1,128 @@
 <template>
-  <COverlay
+  <v-dialog
     v-model="isOpen"
-    type="search"
-    :show-close="false"
-    :divider="false"
-    glass
+    max-width="560"
+    content-class="search-dialog-wrapper"
+    scrollable
   >
-    <!-- Campo de busca -->
-    <div class="search-header px-4 py-3 d-flex align-center ga-3">
-      <v-icon size="18" color="medium-emphasis">search</v-icon>
-      <v-text-field
-        ref="searchInput"
-        v-model="query"
-        type="text"
-        class="search-input"
-        placeholder="Buscar usuários ou projetos..."
-        variant="plain"
-        hide-details
-        density="compact"
-        @input="onInput"
-        @keydown.down.prevent="navigateResults(1)"
-        @keydown.up.prevent="navigateResults(-1)"
-        @keydown.enter.prevent="selectCurrentResult"
-        @keydown.esc.prevent="isOpen = false"
-      />
-      <v-progress-circular
-        v-if="loadingUsers || loadingProjects"
-        indeterminate
-        size="16"
-        width="2"
-        color="primary"
-      />
-      <v-icon v-else size="16" color="medium-emphasis" style="opacity: 0.4;">keyboard_esc</v-icon>
-    </div>
-
-    <v-divider class="opacity-20" />
-
-    <!-- Resultados -->
-    <div class="search-results px-2 py-2" v-if="query">
-      <div
-        v-if="filteredUsers.length === 0 && filteredProjects.length === 0 && !loadingUsers && !loadingProjects"
-        class="px-4 py-8 text-center text-medium-emphasis"
-      >
-        <v-icon size="28" class="mb-2 opacity-30">search_off</v-icon>
-        <p class="text-body-2 mb-0">Nenhum resultado encontrado</p>
+    <v-card rounded="xl" flat border class="pa-1 overflow-hidden">
+      <!-- Campo de busca -->
+      <div class="search-header px-4 py-3 d-flex align-center ga-3">
+        <v-icon size="18" color="medium-emphasis">search</v-icon>
+        <v-text-field
+          ref="searchInput"
+          v-model="query"
+          type="text"
+          class="search-input"
+          placeholder="Buscar usuários ou projetos..."
+          variant="plain"
+          hide-details
+          density="compact"
+          @input="onInput"
+          @keydown.down.prevent="navigateResults(1)"
+          @keydown.up.prevent="navigateResults(-1)"
+          @keydown.enter.prevent="selectCurrentResult"
+          @keydown.esc.prevent="isOpen = false"
+        />
+        <v-progress-circular
+          v-if="loadingUsers || loadingProjects"
+          indeterminate
+          size="16"
+          width="2"
+          color="primary"
+        />
+        <v-icon v-else size="16" color="medium-emphasis" style="opacity: 0.4;">keyboard_esc</v-icon>
       </div>
 
-      <v-list bg-color="transparent" class="py-0">
-        <!-- Usuários -->
-        <template v-if="filteredUsers.length > 0">
-          <div class="result-group-label px-3 pt-1 pb-2">Usuários</div>
-          <v-list-item
-            v-for="(user, index) in filteredUsers"
-            :key="'user-'+user.id"
-            :class="['result-item', { 'active-item': activeIndex === index }]"
-            rounded="lg"
-            @click="goToUser(user.username)"
-            @mouseenter="activeIndex = index"
+      <v-divider />
+
+      <!-- Resultados -->
+      <v-card-text class="pa-0 overflow-y-auto" style="max-height: 380px;">
+        <div class="search-results px-2 py-2" v-if="query">
+          <div
+            v-if="filteredUsers.length === 0 && filteredProjects.length === 0 && !loadingUsers && !loadingProjects"
+            class="px-4 py-8 text-center text-medium-emphasis"
           >
-            <template v-slot:prepend>
-              <v-avatar size="30" color="primary" rounded="lg" class="mr-3">
-                <v-img v-if="user.profilePicture" :src="user.profilePicture" />
-                <span v-else class="text-caption font-weight-bold">{{ user.username.charAt(0).toUpperCase() }}</span>
-              </v-avatar>
+            <v-icon size="28" class="mb-2 opacity-30">search_off</v-icon>
+            <p class="text-body-2 mb-0">Nenhum resultado encontrado</p>
+          </div>
+
+          <v-list bg-color="transparent" class="py-0">
+            <!-- Usuários -->
+            <template v-if="filteredUsers.length > 0">
+              <div class="result-group-label px-3 pt-1 pb-2">Usuários</div>
+              <v-list-item
+                v-for="(user, index) in filteredUsers"
+                :key="'user-'+user.id"
+                :class="['result-item', { 'active-item': activeIndex === index }]"
+                rounded="lg"
+                @click="goToUser(user.username)"
+                @mouseenter="activeIndex = index"
+              >
+                <template v-slot:prepend>
+                  <v-avatar size="30" color="primary" rounded="lg" class="mr-3">
+                    <v-img v-if="user.profilePicture" :src="user.profilePicture" />
+                    <span v-else class="text-caption font-weight-bold">{{ user.username.charAt(0).toUpperCase() }}</span>
+                  </v-avatar>
+                </template>
+                <v-list-item-title class="font-weight-medium text-body-2">{{ user.name || user.username }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption opacity-50">@{{ user.username }}</v-list-item-subtitle>
+              </v-list-item>
             </template>
-            <v-list-item-title class="font-weight-medium text-body-2">{{ user.name || user.username }}</v-list-item-title>
-            <v-list-item-subtitle class="text-caption opacity-50">@{{ user.username }}</v-list-item-subtitle>
-          </v-list-item>
-        </template>
 
-        <v-divider v-if="filteredUsers.length > 0 && filteredProjects.length > 0" class="my-2 opacity-20" />
+            <v-divider v-if="filteredUsers.length > 0 && filteredProjects.length > 0" class="my-2 opacity-20" />
 
-        <!-- Projetos -->
-        <template v-if="filteredProjects.length > 0">
-          <div class="result-group-label px-3 pt-1 pb-2">Projetos públicos</div>
-          <v-list-item
-            v-for="(project, pIndex) in filteredProjects"
-            :key="'project-'+project.id"
-            :class="['result-item', { 'active-item': activeIndex === (pIndex + filteredUsers.length) }]"
-            rounded="lg"
-            @click="goToProject(project.id)"
-            @mouseenter="activeIndex = pIndex + filteredUsers.length"
-          >
-            <template v-slot:prepend>
-              <div class="project-icon mr-3">
-                <v-icon size="16" color="primary">terminal</v-icon>
-              </div>
+            <!-- Projetos -->
+            <template v-if="filteredProjects.length > 0">
+              <div class="result-group-label px-3 pt-1 pb-2">Projetos públicos</div>
+              <v-list-item
+                v-for="(project, pIndex) in filteredProjects"
+                :key="'project-'+project.id"
+                :class="['result-item', { 'active-item': activeIndex === (pIndex + filteredUsers.length) }]"
+                rounded="lg"
+                @click="goToProject(project.id)"
+                @mouseenter="activeIndex = pIndex + filteredUsers.length"
+              >
+                <template v-slot:prepend>
+                  <div class="project-icon mr-3">
+                    <v-icon size="16" color="primary">terminal</v-icon>
+                  </div>
+                </template>
+                <v-list-item-title class="font-weight-medium text-body-2">{{ project.title }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption opacity-50 text-truncate" style="max-width: 400px;">
+                  {{ project.description || 'Sem descrição' }}
+                </v-list-item-subtitle>
+              </v-list-item>
             </template>
-            <v-list-item-title class="font-weight-medium text-body-2">{{ project.title }}</v-list-item-title>
-            <v-list-item-subtitle class="text-caption opacity-50 text-truncate" style="max-width: 400px;">
-              {{ project.description || 'Sem descrição' }}
-            </v-list-item-subtitle>
-          </v-list-item>
-        </template>
-      </v-list>
-    </div>
+          </v-list>
+        </div>
 
-    <div v-else class="px-4 py-8 text-center">
-      <v-icon size="28" class="mb-2 opacity-20">search</v-icon>
-      <p class="text-body-2 text-medium-emphasis mb-1">Digite para buscar</p>
-      <p class="text-caption opacity-40">Usuários requerem username exato</p>
-    </div>
+        <div v-else class="px-4 py-8 text-center text-medium-emphasis">
+          <v-icon size="28" class="mb-2 opacity-20">search</v-icon>
+          <p class="text-body-2 mb-1">Digite para buscar</p>
+          <p class="text-caption opacity-40">Usuários requerem username exato</p>
+        </div>
+      </v-card-text>
 
-    <v-divider class="opacity-20" />
+      <v-divider />
 
-    <!-- Rodapé de atalhos -->
-    <div class="search-footer px-4 py-2 d-flex align-center ga-3">
-      <div class="d-flex align-center ga-1 text-caption opacity-40">
-        <kbd class="shortcut-key">↑↓</kbd>
-        <span>navegar</span>
+      <!-- Rodapé de atalhos -->
+      <div class="search-footer px-4 py-2 d-flex align-center ga-3">
+        <div class="d-flex align-center ga-1 text-caption opacity-40">
+          <kbd class="shortcut-key">↑↓</kbd>
+          <span>navegar</span>
+        </div>
+        <div class="d-flex align-center ga-1 text-caption opacity-40">
+          <kbd class="shortcut-key">↵</kbd>
+          <span>abrir</span>
+        </div>
+        <div class="d-flex align-center ga-1 text-caption opacity-40">
+          <kbd class="shortcut-key">Esc</kbd>
+          <span>fechar</span>
+        </div>
       </div>
-      <div class="d-flex align-center ga-1 text-caption opacity-40">
-        <kbd class="shortcut-key">↵</kbd>
-        <span>abrir</span>
-      </div>
-      <div class="d-flex align-center ga-1 text-caption opacity-40">
-        <kbd class="shortcut-key">Esc</kbd>
-        <span>fechar</span>
-      </div>
-    </div>
-  </COverlay>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -130,7 +133,7 @@ import { http } from '@/utils';
 const router = useRouter();
 const isOpen = ref(false);
 const query = ref('');
-const searchInput = ref<HTMLInputElement | null>(null);
+const searchInput = ref<any>(null);
 
 const loadingProjects = ref(false);
 const loadingUsers = ref(false);
@@ -167,7 +170,10 @@ function open() {
 watch(isOpen, (val) => {
   if (val) {
     nextTick(() => {
-      searchInput.value?.focus();
+      // O v-text-field do Vuetify expõe o input interno no ref
+      if (searchInput.value) {
+        searchInput.value.focus();
+      }
     });
   }
 });
@@ -313,5 +319,13 @@ defineExpose({ open });
   border: 1px solid rgba(var(--v-theme-on-surface), 0.15);
   background: rgba(var(--v-theme-on-surface), 0.05);
   color: rgba(var(--v-theme-on-surface), 0.4);
+}
+</style>
+
+<style lang="scss">
+/* Estilo para posicionar o dialog de busca no topo do view-port (Libadwaita style) */
+.search-dialog-wrapper {
+  align-self: flex-start !important;
+  margin-top: 10vh !important;
 }
 </style>
