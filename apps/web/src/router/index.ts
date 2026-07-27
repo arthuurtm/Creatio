@@ -22,7 +22,7 @@ const routes: RouteRecordRaw[] = [
 		path: "/",
 		component: LayoutBase,
 		meta: { requiresAuth: true },
-    redirect: { name: "CodeProjects" },
+    redirect: { name: "CodeNew" },
 		children: [
 			{
 				path: "users/:username",
@@ -35,15 +35,27 @@ const routes: RouteRecordRaw[] = [
 				children: [
 					{
 						path: "",
+						redirect: { name: "CodeNew" },
+					},
+					{
+						path: "projects",
 						name: "CodeProjects",
 						component: () => import("@/views/code/ProjectsView.vue"),
 					},
+					// Editor sem projeto (canvas em branco + overlay de recentes)
+					{
+						path: "new",
+						name: "CodeNew",
+						component: () => import("@/views/code/CodeEditView.vue"),
+						meta: { layout: { fullscreen: true, hideNavigator: false } },
+					},
+					// Editor com projeto existente
 					{
 						path: ":id/edit",
 						name: "CodeEdit",
 						component: () => import("@/views/code/CodeEditView.vue"),
 						props: true,
-						meta: { layout: { fullscreen: true, hideNavigator: true } },
+						meta: { layout: { fullscreen: true, hideNavigator: false } },
 					},
 				],
 			},
@@ -75,12 +87,12 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/home",
     name: "Home",
-    redirect: { name: "CodeProjects" },
+    redirect: { name: "CodeNew" },
   },
   {
     path: "/about",
     name: "About",
-    redirect: { name: "CodeProjects" },
+    redirect: { name: "CodeNew" },
   },
 ];
 
@@ -115,7 +127,7 @@ router.beforeEach(async (to, from, next) => {
     isLoggedIn
   ) {
     // Telas de autenticação continuam bloqueadas pra quem já está logado
-    next({ name: "CodeProjects" });
+    next({ name: "CodeNew" });
   } else {
     next();
   }

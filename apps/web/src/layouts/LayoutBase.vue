@@ -1,54 +1,48 @@
 <script setup lang="ts">
-import { ref, watchEffect, computed } from "vue";
+import { ref, computed, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import SidebarProjects from "@/components/modules/SidebarProjects.vue";
-import ContextMenu from "@/components/ui/ContextMenu.vue";
+import GlobalSearch from "@/components/modules/GlobalSearch.vue";
+import Logo from "@/components/ui/Logo.vue";
+import { useEditorStore } from "@/stores/editor";
 import { http } from "@/utils/index.ts";
 import { useUserStore } from "@/stores";
 import DialogSettings from "@/components/modules/DialogSettings.vue";
 
-const route = useRoute();
-const router = useRouter();
-const user = useUserStore();
-const rail = ref(true);
-const settingsDialog = ref(false);
-const logoutDialog = ref(false);
+const route       = useRoute();
+const router      = useRouter();
+const user        = useUserStore();
+const editorStore = useEditorStore();
 
-const menuItems = computed(() => [
-  {
-    text: "Meu perfil",
-    value: "profile",
-    icon: "account_circle"
-  },
-  {
-    text: "Configurações",
-    value: "settings",
-    icon: "settings"
-  },
-  {
-    text: "Sair da conta",
-    value: "logout",
-    icon: "logout"
+const settingsDialog = ref(false);
+const searchRef      = ref<InstanceType<typeof GlobalSearch> | null>(null);
+
+// ── Breadcrumb dinâmico ───────────────────────────────────────────────────────
+const breadcrumbs = computed(() => {
+  const crumbs: any[] = [
+    { label: 'Projetos', to: { name: 'CodeProjects' }, disabled: route.name === 'CodeProjects' },
+  ];
+
+  if (route.name === 'CodeEdit') {
+    const title = editorStore.info.title || 'Sem título';
+    crumbs.push({ label: title, to: null, disabled: true });
+  } else if (route.name === 'CodeNew') {
+    crumbs.push({ label: 'Novo projeto', to: null, disabled: true, muted: true });
   }
+
+  return crumbs;
+});
+
+// ── Menu do usuário ───────────────────────────────────────────────────────────
+const menuItems = computed(() => [
+  { text: "Meu perfil",    value: "profile",  icon: "account_circle" },
+  { text: "Configurações", value: "settings", icon: "settings"        },
+  { text: "Sair da conta", value: "logout",   icon: "logout"          },
 ]);
 
-// 2. Centralizamos o disparo das ações com base no 'value' retornado pelo @select
 function handleMenuSelect(item: any) {
-  if (item.value === "profile") {
-    router.push({ name: 'UserProfile', params: { username: user.username } });
-  } else if (item.value === "settings") {
-    settingsDialog.value = true;
-  } else if (item.value === "logout") {
-    logoutDialog.value = true;
-  }
-}
-
-async function handleLogout() {
-  try {
-    await http.auth.logout();
-  } finally {
-    return;
-  }
+  if (item.value === "profile")  router.push({ name: "UserProfile", params: { username: user.username } });
+  if (item.value === "settings") settingsDialog.value = true;
+  if (item.value === "logout")   http.auth.logout();
 }
 
 const collapsed = ref(false);
@@ -59,60 +53,112 @@ watchEffect(() => {
 
 <template>
   <v-layout class="fill-viewport">
-    <v-navigation-drawer
-      v-if="!collapsed"
-      :rail="rail"
-      :rail-width="60"
-      :rounded="0"
-      permanent
-    >
-      <v-list>
-        <v-list-item
-          :title="user.name"
-        >
-          <template v-slot:prepend>
-            <v-avatar class="cursor-pointer"
-            :icon="user.profilePicture ? user.profilePicture : 'account_circle'"></v-avatar>
 
-            <v-menu activator="parent">
-              <ContextMenu
-                :is-visible="true"
-                :items="menuItems"
-                @select="handleMenuSelect"
-              />
+    <!-- ══ HEADER BAR ══════════════════════════════════════════════════════ -->
+    <v-app-bar v-if="!collapsed" flat rounded="0" border="b" :height="47">
+
+      <template #prepend>
+        <div class="d-flex align-center pl-3 ga-1">
+
+          <!-- Logo clicável -->
+          <v-btn
+            variant="text"
+            density="comfortable"
+            class="px-2"
+            style="min-width: 0"
+            @click="router.push({ name: 'CodeProjects' })"
+          >
+            <Logo height="24" />
+          </v-btn>
+
+          <!-- Itens do Breadcrumb -->
+          <template v-for="(crumb, i) in breadcrumbs" :key="i">
+            <v-icon size="14" class="text-disabled mx-1">chevron_right</v-icon>
+
+            <!-- Item clicável -->
+            <v-btn
+              v-if="!crumb.disabled"
+              variant="text"
+              density="comfortable"
+              class="text-none px-2"
+              style="min-width: 0; font-size: 0.875rem"
+              @click="crumb.to && router.push(crumb.to)"
+            >
+              {{ crumb.label }}
+            </v-btn>
+
+            <!-- Item atual (não clicável) -->
+            <span
+              v-else
+              class="text-body-2 font-weight-medium text-truncate"
+              :class="{ 'text-disabled': crumb.muted }"
+              style="max-width: 220px"
+            >
+              {{ crumb.label }}
+            </span>
+          </template>
+
+        </div>
+      </template>
+
+      <!-- Direita: busca + avatar -->
+      <template #append>
+        <div class="d-flex align-center ga-1 pr-2">
+
+          <v-btn
+            icon="search"
+            variant="text"
+            density="comfortable"
+            @click="searchRef?.open()"
+          />
+
+          <v-btn icon variant="text" density="comfortable">
+            <v-avatar
+              :image="user.profilePicture || undefined"
+              :color="user.profilePicture ? undefined : 'primary'"
+              size="26"
+            >
+              <span
+                v-if="!user.profilePicture"
+                class="text-caption font-weight-bold"
+                style="font-size: 0.65rem"
+              >
+                {{ (user.name || user.username || '?').charAt(0).toUpperCase() }}
+              </span>
+            </v-avatar>
+
+            <v-menu activator="parent" location="bottom end">
+              <v-card rounded="xl" flat border min-width="180">
+                <v-list density="compact" class="pa-2">
+                  <v-list-item
+                    v-for="item in menuItems"
+                    :key="item.value"
+                    :title="item.text"
+                    :prepend-icon="item.icon"
+                    class="rounded-lg mb-1"
+                    color="primary"
+                    @click="handleMenuSelect(item)"
+                  />
+                </v-list>
+              </v-card>
             </v-menu>
-          </template>
+          </v-btn>
 
-          <template v-slot:append>
-            <v-icon @click.stop="rail = !rail" :inert="rail" :variant="'text'" icon="menu_open"></v-icon>
-          </template>
-        </v-list-item>
-      </v-list>
+        </div>
+      </template>
 
-      <v-divider/>
+    </v-app-bar>
 
-      <v-list nav>
-        <v-list-item
-          :active="route.name === 'CodeProjects'"
-          prepend-icon="terminal"
-          title="Seus projetos"
-          value="projects"
-          rounded="pill"
-          color="primary"
-          @click="router.push({ name: 'CodeProjects' })"
-          @click.stop="rail = !rail"
-        />
-      </v-list>
-
-      <SidebarProjects :rail="rail" @expand="rail = false" />
-    </v-navigation-drawer>
-
-    <v-main :class="['scrollable-content', { 'pt-0': collapsed }]">
+    <!-- ══ CONTEÚDO ════════════════════════════════════════════════════════ -->
+    <v-main>
       <router-view v-slot="{ Component }">
-        <!-- <transition name="fade" mode="out-in"> -->
-          <component :is="Component" />
-        <!-- </transition> -->
+        <component :is="Component" />
       </router-view>
     </v-main>
+
+    <!-- ══ GLOBAIS ═════════════════════════════════════════════════════════ -->
+    <GlobalSearch ref="searchRef" />
+    <!-- <DialogSettings v-model="settingsDialog" /> -->
+
   </v-layout>
 </template>

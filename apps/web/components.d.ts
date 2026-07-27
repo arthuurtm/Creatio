@@ -37,6 +37,7 @@ declare module 'vue' {
     Node: typeof import('./src/components/ui/Node.vue')['default']
     ProjectCard: typeof import('./src/components/modules/ProjectCard.vue')['default']
     Properties: typeof import('./src/components/modules/Properties.vue')['default']
+    RecentProjectsOverlay: typeof import('./src/components/modules/RecentProjectsOverlay.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SidebarProjects: typeof import('./src/components/modules/SidebarProjects.vue')['default']

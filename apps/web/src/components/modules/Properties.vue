@@ -66,7 +66,6 @@ const activeNodes = computed(() => {
     <ExplorerRail
       v-if="isRail"
       :sidebar-items="sidebarItems"
-      :items="sidebarItems"
       :active-category="activeCategory"
       @select="handleRailCategoryClick"
       @expand="toggleState"

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import ContextMenu from "./ContextMenu.vue";
+import { ref, watch, computed } from "vue";
 
 type InterfaceItems = {
 	text?: string;
@@ -31,6 +30,7 @@ const emit = defineEmits<{
 }>();
 
 const selectedParams = ref([...props.modelValue]);
+const searchQuery    = ref("");
 
 watch(
 	() => props.modelValue,
@@ -53,6 +53,55 @@ function getChipColor(category: string) {
   if (cat.includes('compar')) return '#FF9800'; // Comparação (Laranja)
   if (cat.includes('aritm')) return '#4CAF50'; // Aritméticos (Verde)
   return '#9E9E9E'; // Default (Cinza)
+}
+
+// ── Filtro dos grupos e normalização dos itens nativo ─────────────────────────
+const filteredGroups = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
+  
+  return (props.items || []).map((group: any) => {
+    const groupLabel = group.label || group.text || group.key || "";
+    
+    // Converte objeto (ex: ComparisonOperators) em Array se necessário
+    const rawItems = Array.isArray(group.items)
+      ? group.items
+      : typeof group.items === "object" && group.items !== null
+        ? Object.entries(group.items).map(([k, v]) => ({ text: v, value: v })) // Exibe o valor do operador (===, >, etc)
+        : [];
+    
+    // Normaliza itens de cada grupo
+    const items = rawItems.map((item: any) => {
+      if (typeof item === "string" || typeof item === "number") {
+        return { text: String(item), value: item, disabled: group.disabled };
+      }
+      return {
+        text: item.text ?? item.label ?? item.key ?? item.id ?? String(item.value ?? "-"),
+        value: item.value ?? item.id ?? item.key ?? item.text ?? item.label ?? null,
+        icon: item.icon,
+        subtitle: item.subtitle ?? item.description,
+        disabled: group.disabled || item.disabled,
+        category: groupLabel,
+      };
+    });
+
+    // Filtra pelo termo de busca
+    const matchingItems = query
+      ? items.filter((item: any) =>
+          item.text.toLowerCase().includes(query) ||
+          (item.subtitle && item.subtitle.toLowerCase().includes(query))
+        )
+      : items;
+
+    return {
+      label: groupLabel,
+      items: matchingItems,
+    };
+  }).filter((group: any) => group.items.length > 0);
+});
+
+function selectItem(item: any) {
+  if (item.disabled) return;
+  emit("update:modelValue", [...selectedParams.value, item]);
 }
 </script>
 
@@ -100,16 +149,63 @@ function getChipColor(category: string) {
         </div>
       </template>
 
-      <!-- Menu flutuante de seleção -->
-      <context-menu
-        is-visible
-        searchable
-        search-placeholder="Filtrar blocos..."
+      <!-- Menu flutuante de seleção 100% nativo -->
+      <v-card
+        rounded="xl"
+        flat
+        border
         min-width="280"
-        variant="flat"
-        :items="items"
-        @select="$emit('update:modelValue', [...selectedParams, $event])"
-      />
+        max-width="360"
+        max-height="420"
+        class="mt-2 pa-1 d-flex flex-column overflow-hidden"
+      >
+        <!-- Campo de busca -->
+        <div class="px-2 pt-1 pb-1">
+          <v-text-field
+            v-model="searchQuery"
+            placeholder="Filtrar blocos..."
+            density="compact"
+            variant="solo-filled"
+            bg-color="surface-light"
+            flat
+            hide-details
+            clearable
+            prepend-inner-icon="search"
+          />
+        </div>
+
+        <v-divider />
+
+        <!-- Lista de blocos -->
+        <div class="flex-grow-1 overflow-y-auto px-1">
+          <template v-if="filteredGroups.length === 0">
+            <div class="pa-4 text-center text-caption text-medium-emphasis">
+              Nenhum item encontrado
+            </div>
+          </template>
+
+          <template v-else v-for="group in filteredGroups" :key="group.label">
+            <v-list-subheader class="text-uppercase text-caption font-weight-bold opacity-70 px-3 pt-2 pb-1">
+              {{ group.label }}
+            </v-list-subheader>
+
+            <v-list density="compact" class="pa-0">
+              <v-list-item
+                v-for="item in group.items"
+                :key="item.value ?? item.text"
+                :title="item.text"
+                :subtitle="item.subtitle"
+                :prepend-icon="item.icon"
+                :disabled="item.disabled"
+                class="rounded-lg mb-1"
+                color="primary"
+                link
+                @click="selectItem(item)"
+              />
+            </v-list>
+          </template>
+        </div>
+      </v-card>
     </v-menu>
   </div>
 </template>
