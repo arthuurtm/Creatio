@@ -18,6 +18,7 @@ import {
 	getAnyUserSessionController,
 	logoutAllSessionsController,
 	logoutUserController,
+	refreshSessionController,
 	validateSecureSession,
 } from "#api/controllers/http/UserSessionController.ts";
 // import { reqLimiter } from "#api/helpers/limiter.ts";
@@ -46,5 +47,6 @@ router.post("/setResetPassCode", setResetPasswordCodeController);
 router.post("/setUser", signupUserController);
 router.post("/setUserPassword", resetUserPasswordController);
 router.post("/validateSecureSession", validateSecureSession);
+router.post("/refreshSession", refreshSessionController);
 
 export default router;

@@ -1,3 +1,8 @@
+import {
+	type BackendUserAuth,
+	type DeviceData,
+	mapUAResultToDeviceData,
+} from "@projeto/types";
 import bcrypt from "bcrypt";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
@@ -7,11 +12,6 @@ import { UAParser } from "ua-parser-js";
 import { env } from "#api/config/env.ts";
 import { setUserDatabaseQuery } from "#api/helpers/query.ts";
 import { Session, User } from "#api/models/index.ts";
-import {
-	type BackendUserAuth,
-	type DeviceData,
-	mapUAResultToDeviceData,
-} from "@projeto/types";
 import { createClientSession } from "./ClientSessionService.ts";
 
 async function createUserSession(userId: number, deviceRaw: IResult) {
@@ -63,16 +63,13 @@ async function updateUserSession(oldRefreshToken: string) {
 	return { accessToken, refreshToken };
 }
 
-async function verifyAndRenewSession({
-	accessToken,
-	refreshToken,
-}: BackendUserAuth) {
-	let renewNeeded = false;
+async function verifyAndRenewSession({ accessToken }: Partial<BackendUserAuth>) {
+	if (!accessToken) return null;
 
-	if (!accessToken) {
-		if (!refreshToken) return null;
-		({ accessToken, refreshToken } = await updateUserSession(refreshToken));
-		renewNeeded = true;
+	try {
+		jwt.verify(accessToken, env.ACCESS_TOKEN_SECRET);
+	} catch (err) {
+		return null;
 	}
 
 	const session = await Session.findOne({
@@ -85,8 +82,8 @@ async function verifyAndRenewSession({
 	return {
 		user: session.User,
 		newAccessToken: accessToken,
-		newRefreshToken: refreshToken,
-		renewNeeded,
+		newRefreshToken: "",
+		renewNeeded: false,
 	};
 }
 
@@ -129,7 +126,7 @@ async function handleLogin(
 	const parser = new UAParser(userAgent);
 	const device: IResult = parser.getResult();
 
-	const user: User | null = await User.findOne({
+	const user: User | null = await User.scope("withPasswordHash").findOne({
 		where: setUserDatabaseQuery({ value: login }),
 	});
 	if (!user) throw new Error("Usuário não encontrado.");
@@ -167,4 +164,5 @@ export {
 	deleteUserSession,
 	handleLogin,
 	getUserIDFromSessionToken,
+	updateUserSession,
 };

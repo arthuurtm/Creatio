@@ -1,12 +1,15 @@
 import type { NextFunction, Request, Response } from "express";
 import log from "#api/helpers/console.ts";
+import { Session } from "#api/models/index.ts";
 import { validateCodeAndGetUUID } from "#api/services/2FAService.ts";
+import { createClientCookie } from "#api/services/ClientSessionService.ts";
 import {
+	createUserSession,
 	getAnyUserSession,
 	getUserIDFromSessionToken,
 	logoutAllSessions,
+	updateUserSession,
 } from "#api/services/UserSessionService.ts";
-import { Session } from "#api/models/index.ts";
 
 async function logoutAllSessionsController(
 	req: Request,
@@ -90,10 +93,30 @@ async function deleteSessionController(
 	}
 }
 
+async function refreshSessionController(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) {
+	try {
+		const { refreshToken: OldRefreshToken } = req.cookies;
+		if (!OldRefreshToken)
+			throw new Error("Sessão inválida ou expirada. Faça login novamente.");
+
+		const { accessToken, refreshToken } =
+			await updateUserSession(OldRefreshToken);
+		await createClientCookie(res, accessToken, refreshToken);
+		res.json({ success: true, message: "Sessão renovada com sucesso." });
+	} catch (err) {
+		next(err);
+	}
+}
+
 export {
 	logoutAllSessionsController,
 	getAnyUserSessionController,
 	logoutUserController,
 	validateSecureSession,
 	deleteSessionController,
+	refreshSessionController,
 };

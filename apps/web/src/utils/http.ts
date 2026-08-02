@@ -73,6 +73,23 @@ function buildQuery(params = {}) {
 	return query.toString();
 }
 
+let isRefreshing = false;
+let failedQueue: Array<{
+	resolve: () => void;
+	reject: (error: any) => void;
+}> = [];
+
+const processQueue = (error: any) => {
+	failedQueue.forEach((prom) => {
+		if (error) {
+			prom.reject(error);
+		} else {
+			prom.resolve();
+		}
+	});
+	failedQueue = [];
+};
+
 /**
  *
  * @param {*} endpoint
@@ -87,7 +104,7 @@ const request = async (
 	endpoint: EndpointParams,
 	method: HttpMethod = "GET",
 	body: EndpointBody = null,
-) => {
+): Promise<any> => {
 	const getHttpStatusMessage = (status: number) => {
 		const messages: Record<number, string> = {
 			400: "A requisição não pôde ser processada. Tente novamente.",
@@ -124,12 +141,53 @@ const request = async (
 			const serverMessage =
 				errorData.message || getHttpStatusMessage(response.status);
 
-			// 401 — sessão expirada ou não autenticado: limpa store e redireciona
+			// 401 — sessão expirada ou não autenticado
 			if (response.status === 401) {
-				useUserStore().clearUserData();
-				const { default: router } = await import('@/router');
-				if (router.currentRoute.value.name !== 'Login') {
-					router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } });
+				// Se o próprio refresh falhou, redireciona para o login
+				if (endpoint.route === "refreshSession") {
+					useUserStore().clearUserData();
+					const { default: router } = await import('@/router');
+					if (router.currentRoute.value.name !== 'Login') {
+						router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } });
+					}
+					throw new FormError(serverMessage, {
+						...errorData,
+						status: response.status,
+					});
+				}
+
+				// Se já estiver atualizando o token, enfileira a requisição
+				if (isRefreshing) {
+					return new Promise((resolve, reject) => {
+						failedQueue.push({
+							resolve: () => {
+								resolve(request(endpoint, method, body));
+							},
+							reject: (err) => {
+								reject(err);
+							},
+						});
+					});
+				}
+
+				isRefreshing = true;
+
+				try {
+					// Executa o refreshSession único
+					await request({ type: "database", route: "refreshSession" }, "POST", {});
+					isRefreshing = false;
+					processQueue(null);
+					// Re-tenta a requisição original
+					return request(endpoint, method, body);
+				} catch (refreshErr) {
+					isRefreshing = false;
+					processQueue(refreshErr);
+					useUserStore().clearUserData();
+					const { default: router } = await import('@/router');
+					if (router.currentRoute.value.name !== 'Login') {
+						router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } });
+					}
+					throw refreshErr;
 				}
 			}
 
