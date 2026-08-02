@@ -17,11 +17,11 @@
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <v-btn text="Avançar" color="primary" variant="flat" block class="text-none rounded-pill" type="submit" autofocus @click="nextStep()" />
+        <v-btn text="Avançar" color="primary" variant="flat" block class="text-none rounded-pill" type="submit" autofocus />
       </template>
       <template v-else-if="currentStep === 2">
         <div class="d-flex flex-column ga-2 w-100">
-          <v-btn text="Entrar" color="primary" variant="flat" block class="text-none rounded-pill" type="submit" autofocus @click="loaderController(handleLogin)" :loading="loading" />
+          <v-btn text="Entrar" color="primary" variant="flat" block class="text-none rounded-pill" type="submit" autofocus :loading="loading" />
           <v-btn variant="text" text="Voltar" class="text-none rounded-pill text-medium-emphasis" block @click="prevStep()" />
         </div>
       </template>
