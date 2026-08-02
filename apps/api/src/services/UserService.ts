@@ -34,15 +34,12 @@ async function getBasicUserData(id: string) {
 	if (!id) throw new Error("Identificação do usuário não informada");
 
 	const query = setUserDatabaseQuery({ value: id });
-	const userData = await User.findOne({
-		where: query,
-		include: [{ model: Session }],
-	});
+	const userData = await User.findOne({ where: query });
 	const user = userData?.get({ plain: true });
 	if (!user) return null;
 
 	return {
-		id: user,
+		id: user.id,
 		username: user.username,
 		nickname: user.nickname,
 		profilePic: user.profilePic,
@@ -57,9 +54,7 @@ async function getAllUserData(accessToken: string) {
 		include: [{ model: User }],
 	});
 	if (!userData) return null;
-
-	const { passwordHash, ...user } = userData?.User?.get({ plain: true }) ?? {};
-	return user;
+	return userData?.User?.get({ plain: true }) ?? {};
 }
 
 async function setVerificationCodeAndSendEmail({

@@ -28,6 +28,12 @@ User.init(
 		sequelize,
 		modelName: "Users",
 		timestamps: true,
+		defaultScope: {
+			attributes: { exclude: ["passwordHash"] },
+		},
+		scopes: {
+			withPasswordHash: {},
+		},
 	},
 );
 
