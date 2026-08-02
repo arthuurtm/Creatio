@@ -1,5 +1,5 @@
-import { debounce } from "lodash-es";
 import type { RouteOptions } from "@projeto/types";
+import { debounce } from "lodash-es";
 import { showToast } from "@/plugins/toast";
 import { useUserStore } from "@/stores/user";
 
@@ -146,9 +146,12 @@ const request = async (
 				// Se o próprio refresh falhou, redireciona para o login
 				if (endpoint.route === "refreshSession") {
 					useUserStore().clearUserData();
-					const { default: router } = await import('@/router');
-					if (router.currentRoute.value.name !== 'Login') {
-						router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } });
+					const { default: router } = await import("@/router");
+					if (router.currentRoute.value.name !== "Login") {
+						router.push({
+							name: "Login",
+							query: { redirect: router.currentRoute.value.fullPath },
+						});
 					}
 					throw new FormError(serverMessage, {
 						...errorData,
@@ -174,7 +177,11 @@ const request = async (
 
 				try {
 					// Executa o refreshSession único
-					await request({ type: "database", route: "refreshSession" }, "POST", {});
+					await request(
+						{ type: "database", route: "refreshSession" },
+						"POST",
+						{},
+					);
 					isRefreshing = false;
 					processQueue(null);
 					// Re-tenta a requisição original
@@ -183,9 +190,12 @@ const request = async (
 					isRefreshing = false;
 					processQueue(refreshErr);
 					useUserStore().clearUserData();
-					const { default: router } = await import('@/router');
-					if (router.currentRoute.value.name !== 'Login') {
-						router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } });
+					const { default: router } = await import("@/router");
+					if (router.currentRoute.value.name !== "Login") {
+						router.push({
+							name: "Login",
+							query: { redirect: router.currentRoute.value.fullPath },
+						});
 					}
 					throw refreshErr;
 				}
@@ -236,7 +246,8 @@ const post = (endpoint: EndpointParams, body: EndpointBody) =>
 	request(endpoint, "POST", body);
 const put = (endpoint: EndpointParams, body: EndpointBody) =>
 	request(endpoint, "PUT", body);
-const del = (endpoint: EndpointParams, body: EndpointBody = null) => request(endpoint, "DELETE", body);
+const del = (endpoint: EndpointParams, body: EndpointBody = null) =>
+	request(endpoint, "DELETE", body);
 get.slow = debounce((endpoint) => request(endpoint, "GET"), 500);
 
 async function handleUserData() {
@@ -264,12 +275,12 @@ async function isAuthenticated() {
 	return handleUserData();
 }
 async function logout() {
-	const res = await del({ type: "database", route: "logout" });
-	if (res) {
-		useUserStore().clearUserData();
-		return true;
-	} else {
+	try {
+		await del({ type: "database", route: "logout" });
+	} catch (error) {
 		return false;
+	} finally {
+		useUserStore().clearUserData();
 	}
 }
 async function logoutAll() {

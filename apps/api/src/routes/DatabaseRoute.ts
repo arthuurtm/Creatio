@@ -30,7 +30,7 @@ router.get("/getUserData", isAuthenticated, getUserDataController);
 router.get("/getAllUserSessions", isAuthenticated, getAnyUserSessionController);
 router.delete("/deleteSession", isAuthenticated, deleteSessionController);
 router.delete("/logoutAll", isAuthenticated, logoutAllSessionsController);
-router.delete("/logout", isAuthenticated, logoutUserController);
+router.delete("/logout", logoutUserController);
 router.delete("/deleteProject", isAuthenticated, deleteProjectController);
 router.post(
 	"/setProject",

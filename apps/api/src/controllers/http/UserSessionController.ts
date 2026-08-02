@@ -4,7 +4,7 @@ import { Session } from "#api/models/index.ts";
 import { validateCodeAndGetUUID } from "#api/services/2FAService.ts";
 import { createClientCookie } from "#api/services/ClientSessionService.ts";
 import {
-	createUserSession,
+	deleteUserSession,
 	getAnyUserSession,
 	getUserIDFromSessionToken,
 	logoutAllSessions,
@@ -46,8 +46,22 @@ async function logoutUserController(
 	next: NextFunction,
 ) {
 	try {
-		res.clearCookie("accessToken");
-		res.clearCookie("refreshToken");
+		const accessToken = req.cookies.accessToken;
+		if (accessToken) {
+			await deleteUserSession(accessToken).catch(() => {});
+		}
+
+		res.clearCookie("accessToken", {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+		});
+		res.clearCookie("refreshToken", {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			path: "/api/database/refreshSession",
+		});
 		res.json({ message: "Usuário deslogado com sucesso" });
 	} catch (err) {
 		next(err);
