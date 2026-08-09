@@ -1,60 +1,53 @@
 <script setup lang="ts">
+import { computed, h } from "vue";
 import type { EditorDefinition } from "@projeto/types";
+import { NIcon } from "naive-ui";
+import { Add } from "@vicons/ionicons5";
+import { getIconComponent } from "@/utils/icons";
 
-import { VBtn, VCard, VList, VListItem, VMenu } from "vuetify/components";
-
-defineProps<{
+const props = defineProps<{
 	definitions: Record<string, EditorDefinition>;
 }>();
 
 const emit = defineEmits<{
 	select: [EditorDefinition];
 }>();
+
+const options = computed(() => {
+	return Object.entries(props.definitions).map(([key, def]) => {
+		const iconComp = getIconComponent(def.icon || 'add');
+		return {
+			label: def.text,
+			key: key,
+			icon: iconComp ? () => h(NIcon, { size: 16 }, { default: () => h(iconComp) }) : undefined
+		};
+	});
+});
+
+function handleSelect(key: string) {
+	const def = props.definitions[key];
+	if (def) {
+		emit('select', def);
+	}
+}
 </script>
 
 <template>
-	<v-menu
-		location="bottom end"
-		transition="scale-transition"
+	<n-dropdown
+		trigger="click"
+		placement="bottom-end"
+		:options="options"
+		@select="handleSelect"
 	>
-		<template #activator="{ props: menuProps }">
-			<v-btn
-				v-bind="menuProps"
-				icon="add"
-				variant="flat"
-				color="primary"
-				size="x-small"
-				class="ml-1"
-			/>
-		</template>
-
-		<v-card
-			rounded="xl"
-			elevation="3"
-			class="mt-2 border"
+		<n-button
+			circle
+			type="primary"
+			size="small"
+			class="ml-1"
 		>
-			<v-list
-				density="compact"
-				min-width="220"
-				class="pa-2"
-			>
-				<v-list-item
-					v-for="(def, key) in definitions"
-					:key="key"
-					:title="def.text"
-					:prepend-icon="
-						def.icon || 'add'
-					"
-					class="mb-1"
-					color="primary"
-					@click="
-						emit(
-							'select',
-							def
-						)
-					"
-				/>
-			</v-list>
-		</v-card>
-	</v-menu>
+			<template #icon>
+				<n-icon><Add /></n-icon>
+			</template>
+		</n-button>
+	</n-dropdown>
 </template>

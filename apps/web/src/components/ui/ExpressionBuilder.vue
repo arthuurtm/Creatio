@@ -79,20 +79,13 @@ const smartItems = computed(() => {
 <template>
   <div class="expression-wrapper w-100">
     <!-- Switch Assistente -->
-    <div class="assistant-toggle d-flex align-center justify-end mb-1 w-100 pr-2">
-      <v-switch
-        v-model="isAssistantActive"
-        color="success"
-        hide-details
-        density="compact"
-        class="mr-2"
-      >
-        <template v-slot:label>
-          <span class="text-caption">🛡️ Assistente Sintático</span>
-        </template>
-      </v-switch>
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 4px; width: 100%; padding-right: 8px;">
+      <n-space align="center" :size="8">
+        <span style="font-size: 12px; opacity: 0.8;">🛡️ Assistente Sintático</span>
+        <n-switch v-model:value="isAssistantActive" size="small" />
+      </n-space>
     </div>
-
+ 
     <ComplexArrayBuilder 
       v-model="selectedParams" 
       :items="smartItems" 

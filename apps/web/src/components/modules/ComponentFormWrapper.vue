@@ -7,20 +7,20 @@
       <slot name="formInfo" />
     </template>
 
-    <v-form class="form-wrapper" @submit.prevent="$emit('submit')">
+    <form class="flex flex-col flex-1" @submit.prevent="$emit('submit')">
       <transition name="slide-left" mode="out-in">
-        <div class="form-content py-2" :key="currentStep">
+        <div class="flex flex-col justify-center items-stretch py-2" :key="currentStep">
           <slot v-if="hasSlot('buttons') && hasSlot('form')" name="form" />
           <p v-else>
             Não foi possível carregar os dados do formulário.
           </p>
         </div>
       </transition>
-      <div class="form-actions pt-4 mt-2">
+      <div class="flex flex-col w-full items-stretch gap-2 pt-4 mt-2">
         <slot v-if="hasSlot('buttons') && hasSlot('form')" name="buttons" />
-        <v-btn v-else text="Voltar" @click="$router.back()" />
+        <n-button v-else round @click="$router.back()">Voltar</n-button>
       </div>
-    </v-form>
+    </form>
   </component>
 </template>
 
@@ -45,26 +45,3 @@ function hasSlot(name: string) {
 }
 </script>
 
-<style scoped>
-.form-wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.form-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-}
-
-/* Ações de formulário centralizadas — botões block preenchem toda a largura */
-.form-actions {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  align-items: stretch;
-  gap: 8px;
-}
-</style>

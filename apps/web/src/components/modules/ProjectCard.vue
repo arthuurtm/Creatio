@@ -1,65 +1,86 @@
 <template>
-  <v-card
-    variant="outlined"
-    rounded="xl"
-    :hover="true"
-    class="project-card"
-    v-bind="$attrs"
-    @click="$emit('click')"
+  <n-card 
+    class="rounded-xl cursor-pointer transition-[box-shadow,border-color] duration-200"
+    hoverable
+    @click="emit('click')"
   >
-    <v-list-item
-      :title="item.title"
-      :subtitle="item.description || 'Sem descrição'"
-      lines="two"
-      class="py-3"
-    >
-      <!-- Ícone do projeto -->
-      <template #prepend>
-        <v-avatar color="primary" variant="tonal" rounded="lg" size="40" class="mr-1">
-          <v-icon size="20">terminal</v-icon>
-        </v-avatar>
-      </template>
-
-      <!-- Menu e data -->
-      <template #append>
-        <div class="d-flex flex-column align-end ga-1">
-          <!-- Menu contextual -->
-          <v-menu location="bottom end" :close-on-content-click="true">
-            <template #activator="{ props: menuProps }">
-              <v-btn
-                v-bind="menuProps"
-                icon="more_vert"
-                variant="text"
-                size="x-small"
-                density="comfortable"
-                @click.stop
-              />
-            </template>
-            <v-list density="compact" min-width="180" rounded="xl">
-              <v-list-item prepend-icon="edit"           title="Renomear"  @click.stop="$emit('rename', item)"    />
-              <v-list-item prepend-icon="content_copy"   title="Duplicar"  @click.stop="$emit('duplicate', item)" />
-              <v-divider class="my-1" />
-              <v-list-item prepend-icon="delete_outline" title="Excluir"   class="text-error" @click.stop="$emit('delete', item)" />
-            </v-list>
-          </v-menu>
-
-          <!-- Data de modificação -->
-          <span class="text-caption text-disabled">
-            {{ formatRelativeDate(item.updatedAt || item.createdAt) }}
-          </span>
+    <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-3 grow min-w-0">
+        <n-avatar round class="shrink-0" :style="{ backgroundColor: 'rgba(var(--v-theme-primary), 0.12)', color: 'rgb(var(--v-theme-primary))' }">
+          <n-icon size="20"><TerminalOutline /></n-icon>
+        </n-avatar>
+        <div class="flex flex-col min-w-0 grow">
+          <span class="text-sm font-bold truncate">{{ item.title }}</span>
+          <span class="text-xs opacity-60 truncate mt-0.5">{{ item.description || 'Sem descrição' }}</span>
         </div>
-      </template>
-    </v-list-item>
-  </v-card>
+      </div>
+
+      <div class="flex flex-col items-end gap-1 shrink-0 ml-3">
+        <n-dropdown 
+          trigger="click" 
+          placement="bottom-end" 
+          :options="dropdownOptions" 
+          @select="handleSelect"
+        >
+          <n-button 
+            circle 
+            quaternary 
+            size="small" 
+            @click.stop
+          >
+            <template #icon>
+              <n-icon><EllipsisVertical /></n-icon>
+            </template>
+          </n-button>
+        </n-dropdown>
+        
+        <span class="text-[10px] opacity-50">
+          {{ formatRelativeDate(item.updatedAt || item.createdAt) }}
+        </span>
+      </div>
+    </div>
+  </n-card>
 </template>
 
 <script setup lang="ts">
-defineProps({
+import { h } from 'vue';
+import { NIcon } from 'naive-ui';
+import { TerminalOutline, EllipsisVertical, CreateOutline, CopyOutline, TrashOutline } from '@vicons/ionicons5';
+
+const props = defineProps({
   item:  { type: Object, required: true },
   width: { type: [String, Number], default: '100%' },
 });
 
-defineEmits(['click', 'rename', 'duplicate', 'delete']);
+const emit = defineEmits(['click', 'rename', 'duplicate', 'delete']);
+
+const dropdownOptions = [
+  {
+    label: 'Renomear',
+    key: 'rename',
+    icon: () => h(NIcon, { size: 16 }, { default: () => h(CreateOutline) })
+  },
+  {
+    label: 'Duplicar',
+    key: 'duplicate',
+    icon: () => h(NIcon, { size: 16 }, { default: () => h(CopyOutline) })
+  },
+  {
+    type: 'divider',
+    key: 'd1'
+  },
+  {
+    label: 'Excluir',
+    key: 'delete',
+    icon: () => h(NIcon, { size: 16, color: 'rgb(var(--v-theme-error))' }, { default: () => h(TrashOutline) })
+  }
+];
+
+function handleSelect(key: string) {
+  if (key === 'rename') emit('rename', props.item);
+  if (key === 'duplicate') emit('duplicate', props.item);
+  if (key === 'delete') emit('delete', props.item);
+}
 
 function formatRelativeDate(date: any): string {
   if (!date) return '';
@@ -77,9 +98,3 @@ function formatRelativeDate(date: any): string {
   } catch { return String(date); }
 }
 </script>
-
-<style scoped>
-.project-card {
-  cursor: pointer;
-}
-</style>

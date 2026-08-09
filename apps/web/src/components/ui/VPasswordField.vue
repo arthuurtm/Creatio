@@ -1,32 +1,52 @@
+<script lang="ts">
+export default {
+	inheritAttrs: false,
+};
+</script>
+
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { VTextField } from 'vuetify/components'
+import { computed } from "vue";
+import { LockOpenOutline } from "@vicons/ionicons5";
 
-defineOptions({
-  extends: VTextField
-})
+const props = defineProps<{
+	modelValue?: string;
+	label?: string;
+	error?: boolean;
+	errorMessages?: string | string[];
+}>();
 
-const isPasswordVisible = ref(false)
+const emit = defineEmits<{
+	"update:modelValue": [value: string];
+}>();
 
-const effectiveInputType = computed(() =>
-  isPasswordVisible.value ? 'text' : 'password'
-)
-
-const eyeIcon = computed(() =>
-  isPasswordVisible.value ? 'visibility_off' : 'visibility'
-)
-
-function toggleVisibility() {
-  isPasswordVisible.value = !isPasswordVisible.value
-}
+const errorMessage = computed(() => {
+	if (!props.errorMessages) return undefined;
+	if (Array.isArray(props.errorMessages)) {
+		return props.errorMessages[0];
+	}
+	return props.errorMessages;
+});
 </script>
 
 <template>
-  <VTextField
-    v-bind="$props"
-    :type="effectiveInputType"
-    :append-inner-icon="eyeIcon"
-    @click:append-inner="toggleVisibility"
-    @update:modelValue="$emit('update:modelValue', $event)"
-  />
+  <n-form-item
+    :label="label"
+    :validation-status="error ? 'error' : undefined"
+    :feedback="errorMessage"
+    :show-feedback="!!errorMessage"
+    style="margin-bottom: 20px;"
+  >
+    <n-input
+      type="password"
+      show-password-on="click"
+      :value="modelValue"
+      @update:value="emit('update:modelValue', $event)"
+      v-bind="$attrs"
+      size="large"
+    >
+      <template #prefix>
+        <n-icon size="18" style="opacity: 0.5; margin-right: 6px;"><LockOpenOutline /></n-icon>
+      </template>
+    </n-input>
+  </n-form-item>
 </template>
