@@ -20,15 +20,16 @@ async function createVerificationCode(
 	id: string,
 	timeout = 5,
 ): Promise<PublicVerificationEntry> {
+	const sanitizedId = String(id).trim().toLowerCase();
 	const newCodeEntry: VerificationEntry = {
-		id,
+		id: sanitizedId,
 		uuid: crypto.randomUUID(),
 		code: generateRandomNumbers(),
 		expiresAt: Date.now() + timeout * 60000,
 	};
 
 	const { uuid, ...secureEntry } = newCodeEntry;
-	verificationCodesDB.set(newCodeEntry.id, newCodeEntry);
+	verificationCodesDB.set(sanitizedId, newCodeEntry);
 	return secureEntry;
 }
 
@@ -39,10 +40,17 @@ async function createVerificationCode(
  */
 async function validateCodeAndGetUUID(id: string, code: string) {
 	try {
-		const foundEntry = verificationCodesDB.get(id);
+		const sanitizedId = String(id).trim().toLowerCase();
+		const sanitizedCode = String(code).trim();
+		const foundEntry = verificationCodesDB.get(sanitizedId);
 
-		if (!foundEntry || foundEntry.code !== code) {
+		if (!foundEntry || String(foundEntry.code).trim() !== sanitizedCode) {
 			throw new Error("Código não encontrado ou inválido");
+		}
+
+		if (Date.now() > foundEntry.expiresAt) {
+			verificationCodesDB.delete(sanitizedId);
+			throw new Error("Código expirado");
 		}
 
 		return {

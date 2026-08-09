@@ -144,6 +144,7 @@ export default function useWebSocket<PayloadType = unknown>(
 		payload,
 	}: WebSocketMessage<PayloadType>) => {
 		console.log(`Enviando evento WebSocket: ${event}`, payload);
+		error.value = undefined;
 		return new Promise<void>((resolve, reject) => {
 			if (!ws.value || status.value !== "OPEN") {
 				const err = {
