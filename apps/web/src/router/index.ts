@@ -77,7 +77,7 @@ const routes: RouteRecordRaw[] = [
     path: "/rescue",
     name: "PasswordRescue",
     component: () => import("@/views/auth/FormPasswordRescueView.vue"),
-    meta: { publicOnly: true },
+    meta: {  requiresAuth: false },
   },
   {
     path: "/:pathMatch(.*)*",
@@ -123,7 +123,7 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth && !to.meta.publicOnly && !isLoggedIn) {
     next({ name: "Login", query: { redirect: to.fullPath } });
   } else if (
-    (to.name === "Login" || to.name === "Signup" || to.name === "PasswordRescue") &&
+    (to.name === "Login" || to.name === "Signup") &&
     isLoggedIn
   ) {
     // Telas de autenticação continuam bloqueadas pra quem já está logado
@@ -137,15 +137,15 @@ router.beforeEach(async (to, from, next) => {
 router.onError((err, to) => {
 	if (
 		err?.message?.includes?.("Failed to fetch dynamically imported module") &&
-		!localStorage.getItem("vuetify:dynamic-reload")
+		!localStorage.getItem("router:dynamic-reload")
 	) {
-		localStorage.setItem("vuetify:dynamic-reload", "true");
+		localStorage.setItem("router:dynamic-reload", "true");
 		location.assign(to.fullPath);
 	}
 });
 
 router.isReady().then(() => {
-	localStorage.removeItem("vuetify:dynamic-reload");
+	localStorage.removeItem("router:dynamic-reload");
 });
 
 export default router;
