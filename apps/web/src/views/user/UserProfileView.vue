@@ -1,224 +1,244 @@
 <template>
-  <div class="user-profile-view bg-background py-6 py-md-10 fill-height">
-    <v-container class="max-width-1000 mx-auto">
+  <div class="user-profile-view py-6 py-md-10 min-h-full p-6">
+    <div class="max-w-[1000px] mx-auto">
       
       <!-- SKELETON LOADERS -->
       <div v-if="loading || loadingUser">
-        <v-card class="pa-6 mb-6 border-sm" color="surface">
-          <v-row align="center">
-            <v-col cols="auto">
-              <v-skeleton-loader type="avatar" size="100" class="rounded-0" />
-            </v-col>
-            <v-col>
-              <v-skeleton-loader type="heading" width="200" />
-              <v-skeleton-loader type="subtitle" width="120" class="mt-2" />
-            </v-col>
-          </v-row>
-        </v-card>
+        <n-card class="rounded-2xl mb-6 p-3">
+          <n-space align="center" :size="24">
+            <n-skeleton circle class="h-[100px] w-[100px]" />
+            <n-space vertical :size="12">
+              <n-skeleton text class="w-50 h-8" />
+              <n-skeleton text class="w-30 h-5" />
+            </n-space>
+          </n-space>
+        </n-card>
       </div>
 
       <!-- MAIN PROFILE BOX -->
       <div v-else-if="profileUser">
         
         <!-- Header Profile Card -->
-        <v-card
-          class="pa-6 mb-6 border-sm steam-profile-header position-relative overflow-hidden"
-          color="surface"
+        <n-card
+          class="rounded-2xl mb-6 px-2 py-3"
+          :bordered="true"
         >
-          <v-row align="center" justify="space-between" class="ga-4">
-            <v-col cols="12" md="7" class="d-flex flex-column flex-sm-row align-center align-sm-start ga-6 text-center text-sm-left">
-              <!-- Square Steam Avatar with status glow border -->
-              <div class="steam-avatar-container">
-                <v-avatar
-                  size="110"
-                  rounded="0"
-                  class="steam-avatar border-sm"
-                  :class="isOnline ? 'border-success' : 'border-secondary'"
-                  style="border-width: 3px !important;"
+          <n-grid cols="12" item-responsive x-gap="24" y-gap="24">
+            <!-- User Info (left) -->
+            <n-gi span="12 m8">
+              <n-space align="start" :size="24" class="flex-nowrap">
+                <!-- Avatar -->
+                <n-avatar
+                  :size="110"
+                  class="rounded-lg border-[3px] shrink-0"
+                  :style="{
+                    backgroundColor: 'var(--n-primary-color)',
+                    borderColor: isOnline ? 'var(--n-success-color)' : 'var(--n-border-color)'
+                  }"
                 >
-                  <v-img :src="profileUser.profilePicture || ''" cover>
-                    <template #placeholder>
-                      <div class="d-flex align-center justify-center fill-height bg-surface-container text-h3 text-primary font-weight-bold">
-                        {{ profileUser.name?.charAt(0).toUpperCase() || profileUser.username?.charAt(0).toUpperCase() }}
-                      </div>
-                    </template>
-                  </v-img>
-                </v-avatar>
-              </div>
-
-              <!-- User Info -->
-              <div class="flex-grow-1 pt-1">
-                <h1 class="text-h4 font-weight-bold text-high-emphasis tracking-tight mb-1">
-                  {{ profileUser.name || profileUser.username }}
-                </h1>
-                <div class="text-subtitle-1 text-primary font-weight-medium mb-3">
-                  @{{ profileUser.username }}
-                </div>
-                
-                <!-- Status text -->
-                <div class="d-flex align-center justify-center justify-sm-start ga-2">
-                  <div class="status-indicator" :class="isOnline ? 'bg-success' : 'bg-secondary'"></div>
-                  <span class="text-caption font-weight-bold text-uppercase" :class="isOnline ? 'text-success' : 'text-medium-emphasis'">
-                    {{ isOnline ? 'Online / Desenvolvendo' : 'Offline' }}
+                  <img v-if="profileUser.profilePicture" :src="profileUser.profilePicture" class="object-cover w-full h-full" />
+                  <span v-else class="text-3xl text-white">
+                    {{ profileUser.name?.charAt(0).toUpperCase() || profileUser.username?.charAt(0).toUpperCase() }}
                   </span>
-                </div>
-              </div>
-            </v-col>
+                </n-avatar>
 
-            <!-- Steam Level circular badge -->
-            <v-col cols="12" md="4" class="d-flex flex-column align-center justify-center text-center">
-              <div class="steam-level-box pa-3 rounded-sm border-sm bg-background w-100 max-width-180">
-                <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold mb-1">Nível</div>
-                <div class="d-flex align-center justify-center ga-2">
-                  <v-avatar size="32" color="primary" class="font-weight-bold text-subtitle-2 rounded-circle">
-                    {{ developerLevel }}
-                  </v-avatar>
-                  <span class="text-body-2 font-weight-bold text-high-emphasis">Desenvolvedor</span>
+                <!-- Details -->
+                <div class="pt-1">
+                  <h1 class="text-3xl font-bold m-0 leading-tight">
+                    {{ profileUser.name || profileUser.username }}
+                  </h1>
+                  <div class="text-[15px] text-[color:var(--n-primary-color)] font-medium mt-1 mb-3">
+                    @{{ profileUser.username }}
+                  </div>
+                  
+                  <!-- Status -->
+                  <n-space align="center" :size="8">
+                    <div 
+                      class="w-2.5 h-2.5 rounded-full" 
+                      :style="{ backgroundColor: isOnline ? 'var(--n-success-color)' : 'var(--n-border-color)' }"
+                    ></div>
+                    <span 
+                      class="text-[11px] font-bold uppercase"
+                      :style="{ color: isOnline ? 'var(--n-success-color)' : 'var(--n-text-color-3)' }"
+                    >
+                      {{ isOnline ? 'Online / Desenvolvendo' : 'Offline' }}
+                    </span>
+                  </n-space>
                 </div>
+              </n-space>
+            </n-gi>
+
+            <!-- Level (right) -->
+            <n-gi span="12 m4" class="flex items-center justify-center">
+              <div 
+                class="px-4 py-3 rounded-lg border border-[color:var(--n-border-color)] bg-[color:var(--n-card-color)] w-full max-w-[180px] text-center"
+              >
+                <div class="text-[11px] opacity-60 font-bold uppercase mb-1.5">Nível</div>
+                <n-space align="center" justify="center" :size="8">
+                  <n-avatar round size="small" class="text-white font-bold" :style="{ backgroundColor: 'var(--n-primary-color)' }">
+                    {{ developerLevel }}
+                  </n-avatar>
+                  <span class="text-xs font-bold">Desenvolvedor</span>
+                </n-space>
               </div>
-            </v-col>
-          </v-row>
-        </v-card>
+            </n-gi>
+          </n-grid>
+        </n-card>
 
         <!-- Body layout splits -->
-        <v-row>
+        <n-grid cols="12" x-gap="24" y-gap="24" item-responsive>
           <!-- Left Main Area: Featured Project + Project List -->
-          <v-col cols="12" md="8" class="d-flex flex-column ga-6">
-            
-            <!-- Featured Project Showcase -->
-            <v-card v-if="featuredProject" class="border-sm" color="surface">
-              <div class="px-6 py-4 border-b bg-surface-container d-flex align-center justify-space-between">
-                <h3 class="text-subtitle-2 font-weight-bold text-primary text-uppercase tracking-wider">> Destaque de Código</h3>
-                <v-chip size="x-small" color="success" variant="flat" rounded="xs" class="font-weight-bold">MAIS RECENTE</v-chip>
-              </div>
-
-              <div class="pa-6">
-                <h2 class="text-h5 font-weight-bold text-high-emphasis mb-2">
-                  {{ featuredProject.title }}
-                </h2>
-                <div class="text-caption text-medium-emphasis mb-4">
-                  Última alteração em {{ formatDate(featuredProject.updatedAt || featuredProject.createdAt) }}
-                </div>
-                <p class="text-body-2 text-medium-emphasis mb-6">
-                  {{ featuredProject.description || "Este projeto não possui uma descrição cadastrada." }}
-                </p>
-
-                <div class="d-flex flex-wrap align-center justify-space-between ga-4">
-                  <div class="d-flex ga-4 text-caption text-medium-emphasis">
-                    <span>Versão: <strong class="text-high-emphasis">v{{ featuredProject.version || '1.0.0' }}</strong></span>
-                  </div>
-                  <v-btn
-                    color="success"
-                    size="small"
-                    prepend-icon="play_arrow"
-                    class="text-none font-weight-bold"
-                    @click="router.push({ name: 'CodeEdit', params: { id: featuredProject.id } })"
-                  >
-                    Abrir no Editor
-                  </v-btn>
-                </div>
-              </div>
-            </v-card>
-
-            <!-- Other Projects list -->
-            <v-card class="border-sm" color="surface">
-              <div class="px-6 py-4 border-b bg-surface-container">
-                <h3 class="text-subtitle-2 font-weight-bold text-primary text-uppercase tracking-wider">> Todos os códigos ({{ myProjects.length }})</h3>
-              </div>
+          <n-gi span="12 m8">
+            <div class="flex flex-col gap-6">
               
-              <div class="pa-6">
-                <v-empty-state
-                  v-if="myProjects.length === 0"
-                  title="Nenhum código encontrado"
-                  text="Este usuário ainda não criou nenhum projeto de código."
-                  icon="code"
-                  density="compact"
-                />
+              <!-- Featured Project Showcase -->
+              <n-card v-if="featuredProject" class="rounded-2xl" content-style="padding: 0;">
+                <div class="px-6 py-3 border-b border-[color:var(--n-border-color)] bg-[color:var(--n-action-color)] flex items-center justify-between">
+                  <h3 class="text-xs font-bold text-[color:var(--n-primary-color)] uppercase tracking-wider m-0">
+                    &gt; Destaque de Código
+                  </h3>
+                  <n-tag type="success" size="small" round>MAIS RECENTE</n-tag>
+                </div>
 
-                <v-row v-slot:default v-else dense>
-                  <v-col
-                    v-for="proj in myProjects"
-                    :key="proj.id"
-                    cols="12"
-                    sm="6"
-                  >
-                    <v-card
-                      variant="outlined"
-                      class="pa-4 rounded-xs cursor-pointer hover-card d-flex flex-column h-100"
-                      color="secondary"
-                      @click="router.push({ name: 'CodeEdit', params: { id: proj.id } })"
+                <div class="p-6">
+                  <h2 class="text-xl font-bold m-0 mb-2">
+                    {{ featuredProject.title }}
+                  </h2>
+                  <div class="text-xs opacity-60 mb-4">
+                    Última alteração em {{ formatDate(featuredProject.updatedAt || featuredProject.createdAt) }}
+                  </div>
+                  <p class="text-sm opacity-80 mb-6 leading-relaxed">
+                    {{ featuredProject.description || "Este projeto não possui uma descrição cadastrada." }}
+                  </p>
+
+                  <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="text-xs opacity-80">
+                      Versão: <strong>v{{ featuredProject.version || '1.0.0' }}</strong>
+                    </div>
+                    <n-button
+                      type="success"
+                      size="small"
+                      round
+                      @click="router.push({ name: 'CodeEdit', params: { id: featuredProject.id } })"
                     >
-                      <div class="d-flex align-start justify-space-between mb-2">
-                        <div class="text-body-1 font-weight-bold text-truncate pr-2" style="max-width: 180px;">
-                          {{ proj.title }}
-                        </div>
-                        <v-chip size="x-small" variant="outlined" color="primary" rounded="xs">
-                          v{{ proj.version || '1.0.0' }}
-                        </v-chip>
-                      </div>
-                      <div class="text-caption text-medium-emphasis mb-4 text-truncate">
-                        {{ proj.description || 'Sem descrição' }}
-                      </div>
-                      <v-spacer />
-                      <div class="text-caption opacity-60 text-right mt-1">
-                        Modificado: {{ formatDateShort(proj.updatedAt || proj.createdAt) }}
-                      </div>
-                    </v-card>
-                  </v-col>
-                </v-row>
-              </div>
-            </v-card>
+                      <template #icon>
+                        <n-icon><Play /></n-icon>
+                      </template>
+                      Abrir no Editor
+                    </n-button>
+                  </div>
+                </div>
+              </n-card>
 
-          </v-col>
+              <!-- Other Projects list -->
+              <n-card class="rounded-2xl" content-style="padding: 0;">
+                <div class="px-6 py-3 border-b border-[color:var(--n-border-color)] bg-[color:var(--n-action-color)]">
+                  <h3 class="text-xs font-bold text-[color:var(--n-primary-color)] uppercase tracking-wider m-0">
+                    &gt; Todos os códigos ({{ myProjects.length }})
+                  </h3>
+                </div>
+                
+                <div class="p-6">
+                  <n-empty
+                    v-if="myProjects.length === 0"
+                    title="Nenhum código encontrado"
+                    description="Este usuário ainda não criou nenhum projeto de código."
+                  >
+                    <template #icon>
+                      <n-icon size="48"><CodeOutline /></n-icon>
+                    </template>
+                  </n-empty>
+
+                  <n-grid v-else cols="2" x-gap="16" y-gap="16" item-responsive>
+                    <n-gi
+                      v-for="proj in myProjects"
+                      :key="proj.id"
+                      span="2 s1"
+                    >
+                      <div
+                        @click="router.push({ name: 'CodeEdit', params: { id: proj.id } })"
+                        class="project-card-custom"
+                      >
+                        <div class="flex items-start justify-between mb-2">
+                          <div class="text-sm font-bold truncate pr-2 grow">
+                            {{ proj.title }}
+                          </div>
+                          <n-tag size="small" type="primary" round class="shrink-0">
+                            v{{ proj.version || '1.0.0' }}
+                          </n-tag>
+                        </div>
+                        <div class="text-xs opacity-70 mb-4 min-h-[18px] line-clamp-2">
+                          {{ proj.description || 'Sem descrição' }}
+                        </div>
+                        <div class="text-[10px] opacity-50 text-right mt-auto">
+                          Modificado: {{ formatDateShort(proj.updatedAt || proj.createdAt) }}
+                        </div>
+                      </div>
+                    </n-gi>
+                  </n-grid>
+                </div>
+              </n-card>
+
+            </div>
+          </n-gi>
 
           <!-- Right Sidebar: Statistics -->
-          <v-col cols="12" md="4" class="d-flex flex-column ga-6">
-            
-            <v-card class="pa-6 border-sm" color="surface">
-              <h3 class="text-subtitle-2 font-weight-bold text-primary text-uppercase tracking-wider mb-4">> Estatísticas</h3>
+          <n-gi span="12 m4">
+            <div class="flex flex-col gap-6">
               
-              <div class="d-flex flex-column ga-4">
-                <div class="d-flex align-center justify-space-between border-b pb-2">
-                  <div class="text-body-2 text-medium-emphasis">Projetos Criados</div>
-                  <div class="text-h6 font-weight-bold text-high-emphasis">{{ myProjects.length }}</div>
-                </div>
+              <!-- Statistics Card -->
+              <n-card class="rounded-2xl">
+                <h3 class="text-xs font-bold text-[color:var(--n-primary-color)] uppercase tracking-wider m-0 mb-4">
+                  &gt; Estatísticas
+                </h3>
+                
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center justify-between border-b border-[color:var(--n-border-color)] pb-2">
+                    <span class="text-xs opacity-70">Projetos Criados</span>
+                    <span class="text-lg font-bold">{{ myProjects.length }}</span>
+                  </div>
 
-                <div class="d-flex align-center justify-space-between border-b pb-2">
-                  <div class="text-body-2 text-medium-emphasis">Nível Desenvolvedor</div>
-                  <div class="text-h6 font-weight-bold text-high-emphasis">{{ developerLevel }}</div>
-                </div>
+                  <div class="flex items-center justify-between border-b border-[color:var(--n-border-color)] pb-2">
+                    <span class="text-xs opacity-70">Nível Desenvolvedor</span>
+                    <span class="text-lg font-bold">{{ developerLevel }}</span>
+                  </div>
 
-                <div class="d-flex align-center justify-space-between pb-2">
-                  <div class="text-body-2 text-medium-emphasis">Último Acesso</div>
-                  <div class="text-body-2 font-weight-bold text-high-emphasis">{{ lastUpdatedText }}</div>
+                  <div class="flex items-center justify-between pb-2">
+                    <span class="text-xs opacity-70">Último Acesso</span>
+                    <span class="text-xs font-bold">{{ lastUpdatedText }}</span>
+                  </div>
                 </div>
-              </div>
-            </v-card>
+              </n-card>
 
-            <!-- Steam Group-like Card -->
-            <v-card class="pa-6 border-sm" color="surface">
-              <h3 class="text-subtitle-2 font-weight-bold text-primary text-uppercase tracking-wider mb-2">> Grupo Principal</h3>
-              <div class="d-flex align-center ga-3 mt-2">
-                <v-avatar color="primary" class="rounded-sm" size="44">
-                  <v-icon color="white">hub</v-icon>
-                </v-avatar>
-                <div>
-                  <div class="text-body-2 font-weight-bold text-high-emphasis">Creatio Developers</div>
-                  <div class="text-caption text-medium-emphasis">Membros Oficiais</div>
+              <!-- Main Group Card -->
+              <n-card class="rounded-2xl">
+                <h3 class="text-xs font-bold text-[color:var(--n-primary-color)] uppercase tracking-wider m-0 mb-4">
+                  &gt; Grupo Principal
+                </h3>
+                <div class="flex items-center gap-3 mt-2">
+                  <n-avatar round class="text-white" :style="{ backgroundColor: 'var(--n-primary-color)' }">
+                    <n-icon size="20"><HubOutlined /></n-icon>
+                  </n-avatar>
+                  <div>
+                    <div class="text-[13px] font-bold">Creatio Developers</div>
+                    <div class="text-[11px] opacity-70">Membros Oficiais</div>
+                  </div>
                 </div>
-              </div>
-            </v-card>
+              </n-card>
 
-          </v-col>
-        </v-row>
+            </div>
+          </n-gi>
+        </n-grid>
 
       </div>
-    </v-container>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { Play, CodeOutline } from "@vicons/ionicons5";
+import { HubOutlined } from "@vicons/material";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores";
 import { http } from "@/utils";
@@ -368,22 +388,20 @@ watch(
 </script>
 
 <style scoped>
-.max-width-1000 {
-  max-width: 1000px;
+.project-card-custom {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--n-border-color);
+  background-color: var(--n-card-color);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
-.steam-level-box {
-  border-color: rgba(var(--v-theme-primary), 0.2) !important;
-}
-.status-indicator {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-.hover-card {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.hover-card:hover {
+.project-card-custom:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.15) !important;
+  border-color: var(--n-primary-color);
+  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.15);
 }
 </style>

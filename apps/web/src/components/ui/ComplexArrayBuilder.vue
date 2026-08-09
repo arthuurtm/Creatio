@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { Close, Add, Search } from "@vicons/ionicons5";
+import { CodeOutlined } from "@vicons/material";
+import { getIconComponent } from "@/utils/icons";
 
 type InterfaceItems = {
 	text?: string;
@@ -120,27 +123,28 @@ function selectItem(item: any) {
           <span class="block-text">{{ item.text }}</span>
         </div>
         <button class="remove-btn" @click="removeParam(index)" title="Remover item">
-          <v-icon size="14">close</v-icon>
+          <n-icon size="14"><Close /></n-icon>
         </button>
       </div>
     </div>
 
     <!-- Botão de adição melhorado visualmente -->
-    <v-menu
-      transition="slide-y-transition"
-      :close-on-content-click="false"
+    <n-popover
+      trigger="click"
+      placement="bottom-start"
+      scrollable
+      style="padding: 0; width: 320px; border-radius: 12px;"
     >
-      <template v-slot:activator="{ props: menuProps }">
+      <template #trigger>
         <div
-          v-bind="menuProps"
           class="expression-add-btn"
           role="button"
           tabindex="0"
           title="Clique para construir a sua expressão lógica"
         >
           <div class="btn-icon">
-            <v-icon size="20">data_object</v-icon>
-            <v-icon size="14" class="plus-icon">add</v-icon>
+            <n-icon size="20"><CodeOutlined /></n-icon>
+            <n-icon size="14" class="plus-icon"><Add /></n-icon>
           </div>
           <div class="btn-info">
             <span class="btn-title">{{ styles.text || 'Adicionar bloco à expressão' }}</span>
@@ -149,74 +153,68 @@ function selectItem(item: any) {
         </div>
       </template>
 
-      <!-- Menu flutuante de seleção 100% nativo -->
-      <v-card
-        rounded="xl"
-        flat
-        border
-        min-width="280"
-        max-width="360"
-        max-height="420"
-        class="mt-2 pa-1 d-flex flex-column overflow-hidden"
+      <!-- Menu flutuante de seleção -->
+      <n-card
+        embedded
+        :bordered="false"
+        content-style="padding: 0; display: flex; flex-direction: column; max-height: 400px; overflow: hidden;"
       >
         <!-- Campo de busca -->
-        <div class="px-2 pt-1 pb-1">
-          <v-text-field
-            v-model="searchQuery"
+        <div style="padding: 8px;">
+          <n-input
+            v-model:value="searchQuery"
             placeholder="Filtrar blocos..."
-            density="compact"
-            variant="solo-filled"
-            bg-color="surface-light"
-            flat
-            hide-details
             clearable
-            prepend-inner-icon="search"
-          />
+          >
+            <template #prefix>
+              <n-icon size="18"><Search /></n-icon>
+            </template>
+          </n-input>
         </div>
 
-        <v-divider />
+        <n-divider style="margin: 0;" />
 
         <!-- Lista de blocos colapsáveis -->
-        <div class="flex-grow-1 overflow-y-auto px-1">
-          <v-list density="compact" class="pa-0">
-            <template v-if="filteredGroups.length === 0">
-              <div class="pa-4 text-center text-caption text-medium-emphasis">
-                Nenhum item encontrado
-              </div>
-            </template>
+        <div style="flex-grow: 1; overflow-y: auto; padding: 8px;">
+          <template v-if="filteredGroups.length === 0">
+            <div style="padding: 16px; text-align: center; color: var(--n-text-color-3);">
+              Nenhum item encontrado
+            </div>
+          </template>
 
-            <template v-else>
-              <v-list-group
+          <template v-else>
+            <n-collapse>
+              <n-collapse-item
                 v-for="group in filteredGroups"
                 :key="group.label"
-                :value="group.label"
+                :title="group.label"
+                :name="group.label"
               >
-                <template #activator="{ props: groupProps }">
-                  <v-list-item
-                    v-bind="groupProps"
-                    :title="group.label"
-                    class="font-weight-bold text-caption text-uppercase opacity-70"
-                  />
-                </template>
-
-                <v-list-item
-                  v-for="item in group.items"
-                  :key="item.value ?? item.text"
-                  :title="item.text"
-                  :subtitle="item.subtitle"
-                  :prepend-icon="item.icon"
-                  :disabled="item.disabled"
-                  class="rounded-lg pl-6 mb-1"
-                  color="primary"
-                  link
-                  @click="selectItem(item)"
-                />
-              </v-list-group>
-            </template>
-          </v-list>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div
+                    v-for="item in group.items"
+                    :key="item.value ?? item.text"
+                    @click="selectItem(item)"
+                    class="n-list-item-custom"
+                    :class="{ 'disabled': item.disabled }"
+                  >
+                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                      <n-icon v-if="item.icon" size="18" color="rgb(var(--v-theme-primary))">
+                        <component :is="getIconComponent(item.icon)" />
+                      </n-icon>
+                      <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 500; font-size: 13px;">{{ item.text }}</span>
+                        <span v-if="item.subtitle" style="font-size: 11px; opacity: 0.7;">{{ item.subtitle }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </n-collapse-item>
+            </n-collapse>
+          </template>
         </div>
-      </v-card>
-    </v-menu>
+      </n-card>
+    </n-popover>
   </div>
 </template>
 
@@ -352,5 +350,27 @@ function selectItem(item: any) {
 .btn-subtitle {
   font-size: 11px;
   color: #888;
+}
+
+.n-list-item-custom {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.n-list-item-custom:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.n-list-item-custom.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.n-list-item-custom.disabled:hover {
+  background-color: transparent;
 }
 </style>

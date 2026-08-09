@@ -48,23 +48,21 @@ function onConnect(connection: Connection) {
 </script>
 
 <template>
-  <v-layout full-height>
-    <v-container fluid class="pa-0 position-relative h-100">
-      <VueFlow
-        :nodes="nodes"
-        :edges="edges"
-        :connection-mode="ConnectionMode.Loose"
-        :fit-view-on-init="true"
-        @nodes-change="onNodesChange"
-        @connect="onConnect"
-        :node-types="nodeTypes"
-      >
-        <slot name="header" />
-        <Background />
-        <MiniMap />
-      </VueFlow>
-    </v-container>
-  </v-layout>
+  <div style="width: 100%; height: 100%; position: relative;">
+    <VueFlow
+      :nodes="nodes"
+      :edges="edges"
+      :connection-mode="ConnectionMode.Loose"
+      :fit-view-on-init="true"
+      @nodes-change="onNodesChange"
+      @connect="onConnect"
+      :node-types="nodeTypes"
+    >
+      <slot name="header" />
+      <Background />
+      <MiniMap />
+    </VueFlow>
+  </div>
 </template>
 
 <style>

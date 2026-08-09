@@ -6,237 +6,284 @@
       loaderController(resetPassword)
     ">
     <template #form>
-      <div v-if="currentStep === 1" class="d-flex flex-column ga-3 w-100">
-        <v-text-field label="E-mail" aria-required="true" v-model="formData.email.val"
-          :error="formData.email.err" :error-messages="formData.email.errVal" variant="outlined" hide-details="auto" rounded="pill" />
+      <!-- Step 1: Email -->
+      <div v-if="currentStep === 1" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+        <n-form-item
+          label="E-mail"
+          :validation-status="formData.email.err ? 'error' : undefined"
+          :feedback="formData.email.errVal"
+          :show-feedback="!!formData.email.errVal"
+          style="margin-bottom: 20px;"
+        >
+          <n-input
+            v-model:value="formData.email.val"
+            placeholder="Digite seu e-mail..."
+            size="large"
+          >
+            <template #prefix>
+              <n-icon size="18" style="opacity: 0.5; margin-right: 6px;"><AtOutline /></n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
       </div>
 
+      <!-- Step 2: Verification Code -->
       <div
         v-if="currentStep === 2"
-        class="d-flex flex-column align-center ga-4 w-100"
+        style="display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%;"
       >
-        <div class="text-center">
-          <h3 class="text-h6 mb-1">Verificação de e-mail</h3>
-          <p class="text-body-2 text-medium-emphasis">
+        <div style="text-align: center;">
+          <h3 style="font-size: 18px; margin: 0 0 4px 0;">Verificação de e-mail</h3>
+          <p style="font-size: 13px; opacity: 0.7; margin: 0;">
             Código de verificação enviado para seu e-mail.
           </p>
         </div>
 
-        <v-container>
-          <v-otp-input
-            v-model="formData.verifyCode.val"
-            aria-required="true"
-            :error="formData.verifyCode.err"
-          />
+        <div style="width: 100%; max-width: 280px; display: flex; flex-direction: column; align-items: center;">
+          <n-form-item
+            :validation-status="formData.verifyCode.err ? 'error' : undefined"
+            :feedback="formData.verifyCode.errVal"
+            :show-feedback="!!formData.verifyCode.errVal"
+            style="width: 100%; margin-bottom: 20px;"
+          >
+            <n-input-otp
+              v-model:value="formData.verifyCode.val"
+              size="large"
+              style="text-align: center; font-size: 20px; letter-spacing: 4px;"
+            />
+          </n-form-item>
+        </div>
 
-          <div v-if="formData.verifyCode.err" class="text-center">
-            <span class="text-body-2 text-error">
-              {{ formData.verifyCode.errVal }}
-            </span>
-          </div>
-        </v-container>
-
-        <div class="text-center">
-          <span class="text-body-2 text-medium-emphasis">
+        <div style="text-align: center; margin-bottom: 12px;">
+          <span style="font-size: 13px; opacity: 0.7;">
             Não recebeu o código?
           </span>
-          <v-btn
+          <n-button
             text
-            color="primary"
-            variant="text"
+            type="primary"
             size="small"
-            @click="prepareVerifyCode(true)"
+            style="margin-left: 4px;"
             :loading="loading"
-            class="ml-1 text-none"
+            @click="prepareVerifyCode(true)"
           >
             Reenviar código
-          </v-btn>
+          </n-button>
         </div>
       </div>
 
-      <div v-if="currentStep === 3" class="d-flex flex-column ga-3 w-100">
-        <v-text-field id="psswd1" label="Sua senha" type="password"
-          aria-required="true" v-model="formData.passwd1.val" :error="formData.passwd1.err"
-          :error-messages="formData.passwd1.errVal" variant="outlined" hide-details="auto" rounded="pill" />
-        <v-text-field id="psswd2" label="Confirme sua senha" type="password"
-          aria-required="true" v-model="formData.passwd2.val" :error="formData.passwd2.err"
-          :error-messages="formData.passwd2.errVal" variant="outlined" hide-details="auto" rounded="pill" />
+      <!-- Step 3: New Password -->
+      <div v-if="currentStep === 3" style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
+        <v-password-field
+          label="Sua senha"
+          v-model="formData.passwd1.val"
+          :error="formData.passwd1.err"
+          :error-messages="formData.passwd1.errVal"
+        />
+
+        <v-password-field
+          label="Confirme sua senha"
+          v-model="formData.passwd2.val"
+          :error="formData.passwd2.err"
+          :error-messages="formData.passwd2.errVal"
+        />
       </div>
 
+      <!-- Step 4: Success -->
       <div
         v-if="currentStep === 4"
-        class="d-flex flex-column align-center justify-center text-center ga-4 w-100 py-8"
+        style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; width: 100%; padding: 32px 0;"
       >
-        <v-avatar
-          size="96"
-          color="success"
-          variant="tonal"
+        <n-avatar
+          :size="96"
+          style="background-color: rgba(var(--v-theme-primary), 0.12)"
         >
-          <v-icon
-            icon="check_circle"
+          <n-icon
             size="56"
-          />
-        </v-avatar>
+            color="rgb(var(--v-theme-primary))"
+          >
+            <CheckmarkCircleOutline />
+          </n-icon>
+        </n-avatar>
 
         <div>
-          <h2 class="text-h5 font-weight-bold mb-2">
+          <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 8px 0;">
             Senha redefinida!
           </h2>
 
-          <p class="text-body-1 text-medium-emphasis">
+          <p style="font-size: 14px; opacity: 0.7; margin: 0;">
             Sua senha foi alterada com sucesso.
             Agora você pode fazer login utilizando sua nova senha.
           </p>
         </div>
 
-        <v-btn
-          color="primary"
-          variant="flat"
-          rounded="pill"
+        <n-button
+          type="primary"
+          round
+          size="large"
           @click="router.push({ name: 'Login' })"
         >
           Ir para o login
-        </v-btn>
+        </n-button>
       </div>
     </template>
 
     <template #buttons>
       <div
         v-if="currentStep !== 4"
-        class="d-flex flex-column ga-2 w-100"
+        style="display: flex; flex-direction: column; gap: 12px; width: 100%;"
       >
-        <v-btn
-          :text="currentStep === 3 ? 'Confirmar' : 'Avançar'"
-          color="primary"
-          variant="flat"
+        <n-button
+          type="primary"
           block
-          class="text-none rounded-pill"
+          round
+          size="large"
           :loading="loading"
           @click="
             currentStep === 1 ? loaderController(prepareVerifyCode) :
             currentStep === 2 ? loaderController(verifySecureCode) :
             loaderController(resetPassword)
           "
-        />
+        >
+          {{ currentStep === 3 ? 'Confirmar' : 'Avançar' }}
+        </n-button>
 
-        <v-btn
-          variant="text"
-          :text="currentStep === 1 ? 'Cancelar' : 'Voltar'"
-          class="text-none rounded-pill text-medium-emphasis"
+        <n-button
+          quaternary
           block
+          round
+          size="large"
           @click="currentStep === 1 ? router.back() : prevStep()"
-        />
+        >
+          {{ currentStep === 1 ? 'Cancelar' : 'Voltar' }}
+        </n-button>
       </div>
     </template>
-
-    <!-- <template #formInfo>
-      <span class="text-body-2 text-medium-emphasis">
-        Lembrou sua senha?
-        <a href="#" class="text-primary font-weight-bold ml-1 text-decoration-none" @click.prevent="router.push({ name: 'Login' })">
-          Fazer login
-        </a>
-      </span>
-    </template> -->
   </AppFormPage>
 </template>
 
 <script setup lang="ts">
-import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
-import { ref } from 'vue'
-import http from '@/utils/http'
-import { default as stepForm, type FieldParams, initField } from '@/utils/form'
-import { useRouter } from 'vue-router'
+import { ref } from "vue";
+import { AtOutline, CheckmarkCircleOutline } from "@vicons/ionicons5";
+import { useRouter } from "vue-router";
+import AppFormPage from "@/components/modules/ComponentFormWrapper.vue";
+import { type FieldParams, initField, default as stepForm } from "@/utils/form";
+import http from "@/utils/http";
 
 interface Params {
-  email: FieldParams,
-  verifyCode: FieldParams,
-  passwd1: FieldParams,
-  passwd2: FieldParams,
-  accessUUID: string,
+	email: FieldParams;
+	verifyCode: FieldParams;
+	passwd1: FieldParams;
+	passwd2: FieldParams;
+	accessUUID: string;
 }
 
 const formData = ref<Params>({
-  email: initField(),
-  verifyCode: initField(),
-  passwd1: initField(),
-  passwd2: initField(),
-  accessUUID: '',
-})
-const router = useRouter()
-const { currentStep, prevStep, loading, loaderController, setFieldError, goToStep } = stepForm({
-  totalSteps: 4,
-})
-const sentCode = ref(false)
-let sameMail = ''
+	email: initField(),
+	verifyCode: initField([]),
+	passwd1: initField(),
+	passwd2: initField(),
+	accessUUID: "",
+});
+const router = useRouter();
+const {
+	currentStep,
+	prevStep,
+	loading,
+	loaderController,
+	setFieldError,
+	goToStep,
+} = stepForm({
+	totalSteps: 4,
+});
+const sentCode = ref(false);
+let sameMail = "";
 
-const prepareVerifyCode = async (resent: Boolean = false) => {
-  if (resent || !sentCode.value && !(formData.value.email.val === sameMail)) {
-    try {
-      await http.get({
-        type: 'database',
-        route: 'getUserBasics',
-        querys: { login: formData.value.email.val },
-      })
-      await http.post(
-        {
-          type: 'database',
-          route: 'setResetPassCode',
-        },
-        {
-          email: formData.value.email.val,
-        },
-      )
+const prepareVerifyCode = async (resent: boolean = false) => {
+	if (resent || (!sentCode.value && !(formData.value.email.val === sameMail))) {
+		try {
+			await http.get({
+				type: "database",
+				route: "getUserBasics",
+				querys: { login: formData.value.email.val },
+			});
+			await http.post(
+				{
+					type: "database",
+					route: "setResetPassCode",
+				},
+				{
+					email: formData.value.email.val,
+				},
+			);
 
-      sameMail = formData.value.email.val
-      sentCode.value = true
-      goToStep(2)
-    } catch (error: any) {
-      setFieldError(formData.value.email, error.message)
-    }
-  } else {
-    goToStep(2)
-  }
-}
+			sameMail = formData.value.email.val;
+			sentCode.value = true;
+			(window as any).$message?.success(
+				"Código de recuperação enviado para seu e-mail!",
+			);
+			goToStep(2);
+		} catch (error: any) {
+			setFieldError(formData.value.email, error.message);
+			(window as any).$message?.error(
+				"Falha ao recuperar senha: " +
+					(error.message || "E-mail não cadastrado"),
+			);
+		}
+	} else {
+		goToStep(2);
+	}
+};
 
 const verifySecureCode = async () => {
-  try {
-    const { accessUUID } = await http.post(
-      {
-        type: 'database',
-        route: 'validateSecureSession',
-      },
-      {
-        secureToken: formData.value.verifyCode.val,
-        tokenId: formData.value.email.val,
-      },
-    )
-    formData.value.accessUUID = accessUUID
-    goToStep(3)
-  } catch (err: any) {
-    setFieldError(formData.value.verifyCode, err.message)
-  }
-}
+	try {
+		const codeValue = Array.isArray(formData.value.verifyCode.val)
+			? formData.value.verifyCode.val.join("")
+			: formData.value.verifyCode.val;
+
+		const { accessUUID } = await http.post(
+			{
+				type: "database",
+				route: "validateSecureSession",
+			},
+			{
+				secureToken: codeValue,
+				tokenId: formData.value.email.val,
+			},
+		);
+		formData.value.accessUUID = accessUUID;
+		(window as any).$message?.success("Código verificado com sucesso!");
+		goToStep(3);
+	} catch (err: any) {
+		setFieldError(formData.value.verifyCode, err.message);
+		(window as any).$message?.error("Código inválido. Tente novamente.");
+	}
+};
 
 const resetPassword = async () => {
-  try {
-    if (formData.value.passwd1.val !== formData.value.passwd2.val) {
-      setFieldError(formData.value.passwd2, "As senhas não coincidem!")
-      return
-    }
+	try {
+		if (formData.value.passwd1.val !== formData.value.passwd2.val) {
+			setFieldError(formData.value.passwd2, "As senhas não coincidem!");
+			return;
+		}
 
-    await http.post(
-      {
-        type: 'database',
-        route: 'setUserPassword',
-      },
-      {
-        newPassword: formData.value.passwd2.val,
-        accessUUID: formData.value.accessUUID,
-      },
-    )
-    goToStep(4)
-  } catch (error: any) {
-    setFieldError(formData.value.passwd1, error?.message ?? "Erro ao redefinir senha")
-  }
-}
+		await http.post(
+			{
+				type: "database",
+				route: "setUserPassword",
+			},
+			{
+				newPassword: formData.value.passwd2.val,
+				accessUUID: formData.value.accessUUID,
+			},
+		);
+		(window as any).$message?.success("Sua senha foi redefinida!");
+		goToStep(4);
+	} catch (error: any) {
+		setFieldError(
+			formData.value.passwd1,
+			error?.message ?? "Erro ao redefinir senha",
+		);
+		(window as any).$message?.error("Falha ao alterar senha. Tente novamente.");
+	}
+};
 </script>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { ChevronDown, ChevronForward, TrashOutline } from "@vicons/ionicons5";
 
 defineOptions({
 	name: "RecursiveEditor",
@@ -104,71 +105,95 @@ watch(
   <div class="recursive-editor w-100">
 
     <div v-if="isObject || isArray" class="complex-container">
-      <div class="d-flex align-center py-1 pr-2 cursor-pointer hover-bg" :style="indentStyle"
-        @click.stop="isExpanded = !isExpanded">
+      <div 
+        style="display: flex; align-items: center; padding: 4px 8px; cursor: pointer;" 
+        :style="indentStyle"
+        @click.stop="isExpanded = !isExpanded"
+        class="hover-bg"
+      >
+        <n-icon 
+          size="18" 
+          color="rgba(var(--v-theme-on-surface), 0.6)"
+          style="margin-right: 4px;"
+        >
+          <ChevronDown v-if="isExpanded" />
+          <ChevronForward v-else />
+        </n-icon>
 
-        <v-icon :icon="isExpanded ? 'arrow_drop_down' : 'arrow_right'" size="small" color="medium-emphasis"
-          class="mr-1" />
-
-        <span class="text-caption font-weight-bold text-uppercase text-medium-emphasis">
+        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.7;">
           {{ label || (isArray ? 'Lista' : 'Objeto') }}
         </span>
-        <v-spacer />
+        <div style="flex-grow: 1;"></div>
 
-        <span v-if="!isExpanded" class="text-caption text-disabled ml-2">
+        <span v-if="!isExpanded" style="font-size: 11px; opacity: 0.5; margin-left: 8px;">
           {{ isArray ? `${modelValue.length} itens` : '{...}' }}
         </span>
       </div>
 
-      <v-expand-transition>
-        <div v-show="isExpanded">
-
+      <n-collapse-transition :show="isExpanded">
+        <div>
           <template v-if="isObject">
-            <div v-if="groupedKeys.primitives.length" class="py-1">
+            <div v-if="groupedKeys.primitives.length" style="padding: 4px 0;">
               <RecursiveEditor v-for="key in groupedKeys.primitives" :key="key" :label="key"
                 :model-value="modelValue[key]" :depth="depth + 1"
                 @update:model-value="(v: any) => updateObjectKey(key, v)" />
             </div>
 
-            <v-divider v-if="groupedKeys.primitives.length && groupedKeys.complex.length"
-              class="my-1 border-opacity-25" />
+            <n-divider v-if="groupedKeys.primitives.length && groupedKeys.complex.length" style="margin: 4px 0; opacity: 0.2;" />
 
             <RecursiveEditor v-for="key in groupedKeys.complex" :key="key" :label="key" :model-value="modelValue[key]"
               :depth="depth + 1" @update:model-value="(v: any) => updateObjectKey(key, v)" />
           </template>
 
           <template v-else-if="isArray">
-            <div v-if="modelValue.length === 0" class="text-caption text-center py-2 text-disabled">
+            <div v-if="modelValue.length === 0" style="font-size: 11px; text-align: center; padding: 8px 0; opacity: 0.5;">
               (Vazio)
             </div>
-            <div v-for="(item, index) in modelValue" :key="index" class="d-flex align-start group-hover-parent">
-              <div class="flex-grow-1">
+            <div v-for="(item, index) in modelValue" :key="index" style="display: flex; align-items: flex-start;">
+              <div style="flex-grow: 1;">
                 <RecursiveEditor :label="String(index)" :model-value="item" :depth="depth + 1"
                   @update:model-value="(v: any) => updateArrayItem(Number(index), v)" />
               </div>
 
-              <v-btn icon="delete" size="x-small" variant="text" color="error" class="mt-1 opacity-50 hover-opacity-100"
-                @click="removeArrayItem(Number(index))" />
+              <n-button 
+                quaternary 
+                circle 
+                type="error" 
+                size="tiny" 
+                style="margin-top: 4px; opacity: 0.6;"
+                @click="removeArrayItem(Number(index))"
+              >
+                <template #icon>
+                  <n-icon size="14"><TrashOutline /></n-icon>
+                </template>
+              </n-button>
             </div>
           </template>
         </div>
-      </v-expand-transition>
+      </n-collapse-transition>
     </div>
 
-    <div v-else class="d-flex align-center py-1 pr-2 hover-bg property-row" :style="indentStyle">
-      <div class="property-label text-caption text-medium-emphasis text-truncate mr-2" :title="label">
+    <div v-else style="display: flex; align-items: center; padding: 4px 8px;" :style="indentStyle" class="hover-bg">
+      <div style="width: 120px; flex-shrink: 0; font-size: 11px; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px;" :title="label">
         {{ label }}
       </div>
 
-      <div class="flex-grow-1" style="min-width: 0;">
-        <div v-if="isBoolean" class="d-flex justify-end">
-          <v-switch :model-value="modelValue" color="primary" hide-details density="compact" class="ma-0 scale-switch"
-            @update:model-value="(val) => modelValue = val" />
+      <div style="flex-grow: 1; min-width: 0;">
+        <div v-if="isBoolean" style="display: flex; justify-content: flex-end;">
+          <n-switch 
+            :value="modelValue" 
+            size="small"
+            @update:value="(val: boolean) => modelValue = val" 
+          />
         </div>
 
-        <v-text-field v-else :model-value="modelValue" variant="underlined" density="compact" hide-details
-          class="custom-input centered-input" :class="{ 'text-right': typeof modelValue === 'number' }"
-          @update:model-value="updatePrimitive" />
+        <n-input 
+          v-else 
+          :value="String(modelValue)" 
+          size="small"
+          style="width: 100%;"
+          @update:value="updatePrimitive" 
+        />
       </div>
     </div>
 
@@ -176,45 +201,15 @@ watch(
 </template>
 
 <style scoped>
-/* Mesmos estilos de antes */
 .recursive-editor {
   font-family: 'Roboto', sans-serif;
 }
 
+.hover-bg {
+  transition: background-color 0.2s ease;
+}
+
 .hover-bg:hover {
   background-color: rgba(var(--v-theme-on-surface), 0.04) !important;
-}
-
-.property-label {
-  width: 120px;
-  flex-shrink: 0;
-}
-
-.custom-input :deep(.v-field__input) {
-  padding-top: 4px;
-  padding-bottom: 4px;
-  min-height: 24px;
-  font-size: 0.875rem;
-}
-
-.custom-input :deep(.v-input__details) {
-  display: none;
-}
-
-.scale-switch {
-  transform: scale(0.8);
-  transform-origin: right center;
-}
-
-.opacity-50 {
-  opacity: 0.5;
-}
-
-.hover-opacity-100:hover {
-  opacity: 1;
-}
-
-.cursor-pointer {
-  cursor: pointer;
 }
 </style>

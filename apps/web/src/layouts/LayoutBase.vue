@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import {
+	LogOutOutline,
+	PersonCircleOutline,
+	Search,
+	SettingsOutline,
+} from "@vicons/ionicons5";
+import { NIcon } from "naive-ui";
+import { computed, h, ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import DialogSettings from "@/components/modules/DialogSettings.vue";
 import type GlobalSearch from "@/components/modules/GlobalSearch.vue";
@@ -40,17 +47,53 @@ const breadcrumbs = computed(() => {
 	return crumbs;
 });
 
-const menuItems = computed(() => [
-	{ text: "Meu perfil", value: "profile", icon: "account_circle" },
-	{ text: "Configurações", value: "settings", icon: "settings" },
-	{ text: "Sair da conta", value: "logout", icon: "logout" },
+const dropdownOptions = computed(() => [
+	{
+		label: "Meu perfil",
+		key: "profile",
+		icon: () =>
+			h(NIcon, { size: 16 }, { default: () => h(PersonCircleOutline) }),
+	},
+	{
+		label: "Configurações",
+		key: "settings",
+		icon: () => h(NIcon, { size: 16 }, { default: () => h(SettingsOutline) }),
+	},
+	{
+		type: "divider",
+		key: "d1",
+	},
+	{
+		label: "Sair da conta",
+		key: "logout",
+		icon: () =>
+			h(
+				NIcon,
+				{ size: 16, color: "rgb(var(--v-theme-error))" },
+				{ default: () => h(LogOutOutline) },
+			),
+	},
 ]);
 
-function handleMenuSelect(item: any) {
-	if (item.value === "profile")
+function handleDropdownSelect(key: string) {
+	if (key === "profile")
 		router.push({ name: "UserProfile", params: { username: user.username } });
-	if (item.value === "settings") settingsDialog.value = true;
-	if (item.value === "logout") http.auth.logout();
+	if (key === "settings") settingsDialog.value = true;
+	if (key === "logout") {
+		(window as any).$dialog?.warning({
+			title: "Sair da conta?",
+			content: "Você será desconectado da sua conta neste dispositivo.",
+			positiveText: "Sair",
+			negativeText: "Cancelar",
+			onPositiveClick: () => http.auth.logout(),
+      transformOrigin: "center"
+		});
+	}
+}
+
+// Função para o botão nativo de voltar do n-page-header
+function handleBack() {
+	router.push({ name: "CodeProjects" });
 }
 
 const collapsed = ref(false);
@@ -60,104 +103,88 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-layout class="fill-viewport">
+  <div class="flex flex-col w-screen h-screen overflow-hidden relative bg-[color:var(--n-body-color)]">
 
-    <v-app-bar v-if="!collapsed" flat rounded="0" border="b" :height="47">
+    <div class="relative flex items-center w-full p-2">
 
-      <template #prepend>
-        <div class="d-flex align-center pl-3 ga-1">
+      <div
+        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer z-10 transition-opacity hover:opacity-80"
+        @click="router.push({ name: 'CodeProjects' })"
+      >
+        <Logo height="30" />
+      </div>
 
-          <v-btn
-            variant="text"
-            density="comfortable"
-            class="px-2"
-            style="min-width: 0"
-            @click="router.push({ name: 'CodeProjects' })"
-          >
-            <Logo height="24" />
-          </v-btn>
+      <n-page-header @back="handleBack" class="w-full">
 
-          <template v-for="(crumb, i) in breadcrumbs" :key="i">
-            <v-icon size="14" class="text-disabled mx-1">chevron_right</v-icon>
-
-            <v-btn
-              v-if="!crumb.disabled"
-              variant="text"
-              density="comfortable"
-              class="text-none px-2"
-              style="min-width: 0; font-size: 0.875rem"
-              @click="crumb.to && router.push(crumb.to)"
-            >
-              {{ crumb.label }}
-            </v-btn>
-
-            <span
-              v-else
-              class="text-body-2 font-weight-medium text-truncate"
-              :class="{ 'text-disabled': crumb.muted }"
-              style="max-width: 220px"
-            >
-              {{ crumb.label }}
-            </span>
-          </template>
-
-        </div>
-      </template>
-
-      <template #append>
-        <div class="d-flex align-center ga-1 pr-2">
-
-          <v-btn
-            icon="search"
-            variant="text"
-            density="comfortable"
-            @click="searchRef?.open()"
-          />
-
-          <v-btn icon variant="text" density="comfortable">
-            <v-avatar
-              :image="user.profilePicture || undefined"
-              :color="user.profilePicture ? undefined : 'primary'"
-              size="26"
-            >
-              <span
-                v-if="!user.profilePicture"
-                class="text-caption font-weight-bold"
-                style="font-size: 0.65rem"
+        <template #title>
+          <div class="flex items-center h-full ml-1 pt-[2px]">
+            <n-breadcrumb>
+              <n-breadcrumb-item
+                v-for="(crumb, i) in breadcrumbs"
+                :key="i"
+                @click="!crumb.disabled && crumb.to ? router.push(crumb.to) : null"
               >
-                {{ (user.name || user.username || '?').charAt(0).toUpperCase() }}
-              </span>
-            </v-avatar>
+                <span :style="{ opacity: crumb.muted ? 0.5 : 1, cursor: crumb.disabled ? 'default' : 'pointer' }">
+                  {{ crumb.label }}
+                </span>
+              </n-breadcrumb-item>
+            </n-breadcrumb>
+          </div>
+        </template>
 
-            <v-menu activator="parent" location="bottom end">
-              <v-card rounded="xl" flat border min-width="180">
-                <v-list density="compact" class="pa-2">
-                  <v-list-item
-                    v-for="item in menuItems"
-                    :key="item.value"
-                    :title="item.text"
-                    :prepend-icon="item.icon"
-                    class="rounded-lg mb-1"
-                    color="primary"
-                    @click="handleMenuSelect(item)"
-                  />
-                </v-list>
-              </v-card>
-            </v-menu>
-          </v-btn>
+        <template #extra>
+          <div class="flex items-center gap-3">
+            <n-button circle quaternary @click="searchRef?.open()">
+              <template #icon>
+                <n-icon size="20"><Search /></n-icon>
+              </template>
+            </n-button>
 
-        </div>
-      </template>
+            <n-dropdown
+              trigger="click"
+              placement="bottom-end"
+              :options="dropdownOptions"
+              @select="handleDropdownSelect"
+            >
+              <n-button circle quaternary class="p-0">
+                <n-avatar
+                  round
+                  class="text-xs text-white"
+                  :style="{ backgroundColor: 'var(--n-primary-color)' }"
+                >
+                  <img v-if="user.profilePicture" :src="user.profilePicture" class="object-cover w-full h-full" />
+                  <span v-else>{{ (user.name || user.username || '?').charAt(0).toUpperCase() }}</span>
+                </n-avatar>
+              </n-button>
+            </n-dropdown>
+          </div>
+        </template>
 
-    </v-app-bar>
+      </n-page-header>
+    </div>
 
-    <v-main>
-      <router-view v-slot="{ Component }">
-        <component :is="Component" />
-      </router-view>
-    </v-main>
+    <!-- Restante do conteúdo -->
+    <div class="grow overflow-hidden relative">
+      <Transition name="fastFade" mode="out-in">
+        <router-view v-slot="{ Component }" :key="route.fullPath">
+            <component :is="Component" />
+        </router-view>
+      </Transition>
+    </div>
 
     <GlobalSearch ref="searchRef" />
 
-  </v-layout>
+    <n-modal
+      v-model:show="settingsDialog"
+      preset="card"
+      style="width: 860px; max-width: 95vw; border-radius: 16px;"
+      title="Configurações"
+      :bordered="false"
+      content-style="padding: 0; overflow: hidden; border-radius: 0 0 16px 16px;"
+      header-style="padding: 16px 24px; border-bottom: 1px solid var(--n-border-color);"
+      transform-origin="center"
+    >
+      <DialogSettings />
+    </n-modal>
+  </div>
 </template>

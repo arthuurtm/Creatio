@@ -54,14 +54,14 @@ const activeNodes = computed(() => {
 </script>
 
 <template>
-  <v-navigation-drawer
+  <div
     v-if="!isHidden"
-    :rail="isRail"
-    permanent
-    elevation="0"
-    rounded="0"
-    width="320"
-    :class="isRail ? 'bg-transparent border-0' : 'bg-surface border-e'"
+    :class="[
+      'h-full shrink-0 z-10 overflow-hidden transition-all duration-200 ease-in-out',
+      isRail
+        ? 'w-16 bg-transparent border-r-0'
+        : 'w-80 bg-[var(--n-card-color)]'
+    ]"
   >
     <ExplorerRail
       v-if="isRail"
@@ -85,9 +85,10 @@ const activeNodes = computed(() => {
       @toggle-expanded="allExpanded = !allExpanded"
       @add-item="addButtonHandler"
     />
-  </v-navigation-drawer>
+  </div>
 
   <CreateObjectDialog
+    v-slot:default
     v-model="isDialogOpen"
     :form-params="formParams"
     @create="handleCreate"

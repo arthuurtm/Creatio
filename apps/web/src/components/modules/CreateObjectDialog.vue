@@ -1,18 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import {
-  VBtn,
-  VCheckbox,
-  VFileInput,
-  VRadioGroup,
-  VRow,
-  VSelect,
-  VSpacer,
-  VSwitch,
-  VTextarea,
-  VTextField,
-} from "vuetify/components";
-
 import ComplexArrayBuilder from "@/components/ui/ComplexArrayBuilder.vue";
 import ExpressionBuilder from "@/components/ui/ExpressionBuilder.vue";
 import { normalizeItems } from "@projeto/types";
@@ -59,92 +46,78 @@ const dialog = computed({
   set: (v) => emit("update:modelValue", v),
 });
 
-const inputParamMap: Record<FormType, any> = {
-  text: VTextField,
-  email: VTextField,
-  password: VTextField,
-  number: VTextField,
-  textarea: VTextarea,
-  select: VSelect,
-  checkbox: VCheckbox,
-  switch: VSwitch,
-  radio: VRadioGroup,
-  date: VTextField,
-  time: VTextField,
-  datetime: VTextField,
-  file: VFileInput,
-  button: VBtn,
-  "complex-array": ComplexArrayBuilder,
-  expression: ExpressionBuilder,
-};
-
 function handleCreate() {
   emit("create");
 }
 </script>
 
 <template>
-  <v-dialog v-model="dialog" max-width="450">
-    <v-card flat border>
+  <n-modal
+    v-model:show="dialog"
+    preset="card"
+    style="width: 450px; border-radius: 16px;"
+    title="Criar novo objeto"
+    :bordered="false"
+  >
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 4px 0;">
+      <n-form-item
+        v-for="(param, index) in formParams"
+        :key="index"
+        :label="param.type === 'checkbox' ? undefined : param.label"
+        style="margin-bottom: 8px;"
+      >
+        <template v-if="param.type === 'text' || param.type === 'email'">
+          <n-input v-model:value="param.model" placeholder="Digite..." />
+        </template>
+        <template v-else-if="param.type === 'password'">
+          <n-input v-model:value="param.model" type="password" show-password-on="click" placeholder="Digite a senha..." />
+        </template>
+        <template v-else-if="param.type === 'number'">
+          <n-input-number v-model:value="param.model" style="width: 100%;" placeholder="Digite o número..." />
+        </template>
+        <template v-else-if="param.type === 'textarea'">
+          <n-input v-model:value="param.model" type="textarea" placeholder="Digite..." />
+        </template>
+        <template v-else-if="param.type === 'select'">
+          <n-select
+            v-model:value="param.model"
+            :options="normalizeItems(param as any)"
+            label-field="title"
+            value-field="value"
+            placeholder="Selecione..."
+          />
+        </template>
+        <template v-else-if="param.type === 'checkbox'">
+          <n-checkbox v-model:checked="param.model">
+            {{ param.label }}
+          </n-checkbox>
+        </template>
+        <template v-else-if="param.type === 'switch'">
+          <n-switch v-model:value="param.model" />
+        </template>
+        <template v-else-if="param.type === 'complex-array'">
+          <ComplexArrayBuilder v-model="param.model" :items="param.items" />
+        </template>
+        <template v-else-if="param.type === 'expression'">
+          <ExpressionBuilder v-model="param.model" :items="param.items" />
+        </template>
+        <template v-else>
+          <div style="color: var(--n-error-color); font-size: 12px;">
+            ⚠ Componente não suportado: "{{ param.type }}"
+          </div>
+        </template>
+      </n-form-item>
+    </div>
 
-      <v-card-title class="d-flex align-center justify-space-between pa-5 pb-2">
-        <span class="text-h6 font-weight-bold">Criar novo objeto</span>
-        <v-btn icon="close" variant="text" density="comfortable" @click="dialog = false" />
-      </v-card-title>
-
-      <v-divider/>
-
-      <v-container class="pa-4">
-        <v-card-text>
-          <v-row
-            v-for="(param, index) in formParams"
-            :key="index"
-            class="mb-3"
-          >
-            <component
-              v-slot:default
-              v-if="inputParamMap[param.type]"
-              :is="inputParamMap[param.type]"
-              v-model="param.model"
-              :items="
-                param.type === 'select'
-                  ? normalizeItems(param as any)
-                  : param.items
-              "
-              :label="param.label"
-              variant="outlined"
-              density="comfortable"
-              bg-color="surface"
-              hide-details="auto"
-              class="w-100"
-            />
-
-            <div v-else class="text-error text-caption px-2">
-              ⚠ Componente não suportado: "{{ param.type }}"
-            </div>
-          </v-row>
-        </v-card-text>
-      </v-container>
-
-      <v-card-actions class="px-5 py-4 justify-end ga-2">
-        <v-btn
-          text="Cancelar"
-          variant="plain"
-          color="medium-emphasis"
-          rounded="pill"
-          class="text-none px-4"
-          @click="dialog = false"
-        />
-
-        <v-btn
-          text="Criar"
-          variant="flat"
-          color="primary"
-          rounded="pill"
-          class="text-none px-6"
-          @click="handleCreate"
-        />
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <template #action>
+      <n-space justify="end" :size="12">
+        <n-button @click="dialog = false" tertiary round>
+          Cancelar
+        </n-button>
+        <n-button @click="handleCreate" type="primary" round>
+          Criar
+        </n-button>
+      </n-space>
+    </template>
+  </n-modal>
 </template>

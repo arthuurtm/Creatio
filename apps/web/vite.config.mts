@@ -2,13 +2,15 @@ import { fileURLToPath, URL } from "node:url";
 import Vue from "@vitejs/plugin-vue";
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
+import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
 import { defineConfig } from "vite";
 import Layouts from "vite-plugin-vue-layouts-next";
-import Vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
-import svgLoader from 'vite-svg-loader'
+import svgLoader from 'vite-svg-loader';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
 	plugins: [
+		tailwindcss(),
 		Layouts(),
 		AutoImport({
 			imports: [
@@ -28,20 +30,13 @@ export default defineConfig({
 			extensions: ["vue"],
 			deep: true,
 			dts: true,
+			resolvers: [NaiveUiResolver()],
 		}),
-		Vue({
-			template: { transformAssetUrls },
-		}),
-		Vuetify({
-			autoImport: true,
-			styles: {
-				configFile: "src/styles/index.scss",
-			},
-		}),
-    svgLoader()
+		Vue(),
+		svgLoader()
 	],
 	optimizeDeps: {
-		exclude: ["vuetify", "vue-router"],
+		exclude: ["vue-router"],
 	},
 	define: { "process.env": {} },
 	resolve: {

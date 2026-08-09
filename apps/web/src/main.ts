@@ -15,6 +15,8 @@ import App from "./App.vue";
 // import Vue3Toasity, { type ToastContainerOptions } from "vue3-toastify";
 import { registerPlugins } from "./plugins";
 import pinia from "./plugins/pinia";
+
+import "@/styles/tailwind.css";
 import "@/styles/index.scss";
 
 // function resolveGLobalComponents(instance: VueApp<Element>) {

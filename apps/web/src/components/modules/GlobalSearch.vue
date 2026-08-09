@@ -1,132 +1,139 @@
 <template>
-  <v-dialog
-    v-model="isOpen"
-    max-width="560"
-    content-class="search-dialog-wrapper"
-    scrollable
+  <n-modal
+    v-model:show="isOpen"
+    preset="card"
+    style="width: 560px; border-radius: 16px; align-self: flex-start; margin-top: 10vh;"
+    :bordered="false"
+    content-style="padding: 0; display: flex; flex-direction: column; overflow: hidden;"
   >
-    <v-card rounded="xl" flat border class="pa-1 overflow-hidden">
-      <!-- Campo de busca -->
-      <div class="search-header px-4 py-3 d-flex align-center ga-3">
-        <v-icon size="18" color="medium-emphasis">search</v-icon>
-        <v-text-field
-          ref="searchInput"
-          v-model="query"
-          type="text"
-          class="search-input"
-          placeholder="Buscar usuários ou projetos..."
-          variant="plain"
-          hide-details
-          density="compact"
-          @input="onInput"
-          @keydown.down.prevent="navigateResults(1)"
-          @keydown.up.prevent="navigateResults(-1)"
-          @keydown.enter.prevent="selectCurrentResult"
-          @keydown.esc.prevent="isOpen = false"
-        />
-        <v-progress-circular
-          v-if="loadingUsers || loadingProjects"
-          indeterminate
-          size="16"
-          width="2"
-          color="primary"
-        />
-        <v-icon v-else size="16" color="medium-emphasis" style="opacity: 0.4;">keyboard_esc</v-icon>
+    <!-- Campo de busca -->
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px;">
+      <n-icon size="18" color="rgba(var(--v-theme-on-surface), 0.6)"><Search /></n-icon>
+      <n-input
+        ref="searchInput"
+        v-model:value="query"
+        type="text"
+        placeholder="Buscar usuários ou projetos..."
+        style="flex-grow: 1;"
+        :bordered="false"
+        @input="onInput"
+        @keydown.down.prevent="navigateResults(1)"
+        @keydown.up.prevent="navigateResults(-1)"
+        @keydown.enter.prevent="selectCurrentResult"
+        @keydown.esc.prevent="isOpen = false"
+      />
+      <n-spin
+        v-if="loadingUsers || loadingProjects"
+        size="small"
+      />
+      <span v-else style="font-size: 11px; opacity: 0.5;">Esc</span>
+    </div>
+
+    <n-divider style="margin: 0; opacity: 0.2;" />
+
+    <!-- Resultados -->
+    <div style="max-height: 380px; overflow-y: auto; padding: 0;">
+      <div v-if="query">
+        <div
+          v-if="filteredUsers.length === 0 && filteredProjects.length === 0 && !loadingUsers && !loadingProjects"
+          style="padding: 32px 16px; text-align: center; opacity: 0.6;"
+        >
+          <n-icon size="28" style="margin-bottom: 8px;"><SearchOffOutlined /></n-icon>
+          <p style="font-size: 13px; margin: 0;">Nenhum resultado encontrado</p>
+        </div>
+
+        <n-list v-slot:default hoverable :bordered="false" style="padding: 8px;">
+          <!-- Usuários -->
+          <template v-if="filteredUsers.length > 0">
+            <div style="padding: 4px 8px; font-size: 10px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px;">
+              Usuários
+            </div>
+            <n-list-item
+              v-for="(user, index) in filteredUsers"
+              :key="'user-'+user.id"
+              :class="['result-item', { 'active-item': activeIndex === index }]"
+              @click="goToUser(user.username)"
+              @mouseenter="activeIndex = index"
+              style="cursor: pointer; border-radius: 8px; padding: 8px 12px; margin-bottom: 4px;"
+            >
+              <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <n-avatar round size="small" style="background-color: var(--n-primary-color); color: white;">
+                    <img v-if="user.profilePicture" :src="user.profilePicture" style="object-fit: cover; width: 100%; height: 100%;" />
+                    <span v-else>{{ user.username.charAt(0).toUpperCase() }}</span>
+                  </n-avatar>
+                  <div style="display: flex; flex-direction: column;">
+                    <span style="font-size: 14px; font-weight: 500;">{{ user.name || user.username }}</span>
+                    <span style="font-size: 11px; opacity: 0.6;">@{{ user.username }}</span>
+                  </div>
+                </div>
+              </div>
+            </n-list-item>
+          </template>
+
+          <n-divider v-if="filteredUsers.length > 0 && filteredProjects.length > 0" style="margin: 8px 0; opacity: 0.2;" />
+
+          <!-- Projetos -->
+          <template v-if="filteredProjects.length > 0">
+            <div style="padding: 4px 8px; font-size: 10px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px;">
+              Projetos públicos
+            </div>
+            <n-list-item
+              v-for="(project, pIndex) in filteredProjects"
+              :key="'project-'+project.id"
+              :class="['result-item', { 'active-item': activeIndex === (pIndex + filteredUsers.length) }]"
+              @click="goToProject(project.id)"
+              @mouseenter="activeIndex = pIndex + filteredUsers.length"
+              style="cursor: pointer; border-radius: 8px; padding: 8px 12px; margin-bottom: 4px;"
+            >
+              <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex-grow: 1;">
+                  <n-avatar round size="small" style="background-color: rgba(var(--v-theme-primary), 0.12); color: rgb(var(--v-theme-primary));">
+                    <n-icon size="16"><TerminalOutline /></n-icon>
+                  </n-avatar>
+                  <div style="display: flex; flex-direction: column; min-width: 0; flex-grow: 1;">
+                    <span style="font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ project.title }}</span>
+                    <span style="font-size: 11px; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px;">
+                      {{ project.description || 'Sem descrição' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </n-list-item>
+          </template>
+        </n-list>
       </div>
 
-      <v-divider />
+      <div v-else style="padding: 32px 16px; text-align: center; opacity: 0.5;">
+        <n-icon size="28" style="margin-bottom: 8px;"><Search /></n-icon>
+        <p style="font-size: 13px; margin: 0 0 4px 0;">Digite para buscar</p>
+        <p style="font-size: 11px; opacity: 0.7; margin: 0;">Usuários requerem username exato</p>
+      </div>
+    </div>
 
-      <!-- Resultados -->
-      <v-card-text class="pa-0 overflow-y-auto" style="max-height: 380px;">
-        <div class="search-results px-2 py-2" v-if="query">
-          <div
-            v-if="filteredUsers.length === 0 && filteredProjects.length === 0 && !loadingUsers && !loadingProjects"
-            class="px-4 py-8 text-center text-medium-emphasis"
-          >
-            <v-icon size="28" class="mb-2 opacity-30">search_off</v-icon>
-            <p class="text-body-2 mb-0">Nenhum resultado encontrado</p>
-          </div>
-
-          <v-list bg-color="transparent" class="py-0">
-            <!-- Usuários -->
-            <template v-if="filteredUsers.length > 0">
-              <div class="result-group-label px-3 pt-1 pb-2">Usuários</div>
-              <v-list-item
-                v-for="(user, index) in filteredUsers"
-                :key="'user-'+user.id"
-                :class="['result-item', { 'active-item': activeIndex === index }]"
-                rounded="lg"
-                @click="goToUser(user.username)"
-                @mouseenter="activeIndex = index"
-              >
-                <template v-slot:prepend>
-                  <v-avatar size="30" color="primary" rounded="lg" class="mr-3">
-                    <v-img v-if="user.profilePicture" :src="user.profilePicture" />
-                    <span v-else class="text-caption font-weight-bold">{{ user.username.charAt(0).toUpperCase() }}</span>
-                  </v-avatar>
-                </template>
-                <v-list-item-title class="font-weight-medium text-body-2">{{ user.name || user.username }}</v-list-item-title>
-                <v-list-item-subtitle class="text-caption opacity-50">@{{ user.username }}</v-list-item-subtitle>
-              </v-list-item>
-            </template>
-
-            <v-divider v-if="filteredUsers.length > 0 && filteredProjects.length > 0" class="my-2 opacity-20" />
-
-            <!-- Projetos -->
-            <template v-if="filteredProjects.length > 0">
-              <div class="result-group-label px-3 pt-1 pb-2">Projetos públicos</div>
-              <v-list-item
-                v-for="(project, pIndex) in filteredProjects"
-                :key="'project-'+project.id"
-                :class="['result-item', { 'active-item': activeIndex === (pIndex + filteredUsers.length) }]"
-                rounded="lg"
-                @click="goToProject(project.id)"
-                @mouseenter="activeIndex = pIndex + filteredUsers.length"
-              >
-                <template v-slot:prepend>
-                  <div class="project-icon mr-3">
-                    <v-icon size="16" color="primary">terminal</v-icon>
-                  </div>
-                </template>
-                <v-list-item-title class="font-weight-medium text-body-2">{{ project.title }}</v-list-item-title>
-                <v-list-item-subtitle class="text-caption opacity-50 text-truncate" style="max-width: 400px;">
-                  {{ project.description || 'Sem descrição' }}
-                </v-list-item-subtitle>
-              </v-list-item>
-            </template>
-          </v-list>
-        </div>
-
-        <div v-else class="px-4 py-8 text-center text-medium-emphasis">
-          <v-icon size="28" class="mb-2 opacity-20">search</v-icon>
-          <p class="text-body-2 mb-1">Digite para buscar</p>
-          <p class="text-caption opacity-40">Usuários requerem username exato</p>
-        </div>
-      </v-card-text>
-
-      <v-divider />
-
-      <!-- Rodapé de atalhos -->
-      <div class="search-footer px-4 py-2 d-flex align-center ga-3">
-        <div class="d-flex align-center ga-1 text-caption opacity-40">
+    <template #action>
+      <div style="display: flex; align-items: center; gap: 16px; opacity: 0.6; padding: 4px 8px;">
+        <div style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
           <kbd class="shortcut-key">↑↓</kbd>
           <span>navegar</span>
         </div>
-        <div class="d-flex align-center ga-1 text-caption opacity-40">
+        <div style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
           <kbd class="shortcut-key">↵</kbd>
           <span>abrir</span>
         </div>
-        <div class="d-flex align-center ga-1 text-caption opacity-40">
+        <div style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
           <kbd class="shortcut-key">Esc</kbd>
           <span>fechar</span>
         </div>
       </div>
-    </v-card>
-  </v-dialog>
+    </template>
+  </n-modal>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue';
+import { Search, TerminalOutline } from "@vicons/ionicons5";
+import { SearchOffOutlined } from "@vicons/material";
 import { useRouter } from 'vue-router';
 import { http } from '@/utils';
 
@@ -170,7 +177,6 @@ function open() {
 watch(isOpen, (val) => {
   if (val) {
     nextTick(() => {
-      // O v-text-field do Vuetify expõe o input interno no ref
       if (searchInput.value) {
         searchInput.value.focus();
       }
@@ -263,38 +269,6 @@ defineExpose({ open });
 </script>
 
 <style scoped>
-.search-input :deep(.v-field__input) {
-  padding: 0 !important;
-  min-height: 0 !important;
-  line-height: 1.4 !important;
-}
-
-.search-input :deep(.v-field--variant-plain) {
-  opacity: 1 !important;
-}
-
-/* Label de grupo de resultados */
-.result-group-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(var(--v-theme-on-surface), 0.35);
-}
-
-/* Ícone do projeto */
-.project-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid rgba(var(--v-theme-primary), 0.2);
-  background: rgba(var(--v-theme-primary), 0.06);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 /* Item de resultado */
 .result-item {
   transition: background 0.12s ease;
@@ -302,11 +276,6 @@ defineExpose({ open });
 
 .active-item {
   background: rgba(var(--v-theme-primary), 0.08) !important;
-}
-
-/* Rodapé */
-.search-footer {
-  border-top: none;
 }
 
 /* Teclas de atalho */
@@ -319,13 +288,5 @@ defineExpose({ open });
   border: 1px solid rgba(var(--v-theme-on-surface), 0.15);
   background: rgba(var(--v-theme-on-surface), 0.05);
   color: rgba(var(--v-theme-on-surface), 0.4);
-}
-</style>
-
-<style lang="scss">
-/* Estilo para posicionar o dialog de busca no topo do view-port (Libadwaita style) */
-.search-dialog-wrapper {
-  align-self: flex-start !important;
-  margin-top: 10vh !important;
 }
 </style>

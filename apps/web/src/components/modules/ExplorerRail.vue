@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CategoryKey } from "@projeto/types";
-import { VBtn, VIcon, VList, VListItem } from "vuetify/components";
+import { getIconComponent } from "@/utils/icons";
+import { ChevronForward } from "@vicons/ionicons5";
 
 defineProps<{
 	sidebarItems: {
@@ -19,43 +20,40 @@ const emit = defineEmits<{
 </script>
 
 <template>
-	<div class="pa-2 pt-4">
-		<v-list
-			density="compact"
-			nav
-			class="pa-0 border-0 d-flex flex-column align-center"
-		>
-			<v-list-item
+	<div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100%; padding: 16px 8px;">
+		<!-- Categories list -->
+		<n-space vertical align="center" :size="12">
+			<n-button
 				v-for="item in sidebarItems"
 				:key="item.key"
-				:value="item.key"
-				:active="activeCategory === item.key"
+				circle
+				:type="activeCategory === item.key ? 'primary' : 'default'"
+				:quaternary="activeCategory !== item.key"
+				size="medium"
 				:title="item.text"
-				active-color="primary"
-				variant="tonal"
-				rounded="xl"
-				class="mb-2"
 				@click="emit('select', item.key)"
 			>
-				<template #prepend>
-					<v-icon
-						:icon="item.icon"
-						size="small"
-					/>
+				<template #icon>
+					<n-icon size="18">
+						<component :is="getIconComponent(item.icon)" />
+					</n-icon>
 				</template>
-			</v-list-item>
-		</v-list>
+			</n-button>
+		</n-space>
 
-		<div class="pa-2 pb-4">
-			<v-btn
-				icon="chevron_right"
-				variant="tonal"
-				rounded="xl"
+		<!-- Expand button -->
+		<div style="padding-top: 16px;">
+			<n-button
+				circle
+				tertiary
 				size="small"
-				class="mx-auto d-flex"
-				color="medium-emphasis"
+				title="Expandir painel"
 				@click="emit('expand')"
-			/>
+			>
+				<template #icon>
+					<n-icon size="16"><ChevronForward /></n-icon>
+				</template>
+			</n-button>
 		</div>
 	</div>
 </template>
