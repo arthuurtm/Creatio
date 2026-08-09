@@ -2,35 +2,87 @@
   <AppFormPage title="Fazer login" subTitle="Acesse sua conta Creatio" :currentStep="currentStep" :totalSteps="2"
     @submit="currentStep === 1 ? nextStep() : loaderController(handleLogin)">
     <template #form>
-      <div v-if="currentStep === 1" class="d-flex flex-column w-100 ga-4">
-        <v-text-field label="Usuário ou e-mail"
-          v-model="formData.login.val" :error="formData.login.err" :error-messages="formData.login.errVal"
-          variant="outlined" hide-details="auto" rounded="pill" />
+      <div v-if="currentStep === 1" class="flex flex-col w-full gap-4">
+        <n-form-item
+          label="Usuário ou e-mail"
+          :validation-status="formData.login.err ? 'error' : undefined"
+          :feedback="formData.login.errVal"
+          :show-feedback="!!formData.login.errVal"
+          class="mb-5"
+        >
+          <n-input 
+            v-model:value="formData.login.val" 
+            placeholder="Digite seu usuário ou e-mail..." 
+            size="large"
+          >
+            <template #prefix>
+              <n-icon size="18" class="opacity-50 mr-1.5"><AtOutline /></n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
       </div>
-      <div v-else-if="currentStep === 2" class="d-flex flex-column w-100 ga-2">
-        <v-password-field label="Senha" aria-required="true"
-          v-model="formData.password.val" :error="formData.password.err" :error-messages="formData.password.errVal"
-          variant="outlined" hide-details="auto" rounded="pill" />
-        <v-btn variant="text" text="Esqueceu sua senha?" size="small" class="text-none text-primary px-0 align-self-end font-weight-medium" @click="$router.push({ name: 'PasswordRescue' })" />
+      <div v-else-if="currentStep === 2" class="flex flex-col w-full gap-2">
+        <v-password-field 
+          label="Senha" 
+          v-model="formData.password.val" 
+          :error="formData.password.err" 
+          :error-messages="formData.password.errVal" 
+        />
+        <n-button 
+          text 
+          type="primary" 
+          size="small" 
+          class="self-end font-medium -mt-2 mb-3" 
+          @click="$router.push({ name: 'PasswordRescue' })"
+        >
+          Esqueceu sua senha?
+        </n-button>
       </div>
     </template>
 
     <template #buttons>
       <template v-if="currentStep === 1">
-        <v-btn text="Avançar" color="primary" variant="flat" block class="text-none rounded-pill" type="submit" autofocus />
+        <n-button 
+          type="primary" 
+          block 
+          round 
+          size="large"
+          attr-type="submit" 
+          autofocus
+        >
+          Avançar
+        </n-button>
       </template>
       <template v-else-if="currentStep === 2">
-        <div class="d-flex flex-column ga-2 w-100">
-          <v-btn text="Entrar" color="primary" variant="flat" block class="text-none rounded-pill" type="submit" autofocus :loading="loading" />
-          <v-btn variant="text" text="Voltar" class="text-none rounded-pill text-medium-emphasis" block @click="prevStep()" />
+        <div class="flex flex-col gap-3 w-full">
+          <n-button 
+            type="primary" 
+            block 
+            round 
+            size="large"
+            attr-type="submit" 
+            autofocus 
+            :loading="loading"
+          >
+            Entrar
+          </n-button>
+          <n-button 
+            quaternary 
+            block 
+            round 
+            size="large"
+            @click="prevStep()"
+          >
+            Voltar
+          </n-button>
         </div>
       </template>
     </template>
 
     <template #formInfo>
-      <span class="text-body-2 text-medium-emphasis">
+      <span class="text-sm opacity-80">
         Novo por aqui?
-        <a href="#" class="text-primary font-weight-bold ml-1 text-decoration-none" @click.prevent="$router.push({ name: 'Signup' })">
+        <a href="#" class="text-[color:var(--n-primary-color)] font-bold ml-1 no-underline" @click.prevent="$router.push({ name: 'Signup' })">
           Criar conta
         </a>
       </span>
@@ -41,6 +93,7 @@
 <script setup lang="ts">
 import AppFormPage from '@/components/modules/ComponentFormWrapper.vue'
 import { ref } from 'vue'
+import { AtOutline } from "@vicons/ionicons5";
 import { useRoute } from 'vue-router'
 import http from '@/utils/http'
 import { default as stepForm, type FieldParams, initField } from "@/utils/form"
@@ -82,10 +135,16 @@ const handleLogin = async () => {
       },
     )
 
-    const query = redirect ? { path: redirect } : { name: 'Home' }
+    // Popula o Pinia com os dados do usuário ANTES de redirecionar.
+    // Sem isso, o guard do router (checkAuth) ainda lê isAuth=false e bloqueia a navegação.
+    await http.auth.isAuthenticated()
+
+    const query = redirect ? { path: redirect } : { name: 'CodeNew' }
+    ;(window as any).$message?.success("Login efetuado com sucesso!")
     pageRedirect(query)
   } catch (error) {
     setFieldError(formData.value.password, "Usuário ou senha incorretos.")
+    ;(window as any).$message?.error("Falha ao autenticar. Verifique suas credenciais.")
   }
 }
 </script>
