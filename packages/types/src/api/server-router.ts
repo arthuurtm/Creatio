@@ -1,1 +1,2 @@
-export type RouteOptions = "database" | "root" | "ws" | "files";
+export type RouteOptions = "database" | "root" | "files";
+

@@ -33,10 +33,6 @@ function getApiUrl(
 ) {
 	const origin = window.location.origin;
 
-	if (type === "ws") {
-		return `${origin.replace(/^(https?:\/\/)/, "ws://")}/ws`;
-	}
-
 	if (!type || !route) {
 		console.error("Tipo ou rota não fornecidos.");
 		return "";
