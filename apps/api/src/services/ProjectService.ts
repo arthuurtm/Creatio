@@ -72,4 +72,14 @@ async function validateProjectOwnership(id: number, accessToken: string) {
 	return project;
 }
 
-export { getAnyProject, setProjectOnDatabase, validateProjectOwnership };
+async function updateProject(
+	id: number,
+	data: { title?: string; description?: string },
+	accessToken: string,
+) {
+	const project = await validateProjectOwnership(id, accessToken);
+	await project.update(data);
+	return project;
+}
+
+export { getAnyProject, setProjectOnDatabase, validateProjectOwnership, updateProject };

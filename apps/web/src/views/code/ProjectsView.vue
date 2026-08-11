@@ -130,7 +130,8 @@
 
 <script setup lang="ts">
 import type { ProjectAttributes as Project } from "@projeto/types";
-import { computed, ref, watch } from "vue";
+import { computed, h, ref, watch } from "vue";
+import { NInput } from "naive-ui";
 import { Add, Search } from "@vicons/ionicons5";
 import { SearchOffOutlined, TerminalOutlined } from "@vicons/material";
 import { useRouter } from "vue-router";
@@ -268,11 +269,74 @@ async function criarNovoProjeto() {
 }
 
 function openRenameDialog(item: Project) {
-	showToast({ type: "info", message: `Renomear "${item.title}" — em breve!` });
+	const newTitle = ref(item.title);
+	const newDescription = ref(item.description || "");
+
+	const d = (window as any).$dialog.create({
+		title: "Renomear projeto",
+		content: () =>
+			h("div", { class: "flex flex-col gap-3 py-2" }, [
+				h(NInput, {
+					value: newTitle.value,
+					placeholder: "Título do projeto",
+					"onUpdate:value": (val: string) => (newTitle.value = val),
+				}),
+				h(NInput, {
+					type: "textarea",
+					value: newDescription.value,
+					placeholder: "Descrição (opcional)",
+					"onUpdate:value": (val: string) => (newDescription.value = val),
+				}),
+			]),
+		positiveText: "Salvar",
+		negativeText: "Cancelar",
+		onPositiveClick: async () => {
+			if (!newTitle.value.trim()) {
+				showToast({ type: "error", message: "O título não pode ficar vazio." });
+				return false;
+			}
+			d.loading = true;
+			try {
+				const updated = await http.put(
+					{ type: "database", route: "updateProject" },
+					{
+						id: item.id,
+						title: newTitle.value.trim(),
+						description: newDescription.value.trim(),
+					},
+				);
+				const idx = allCreations.value.findIndex((c) => c.id === item.id);
+				if (idx !== -1) {
+					allCreations.value[idx] = { ...allCreations.value[idx], ...updated };
+				}
+				showToast({ type: "success", message: "Projeto atualizado com sucesso!" });
+			} catch (error) {
+				showToast({
+					type: "error",
+					message: error instanceof Error ? error.message : String(error),
+				});
+			} finally {
+				d.loading = false;
+			}
+		},
+	});
 }
 
 async function handleDuplicate(item: Project) {
-	showToast({ type: "info", message: `Duplicar "${item.title}" — em breve!` });
+	try {
+		showToast({ type: "info", message: `Duplicando "${item.title}"...` });
+		const newProject = await http.post(
+			{ type: "database", route: "duplicateProject" },
+			{ id: item.id },
+		);
+		allCreations.value.unshift(newProject);
+		showToast({ type: "success", message: "Projeto duplicado com sucesso!" });
+	} catch (error) {
+		showToast({
+			type: "error",
+			message: error instanceof Error ? error.message : String(error),
+		});
+	}
 }
 
 function handleDelete(item: Project) {
