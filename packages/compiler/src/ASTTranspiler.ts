@@ -20,14 +20,18 @@ export interface TranspilationContext {
   compileStatements(parentId: string | null): ESTreeNode[];
 }
 
+export function getASTData(node: SDKNode): any {
+  return (node.data as any)?.ast || node.data || {};
+}
+
 export class ASTTranspiler implements TranspilationContext {
   public symbolTable = new Map<string, string>();
   public nodes: SDKNode[] = [];
   public edges: NodeConnection[] = [];
 
   constructor(nodes: SDKNode[], edges: NodeConnection[]) {
-    this.nodes = nodes;
-    this.edges = edges;
+    this.nodes = nodes || [];
+    this.edges = edges || [];
   }
 
   /**
@@ -41,8 +45,11 @@ export class ASTTranspiler implements TranspilationContext {
     const functionDeclarations = FunctionsTranspiler.collect(this.nodes);
 
     for (const decNode of [...variableDeclarations, ...functionDeclarations]) {
-      const { name } = decNode.data.ast.params;
-      this.symbolTable.set(decNode.id, this.sanitizeVariableName(name));
+      const ast = getASTData(decNode);
+      const name = ast?.params?.name || ast?.params?.id || decNode.id;
+      if (name) {
+        this.symbolTable.set(decNode.id, this.sanitizeVariableName(name));
+      }
     }
 
     // 2. Processa as declarações de variáveis (estáticas no topo do código)

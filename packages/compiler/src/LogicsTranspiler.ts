@@ -1,5 +1,5 @@
 import type { SDKNode } from "@projeto/types";
-import type { ESTreeNode, TranspilationContext } from "./ASTTranspiler";
+import { getASTData, type ESTreeNode, type TranspilationContext } from "./ASTTranspiler.ts";
 
 export class LogicsTranspiler {
   /**
@@ -10,13 +10,14 @@ export class LogicsTranspiler {
     const compiled: ESTreeNode[] = [];
 
     for (const stmtNode of levelStatements) {
-      const rawESTree = stmtNode.data?.ast?.estree;
+      const ast = getASTData(stmtNode);
+      const rawESTree = ast?.estree;
       if (!rawESTree) continue;
 
       const estreeClone = ctx.cloneESTree(rawESTree);
 
       // Se o nó visual abrir um escopo, compila seus nós filhos recursivamente
-      if (stmtNode.data.ast.hasScope) {
+      if (ast?.hasScope) {
         const children = ctx.compileStatements(stmtNode.id);
         this.injectScopeChildren(estreeClone, children);
       }
@@ -106,16 +107,21 @@ export class LogicsTranspiler {
    * Ordena e filtra os nós de execução do nível de escopo atual, excluindo declarações
    */
   private static getOrderedExecutionStatements(parentId: string | null, ctx: TranspilationContext): SDKNode[] {
+    const getParent = (n: SDKNode) => n.parentNode || n.data?.parentId || null;
+
     // Filtra apenas nós que pertencem a este nível de escopo (parentId)
-    const levelNodes = ctx.nodes.filter((n) => (n.parentNode || null) === parentId);
+    const levelNodes = (ctx.nodes || []).filter((n) => getParent(n) === parentId);
 
     // Não inclui declarações de variáveis no fluxo (elas vão no topo global do código)
-    const statements = levelNodes.filter(
-      (n) => n.data?.ast?.category !== "VARIABLE_DECLARATION"
-    );
+    const statements = levelNodes.filter((n) => {
+      const ast = getASTData(n);
+      return ast?.category !== "VARIABLE_DECLARATION";
+    });
 
     const hasIncomingExecution = (nodeId: string) =>
-      ctx.edges.some((e) => e.target === nodeId && e.data?.type === "execution");
+      (ctx.edges || []).some(
+        (e) => e.target === nodeId && (e.data?.type === "execution" || !e.data?.type)
+      );
 
     // Encontra os nós iniciais deste nível (não têm entrada de execução vinda de outro nó do mesmo nível)
     const entryPoints = statements.filter((node) => !hasIncomingExecution(node.id));
@@ -125,15 +131,23 @@ export class LogicsTranspiler {
 
     for (const root of entryPoints) {
       let current: SDKNode | undefined = root;
-      while (current && !visited.has(current.id) && (current.parentNode || null) === parentId) {
+      while (current && !visited.has(current.id) && getParent(current) === parentId) {
         visited.add(current.id);
         ordered.push(current);
 
-        const nextEdge = ctx.edges.find(
-          (e) => e.source === current!.id && e.data?.type === "execution"
+        const nextEdge = (ctx.edges || []).find(
+          (e) => e.source === current!.id && (e.data?.type === "execution" || !e.data?.type)
         );
 
         current = nextEdge ? ctx.nodes.find((n) => n.id === nextEdge.target) : undefined;
+      }
+    }
+
+    // Se houver nós soltos (sem conexão), inclui todos eles na lista ordenada
+    for (const stmt of statements) {
+      if (!visited.has(stmt.id) && getParent(stmt) === parentId) {
+        visited.add(stmt.id);
+        ordered.push(stmt);
       }
     }
 

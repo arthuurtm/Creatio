@@ -20,6 +20,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@projeto/compiler':
+        specifier: workspace:*
+        version: link:../../packages/compiler
       '@projeto/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -153,6 +156,9 @@ importers:
       '@mdi/font':
         specifier: 7.4.47
         version: 7.4.47
+      '@projeto/compiler':
+        specifier: workspace:*
+        version: link:../../packages/compiler
       '@projeto/types':
         specifier: workspace:*
         version: link:../../packages/types
