@@ -278,7 +278,7 @@ const editableFields = computed(() => [
 		displayValue: user.username,
 		currentValue: user.username,
 		type: "text",
-		endpoint: null, // sem endpoint no servidor ainda
+		endpoint: "updateProfileField",
 	},
 	{
 		key: "nickname",
@@ -286,7 +286,7 @@ const editableFields = computed(() => [
 		displayValue: user.name,
 		currentValue: user.name,
 		type: "text",
-		endpoint: null,
+		endpoint: "updateProfileField",
 	},
 	{
 		key: "email",
@@ -294,7 +294,7 @@ const editableFields = computed(() => [
 		displayValue: user.email,
 		currentValue: user.email,
 		type: "text",
-		endpoint: null,
+		endpoint: "updateProfileField",
 	},
 	{
 		key: "theme",
@@ -333,12 +333,36 @@ async function saveEdit(field: any) {
 		return;
 	}
 
-	// Para campos sem endpoint ainda, informar o usuário
-	showToast({
-		type: "info",
-		message: "A edição deste campo estará disponível em breve.",
-	});
-	cancelEdit();
+	const val = editValue.value.trim();
+	if (!val) {
+		showToast({ type: "error", message: "O valor não pode ser vazio." });
+		return;
+	}
+
+	saveLoading.value = true;
+	try {
+		await http.put(
+			{ type: "database", route: "updateProfileField" },
+			{ field: field.key, value: val },
+		);
+
+		if (field.key === "username") user.username = val;
+		if (field.key === "nickname") user.name = val;
+		if (field.key === "email") user.email = val;
+
+		showToast({
+			type: "success",
+			message: `${field.label} atualizado com sucesso!`,
+		});
+		cancelEdit();
+	} catch (err) {
+		showToast({
+			type: "error",
+			message: err instanceof Error ? err.message : "Falha ao atualizar o campo.",
+		});
+	} finally {
+		saveLoading.value = false;
+	}
 }
 
 // ── Avatar ──────────────────────────────────────────────────────────────
@@ -351,23 +375,24 @@ function onFileChange(e: Event) {
 	const file = target?.files && target.files[0];
 	if (!file) return;
 
-	const reader = new FileReader();
-	reader.onload = async () => {
-		localProfilePic.value = reader.result as string;
-		try {
-			await http.post(
-				{ type: "database", route: "updateProfilePic" },
-				{ image: reader.result },
-			);
+	const formData = new FormData();
+	formData.append("file", file);
+
+	localProfilePic.value = URL.createObjectURL(file);
+
+	http.post({ type: "database", route: "uploadProfilePic" }, formData)
+		.then((res) => {
+			if (res.url) {
+				user.profilePicture = res.url;
+			}
 			showToast({ type: "success", message: "Foto de perfil atualizada!" });
-		} catch (err) {
+		})
+		.catch((err) => {
 			showToast({
 				type: "error",
-				message: "Não foi possível atualizar a foto. Tente novamente.",
+				message: err instanceof Error ? err.message : "Não foi possível atualizar a foto. Tente novamente.",
 			});
-		}
-	};
-	reader.readAsDataURL(file);
+		});
 }
 
 // ── Sessions & devices ─────────────────────────────────────────────────
