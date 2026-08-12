@@ -30,16 +30,16 @@ async function setProjectOnDatabaseController(
 ) {
 	try {
 		if (!req.cookies.accessToken) throw new Error("Usuário não autenticado");
-		const state: EditorState = req.body.state;
+		const state: EditorState = req.body.state || {};
 		const accessToken = req.cookies.accessToken;
 		const userId = await getUserIDFromSessionToken(accessToken);
 		const result = await setProjectOnDatabase({
-			title: state.info.title,
-			description: state.info.description,
+			title: state?.info?.title || "Novo Projeto",
+			description: state?.info?.description || null,
 			userId,
 			accessToken,
 			state,
-			version: state.info.version,
+			version: state?.info?.version || "0.1.0",
 		});
 		res.json(result);
 	} catch (err) {
@@ -133,7 +133,19 @@ async function getProjectStateController(
 			version: project.version ?? "0.1.0",
 			accessToken,
 		});
-		res.json(state);
+		res.json(
+			state || {
+				info: {
+					id: project.id,
+					title: project.title,
+					description: project.description,
+					version: project.version || "0.1.0",
+					updatedAt: project.updatedAt,
+				},
+				nodes: [],
+				connections: [],
+			},
+		);
 	} catch (err) {
 		next(err);
 	}
