@@ -1,2 +1,9 @@
 export * from "./auth";
-export * from "./websocket";
+
+export type RequestStatusValues =
+	| "IDLE"
+	| "SENDING"
+	| "ERROR"
+	| "WAITING"
+	| "SUCCESS";
+
