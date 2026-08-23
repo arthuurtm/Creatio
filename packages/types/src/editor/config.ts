@@ -20,6 +20,8 @@ export interface EditorDefinitionParam {
 export interface EditorDefinition {
   text: string;
   icon: string;
+  description?: string;
+  preview?: string;
   params?: EditorDefinitionParam[];
   execute?: (p: Record<string, any>) => ExecuteResult;
 }

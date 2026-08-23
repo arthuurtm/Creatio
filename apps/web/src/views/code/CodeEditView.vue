@@ -1,10 +1,24 @@
 <script setup lang="ts">
 import type { RequestStatusValues } from "@projeto/types";
+import {
+	CodeOutlined,
+	ContentCopyOutlined,
+	DownloadOutlined,
+	RefreshOutlined,
+} from "@vicons/material";
 import { debounce } from "lodash-es";
+import {
+	NButton,
+	NDrawer,
+	NDrawerContent,
+	NIcon,
+	NSpace,
+	NSpin,
+	NSwitch,
+	NTag,
+} from "naive-ui";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import { NButton, NDrawer, NDrawerContent, NIcon, NSpace, NSpin, NSwitch, NTag } from "naive-ui";
-import { CodeOutlined, DownloadOutlined, ContentCopyOutlined, RefreshOutlined } from "@vicons/material";
 import ComponentNode from "@/components/modules/ComponentNode.vue";
 import Properties from "@/components/modules/Properties.vue";
 import type RecentProjectsOverlay from "@/components/modules/RecentProjectsOverlay.vue";
@@ -21,7 +35,6 @@ const { editorStore } = useEditorExplorer();
 const persistence = useEditorPersistence();
 const userStore = useUserStore();
 const router = useRouter();
-const overlayRef = ref<InstanceType<typeof RecentProjectsOverlay> | null>(null);
 const autoCreating = ref(false);
 
 // ── Code Panel State (Server-side compilation via REST) ─────────────────────────
@@ -33,43 +46,48 @@ const compileErrorText = computed(() => persistence.compileError.value);
 const isCompiling = computed(() => persistence.isCompiling.value);
 
 function compileNow() {
-  persistence.requestCompile();
+	persistence.requestCompile();
 }
 
 watch(
-  () => [editorStore.nodes, editorStore.connections],
-  () => {
-    if (autoCompile.value && showCodeDrawer.value) {
-      compileNow();
-    }
-  },
-  { deep: true },
+	() => [editorStore.nodes, editorStore.connections],
+	() => {
+		if (autoCompile.value && showCodeDrawer.value) {
+			compileNow();
+		}
+	},
+	{ deep: true },
 );
 
 watch(showCodeDrawer, (open) => {
-  if (open) compileNow();
+	if (open) compileNow();
 });
 
 function copyCodeToClipboard() {
-  navigator.clipboard.writeText(compiledCodeText.value || "");
-  showToast({ type: "success", message: "Código copiado para a área de transferência!" });
+	navigator.clipboard.writeText(compiledCodeText.value || "");
+	showToast({
+		type: "success",
+		message: "Código copiado para a área de transferência!",
+	});
 }
 
 function downloadCodeFile() {
-  if (!compiledCodeText.value) compileNow();
-  const title = editorStore.info.title || "algoritmo";
-  const fileName = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.js`;
+	if (!compiledCodeText.value) compileNow();
+	const title = editorStore.info.title || "algoritmo";
+	const fileName = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.js`;
 
-  const blob = new Blob([compiledCodeText.value], { type: "application/javascript;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-  showToast({ type: "success", message: `Arquivo "${fileName}" baixado!` });
+	const blob = new Blob([compiledCodeText.value], {
+		type: "application/javascript;charset=utf-8",
+	});
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement("a");
+	link.href = url;
+	link.download = fileName;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	URL.revokeObjectURL(url);
+	showToast({ type: "success", message: `Arquivo "${fileName}" baixado!` });
 }
 
 const delayedStatus = ref<RequestStatusValues>(persistence.requestStatus.value);
@@ -151,7 +169,7 @@ onUnmounted(() => {
 
 <template>
   <div class="flex h-screen w-screen overflow-hidden relative">
-    <Properties class="border" />
+    <Properties />
 
     <div class="grow h-full relative">
       <ComponentNode

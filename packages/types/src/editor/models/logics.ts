@@ -14,6 +14,8 @@ export default (ctx: EditorContext) => ({
     if: {
       text: 'Se',
       icon: 'alt_route',
+      description: 'Executa um bloco de código somente se uma condição específica for verdadeira.',
+      preview: 'if (condicao) {\n  // código\n}',
       params: [
         {
           key: 'condition',
@@ -49,6 +51,8 @@ export default (ctx: EditorContext) => ({
     elseIf: {
       text: 'Senão Se',
       icon: 'call_split',
+      description: 'Verifica uma condição alternativa caso o bloco \'Se\' anterior falhe.',
+      preview: 'else if (condicao) {\n  // código\n}',
       params: [
         {
           key: 'condition',
@@ -83,6 +87,8 @@ export default (ctx: EditorContext) => ({
     forLoop: {
       text: 'Laço For',
       icon: 'repeat',
+      description: 'Repete instruções um número definido de vezes usando uma variável contadora.',
+      preview: 'for (let i = 0; i < 10; i++) {\n  // código\n}',
       params: [
         { key: 'iteratorName', label: 'Variável Contadora (ex: i)', type: 'text', default: 'i', required: true },
         { key: 'startValue', label: 'Valor Inicial', type: 'text', default: '0', required: true },
@@ -127,6 +133,8 @@ export default (ctx: EditorContext) => ({
     whileLoop: {
       text: 'Laço Enquanto (While)',
       icon: 'sync',
+      description: 'Repete instruções continuamente enquanto uma condição for verdadeira.',
+      preview: 'while (condicao) {\n  // código\n}',
       params: [
         {
           key: 'condition',
@@ -161,6 +169,8 @@ export default (ctx: EditorContext) => ({
     break: {
       text: 'Parar Laço (Break)',
       icon: 'cancel',
+      description: 'Interrompe imediatamente a execução do laço de repetição atual.',
+      preview: 'break;',
       params: [],
       execute: (): ExecuteResult => ({
         type: 'logics' as SDKNodeType,
@@ -177,6 +187,8 @@ export default (ctx: EditorContext) => ({
     continue: {
       text: 'Pular Iteração (Continue)',
       icon: 'skip_next',
+      description: 'Pula para a próxima iteração do laço de repetição atual.',
+      preview: 'continue;',
       params: [],
       execute: (): ExecuteResult => ({
         type: 'logics' as SDKNodeType,
@@ -193,6 +205,8 @@ export default (ctx: EditorContext) => ({
     switchCase: {
       text: 'Escolha (Switch)',
       icon: 'switch_access_shortcut',
+      description: 'Avalia uma expressão e desvia a execução para o caso correspondente.',
+      preview: 'switch (expressao) {\n  // casos\n}',
       params: [
         { key: 'expression', label: 'Variável/Expressão', type: 'expression', required: true },
       ],
@@ -213,6 +227,8 @@ export default (ctx: EditorContext) => ({
     switchCaseOption: {
       text: 'Caso (Case)',
       icon: 'subdirectory_arrow_right',
+      description: 'Define um caso de correspondência específico para um bloco Escolha.',
+      preview: 'case valor:\n  // código\n  break;',
       params: [
         { key: 'parentId', label: 'Pertence a qual Switch?', type: 'select', items: ctx.logics, required: true },
         { key: 'value', label: 'Valor', type: 'text', required: true },
@@ -236,6 +252,8 @@ export default (ctx: EditorContext) => ({
     switchCaseDefault: {
       text: 'Caso Padrão (Default)',
       icon: 'subdirectory_arrow_right',
+      description: 'Define o caso padrão executado se nenhuma opção for atendida.',
+      preview: 'default:\n  // código\n  break;',
       params: [
         { key: 'parentId', label: 'Pertence a qual Switch?', type: 'select', items: ctx.logics, required: true },
       ],

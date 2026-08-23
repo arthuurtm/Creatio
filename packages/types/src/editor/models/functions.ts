@@ -14,6 +14,8 @@ export default (ctx: EditorContext) => ({
     defineFunction: {
       text: 'Definir Função',
       icon: 'function',
+      description: 'Declara uma nova função reutilizável, que pode receber parâmetros.',
+      preview: 'function nome(args) {\n  // código\n}',
       params: [
         { key: 'name', label: 'Nome da Função', type: 'text', required: true },
         { key: 'isAsync', label: 'Assíncrona?', type: 'switch', default: false },
@@ -58,6 +60,8 @@ export default (ctx: EditorContext) => ({
     callFunction: {
       text: 'Chamar Função',
       icon: 'play_circle',
+      description: 'Executa uma função existente e recupera o seu valor retornado.',
+      preview: 'nome(args);',
       params: [
         { key: 'funcName', label: 'Função', type: 'select', items: ctx.functions, required: true },
         { key: 'shouldAwait', label: 'Esperar (await)?', type: 'switch', default: false },
@@ -100,6 +104,8 @@ export default (ctx: EditorContext) => ({
     returnValue: {
       text: 'Retornar Valor',
       icon: 'keyboard_return',
+      description: 'Finaliza a execução de uma função e envia um valor de volta.',
+      preview: 'return valor;',
       params: [{ key: 'value', label: 'Valor', type: 'text' }],
       execute: (p: any): ExecuteResult => ({
         type: 'functions' as SDKNodeType,
@@ -116,6 +122,8 @@ export default (ctx: EditorContext) => ({
     consoleLog: {
       text: 'Imprimir na Tela (Log)',
       icon: 'terminal',
+      description: 'Imprime mensagens ou valores no console de depuração.',
+      preview: 'console.log(mensagem);',
       params: [{ key: 'message', label: 'Mensagem ou Variável', type: 'text', required: true }],
       execute: (p: any): ExecuteResult => ({
         type: 'functions' as SDKNodeType,

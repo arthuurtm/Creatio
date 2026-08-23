@@ -7,6 +7,8 @@ export default (ctx: EditorContext) => ({
     declare: {
       text: 'Declarar Variável',
       icon: 'add_box',
+      description: 'Cria uma nova variável no escopo (let, const, var) com um valor inicial.',
+      preview: 'let variavel = valor;',
       params: [
         { key: 'kind', label: 'Tipo', type: 'select', items: ['const', 'let', 'var'], default: 'let' },
         { key: 'name', label: 'Nome', type: 'text', required: true },
@@ -34,6 +36,8 @@ export default (ctx: EditorContext) => ({
     assign: {
       text: 'Atribuir Valor',
       icon: 'edit',
+      description: 'Altera o valor de uma variável existente por outro valor ou variável.',
+      preview: 'variavel = novoValor;',
       params: [
         { key: 'varId', label: 'Variável', type: 'select', items: ctx.variables, required: true },
         { key: 'value', label: 'Novo Valor', type: 'text', required: true },
@@ -59,6 +63,8 @@ export default (ctx: EditorContext) => ({
     mathOperation: {
       text: 'Operação Matemática',
       icon: 'calculate',
+      description: 'Realiza uma operação matemática (+, -, *, /, %) entre dois valores.',
+      preview: 'total = a + b;',
       params: [
         { key: 'targetVar', label: 'Salvar na Variável', type: 'select', items: ctx.variables, required: true },
         { key: 'valA', label: 'Valor A (ou Variável)', type: 'text', required: true },
