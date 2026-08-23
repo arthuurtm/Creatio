@@ -19,6 +19,7 @@
             v-model:value="formData.email.val"
             placeholder="Digite seu e-mail..."
             size="large"
+            @input="formData.email.err = false; formData.email.errVal = ''"
           >
             <template #prefix>
               <n-icon size="18" style="opacity: 0.5; margin-right: 6px;"><AtOutline /></n-icon>
@@ -73,19 +74,47 @@
 
       <!-- Step 3: New Password -->
       <div v-if="currentStep === 3" style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
-        <v-password-field
+        <n-form-item
           label="Sua senha"
-          v-model="formData.passwd1.val"
-          :error="formData.passwd1.err"
-          :error-messages="formData.passwd1.errVal"
-        />
+          :validation-status="formData.passwd1.err ? 'error' : undefined"
+          :feedback="formData.passwd1.errVal"
+          :show-feedback="!!formData.passwd1.errVal"
+          class="mb-3"
+        >
+          <n-input
+            type="password"
+            show-password-on="click"
+            v-model:value="formData.passwd1.val"
+            placeholder="Digite a nova senha..."
+            size="large"
+            @input="formData.passwd1.err = false; formData.passwd1.errVal = ''"
+          >
+            <template #prefix>
+              <n-icon size="18" class="opacity-50 mr-1.5"><LockClosedOutline /></n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
 
-        <v-password-field
+        <n-form-item
           label="Confirme sua senha"
-          v-model="formData.passwd2.val"
-          :error="formData.passwd2.err"
-          :error-messages="formData.passwd2.errVal"
-        />
+          :validation-status="formData.passwd2.err ? 'error' : undefined"
+          :feedback="formData.passwd2.errVal"
+          :show-feedback="!!formData.passwd2.errVal"
+          class="mb-3"
+        >
+          <n-input
+            type="password"
+            show-password-on="click"
+            v-model:value="formData.passwd2.val"
+            placeholder="Confirme a nova senha..."
+            size="large"
+            @input="formData.passwd2.err = false; formData.passwd2.errVal = ''"
+          >
+            <template #prefix>
+              <n-icon size="18" class="opacity-50 mr-1.5"><LockClosedOutline /></n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
       </div>
 
       <!-- Step 4: Success -->
@@ -162,8 +191,8 @@
 </template>
 
 <script setup lang="ts">
+import { AtOutline, CheckmarkCircleOutline, LockClosedOutline } from "@vicons/ionicons5";
 import { ref } from "vue";
-import { AtOutline, CheckmarkCircleOutline } from "@vicons/ionicons5";
 import { useRouter } from "vue-router";
 import AppFormPage from "@/components/modules/ComponentFormWrapper.vue";
 import { type FieldParams, initField, default as stepForm } from "@/utils/form";
@@ -199,6 +228,16 @@ const sentCode = ref(false);
 let sameMail = "";
 
 const prepareVerifyCode = async (resent: boolean = false) => {
+	if (!formData.value.email.val?.trim()) {
+		setFieldError(formData.value.email, "E-mail é obrigatório.");
+		return;
+	}
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	if (!emailRegex.test(formData.value.email.val)) {
+		setFieldError(formData.value.email, "E-mail inválido.");
+		return;
+	}
+
 	if (resent || (!sentCode.value && !(formData.value.email.val === sameMail))) {
 		try {
 			await http.get({
@@ -235,10 +274,16 @@ const prepareVerifyCode = async (resent: boolean = false) => {
 };
 
 const verifySecureCode = async () => {
+	const codeValue = Array.isArray(formData.value.verifyCode.val)
+		? formData.value.verifyCode.val.join("")
+		: formData.value.verifyCode.val;
+
+	if (!codeValue || codeValue.trim() === "") {
+		setFieldError(formData.value.verifyCode, "Por favor, insira o código de verificação.");
+		return;
+	}
+
 	try {
-		const codeValue = Array.isArray(formData.value.verifyCode.val)
-			? formData.value.verifyCode.val.join("")
-			: formData.value.verifyCode.val;
 
 		const { accessUUID } = await http.post(
 			{
@@ -260,11 +305,20 @@ const verifySecureCode = async () => {
 };
 
 const resetPassword = async () => {
+	if (!formData.value.passwd1.val) {
+		setFieldError(formData.value.passwd1, "A senha é obrigatória.");
+		return;
+	}
+	if (!formData.value.passwd2.val) {
+		setFieldError(formData.value.passwd2, "Confirme sua senha.");
+		return;
+	}
+	if (formData.value.passwd1.val !== formData.value.passwd2.val) {
+		setFieldError(formData.value.passwd2, "As senhas não coincidem!");
+		return;
+	}
+
 	try {
-		if (formData.value.passwd1.val !== formData.value.passwd2.val) {
-			setFieldError(formData.value.passwd2, "As senhas não coincidem!");
-			return;
-		}
 
 		await http.post(
 			{

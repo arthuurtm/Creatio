@@ -129,19 +129,47 @@
           </p>
         </div>
 
-        <v-password-field
+        <n-form-item
           label="Sua senha"
-          v-model="formData.passwd1.val"
-          :error="formData.passwd1.err"
-          :error-messages="formData.passwd1.errVal"
-        />
+          :validation-status="formData.passwd1.err ? 'error' : undefined"
+          :feedback="formData.passwd1.errVal"
+          :show-feedback="!!formData.passwd1.errVal"
+          class="mb-3"
+        >
+          <n-input
+            type="password"
+            show-password-on="click"
+            v-model:value="formData.passwd1.val"
+            placeholder="Escolha uma senha..."
+            size="large"
+            @input="formData.passwd1.err = false; formData.passwd1.errVal = ''"
+          >
+            <template #prefix>
+              <n-icon size="18" class="opacity-50 mr-1.5"><LockClosedOutline /></n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
 
-        <v-password-field
+        <n-form-item
           label="Confirme sua senha"
-          v-model="formData.passwd2.val"
-          :error="formData.passwd2.err"
-          :error-messages="formData.passwd2.errVal"
-        />
+          :validation-status="formData.passwd2.err ? 'error' : undefined"
+          :feedback="formData.passwd2.errVal"
+          :show-feedback="!!formData.passwd2.errVal"
+          class="mb-3"
+        >
+          <n-input
+            type="password"
+            show-password-on="click"
+            v-model:value="formData.passwd2.val"
+            placeholder="Confirme sua senha..."
+            size="large"
+            @input="formData.passwd2.err = false; formData.passwd2.errVal = ''"
+          >
+            <template #prefix>
+              <n-icon size="18" class="opacity-50 mr-1.5"><LockClosedOutline /></n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
       </div>
 
       <!-- Step 5: Success -->
@@ -220,8 +248,14 @@
 </template>
 
 <script setup lang="ts">
+import {
+	AtOutline,
+	CheckmarkCircleOutline,
+	LockClosedOutline,
+	MailOutline,
+	PersonOutline,
+} from "@vicons/ionicons5";
 import { computed, ref, watch } from "vue";
-import { AtOutline, MailOutline, PersonOutline, CheckmarkCircleOutline } from "@vicons/ionicons5";
 import { useRouter } from "vue-router";
 import AppFormPage from "@/components/modules/ComponentFormWrapper.vue";
 import { type FieldParams, initField, default as stepForm } from "@/utils/form";
