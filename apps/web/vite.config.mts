@@ -5,6 +5,7 @@ import AutoImport from "unplugin-auto-import/vite";
 import { NaiveUiResolver } from "unplugin-vue-components/resolvers";
 import Components from "unplugin-vue-components/vite";
 import { defineConfig } from "vite";
+import vueDevTools from "vite-plugin-vue-devtools";
 import Layouts from "vite-plugin-vue-layouts-next";
 import svgLoader from "vite-svg-loader";
 
@@ -34,6 +35,7 @@ export default defineConfig({
 		}),
 		Vue(),
 		svgLoader(),
+		vueDevTools(),
 	],
 	optimizeDeps: {
 		exclude: ["vue-router"],

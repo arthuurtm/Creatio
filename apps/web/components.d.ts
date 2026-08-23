@@ -11,6 +11,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    BlockCatalog: typeof import('./src/components/modules/BlockCatalog.vue')['default']
+    BlockLibraryPanel: typeof import('./src/components/modules/BlockLibraryPanel.vue')['default']
     ComplexArrayBuilder: typeof import('./src/components/ui/ComplexArrayBuilder.vue')['default']
     ComponentFormWrapper: typeof import('./src/components/modules/ComponentFormWrapper.vue')['default']
     ComponentLoadSessions: typeof import('./src/components/modules/ComponentLoadSessions.vue')['default']
@@ -55,6 +57,7 @@ declare module 'vue' {
     NNotificationProvider: typeof import('naive-ui')['NNotificationProvider']
     Node: typeof import('./src/components/ui/Node.vue')['default']
     NPageHeader: typeof import('naive-ui')['NPageHeader']
+    NPasswordField: typeof import('naive-ui')['NPasswordField']
     NPopover: typeof import('naive-ui')['NPopover']
     NSelect: typeof import('naive-ui')['NSelect']
     NSkeleton: typeof import('naive-ui')['NSkeleton']
@@ -67,6 +70,5 @@ declare module 'vue' {
     RecentProjectsOverlay: typeof import('./src/components/modules/RecentProjectsOverlay.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    VPasswordField: typeof import('./src/components/ui/VPasswordField.vue')['default']
   }
 }

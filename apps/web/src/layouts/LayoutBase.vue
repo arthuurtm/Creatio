@@ -114,7 +114,7 @@ watchEffect(() => {
         <Logo height="30" />
       </div>
 
-      <n-page-header @back="handleBack" class="w-full">
+      <n-page-header class="w-full">
 
         <template #title>
           <div class="flex items-center h-full ml-1 pt-[2px]">

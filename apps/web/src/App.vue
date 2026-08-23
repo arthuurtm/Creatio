@@ -6,6 +6,8 @@ import { useSettingsStore } from "@/stores/global";
 import {
 	lightThemeOverrides,
 	darkThemeOverrides,
+} from "@/styles/theme";
+import {
 	syncThemeCssVariables,
 } from "@/plugins/naive";
 
@@ -22,7 +24,7 @@ const themeOverrides = computed(() => {
 		: lightThemeOverrides;
 });
 
-// Watch theme changes to sync legacy Vuetify CSS variables
+// Watch theme changes to sync custom theme CSS variables
 watch(
 	() => settingsStore.theme,
 	(newTheme) => {

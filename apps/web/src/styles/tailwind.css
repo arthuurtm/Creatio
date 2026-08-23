@@ -1,1 +1,246 @@
 @import "tailwindcss";
+
+/* Settings */
+body {
+	font-family:
+		"Inter", "Roboto", "Outfit", "Google Sans", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Ubuntu, sans-serif;
+}
+
+/* Global */
+html {
+	overflow-y: auto !important;
+}
+
+body {
+	transition:
+		background-color 0.3s,
+		color 0.3s;
+}
+
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: rgba(var(--v-theme-on-surface), 0.15);
+	border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(var(--v-theme-on-surface), 0.25);
+}
+
+.skeleton-card {
+	border-radius: 16px !important;
+	overflow: hidden;
+}
+
+/* Keyframes & Animations */
+@keyframes appear {
+	from {
+		transform: scale(0.5);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeInBlur {
+	from {
+		opacity: 0;
+		filter: blur(5px);
+	}
+	to {
+		opacity: 1;
+		filter: blur(0);
+	}
+}
+
+@keyframes moveToLeft {
+	from {
+		transform: translateX(100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes moveToBottom {
+	from {
+		transform: translateY(-100%);
+	}
+
+	to {
+		transform: translateY(0);
+	}
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Transições globais do vuejs */
+.blur-enter-active,
+.blur-leave-active {
+	transition: filter 0.5s ease-in-out;
+}
+.blur-enter-from,
+.blur-leave-to {
+	filter: blur(5px);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+	transition:
+		opacity 0.3s ease-in-out,
+		visibility 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+	opacity: 0;
+	visibility: hidden;
+}
+.fade-leave-from,
+.fade-enter-to {
+	opacity: 1;
+	visibility: visible;
+}
+
+.fastFade-enter-active,
+.fastFade-leave-active {
+	transition:
+		opacity 0.1s ease,
+		visibility 0.1s ease;
+}
+.fastFade-enter-from,
+.fastFade-leave-to {
+	opacity: 0;
+	visibility: hidden;
+}
+.fastFade-leave-from,
+.fastFade-enter-to {
+	opacity: 1;
+	visibility: visible;
+}
+
+.slide-left-enter-active,
+.slide-left-leave-active {
+	transition:
+		transform 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+		opacity 0.18s ease-in-out;
+}
+.slide-left-enter-from {
+	transform: translateX(30px);
+	opacity: 0;
+}
+.slide-left-enter-to {
+	transform: translateX(0);
+	opacity: 1;
+}
+.slide-left-leave-from {
+	transform: translateX(0);
+	opacity: 1;
+}
+.slide-left-leave-to {
+	transform: translateX(-30px);
+	opacity: 0;
+}
+
+.slide-left-and-back-enter-active,
+.slide-left-and-back-leave-active {
+	transition:
+		transform 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+		opacity 0.18s ease-in-out;
+}
+.slide-left-and-back-enter-from {
+	transform: translateX(30px);
+	opacity: 0;
+}
+.slide-left-and-back-enter-to {
+	transform: translateX(0);
+	opacity: 1;
+}
+.slide-left-and-back-leave-from {
+	transform: translateX(0);
+	opacity: 1;
+}
+.slide-left-and-back-leave-to {
+	transform: translateX(30px);
+	opacity: 0;
+}
+
+.slide-top-enter-active,
+.slide-top-leave-active {
+	transition:
+		transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1),
+		opacity 0.15s ease-in-out;
+}
+.slide-top-enter-from {
+	transform: translateY(-10px);
+	opacity: 0;
+}
+.slide-top-enter-to {
+	transform: translateY(0);
+	opacity: 1;
+}
+.slide-top-leave-from {
+	transform: translateY(0);
+	opacity: 1;
+}
+.slide-top-leave-to {
+	transform: translateY(-10px);
+	opacity: 0;
+}
+
+@keyframes dialogBounce {
+	0% {
+		opacity: 0;
+		transform: scale(0.92) translateY(16px);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+/* Transição de rota entre páginas */
+.page-fade-enter-active {
+	transition:
+		opacity 0.2s ease,
+		transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.page-fade-leave-active {
+	transition: opacity 0.15s ease;
+}
+.page-fade-enter-from {
+	opacity: 0;
+	transform: translateY(6px);
+}
+.page-fade-enter-to {
+	opacity: 1;
+	transform: translateY(0);
+}
+.page-fade-leave-from {
+	opacity: 1;
+}
+.page-fade-leave-to {
+	opacity: 0;
+}
