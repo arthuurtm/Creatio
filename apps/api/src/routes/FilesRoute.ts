@@ -3,7 +3,7 @@ import multer from "multer";
 import {
 	getFileController,
 	uploadFiles,
-} from "#api/controllers/http/FileController.ts";
+} from "#api/controllers/FileController.ts";
 import isAuthenticated from "#api/middlewares/isAuthenticated.ts";
 
 const router = Router();

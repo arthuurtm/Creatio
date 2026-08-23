@@ -136,14 +136,19 @@ const read = {
 	},
 
 	readJson: async ({ bucket = "public", filepath }: GetFileParams) => {
-		const disk = await getDisk(bucket);
-		if (!disk)
-			throw new Error(
-				"Não foi possível recuperar o arquivo: Erro interno no servidor",
-			);
-		const content = await storage.getObject(bucket, filepath);
-		if (!content) throw new Error("Arquivo não encontrado no servidor");
-		return JSON.parse(await text(content));
+		try {
+			const disk = await getDisk(bucket);
+			if (!disk)
+				throw new Error(
+					"Não foi possível recuperar o arquivo: Erro interno no servidor",
+				);
+			const content = await storage.getObject(bucket, filepath);
+			if (!content) return null;
+			return JSON.parse(await text(content));
+		} catch (err) {
+			log.warn(`Arquivo JSON não encontrado no storage: ${filepath}`);
+			return null;
+		}
 	},
 };
 

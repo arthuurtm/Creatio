@@ -28,8 +28,8 @@ function setUserDatabaseQuery(
 	}
 }
 
-function projectPathGenerator(id: string, version: string) {
-	return `projects/${id}/v${version}`;
+function projectPathGenerator(id: string, version: string = "") {
+	return `projects/${id}`;
 }
 
 function getFileExtension(filename: string) {

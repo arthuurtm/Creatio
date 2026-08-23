@@ -1,15 +1,15 @@
 import { Router } from "express";
 import multer from "multer";
 import {
+	compileProjectStateController,
 	deleteProjectController,
-	getAnyProjectController,
-	setProjectOnDatabaseController,
-	updateProjectController,
 	duplicateProjectController,
+	getAnyProjectController,
 	getProjectStateController,
 	saveProjectStateController,
-	compileProjectStateController,
-} from "#api/controllers/http/ProjectController.ts";
+	setProjectOnDatabaseController,
+	updateProjectController,
+} from "#api/controllers/ProjectController.ts";
 import {
 	getBasicUserDataController,
 	getUserDataController,
@@ -18,7 +18,12 @@ import {
 	setResetPasswordCodeController,
 	setSignupCodeController,
 	signupUserController,
-} from "#api/controllers/http/UserController.ts";
+} from "#api/controllers/UserController.ts";
+import {
+	deleteProfilePicController,
+	updateProfileFieldController,
+	uploadProfilePicController,
+} from "#api/controllers/UserProfileController.ts";
 import {
 	deleteSessionController,
 	getAnyUserSessionController,
@@ -26,12 +31,7 @@ import {
 	logoutUserController,
 	refreshSessionController,
 	validateSecureSession,
-} from "#api/controllers/http/UserSessionController.ts";
-import {
-	updateProfileFieldController,
-	uploadProfilePicController,
-	deleteProfilePicController,
-} from "#api/controllers/http/UserProfileController.ts";
+} from "#api/controllers/UserSessionController.ts";
 // import { reqLimiter } from "#api/helpers/limiter.ts";
 import isAuthenticated from "#api/middlewares/isAuthenticated.ts";
 
@@ -50,18 +50,11 @@ router.post(
 	/*reqLimiter(1, 12),*/ isAuthenticated,
 	setProjectOnDatabaseController,
 );
-
-// Editor do Projeto - estado e compilação
-router.get("/getProjectState", isAuthenticated, getProjectStateController);
-router.put("/saveProjectState", isAuthenticated, saveProjectStateController);
-router.post("/compileProject", isAuthenticated, compileProjectStateController);
-
-// Projetos - atualizar e duplicar
-router.put("/updateProject", isAuthenticated, updateProjectController);
-router.post("/duplicateProject", isAuthenticated, duplicateProjectController);
-
-// Perfil do usuário
-router.put("/updateProfileField", isAuthenticated, updateProfileFieldController);
+router.put(
+	"/updateProfileField",
+	isAuthenticated,
+	updateProfileFieldController,
+);
 router.post(
 	"/uploadProfilePic",
 	isAuthenticated,
@@ -69,6 +62,13 @@ router.post(
 	uploadProfilePicController,
 );
 router.delete("/deleteProfilePic", isAuthenticated, deleteProfilePicController);
+// editor
+router.get("/getProjectState", isAuthenticated, getProjectStateController);
+router.put("/saveProjectState", isAuthenticated, saveProjectStateController);
+router.post("/compileProject", isAuthenticated, compileProjectStateController);
+router.put("/updateProject", isAuthenticated, updateProjectController);
+router.post("/duplicateProject", isAuthenticated, duplicateProjectController);
+
 
 // não precisa de autenticação
 router.post("/setLogin", handleLoginController);
@@ -82,4 +82,3 @@ router.post("/validateSecureSession", validateSecureSession);
 router.post("/refreshSession", refreshSessionController);
 
 export default router;
-

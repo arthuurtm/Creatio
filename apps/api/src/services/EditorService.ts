@@ -17,7 +17,7 @@ type GetStateParams = BasicObjectData;
 
 async function saveState({ id, version, state, accessToken }: SaveStateParams) {
 	await validateProjectOwnership(id, accessToken);
-	const filepath = `${projectPathGenerator(String(id), version)}/editor.json`;
+	const filepath = `${projectPathGenerator(String(id))}/editor.json`;
 	return await FileService.write.queueSave({
 		bucket: "private",
 		filepath,
@@ -30,7 +30,7 @@ async function saveState({ id, version, state, accessToken }: SaveStateParams) {
  */
 async function getState({ id, version, accessToken }: GetStateParams) {
 	await validateProjectOwnership(id, accessToken);
-	const filepath = `${projectPathGenerator(String(id), version)}/editor.json`;
+	const filepath = `${projectPathGenerator(String(id))}/editor.json`;
 	return await FileService.read.readJson({
 		bucket: "private",
 		filepath,

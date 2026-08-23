@@ -39,8 +39,8 @@ async function setProjectOnDatabase({
 	version,
 }: ProjectData) {
 	const project = await Project.create({
-		title,
-		description,
+		title: title || "Novo Projeto",
+		description: description || null,
 		userId,
 	});
 
@@ -53,7 +53,7 @@ async function setProjectOnDatabase({
 
 	await EditorService.saveState({
 		id: project.id,
-		version,
+		version: version || "0.1.0",
 		state,
 		accessToken,
 	});
