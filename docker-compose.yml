@@ -1,6 +1,6 @@
 services:
   db:
-    image: mysql:8
+    image: docker.io/library/mysql:8
     container_name: backend
     restart: unless-stopped
     environment:
@@ -16,7 +16,7 @@ services:
       - app-network
 
   phpmyadmin:
-    image: phpmyadmin:latest
+    image: docker.io/library/phpmyadmin:latest
     container_name: pma
     environment:
       PMA_HOST: db
@@ -28,7 +28,7 @@ services:
       - app-network
       
   minio:
-    image: minio/minio
+    image: docker.io/minio/minio:latest
     container_name: minio-dev
     restart: unless-stopped
     command: server /data --console-address ":9001"
