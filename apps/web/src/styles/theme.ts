@@ -1,46 +1,7 @@
-/**
- * Naive UI theme — portado do tema CSS custom (base.css / e-buttons / e-inputs / e-toast).
- *
- * Escopo: apenas a variante "sólida" do tema original. Os tokens de
- * `:root[data-modifier='glass']` (gradientes translúcidos, blur, saturate)
- * foram ignorados de propósito — se um tema glass for necessário no futuro,
- * ele deve viver em um arquivo separado (ex.: `theme.glass.ts`), já que o
- * GlobalThemeOverrides do Naive UI trabalha com cores sólidas, não com
- * backdrop-filter.
- *
- * Mapeamento de origem:
- *  --primary / --primary-hover / --primary-back  -> common.primaryColor*
- *  --accent                                       -> common.successColor*
- *  --danger / --danger-hover                      -> common.errorColor*
- *  toast info / toast warning                      -> common.infoColor* / warningColor*
- *  --text-color / --secondary                     -> common.textColor*
- *  --background-color / --background-alt          -> common.bodyColor / cardColor / modalColor / popoverColor
- *  --border-color                                  -> common.borderColor / dividerColor
- *  --form-field-text-hover (#1778fb, fixo nos dois temas) -> borderFocus / caretColor do Input
- *  --primary-shadow                                -> common.boxShadow1/2/3
- *  raio 24px (botões) / 30px (inputs, pill)        -> borderRadius por tamanho, em Button/Input
- *
- * Onde o CSS original não define um equivalente direto (dividerColor,
- * estados de ícone, disabled etc.) foram usados valores neutros derivados
- * dos tokens existentes (--text-color / --border-color com alpha), seguindo
- * a mesma convenção que o próprio Naive UI usa internamente.
- *
- * Uso:
- *   import { NConfigProvider, darkTheme } from 'naive-ui'
- *   import { lightThemeOverrides, darkThemeOverrides } from './theme'
- *
- *   <n-config-provider
- *     :theme="isDark ? darkTheme : null"
- *     :theme-overrides="isDark ? darkThemeOverrides : lightThemeOverrides"
- *   >
- */
-
 import type { GlobalThemeOverrides } from 'naive-ui'
 
-// Azul fixo usado em foco/links em ambos os temas (--form-field-text-hover)
 const FOCUS_ACCENT = '#1778fb'
 
-// ---------- Tema claro ----------
 export const lightThemeOverrides: GlobalThemeOverrides = {
   common: {
     primaryColor: '#0b6a90',
@@ -69,41 +30,52 @@ export const lightThemeOverrides: GlobalThemeOverrides = {
     errorColorSuppl: '#d54343',
 
     baseColor: '#ffffff',
-    textColorBase: '#000000',
-    textColor1: '#000000',
-    textColor2: 'rgba(0, 0, 0, 0.82)',
-    textColor3: '#7e7e7e',
-    textColorDisabled: 'rgba(0, 0, 0, 0.38)',
-    placeholderColor: '#7e7e7e',
-    placeholderColorDisabled: 'rgba(0, 0, 0, 0.24)',
-    iconColor: 'rgba(0, 0, 0, 0.4)',
-    iconColorHover: 'rgba(0, 0, 0, 0.55)',
-    iconColorPressed: 'rgba(0, 0, 0, 0.7)',
-    iconColorDisabled: 'rgba(0, 0, 0, 0.2)',
 
-    bodyColor: '#ffffff',
-    cardColor: '#fafafa',
-    modalColor: '#fafafa',
-    popoverColor: '#fafafa',
+    textColorBase: '#111111',
+    textColor1: '#111111',
+    textColor2: 'rgba(17, 17, 17, 0.82)',
+    textColor3: '#666666',
+    textColorDisabled: 'rgba(17, 17, 17, 0.38)',
+
+    placeholderColor: '#707070',
+    placeholderColorDisabled: 'rgba(17, 17, 17, 0.24)',
+
+    iconColor: 'rgba(17, 17, 17, 0.48)',
+    iconColorHover: 'rgba(17, 17, 17, 0.65)',
+    iconColorPressed: 'rgba(17, 17, 17, 0.8)',
+    iconColorDisabled: 'rgba(17, 17, 17, 0.25)',
+
+    bodyColor: '#f7f8fa',
+
+    cardColor: '#ffffff',
+    modalColor: '#ffffff',
+    popoverColor: '#ffffff',
+
     tableColor: '#ffffff',
-    tableColorHover: 'rgba(11, 106, 144, 0.05)',
-    hoverColor: 'rgba(11, 106, 144, 0.07)',
-    tagColor: '#fafafa',
-    inputColor: '#e9ecef',
-    inputColorDisabled: 'rgba(233, 236, 239, 0.5)',
-    actionColor: '#fafafa',
+
+    tableColorHover: 'rgba(11, 106, 144, 0.055)',
+    hoverColor: 'rgba(11, 106, 144, 0.075)',
+
+    tagColor: '#f7f8fa',
+
+    inputColor: '#f0f2f4',
+    inputColorDisabled: 'rgba(240, 242, 244, 0.65)',
+
+    actionColor: '#ffffff',
+
     closeColorHover: 'rgba(0, 0, 0, 0.09)',
-    closeColorPressed: 'rgba(0, 0, 0, 0.13)',
+    closeColorPressed: 'rgba(0, 0, 0, 0.14)',
 
-    buttonColor2: 'rgba(126, 126, 126, 0.12)',
-    buttonColor2Hover: 'rgba(117, 117, 117, 0.18)',
-    buttonColor2Pressed: 'rgba(117, 117, 117, 0.24)',
+    buttonColor2: 'rgba(90, 90, 90, 0.10)',
+    buttonColor2Hover: 'rgba(90, 90, 90, 0.16)',
+    buttonColor2Pressed: 'rgba(90, 90, 90, 0.22)',
 
-    borderColor: '#a8a8a8',
-    dividerColor: 'rgba(168, 168, 168, 0.35)',
+    borderColor: '#9ca3aa',
 
-    scrollbarColor: 'rgba(168, 168, 168, 0.4)',
-    scrollbarColorHover: 'rgba(168, 168, 168, 0.65)',
+    dividerColor: 'rgba(70, 75, 80, 0.22)',
+
+    scrollbarColor: 'rgba(90, 95, 100, 0.38)',
+    scrollbarColorHover: 'rgba(70, 75, 80, 0.58)',
 
     railColor: '#313033',
 
@@ -113,19 +85,23 @@ export const lightThemeOverrides: GlobalThemeOverrides = {
     fontWeightStrong: '600',
 
     boxShadow1:
-      '0 1px 2px -1px rgba(213, 220, 227, 0.35), 0 3px 6px 0 rgba(213, 220, 227, 0.25)',
+      '0 1px 2px -1px rgba(30, 40, 50, 0.10), 0 2px 5px rgba(30, 40, 50, 0.06)',
+
     boxShadow2:
-      '0 3px 6px -3px rgba(213, 220, 227, 0.4), 0 6px 16px 0 rgba(213, 220, 227, 0.28)',
+      '0 2px 5px -2px rgba(30, 40, 50, 0.12), 0 6px 16px rgba(30, 40, 50, 0.09)',
+
     boxShadow3:
-      '0 6px 16px -8px rgba(213, 220, 227, 0.45), 0 9px 28px 0 rgba(213, 220, 227, 0.3)',
+      '0 6px 16px -8px rgba(30, 40, 50, 0.16), 0 10px 28px rgba(30, 40, 50, 0.11)',
   },
 
   Button: {
     fontWeight: '600',
+
     borderRadiusTiny: '11px',
     borderRadiusSmall: '14px',
     borderRadiusMedium: '17px',
     borderRadiusLarge: '20px',
+
     textColorPrimary: '#ffffff',
     textColorHoverPrimary: '#ffffff',
     textColorPressedPrimary: '#ffffff',
@@ -133,15 +109,19 @@ export const lightThemeOverrides: GlobalThemeOverrides = {
   },
 
   Input: {
-    borderRadius: '30px', // <-- Aumentado para 30px (Pill round)
+    borderRadius: '30px',
     heightMedium: '45px',
-    color: 'transparent',
-    colorFocus: 'transparent',
-    border: '1px solid #a8a8a8',
-    borderHover: '1px solid #a8a8a8',
+
+    color: '#f0f2f4',
+    colorFocus: '#ffffff',
+
+    border: '1px solid #9ca3aa',
+    borderHover: '1px solid #737b83',
     borderFocus: `1px solid ${FOCUS_ACCENT}`,
-    borderDisabled: '1px solid #a8a8a8',
-    boxShadowFocus: `0 0 0 2px rgba(23, 120, 251, 0.15)`,
+    borderDisabled: '1px solid #c4c9ce',
+
+    boxShadowFocus: `0 0 0 2px rgba(23, 120, 251, 0.16)`,
+
     caretColor: FOCUS_ACCENT,
   },
 
@@ -149,51 +129,55 @@ export const lightThemeOverrides: GlobalThemeOverrides = {
     peers: {
       InternalSelection: {
         heightMedium: '45px',
-        borderRadius: '30px', // Acompanha o Input padrão
+        borderRadius: '30px',
+
+        border: '1px solid #9ca3aa',
+        borderHover: '1px solid #737b83',
+        borderFocus: `1px solid ${FOCUS_ACCENT}`,
       },
+
       InternalSelectMenu: {
-        optionHeightMedium: '42px', // Opções mais altas
-        optionFontSizeMedium: '16px', // Fonte maior
-        borderRadius: '14px', // Borda da caixa do menu
+        optionHeightMedium: '42px',
+        optionFontSizeMedium: '16px',
+        borderRadius: '14px',
       },
     },
   },
 
   Dropdown: {
-    optionHeightMedium: '42px', // Aumenta a área de clique
-    fontSizeMedium: '16px', // Aumenta a fonte
-    padding: '6px', // Espaçamento interno do dropdown
+    optionHeightMedium: '42px',
+    fontSizeMedium: '16px',
+    padding: '6px',
     borderRadius: '14px',
   },
 
   Switch: {
-    railColor: '#313033',
-    railColorActive: '#205fdc44',
-    buttonColor: '#aeaaae',
+    railColor: '#777d83',
+    railColorActive: '#205fdc66',
+    buttonColor: '#ffffff',
   },
 
   Card: {
     borderRadius: '14px',
-    color: '#fafafa',
+    color: '#ffffff',
   },
 
   Modal: {
     borderRadius: '14px',
-    color: '#fafafa',
+    color: '#ffffff',
   },
 
   Popover: {
     borderRadius: '10px',
-    color: '#fafafa',
+    color: '#ffffff',
   },
 
   Scrollbar: {
-    color: 'rgba(168, 168, 168, 0.4)',
-    colorHover: 'rgba(168, 168, 168, 0.65)',
+    color: 'rgba(90, 95, 100, 0.38)',
+    colorHover: 'rgba(70, 75, 80, 0.58)',
   },
 }
 
-// ---------- Tema escuro ----------
 export const darkThemeOverrides: GlobalThemeOverrides = {
   common: {
     primaryColor: '#0d4b85',
@@ -222,41 +206,52 @@ export const darkThemeOverrides: GlobalThemeOverrides = {
     errorColorSuppl: '#bb0b0b',
 
     baseColor: '#ffffff',
+
     textColorBase: '#f2f2f2',
     textColor1: '#f2f2f2',
-    textColor2: 'rgba(242, 242, 242, 0.82)',
-    textColor3: '#7e7e7e',
-    textColorDisabled: 'rgba(242, 242, 242, 0.38)',
-    placeholderColor: '#7e7e7e',
-    placeholderColorDisabled: 'rgba(242, 242, 242, 0.24)',
-    iconColor: 'rgba(242, 242, 242, 0.45)',
-    iconColorHover: 'rgba(242, 242, 242, 0.6)',
-    iconColorPressed: 'rgba(242, 242, 242, 0.75)',
-    iconColorDisabled: 'rgba(242, 242, 242, 0.22)',
+    textColor2: 'rgba(242, 242, 242, 0.84)',
+    textColor3: '#9b9b9b',
+    textColorDisabled: 'rgba(242, 242, 242, 0.40)',
+
+    placeholderColor: '#929292',
+    placeholderColorDisabled: 'rgba(242, 242, 242, 0.25)',
+
+    iconColor: 'rgba(242, 242, 242, 0.50)',
+    iconColorHover: 'rgba(242, 242, 242, 0.68)',
+    iconColorPressed: 'rgba(242, 242, 242, 0.82)',
+    iconColorDisabled: 'rgba(242, 242, 242, 0.25)',
 
     bodyColor: '#0e0e0e',
-    cardColor: '#0d0d0d',
-    modalColor: '#0d0d0d',
-    popoverColor: '#0d0d0d',
-    tableColor: '#0e0e0e',
-    tableColorHover: 'rgba(19, 109, 194, 0.08)',
-    hoverColor: 'rgba(19, 109, 194, 0.1)',
-    tagColor: '#0d0d0d',
-    inputColor: '#3a3a3a',
-    inputColorDisabled: 'rgba(58, 58, 58, 0.5)',
-    actionColor: '#0d0d0d',
-    closeColorHover: 'rgba(255, 255, 255, 0.09)',
-    closeColorPressed: 'rgba(255, 255, 255, 0.13)',
 
-    buttonColor2: 'rgba(126, 126, 126, 0.16)',
-    buttonColor2Hover: 'rgba(153, 153, 153, 0.22)',
-    buttonColor2Pressed: 'rgba(153, 153, 153, 0.28)',
+    cardColor: '#151619',
+    modalColor: '#18191c',
+    popoverColor: '#18191c',
 
-    borderColor: '#272727',
-    dividerColor: 'rgba(255, 255, 255, 0.08)',
+    tableColor: '#111214',
 
-    scrollbarColor: 'rgba(255, 255, 255, 0.2)',
-    scrollbarColorHover: 'rgba(255, 255, 255, 0.35)',
+    tableColorHover: 'rgba(19, 109, 194, 0.10)',
+    hoverColor: 'rgba(19, 109, 194, 0.12)',
+
+    tagColor: '#18191c',
+
+    inputColor: '#1b1d20',
+    inputColorDisabled: 'rgba(27, 29, 32, 0.65)',
+
+    actionColor: '#151619',
+
+    closeColorHover: 'rgba(255, 255, 255, 0.10)',
+    closeColorPressed: 'rgba(255, 255, 255, 0.15)',
+
+    buttonColor2: 'rgba(255, 255, 255, 0.08)',
+    buttonColor2Hover: 'rgba(255, 255, 255, 0.13)',
+    buttonColor2Pressed: 'rgba(255, 255, 255, 0.18)',
+
+    borderColor: '#3a3c40',
+
+    dividerColor: 'rgba(255, 255, 255, 0.12)',
+
+    scrollbarColor: 'rgba(255, 255, 255, 0.24)',
+    scrollbarColorHover: 'rgba(255, 255, 255, 0.40)',
 
     railColor: '#313033',
 
@@ -265,17 +260,24 @@ export const darkThemeOverrides: GlobalThemeOverrides = {
 
     fontWeightStrong: '600',
 
-    boxShadow1: '0 1px 2px -1px rgba(0, 0, 0, 0.45), 0 3px 6px 0 rgba(0, 0, 0, 0.35)',
-    boxShadow2: '0 3px 6px -3px rgba(0, 0, 0, 0.5), 0 6px 16px 0 rgba(0, 0, 0, 0.38)',
-    boxShadow3: '0 6px 16px -8px rgba(0, 0, 0, 0.55), 0 9px 28px 0 rgba(0, 0, 0, 0.4)',
+    boxShadow1:
+      '0 1px 2px -1px rgba(0, 0, 0, 0.55), 0 3px 6px rgba(0, 0, 0, 0.40)',
+
+    boxShadow2:
+      '0 3px 6px -3px rgba(0, 0, 0, 0.60), 0 7px 17px rgba(0, 0, 0, 0.48)',
+
+    boxShadow3:
+      '0 6px 16px -8px rgba(0, 0, 0, 0.65), 0 10px 30px rgba(0, 0, 0, 0.52)',
   },
 
   Button: {
     fontWeight: '600',
+
     borderRadiusTiny: '11px',
     borderRadiusSmall: '14px',
     borderRadiusMedium: '17px',
     borderRadiusLarge: '20px',
+
     textColorPrimary: '#ffffff',
     textColorHoverPrimary: '#ffffff',
     textColorPressedPrimary: '#ffffff',
@@ -283,15 +285,19 @@ export const darkThemeOverrides: GlobalThemeOverrides = {
   },
 
   Input: {
-    borderRadius: '30px', // <-- Aumentado para 30px (Pill round)
+    borderRadius: '30px',
     heightMedium: '45px',
-    color: 'transparent',
-    colorFocus: 'transparent',
-    border: '1px solid #121212',
-    borderHover: '1px solid #121212',
+
+    color: '#1b1d20',
+    colorFocus: '#202328',
+
+    border: '1px solid #3a3c40',
+    borderHover: '1px solid #555960',
     borderFocus: `1px solid ${FOCUS_ACCENT}`,
-    borderDisabled: '1px solid #121212',
-    boxShadowFocus: `0 0 0 2px rgba(23, 120, 251, 0.25)`,
+    borderDisabled: '1px solid #2b2d31',
+
+    boxShadowFocus: `0 0 0 2px rgba(23, 120, 251, 0.28)`,
+
     caretColor: FOCUS_ACCENT,
   },
 
@@ -299,40 +305,51 @@ export const darkThemeOverrides: GlobalThemeOverrides = {
     peers: {
       InternalSelection: {
         heightMedium: '45px',
-        borderRadius: '30px', // Acompanha o Input padrão
+        borderRadius: '30px',
+
+        border: '1px solid #3a3c40',
+        borderHover: '1px solid #555960',
+        borderFocus: `1px solid ${FOCUS_ACCENT}`,
       },
+
       InternalSelectMenu: {
-        optionHeightMedium: '42px', // Opções mais altas
-        optionFontSizeMedium: '16px', // Fonte maior
-        borderRadius: '14px', // Borda da caixa do menu
+        optionHeightMedium: '42px',
+        optionFontSizeMedium: '16px',
+        borderRadius: '14px',
       },
     },
   },
 
   Dropdown: {
-    optionHeightMedium: '42px', // Aumenta a área de clique
-    fontSizeMedium: '16px', // Aumenta a fonte
-    padding: '6px', // Espaçamento interno do dropdown
+    optionHeightMedium: '42px',
+    fontSizeMedium: '16px',
+    padding: '6px',
     borderRadius: '14px',
+  },
+
+  Switch: {
+    railColor: '#50545a',
+    railColorActive: '#136dc288',
+    buttonColor: '#e6e6e6',
   },
 
   Card: {
     borderRadius: '14px',
-    color: '#0d0d0d',
+    color: '#151619',
   },
 
   Modal: {
     borderRadius: '14px',
-    color: '#0d0d0d',
+    color: '#18191c',
   },
 
   Popover: {
     borderRadius: '10px',
-    color: '#0d0d0d',
+    color: '#18191c',
   },
 
   Scrollbar: {
-    color: 'rgba(255, 255, 255, 0.2)',
-    colorHover: 'rgba(255, 255, 255, 0.35)',
+    color: 'rgba(255, 255, 255, 0.24)',
+    colorHover: 'rgba(255, 255, 255, 0.40)',
   },
 }
