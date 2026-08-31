@@ -63,9 +63,9 @@ const activeNodes = computed(() => {
   <div
     v-if="!isHidden"
     :class="[
-      'h-full shrink-0 z-10 overflow-hidden border-r border-neutral-100 dark:border-neutral-800/40 bg-[color:var(--n-card-color)] flex flex-col',
+      'h-full shrink-0 z-10 overflow-hidden flex flex-col',
       isRail
-        ? 'w-16 bg-transparent border-r-0'
+        ? 'w-16 bg-transparent'
         : 'w-[340px]'
     ]"
   >
@@ -78,7 +78,7 @@ const activeNodes = computed(() => {
 
     <div v-else class="flex flex-col h-full overflow-hidden">
       <!-- Cabeçalho unificado com alternador de abas e botão de minimizar -->
-      <div class="px-4 py-3 shrink-0 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800/40">
+      <div class="px-4 py-3 shrink-0 flex items-center justify-between">
         <NButtonGroup size="medium" class="w-[230px]">
           <NButton
             :type="activeView === 'explorer' ? 'primary' : 'default'"
