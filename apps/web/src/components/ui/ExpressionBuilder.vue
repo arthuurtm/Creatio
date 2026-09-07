@@ -2,28 +2,28 @@
 import { ref, computed } from "vue";
 import ComplexArrayBuilder from "./ComplexArrayBuilder.vue";
 
-interface InterfaceItems {
+interface InterfaceStyles {
 	text?: string;
 	color?: string;
-	variant?: "flat" | "text" | "elevated" | "tonal" | "outlined" | "plain";
 	prependIcon?: string;
 }
 
 interface Props {
 	modelValue?: any[];
+	options?: any[];
 	items?: any[];
-	styles?: InterfaceItems;
+	styles?: InterfaceStyles;
 	enforceRules?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
 	modelValue: () => [],
+	options: () => [],
 	items: () => [],
 	enforceRules: true,
 	styles: () => ({
 		text: "Adicionar Condição/Expressão",
 		color: "primary",
-		variant: "tonal",
 		prependIcon: "add_circle_outline",
 	}),
 });
@@ -40,8 +40,9 @@ const selectedParams = computed({
 const isAssistantActive = ref(props.enforceRules);
 
 // Lógica inteligente de regras sintáticas JS
-const smartItems = computed(() => {
-	if (!isAssistantActive.value || !props.items) return props.items;
+const smartOptions = computed(() => {
+	const rawOptions = props.options?.length ? props.options : (props.items || []);
+	if (!isAssistantActive.value || !rawOptions) return rawOptions;
 
 	const isExpressionEmpty = selectedParams.value.length === 0;
 	const lastItem = isExpressionEmpty ? null : selectedParams.value[selectedParams.value.length - 1];
@@ -54,7 +55,7 @@ const smartItems = computed(() => {
 
 	const lastWasOperator = lastItem ? isOperatorCategory(lastItem.category) : false;
 
-	return props.items.map((group: any) => {
+	return rawOptions.map((group: any) => {
 		const isGroupOperator = isOperatorCategory(group.label || group.key || group.text);
 		
 		let shouldBeDisabled = false;
@@ -74,10 +75,12 @@ const smartItems = computed(() => {
 		};
 	});
 });
+
+const smartItems = smartOptions;
 </script>
 
 <template>
-  <div class="expression-wrapper w-100">
+  <div class="expression-wrapper w-full">
     <!-- Switch Assistente -->
     <div style="display: flex; justify-content: flex-end; margin-bottom: 4px; width: 100%; padding-right: 8px;">
       <n-space align="center" :size="8">
@@ -88,7 +91,7 @@ const smartItems = computed(() => {
  
     <ComplexArrayBuilder 
       v-model="selectedParams" 
-      :items="smartItems" 
+      :options="smartOptions" 
       :styles="styles" 
     />
   </div>

@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import ComplexArrayBuilder from "@/components/ui/ComplexArrayBuilder.vue";
 import ExpressionBuilder from "@/components/ui/ExpressionBuilder.vue";
-import { normalizeItems } from "@projeto/types";
+import { normalizeOptions } from "@projeto/types";
 
 type FormType =
   | "text"
@@ -27,6 +27,7 @@ interface FormParam {
   type: FormType;
   model: any;
   label?: string;
+  options?: any[];
   items?: any[];
   [key: string]: any;
 }
@@ -81,9 +82,7 @@ function handleCreate() {
         <template v-else-if="param.type === 'select'">
           <n-select
             v-model:value="param.model"
-            :options="normalizeItems(param as any)"
-            label-field="title"
-            value-field="value"
+            :options="normalizeOptions(param as any)"
             placeholder="Selecione..."
           />
         </template>
@@ -96,10 +95,10 @@ function handleCreate() {
           <n-switch v-model:value="param.model" />
         </template>
         <template v-else-if="param.type === 'complex-array'">
-          <ComplexArrayBuilder v-model="param.model" :items="param.items" />
+          <ComplexArrayBuilder v-model="param.model" :options="param.options ?? param.items" />
         </template>
         <template v-else-if="param.type === 'expression'">
-          <ExpressionBuilder v-model="param.model" :items="param.items" />
+          <ExpressionBuilder v-model="param.model" :options="param.options ?? param.items" />
         </template>
         <template v-else>
           <div style="color: var(--n-error-color); font-size: 12px;">

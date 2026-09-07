@@ -4,26 +4,26 @@ import { Close, Add, Search } from "@vicons/ionicons5";
 import { CodeOutlined } from "@vicons/material";
 import { getIconComponent } from "@/utils/icons";
 
-type InterfaceItems = {
+type InterfaceStyles = {
 	text?: string;
 	color?: string;
-	variant?: "flat" | "text" | "elevated" | "tonal" | "outlined" | "plain";
 	prependIcon?: string;
 };
 
 interface Props {
 	modelValue?: any[];
+	options?: any[];
 	items?: any[];
-	styles?: InterfaceItems;
+	styles?: InterfaceStyles;
 }
 
 const props = withDefaults(defineProps<Props>(), {
 	modelValue: () => [],
+	options: () => [],
 	items: () => [],
 	styles: () => ({
 		text: "Adicionar Condição/Expressão",
 		color: "primary",
-		variant: "tonal",
 		prependIcon: "add_circle_outline",
 	}),
 });
@@ -58,22 +58,24 @@ function getChipColor(category: string) {
   return '#9E9E9E'; // Default (Cinza)
 }
 
-// ── Filtro dos grupos e normalização dos itens nativo ─────────────────────────
+// ── Filtro dos grupos e normalização dos itens/opções nativo ─────────────────────────
 const filteredGroups = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
+  const rawGroups = props.options?.length ? props.options : (props.items || []);
   
-  return (props.items || []).map((group: any) => {
+  return rawGroups.map((group: any) => {
     const groupLabel = group.label || group.text || group.key || "";
     
     // Converte objeto (ex: ComparisonOperators) em Array se necessário
-    const rawItems = Array.isArray(group.items)
-      ? group.items
-      : typeof group.items === "object" && group.items !== null
-        ? Object.entries(group.items).map(([k, v]) => ({ text: v, value: v })) // Exibe o valor do operador (===, >, etc)
+    const groupList = group.options ?? group.items;
+    const rawItems = Array.isArray(groupList)
+      ? groupList
+      : typeof groupList === "object" && groupList !== null
+        ? Object.entries(groupList).map(([k, v]) => ({ text: v, value: v })) // Exibe o valor do operador (===, >, etc)
         : [];
     
-    // Normaliza itens de cada grupo
-    const items = rawItems.map((item: any) => {
+    // Normaliza opções/itens de cada grupo
+    const options = rawItems.map((item: any) => {
       if (typeof item === "string" || typeof item === "number") {
         return { text: String(item), value: item, disabled: group.disabled };
       }
@@ -89,17 +91,18 @@ const filteredGroups = computed(() => {
 
     // Filtra pelo termo de busca
     const matchingItems = query
-      ? items.filter((item: any) =>
+      ? options.filter((item: any) =>
           item.text.toLowerCase().includes(query) ||
           (item.subtitle && item.subtitle.toLowerCase().includes(query))
         )
-      : items;
+      : options;
 
     return {
       label: groupLabel,
+      options: matchingItems,
       items: matchingItems,
     };
-  }).filter((group: any) => group.items.length > 0);
+  }).filter((group: any) => group.options.length > 0);
 });
 
 function selectItem(item: any) {
@@ -192,14 +195,14 @@ function selectItem(item: any) {
               >
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                   <div
-                    v-for="item in group.items"
+                    v-for="item in group.options"
                     :key="item.value ?? item.text"
                     @click="selectItem(item)"
                     class="n-list-item-custom"
                     :class="{ 'disabled': item.disabled }"
                   >
                     <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-                      <n-icon v-if="item.icon" size="18" color="rgb(var(--v-theme-primary))">
+                      <n-icon v-if="item.icon" size="18" color="var(--n-primary-color)">
                         <component :is="getIconComponent(item.icon)" />
                       </n-icon>
                       <div style="display: flex; flex-direction: column;">
