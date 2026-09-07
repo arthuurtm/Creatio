@@ -1,13 +1,20 @@
 /**
  * Palavras reservadas
  * **/
-export const Keywords = {
-	LET: "let",
-	CONST: "const",
-	IF: "if",
-	ELSE: "else",
-	FUNCTION: "function",
-	RETURN: "return",
+export const DeclarationKeywords = {
+  LET: "let",
+  CONST: "const",
+  VAR: "var",
+} as const;
+
+export const ControlFlowKeywords = {
+  IF: "if",
+  ELSE: "else",
+  RETURN: "return",
+} as const;
+
+export const FunctionKeywords = {
+  FUNCTION: "function",
 } as const;
 
 /**

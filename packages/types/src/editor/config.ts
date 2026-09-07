@@ -12,6 +12,7 @@ export interface EditorDefinitionParam {
   key: string;
   label: string;
   type: string;
+  options?: any[];
   items?: any[];
   required?: boolean;
   default?: any;
@@ -34,6 +35,13 @@ export interface CategoryConfig<
   definitions: T;
 }
 
+export interface NormalizedOption {
+	label: string;
+	value: string;
+	raw?: unknown;
+}
+
+export type NormalizedItem = NormalizedOption;
 
 export const categories: Record<SDKNodeType, (ctx: EditorContext) => CategoryConfig> = {
   functions,
@@ -49,17 +57,28 @@ export function getCategory(categoryKey: CategoryKey, context: EditorContext): C
 }
 
 /**
- * Normaliza items de parâmetros para os Selects da UI.
+ * Normaliza options de parâmetros para os Selects do Naive UI.
  * Aceita strings puras ou objetos com diferentes formas.
  */
-export function normalizeItems(param: EditorDefinitionParam) {
-  const items = param.items;
-  if (!items || items.length === 0) return items;
-  if (typeof items[0] === 'string') return items;
+export function normalizeOptions(
+	param: EditorDefinitionParam,
+): NormalizedOption[] | undefined {
+	const rawOptions = param.options ?? param.items;
 
-  return items.map((i: any) => ({
-  title: i.data?.params?.name ?? i.data?.category ?? i.id,
-  value: i.id,
-  raw: i,
-}));
+	if (!rawOptions?.length) return rawOptions;
+
+	if (typeof rawOptions[0] === "string") {
+		return rawOptions.map((opt) => ({
+			label: opt,
+			value: opt,
+		}));
+	}
+
+	return rawOptions.map((opt: any) => ({
+		label: opt.data?.params?.name ?? opt.data?.category ?? opt.label ?? opt.text ?? opt.id,
+		value: opt.id ?? opt.value,
+		raw: opt,
+	}));
 }
+
+export const normalizeItems = normalizeOptions;

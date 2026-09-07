@@ -1,4 +1,5 @@
 import type { SDKNodeType, EditorContext, ExecuteResult } from '../models';
+import { DeclarationKeywords } from '../tokens';
 
 export default (ctx: EditorContext) => ({
   text: 'Variáveis',
@@ -10,7 +11,7 @@ export default (ctx: EditorContext) => ({
       description: 'Cria uma nova variável no escopo (let, const, var) com um valor inicial.',
       preview: 'let variavel = valor;',
       params: [
-        { key: 'kind', label: 'Tipo', type: 'select', items: ['const', 'let', 'var'], default: 'let' },
+        { key: 'kind', label: 'Tipo', type: 'select', options: Object.values(DeclarationKeywords), default: 'let' },
         { key: 'name', label: 'Nome', type: 'text', required: true },
         { key: 'value', label: 'Valor Inicial', type: 'text', default: 'null' },
       ],
@@ -39,7 +40,7 @@ export default (ctx: EditorContext) => ({
       description: 'Altera o valor de uma variável existente por outro valor ou variável.',
       preview: 'variavel = novoValor;',
       params: [
-        { key: 'varId', label: 'Variável', type: 'select', items: ctx.variables, required: true },
+        { key: 'varId', label: 'Variável', type: 'select', options: ctx.variables, required: true },
         { key: 'value', label: 'Novo Valor', type: 'text', required: true },
       ],
       execute: (p: any): ExecuteResult => ({
@@ -66,9 +67,9 @@ export default (ctx: EditorContext) => ({
       description: 'Realiza uma operação matemática (+, -, *, /, %) entre dois valores.',
       preview: 'total = a + b;',
       params: [
-        { key: 'targetVar', label: 'Salvar na Variável', type: 'select', items: ctx.variables, required: true },
+        { key: 'targetVar', label: 'Salvar na Variável', type: 'select', options: ctx.variables, required: true },
         { key: 'valA', label: 'Valor A (ou Variável)', type: 'text', required: true },
-        { key: 'operator', label: 'Operador', type: 'select', items: ['+', '-', '*', '/', '%'], required: true },
+        { key: 'operator', label: 'Operador', type: 'select', options: ['+', '-', '*', '/', '%'], required: true },
         { key: 'valB', label: 'Valor B (ou Variável)', type: 'text', required: true },
       ],
       execute: (p: any): ExecuteResult => ({

@@ -21,11 +21,11 @@ export default (ctx: EditorContext) => ({
           key: 'condition',
           label: 'Condição',
           type: 'expression',
-          items: [
-            { key: 'variable', label: 'Variável', type: 'select', items: ctx.variables },
-            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', items: AritmeticOperators },
-            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', items: ComparisonOperators },
-            { key: 'logical', label: 'Operadores Lógicos', type: 'select', items: LogicalOperators },
+          options: [
+            { key: 'variable', label: 'Variável', type: 'select', options: ctx.variables },
+            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', options: AritmeticOperators },
+            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', options: ComparisonOperators },
+            { key: 'logical', label: 'Operadores Lógicos', type: 'select', options: LogicalOperators },
           ],
           required: true,
         },
@@ -58,11 +58,11 @@ export default (ctx: EditorContext) => ({
           key: 'condition',
           label: 'Condição',
           type: 'expression',
-          items: [
-            { key: 'variable', label: 'Variável', type: 'select', items: ctx.variables },
-            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', items: AritmeticOperators },
-            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', items: ComparisonOperators },
-            { key: 'logical', label: 'Operadores Lógicos', type: 'select', items: LogicalOperators },
+          options: [
+            { key: 'variable', label: 'Variável', type: 'select', options: ctx.variables },
+            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', options: AritmeticOperators },
+            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', options: ComparisonOperators },
+            { key: 'logical', label: 'Operadores Lógicos', type: 'select', options: LogicalOperators },
           ],
           required: true,
         },
@@ -94,11 +94,11 @@ export default (ctx: EditorContext) => ({
         { key: 'startValue', label: 'Valor Inicial', type: 'text', default: '0', required: true },
         {
           key: 'condition', label: 'Condição (ex: i < 10)', type: 'expression', default: [],
-          items: [
-            { key: 'variable', label: 'Variável', type: 'select', items: ctx.variables },
-            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', items: AritmeticOperators },
-            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', items: ComparisonOperators },
-            { key: 'logical', label: 'Operadores Lógicos', type: 'select', items: LogicalOperators },
+          options: [
+            { key: 'variable', label: 'Variável', type: 'select', options: ctx.variables },
+            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', options: AritmeticOperators },
+            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', options: ComparisonOperators },
+            { key: 'logical', label: 'Operadores Lógicos', type: 'select', options: LogicalOperators },
           ],
         },
         { key: 'step', label: 'Incremento (ex: i++)', type: 'text', default: 'i++' },
@@ -140,11 +140,11 @@ export default (ctx: EditorContext) => ({
           key: 'condition',
           label: 'Condição',
           type: 'expression',
-          items: [
-            { key: 'variable', label: 'Variável', type: 'select', items: ctx.variables },
-            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', items: AritmeticOperators },
-            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', items: ComparisonOperators },
-            { key: 'logical', label: 'Operadores Lógicos', type: 'select', items: LogicalOperators },
+          options: [
+            { key: 'variable', label: 'Variável', type: 'select', options: ctx.variables },
+            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', options: AritmeticOperators },
+            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', options: ComparisonOperators },
+            { key: 'logical', label: 'Operadores Lógicos', type: 'select', options: LogicalOperators },
           ],
           required: true,
         },
@@ -230,7 +230,7 @@ export default (ctx: EditorContext) => ({
       description: 'Define um caso de correspondência específico para um bloco Escolha.',
       preview: 'case valor:\n  // código\n  break;',
       params: [
-        { key: 'parentId', label: 'Pertence a qual Switch?', type: 'select', items: ctx.logics, required: true },
+        { key: 'parentId', label: 'Pertence a qual Switch?', type: 'select', options: ctx.logics, required: true },
         { key: 'value', label: 'Valor', type: 'text', required: true },
       ],
       execute: (p: any): ExecuteResult => ({
@@ -255,7 +255,7 @@ export default (ctx: EditorContext) => ({
       description: 'Define o caso padrão executado se nenhuma opção for atendida.',
       preview: 'default:\n  // código\n  break;',
       params: [
-        { key: 'parentId', label: 'Pertence a qual Switch?', type: 'select', items: ctx.logics, required: true },
+        { key: 'parentId', label: 'Pertence a qual Switch?', type: 'select', options: ctx.logics, required: true },
       ],
       execute: (p: any): ExecuteResult => ({
         type: 'logics' as SDKNodeType,

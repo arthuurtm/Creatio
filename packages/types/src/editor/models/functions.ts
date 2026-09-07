@@ -23,11 +23,11 @@ export default (ctx: EditorContext) => ({
           key: 'args',
           label: 'Parâmetros',
           type: 'complex-array',
-          items: [
-            { key: 'variable', label: 'Variável', type: 'select', items: ctx.variables },
-            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', items: AritmeticOperators },
-            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', items: ComparisonOperators },
-            { key: 'logical', label: 'Operadores Lógicos', type: 'select', items: LogicalOperators },
+          options: [
+            { key: 'variable', label: 'Variável', type: 'select', options: ctx.variables },
+            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', options: AritmeticOperators },
+            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', options: ComparisonOperators },
+            { key: 'logical', label: 'Operadores Lógicos', type: 'select', options: LogicalOperators },
           ],
         },
       ],
@@ -63,7 +63,7 @@ export default (ctx: EditorContext) => ({
       description: 'Executa uma função existente e recupera o seu valor retornado.',
       preview: 'nome(args);',
       params: [
-        { key: 'funcName', label: 'Função', type: 'select', items: ctx.functions, required: true },
+        { key: 'funcName', label: 'Função', type: 'select', options: ctx.functions, required: true },
         { key: 'shouldAwait', label: 'Esperar (await)?', type: 'switch', default: false },
         { key: 'args', label: 'Valores', type: 'text' },
       ],
