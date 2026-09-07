@@ -90,7 +90,7 @@ function updatePrimitive(value: string | number) {
 
 const indentStyle = computed(() => ({
 	paddingLeft: `${props.depth * 12}px`,
-	backgroundColor: `rgba(var(--v-theme-surface-variant), ${props.depth * 0.02})`,
+	backgroundColor: `rgba(128, 128, 128, ${props.depth * 0.03})`,
 }));
 
 watch(
@@ -102,7 +102,7 @@ watch(
 </script>
 
 <template>
-  <div class="recursive-editor w-100">
+  <div class="recursive-editor w-full">
 
     <div v-if="isObject || isArray" class="complex-container">
       <div 
@@ -113,7 +113,7 @@ watch(
       >
         <n-icon 
           size="18" 
-          color="rgba(var(--v-theme-on-surface), 0.6)"
+          color="var(--n-text-color-3)"
           style="margin-right: 4px;"
         >
           <ChevronDown v-if="isExpanded" />
@@ -201,15 +201,11 @@ watch(
 </template>
 
 <style scoped>
-.recursive-editor {
-  font-family: 'Roboto', sans-serif;
-}
-
 .hover-bg {
   transition: background-color 0.2s ease;
 }
 
 .hover-bg:hover {
-  background-color: rgba(var(--v-theme-on-surface), 0.04) !important;
+  background-color: var(--n-hover-color) !important;
 }
 </style>

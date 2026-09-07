@@ -121,7 +121,7 @@
           <n-card class="rounded-xl" content-style="padding: 0;">
             <div class="p-5 flex items-center gap-3.5">
               <n-avatar round :style="{ backgroundColor: 'var(--n-action-color)' }">
-                <n-icon color="rgb(var(--v-theme-primary))"><LockClosedOutline /></n-icon>
+                <n-icon color="var(--n-primary-color)"><LockClosedOutline /></n-icon>
               </n-avatar>
               <div>
                 <h3 class="text-[15px] m-0 font-semibold">Senha e autenticação</h3>
