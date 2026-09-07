@@ -56,7 +56,7 @@ export function useEditorExplorer() {
   }
 
   async function _submitCreate() {
-    if (!createItemExecuteFn.value || !activeCategory.value) return;
+    if (!createItemExecuteFn.value) return;
 
     // Coleta valores preenchidos no formulário
     const payload = formParams.value.reduce(
@@ -66,6 +66,8 @@ export function useEditorExplorer() {
       },
       {} as Record<string, any>,
     );
+
+
 
     const result = createItemExecuteFn.value(payload);
     await editorStore.addNode(result);
