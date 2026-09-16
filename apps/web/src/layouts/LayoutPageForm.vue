@@ -126,7 +126,8 @@ defineProps({
 }
 
 .step-pill--done {
-  background-color: rgba(var(--v-theme-primary), 0.4);
+  background-color: var(--n-primary-color);
+  opacity: 0.4;
 }
 
 .step-pill--active {
