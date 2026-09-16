@@ -1,14 +1,19 @@
 <template>
-  <AppFormPage title="Fazer login" subTitle="Acesse sua conta Creatio" :currentStep="currentStep" :totalSteps="2"
-    @submit="currentStep === 1 ? handleStep1Next() : loaderController(handleLogin)">
+  <AppFormPage
+    title="Fazer login"
+    subTitle="Acesse sua conta Creatio"
+    :currentStep="1"
+    :totalSteps="1"
+    @submit="loaderController(handleLogin)"
+  >
     <template #form>
-      <div v-if="currentStep === 1" class="flex flex-col w-full gap-4">
+      <div class="flex flex-col w-full gap-2">
         <n-form-item
           label="Usuário ou e-mail"
           :validation-status="formData.login.err ? 'error' : undefined"
           :feedback="formData.login.errVal"
           :show-feedback="!!formData.login.errVal"
-          class="mb-5"
+          class="mb-3"
         >
           <n-input
             v-model:value="formData.login.val"
@@ -21,14 +26,13 @@
             </template>
           </n-input>
         </n-form-item>
-      </div>
-      <div v-else-if="currentStep === 2" class="flex flex-col w-full gap-2">
+
         <n-form-item
           label="Senha"
           :validation-status="formData.password.err ? 'error' : undefined"
           :feedback="formData.password.errVal"
           :show-feedback="!!formData.password.errVal"
-          class="mb-3"
+          class="mb-2"
         >
           <n-input
             type="password"
@@ -43,11 +47,12 @@
             </template>
           </n-input>
         </n-form-item>
+
         <n-button
           text
           type="primary"
           size="small"
-          class="self-end font-medium -mt-2 mb-3"
+          class="self-end font-medium -mt-1 mb-2"
           @click="$router.push({ name: 'PasswordRescue' })"
         >
           Esqueceu sua senha?
@@ -56,42 +61,17 @@
     </template>
 
     <template #buttons>
-      <template v-if="currentStep === 1">
-        <n-button
-          type="primary"
-          block
-          round
-          size="large"
-          attr-type="submit"
-          autofocus
-        >
-          Avançar
-        </n-button>
-      </template>
-      <template v-else-if="currentStep === 2">
-        <div class="flex flex-col gap-3 w-full">
-          <n-button
-            type="primary"
-            block
-            round
-            size="large"
-            attr-type="submit"
-            autofocus
-            :loading="loading"
-          >
-            Entrar
-          </n-button>
-          <n-button
-            quaternary
-            block
-            round
-            size="large"
-            @click="prevStep()"
-          >
-            Voltar
-          </n-button>
-        </div>
-      </template>
+      <n-button
+        type="primary"
+        block
+        round
+        size="large"
+        attr-type="submit"
+        autofocus
+        :loading="loading"
+      >
+        Entrar
+      </n-button>
     </template>
 
     <template #formInfo>
@@ -114,14 +94,11 @@ import { type FieldParams, initField, default as stepForm } from "@/utils/form";
 import http from "@/utils/http";
 
 const {
-	currentStep,
-	nextStep,
-	prevStep,
 	pageRedirect,
 	setFieldError,
 	loading,
 	loaderController,
-} = stepForm({ totalSteps: 2 });
+} = stepForm({ totalSteps: 1 });
 
 interface Params {
 	login: FieldParams;
@@ -133,27 +110,21 @@ const formData = ref<Params>({ login: initField(), password: initField() });
 const route = useRoute();
 const redirect = route.query.redirect || "";
 
-const handleStep1Next = () => {
+const handleLogin = async () => {
+	let hasError = false;
 	if (!formData.value.login.val?.trim()) {
 		setFieldError(formData.value.login, "Informe seu usuário ou e-mail.");
-		return;
+		hasError = true;
 	}
-	nextStep();
-};
 
-const handleLogin = async () => {
+	if (!formData.value.password.val) {
+		setFieldError(formData.value.password, "Informe sua senha.");
+		hasError = true;
+	}
+
+	if (hasError) return;
+
 	try {
-		if (formData.value.login.val === "") {
-			prevStep();
-			setFieldError(formData.value.login, "Informe um usuário");
-			return;
-		}
-
-		if (formData.value.password.val === "") {
-			setFieldError(formData.value.password, "Informe uma senha");
-			return;
-		}
-
 		await http.post(
 			{
 				type: "database",
