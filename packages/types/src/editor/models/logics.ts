@@ -7,6 +7,28 @@ import {
   type ExecuteResult,
 } from '../';
 
+function formatCondition(condition: any): string {
+  if (!condition) return "";
+  if (typeof condition === "string") return condition;
+  if (Array.isArray(condition)) {
+    return condition
+      .map((item: any) => {
+        if (!item) return "";
+        if (typeof item === "string") return item;
+        if (typeof item === "object") {
+          return item.text || item.value || item.name || item.label || "";
+        }
+        return String(item);
+      })
+      .filter(Boolean)
+      .join(" ");
+  }
+  if (typeof condition === "object") {
+    return condition.text || condition.value || condition.name || condition.label || "";
+  }
+  return String(condition);
+}
+
 export default (ctx: EditorContext) => ({
   text: 'Lógicas de Controle',
   icon: 'alt_route',
@@ -30,22 +52,25 @@ export default (ctx: EditorContext) => ({
           required: true,
         },
       ],
-      execute: (p: any): ExecuteResult => ({
-        type: 'logics' as SDKNodeType,
-        category: 'IF_STATEMENT',
-        params: { condition: p.condition },
-        hasScope: true,
-        // Nó ESTree correspondente
-        estree: {
-          type: "IfStatement",
-          test: { type: "Identifier", name: p.condition },
-          consequent: {
-            type: "BlockStatement",
-            body: [] // Preenchido recursivamente pelo compilador
-          },
-          alternate: null
-        }
-      }),
+      execute: (p: any): ExecuteResult => {
+        const cond = formatCondition(p.condition);
+        return {
+          type: 'logics' as SDKNodeType,
+          category: 'IF_STATEMENT',
+          params: { condition: cond },
+          hasScope: true,
+          // Nó ESTree correspondente
+          estree: {
+            type: "IfStatement",
+            test: { type: "Identifier", name: cond },
+            consequent: {
+              type: "BlockStatement",
+              body: [] // Preenchido recursivamente pelo compilador
+            },
+            alternate: null
+          }
+        };
+      },
     },
 
     elseIf: {
@@ -67,21 +92,24 @@ export default (ctx: EditorContext) => ({
           required: true,
         },
       ],
-      execute: (p: any): ExecuteResult => ({
-        type: 'logics' as SDKNodeType,
-        category: 'ELSEIF_STATEMENT',
-        params: { condition: p.condition },
-        hasScope: true,
-        // Nó ESTree temporário. O compilador mescla isso no If anterior.
-        estree: {
-          type: "ElseIfStatement",
-          test: { type: "Identifier", name: p.condition },
-          consequent: {
-            type: "BlockStatement",
-            body: []
+      execute: (p: any): ExecuteResult => {
+        const cond = formatCondition(p.condition);
+        return {
+          type: 'logics' as SDKNodeType,
+          category: 'ELSEIF_STATEMENT',
+          params: { condition: cond },
+          hasScope: true,
+          // Nó ESTree temporário. O compilador mescla isso no If anterior.
+          estree: {
+            type: "ElseIfStatement",
+            test: { type: "Identifier", name: cond },
+            consequent: {
+              type: "BlockStatement",
+              body: []
+            }
           }
-        }
-      }),
+        };
+      },
     },
 
     forLoop: {
@@ -103,31 +131,34 @@ export default (ctx: EditorContext) => ({
         },
         { key: 'step', label: 'Incremento (ex: i++)', type: 'text', default: 'i++' },
       ],
-      execute: (p: any): ExecuteResult => ({
-        type: 'logics' as SDKNodeType,
-        category: 'FOR_LOOP',
-        params: { iterator: p.iteratorName, start: p.startValue, condition: p.condition, step: p.step },
-        hasScope: true,
-        // Nó ESTree correspondente
-        estree: {
-          type: "ForStatement",
-          init: {
-            type: "VariableDeclaration",
-            kind: "let",
-            declarations: [{
-              type: "VariableDeclarator",
-              id: { type: "Identifier", name: p.iteratorName },
-              init: { type: "Identifier", name: p.startValue }
-            }]
-          },
-          test: { type: "Identifier", name: p.condition },
-          update: { type: "Identifier", name: p.step },
-          body: {
-            type: "BlockStatement",
-            body: []
+      execute: (p: any): ExecuteResult => {
+        const cond = formatCondition(p.condition);
+        return {
+          type: 'logics' as SDKNodeType,
+          category: 'FOR_LOOP',
+          params: { iterator: p.iteratorName, start: p.startValue, condition: cond, step: p.step },
+          hasScope: true,
+          // Nó ESTree correspondente
+          estree: {
+            type: "ForStatement",
+            init: {
+              type: "VariableDeclaration",
+              kind: "let",
+              declarations: [{
+                type: "VariableDeclarator",
+                id: { type: "Identifier", name: p.iteratorName },
+                init: { type: "Identifier", name: p.startValue }
+              }]
+            },
+            test: { type: "Identifier", name: cond },
+            update: { type: "Identifier", name: p.step },
+            body: {
+              type: "BlockStatement",
+              body: []
+            }
           }
-        }
-      }),
+        };
+      },
     },
 
     whileLoop: {
@@ -149,21 +180,24 @@ export default (ctx: EditorContext) => ({
           required: true,
         },
       ],
-      execute: (p: any): ExecuteResult => ({
-        type: 'logics' as SDKNodeType,
-        category: 'WHILE_LOOP',
-        params: { condition: p.condition },
-        hasScope: true,
-        // Nó ESTree correspondente
-        estree: {
-          type: "WhileStatement",
-          test: { type: "Identifier", name: p.condition },
-          body: {
-            type: "BlockStatement",
-            body: []
+      execute: (p: any): ExecuteResult => {
+        const cond = formatCondition(p.condition);
+        return {
+          type: 'logics' as SDKNodeType,
+          category: 'WHILE_LOOP',
+          params: { condition: cond },
+          hasScope: true,
+          // Nó ESTree correspondente
+          estree: {
+            type: "WhileStatement",
+            test: { type: "Identifier", name: cond },
+            body: {
+              type: "BlockStatement",
+              body: []
+            }
           }
-        }
-      }),
+        };
+      },
     },
 
     break: {
@@ -210,18 +244,21 @@ export default (ctx: EditorContext) => ({
       params: [
         { key: 'expression', label: 'Variável/Expressão', type: 'expression', required: true },
       ],
-      execute: (p: any): ExecuteResult => ({
-        type: 'logics' as SDKNodeType,
-        category: 'SWITCH_STATEMENT',
-        params: { expression: p.expression },
-        hasScope: true,
-        // Nó ESTree correspondente
-        estree: {
-          type: "SwitchStatement",
-          discriminant: { type: "Identifier", name: p.expression },
-          cases: []
-        }
-      }),
+      execute: (p: any): ExecuteResult => {
+        const expr = formatCondition(p.expression);
+        return {
+          type: 'logics' as SDKNodeType,
+          category: 'SWITCH_STATEMENT',
+          params: { expression: expr },
+          hasScope: true,
+          // Nó ESTree correspondente
+          estree: {
+            type: "SwitchStatement",
+            discriminant: { type: "Identifier", name: expr },
+            cases: []
+          }
+        };
+      },
     },
 
     switchCaseOption: {

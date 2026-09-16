@@ -82,10 +82,11 @@ export class ASTTranspiler implements TranspilationContext {
   public resolveIdentifiers(node: any): void {
     if (!node || typeof node !== "object") return;
 
-    if (node.type === "Identifier" && typeof node.name === "string") {
-      const resolvedName = this.symbolTable.has(node.name)
-        ? this.symbolTable.get(node.name)!
-        : this.substituteEmbeddedIds(node.name);
+    if (node.type === "Identifier") {
+      const normalized = this.normalizeExpressionToString(node.name);
+      const resolvedName = this.symbolTable.has(normalized)
+        ? this.symbolTable.get(normalized)!
+        : this.substituteEmbeddedIds(normalized);
 
       const literal = this.tryParseLiteral(resolvedName);
       if (literal) {
@@ -112,6 +113,56 @@ export class ASTTranspiler implements TranspilationContext {
 
   public cloneESTree(estree: ESTreeNode): ESTreeNode {
     return JSON.parse(JSON.stringify(estree));
+  }
+
+  /**
+   * Converte uma expressão (que pode ser string, array de tokens/chips ou objeto) em código JS legível
+   */
+  private normalizeExpressionToString(expr: any): string {
+    if (expr === null || expr === undefined) return "";
+    if (typeof expr === "string") return expr;
+    if (typeof expr === "number" || typeof expr === "boolean") return String(expr);
+
+    if (Array.isArray(expr)) {
+      return expr
+        .map((item) => this.normalizeTokenToString(item))
+        .filter(Boolean)
+        .join(" ");
+    }
+
+    if (typeof expr === "object") {
+      return this.normalizeTokenToString(expr);
+    }
+
+    return String(expr);
+  }
+
+  private normalizeTokenToString(token: any): string {
+    if (token === null || token === undefined) return "";
+    if (typeof token === "string") {
+      return this.symbolTable.has(token) ? this.symbolTable.get(token)! : token;
+    }
+    if (typeof token === "number" || typeof token === "boolean") return String(token);
+
+    if (typeof token === "object") {
+      // Se for um ID presente na tabela de símbolos (ex: ID de variável)
+      const val = token.value ?? token.id;
+      if (typeof val === "string" && this.symbolTable.has(val)) {
+        return this.symbolTable.get(val)!;
+      }
+
+      // Se tiver texto ou nome legível (ex: o nome da variável ou operador)
+      const text = token.text ?? token.name ?? token.label;
+      if (typeof text === "string" && text) {
+        return this.symbolTable.has(text) ? this.symbolTable.get(text)! : text;
+      }
+
+      if (val !== undefined && val !== null) {
+        return String(val);
+      }
+    }
+
+    return "";
   }
 
   /**
