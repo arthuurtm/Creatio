@@ -4,6 +4,7 @@ import type {
 	SDKNodeType,
 } from "@projeto/types";
 import { useEditorStore } from "@/stores/editor";
+import { showToast } from "@/plugins/toast";
 
 interface CreateNodeParams {
 	type?: SDKNodeType;
@@ -13,31 +14,39 @@ interface CreateNodeParams {
 
 function createNode(x: number, y: number, params: CreateNodeParams) {
 	const editorStore = useEditorStore();
-	const id = `node${Date.now()}`;
+	const type = params.type || "logics";
+	const id = `${type}_${Math.random().toString(36).slice(2, 9)}`;
 	const node: SDKNode = {
 		id,
 		position: { x, y },
-		type: params.type || "logics",
-		data: params.content || {},
+		type,
+		data: params.content ? JSON.parse(JSON.stringify(params.content)) : {},
 	};
 	editorStore.nodes.push(node);
 	return id;
 }
 
-// Função interna para deletar (exemplo simples)
 const deleteNode = (nodeId: string) => {
 	const editorStore = useEditorStore();
-	const index = editorStore.nodes.findIndex((n: SDKNode) => n.id === nodeId);
-	if (index > -1) {
-		editorStore.nodes.splice(index, 1);
-		// Nota: Idealmente você também deve remover os links conectados a este node aqui
-	}
+	editorStore.removeNode(nodeId);
+	showToast({ type: "info", message: "Nó removido com sucesso." });
 };
 
 const cloneNode = (node: SDKNode) => {
-	createNode(node.position.x + 20, node.position.y + 20, {
+	const editorStore = useEditorStore();
+	const newId = `${node.type}_${Math.random().toString(36).slice(2, 9)}`;
+	const cloned: SDKNode = {
+		id: newId,
 		type: node.type,
-	});
+		position: {
+			x: node.position.x + 30,
+			y: node.position.y + 30,
+		},
+		data: node.data ? JSON.parse(JSON.stringify(node.data)) : {},
+	};
+	editorStore.nodes.push(cloned);
+	showToast({ type: "success", message: "Nó duplicado com sucesso!" });
+	return cloned;
 };
 
 function getNodeContextMenuItems(node: SDKNode) {

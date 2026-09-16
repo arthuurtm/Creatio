@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { ChevronDown, ChevronForward, TrashOutline } from "@vicons/ionicons5";
+import { translateField } from "@/utils/nodeTranslations";
 
 defineOptions({
 	name: "RecursiveEditor",
@@ -31,6 +32,10 @@ const isObject = computed(
 		!isArray.value,
 );
 const isBoolean = computed(() => typeof modelValue.value === "boolean");
+const displayLabel = computed(() => {
+	if (!props.label) return isArray.value ? "Lista" : "Objeto";
+	return translateField(props.label);
+});
 const groupedKeys = computed(() => {
 	if (!isObject.value) return { primitives: [], complex: [] };
 
@@ -121,7 +126,7 @@ watch(
         </n-icon>
 
         <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.7;">
-          {{ label || (isArray ? 'Lista' : 'Objeto') }}
+          {{ displayLabel }}
         </span>
         <div style="flex-grow: 1;"></div>
 
@@ -174,8 +179,8 @@ watch(
     </div>
 
     <div v-else style="display: flex; align-items: center; padding: 4px 8px;" :style="indentStyle" class="hover-bg">
-      <div style="width: 120px; flex-shrink: 0; font-size: 11px; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px;" :title="label">
-        {{ label }}
+      <div style="width: 120px; flex-shrink: 0; font-size: 11px; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px;" :title="displayLabel">
+        {{ displayLabel }}
       </div>
 
       <div style="flex-grow: 1; min-width: 0;">

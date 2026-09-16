@@ -65,7 +65,7 @@ const activeNodes = computed(() => {
     :class="[
       'h-full shrink-0 z-10 overflow-hidden flex flex-col',
       isRail
-        ? 'w-16 bg-transparent'
+        ? 'w'
         : 'w-[340px]'
     ]"
   >

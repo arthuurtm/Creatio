@@ -79,9 +79,11 @@ const filteredGroups = computed(() => {
       if (typeof item === "string" || typeof item === "number") {
         return { text: String(item), value: item, disabled: group.disabled };
       }
+      const displayText = item.data?.params?.name ?? item.name ?? item.text ?? item.label ?? item.key ?? item.id ?? String(item.value ?? "-");
+      const itemVal = item.data?.params?.name ?? item.value ?? item.id ?? item.key ?? item.text ?? item.label ?? null;
       return {
-        text: item.text ?? item.label ?? item.key ?? item.id ?? String(item.value ?? "-"),
-        value: item.value ?? item.id ?? item.key ?? item.text ?? item.label ?? null,
+        text: displayText,
+        value: itemVal,
         icon: item.icon,
         subtitle: item.subtitle ?? item.description,
         disabled: group.disabled || item.disabled,
