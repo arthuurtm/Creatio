@@ -1,5 +1,27 @@
 import type { SDKNodeType, EditorContext, ExecuteResult } from '../models';
-import { DeclarationKeywords } from '../tokens';
+import { DeclarationKeywords, AritmeticOperators, ComparisonOperators, LogicalOperators } from '../tokens';
+
+function formatCondition(condition: any): string {
+  if (!condition) return "";
+  if (typeof condition === "string") return condition;
+  if (Array.isArray(condition)) {
+    return condition
+      .map((item: any) => {
+        if (!item) return "";
+        if (typeof item === "string") return item;
+        if (typeof item === "object") {
+          return item.text || item.value || item.name || item.label || "";
+        }
+        return String(item);
+      })
+      .filter(Boolean)
+      .join(" ");
+  }
+  if (typeof condition === "object") {
+    return condition.text || condition.value || condition.name || condition.label || "";
+  }
+  return String(condition);
+}
 
 export default (ctx: EditorContext) => ({
   text: 'Variáveis',
@@ -35,64 +57,49 @@ export default (ctx: EditorContext) => ({
     },
 
     assign: {
-      text: 'Atribuir Valor',
+      text: 'Atribuir / Calcular',
       icon: 'edit',
-      description: 'Altera o valor de uma variável existente por outro valor ou variável.',
-      preview: 'variavel = novoValor;',
+      description: 'Atribui um valor a uma variável existente. Você pode fazer cálculos infinitos adicionando operadores e valores.',
+      preview: 'variavel = expressao;',
       params: [
         { key: 'varId', label: 'Variável', type: 'select', options: ctx.variables, required: true },
-        { key: 'value', label: 'Novo Valor', type: 'text', required: true },
+        {
+          key: 'value',
+          label: 'Expressão / Cálculo',
+          type: 'expression',
+          options: [
+            { key: 'variable', label: 'Variável', type: 'select', options: ctx.variables },
+            { key: 'number', label: 'Valor', type: 'number' },
+            { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', options: AritmeticOperators },
+            { key: 'comparison', label: 'Operadores de Comparação', type: 'select', options: ComparisonOperators },
+            { key: 'logical', label: 'Operadores Lógicos', type: 'select', options: LogicalOperators },
+          ],
+          required: true
+        },
       ],
-      execute: (p: any): ExecuteResult => ({
-        type: 'variables' as SDKNodeType,
-        category: 'VARIABLE_ASSIGNMENT',
-        params: { varId: p.varId, value: p.value },
-        connectData: p.varId,
-        // AST ESTree nativa para o compilador genérico
-        estree: {
-          type: "ExpressionStatement",
-          expression: {
-            type: "AssignmentExpression",
-            operator: "=",
-            left: { type: "Identifier", name: p.varId },
-            right: { type: "Identifier", name: p.value }
-          }
-        }
-      }),
-    },
+      execute: (p: any): ExecuteResult => {
+        const val = formatCondition(p.value) || 'null';
 
-    mathOperation: {
-      text: 'Operação Matemática',
-      icon: 'calculate',
-      description: 'Realiza uma operação matemática (+, -, *, /, %) entre dois valores.',
-      preview: 'total = a + b;',
-      params: [
-        { key: 'targetVar', label: 'Salvar na Variável', type: 'select', options: ctx.variables, required: true },
-        { key: 'valA', label: 'Valor A (ou Variável)', type: 'text', required: true },
-        { key: 'operator', label: 'Operador', type: 'select', options: ['+', '-', '*', '/', '%'], required: true },
-        { key: 'valB', label: 'Valor B (ou Variável)', type: 'text', required: true },
-      ],
-      execute: (p: any): ExecuteResult => ({
-        type: 'variables' as SDKNodeType,
-        category: 'MATH_OPERATION',
-        params: { targetVar: p.targetVar, valA: p.valA, operator: p.operator, valB: p.valB },
-        connectData: p.targetVar,
-        // AST ESTree nativa para o compilador genérico
-        estree: {
-          type: "ExpressionStatement",
-          expression: {
-            type: "AssignmentExpression",
-            operator: "=",
-            left: { type: "Identifier", name: p.targetVar },
-            right: {
-              type: "BinaryExpression",
-              operator: p.operator,
-              left: { type: "Identifier", name: p.valA },
-              right: { type: "Identifier", name: p.valB }
+        return {
+          type: 'variables' as SDKNodeType,
+          category: 'VARIABLE_ASSIGNMENT',
+          params: {
+            varId: p.varId,
+            value: val
+          },
+          connectData: p.varId,
+          // AST ESTree nativa para o compilador genérico
+          estree: {
+            type: "ExpressionStatement",
+            expression: {
+              type: "AssignmentExpression",
+              operator: "=",
+              left: { type: "Identifier", name: p.varId },
+              right: { type: "Identifier", name: val }
             }
           }
-        }
-      }),
+        };
+      }
     },
   },
 });

@@ -115,111 +115,101 @@ function selectItem(item: any) {
 
 <template>
   <div class="expression-builder-container">
-    <div class="expression-chips">
-      <!-- Chips que formam a expressão (Visual de blocos de código) -->
-      <div
-        v-for="(item, index) in selectedParams"
-        :key="index"
-        class="expression-block"
-        :style="{ borderLeftColor: getChipColor(item.category) }"
-      >
-        <div class="block-content">
-          <span class="block-category" :style="{ color: getChipColor(item.category) }">{{ item.category }}</span>
-          <span class="block-text">{{ item.text }}</span>
-        </div>
-        <button class="remove-btn" @click="removeParam(index)" title="Remover item">
-          <n-icon size="14"><Close /></n-icon>
-        </button>
-      </div>
-    </div>
-
-    <!-- Botão de adição melhorado visualmente -->
-    <n-popover
-      trigger="click"
-      placement="bottom-start"
-      scrollable
-      style="padding: 0; width: 320px; border-radius: 12px;"
-    >
-      <template #trigger>
+    <div class="expression-field" tabindex="0">
+      <div class="expression-chips">
+        <!-- Chips que formam a expressão (Visual de blocos de código) -->
         <div
-          class="expression-add-btn"
-          role="button"
-          tabindex="0"
-          title="Clique para construir a sua expressão lógica"
+          v-for="(item, index) in selectedParams"
+          :key="index"
+          class="expression-block"
+          :style="{ borderLeftColor: getChipColor(item.category) }"
         >
-          <div class="btn-icon">
-            <n-icon size="20"><CodeOutlined /></n-icon>
-            <n-icon size="14" class="plus-icon"><Add /></n-icon>
+          <div class="block-content">
+            <span class="block-text">{{ item.text }}</span>
           </div>
-          <div class="btn-info">
-            <span class="btn-title">{{ styles.text || 'Adicionar bloco à expressão' }}</span>
-            <span class="btn-subtitle">Insira variáveis, operadores ou comparações para formar a lógica.</span>
-          </div>
+          <button class="remove-btn" @click="removeParam(index)" title="Remover item">
+            <n-icon size="12"><Close /></n-icon>
+          </button>
         </div>
-      </template>
+      </div>
 
-      <!-- Menu flutuante de seleção -->
-      <n-card
-        embedded
-        :bordered="false"
-        content-style="padding: 0; display: flex; flex-direction: column; max-height: 400px; overflow: hidden;"
+      <!-- Botão de adição embutido no campo -->
+      <n-popover
+        trigger="click"
+        placement="bottom-start"
+        scrollable
+        style="padding: 0; width: 320px; border-radius: 12px;"
       >
-        <!-- Campo de busca -->
-        <div style="padding: 8px;">
-          <n-input
-            v-model:value="searchQuery"
-            placeholder="Filtrar blocos..."
-            clearable
-          >
-            <template #prefix>
-              <n-icon size="18"><Search /></n-icon>
+        <template #trigger>
+          <div class="expression-add-trigger">
+            <span v-if="selectedParams.length === 0" class="placeholder-text">Digite ou selecione um valor...</span>
+            <n-icon v-else size="16" class="add-icon"><Add /></n-icon>
+          </div>
+        </template>
+
+        <!-- Menu flutuante de seleção -->
+        <n-card
+          embedded
+          :bordered="false"
+          content-style="padding: 0; display: flex; flex-direction: column; max-height: 400px; overflow: hidden;"
+        >
+          <!-- Campo de busca -->
+          <div style="padding: 8px;">
+            <n-input
+              v-model:value="searchQuery"
+              placeholder="Filtrar blocos..."
+              clearable
+            >
+              <template #prefix>
+                <n-icon size="18"><Search /></n-icon>
+              </template>
+            </n-input>
+          </div>
+
+          <n-divider style="margin: 0;" />
+
+          <!-- Lista de blocos colapsáveis -->
+          <div style="flex-grow: 1; overflow-y: auto; padding: 8px;">
+            <template v-if="filteredGroups.length === 0">
+              <div style="padding: 16px; text-align: center; color: var(--n-text-color-3);">
+                Nenhum item encontrado
+              </div>
             </template>
-          </n-input>
-        </div>
 
-        <n-divider style="margin: 0;" />
-
-        <!-- Lista de blocos colapsáveis -->
-        <div style="flex-grow: 1; overflow-y: auto; padding: 8px;">
-          <template v-if="filteredGroups.length === 0">
-            <div style="padding: 16px; text-align: center; color: var(--n-text-color-3);">
-              Nenhum item encontrado
-            </div>
-          </template>
-
-          <template v-else>
-            <n-collapse>
-              <n-collapse-item
-                v-for="group in filteredGroups"
-                :key="group.label"
-                :title="group.label"
-                :name="group.label"
-              >
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                  <div
-                    v-for="item in group.options"
-                    :key="item.value ?? item.text"
-                    @click="selectItem(item)"
-                    class="n-list-item-custom"
-                    :class="{ 'disabled': item.disabled }"
-                  >
-                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-                      <n-icon v-if="item.icon" size="18" color="var(--n-primary-color)">
-                        <component :is="getIconComponent(item.icon)" />
-                      </n-icon>
-                      <div style="display: flex; flex-direction: column;">
-                        <span style="font-weight: 500; font-size: 13px;">{{ item.text }}</span>
-                        <span v-if="item.subtitle" style="font-size: 11px; opacity: 0.7;">{{ item.subtitle }}</span>
+            <template v-else>
+              <n-collapse>
+                <n-collapse-item
+                  v-for="group in filteredGroups"
+                  :key="group.label"
+                  :title="group.label"
+                  :name="group.label"
+                >
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div
+                      v-for="item in group.options"
+                      :key="item.value ?? item.text"
+                      @click="selectItem(item)"
+                      class="n-list-item-custom"
+                      :class="{ 'disabled': item.disabled }"
+                    >
+                      <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                        <n-icon v-if="item.icon" size="18" color="var(--n-primary-color)">
+                          <component :is="getIconComponent(item.icon)" />
+                        </n-icon>
+                        <div style="display: flex; flex-direction: column;">
+                          <span style="font-weight: 500; font-size: 13px;">{{ item.text }}</span>
+                          <span v-if="item.subtitle" style="font-size: 11px; opacity: 0.7;">{{ item.subtitle }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </n-collapse-item>
-            </n-collapse>
-          </template>
-        </div>
-      </n-card>
-    </n-popover>
+                </n-collapse-item>
+              </n-collapse>
+            </template>
+          </div>
+        </n-card>
+      </n-popover>
+    </div>
   </div>
 </template>
 
@@ -227,28 +217,50 @@ function selectItem(item: any) {
 .expression-builder-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 8px 4px;
   width: 100%;
+}
+
+.expression-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 4px 10px;
+  background-color: var(--n-input-color, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--n-border-color, rgba(255, 255, 255, 0.15));
+  border-radius: 4px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: text;
+}
+
+.expression-field:hover {
+  border-color: var(--n-primary-color-hover, #66b1ff);
+}
+
+.expression-field:focus-within {
+  border-color: var(--n-primary-color, #409eff);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  outline: none;
 }
 
 .expression-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+  align-items: center;
 }
 
-/* Blocos da expressão (estilo bloquinhos de código) */
+/* Blocos da expressão (estilo bloquinhos de código menores) */
 .expression-block {
   display: flex;
   align-items: center;
-  background: rgba(30, 30, 45, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-left-width: 4px;
+  background: var(--n-color-embedded, rgba(30, 30, 45, 0.6));
+  border: 1px solid var(--n-border-color, rgba(255, 255, 255, 0.1));
+  border-left-width: 3px;
   border-left-style: solid;
-  border-radius: 6px;
-  padding: 6px 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  padding: 2px 6px;
   transition: transform 0.1s;
 }
 
@@ -296,65 +308,30 @@ function selectItem(item: any) {
   color: #f44336;
 }
 
-/* Novo botão de adicionar blocos */
-.expression-add-btn {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-}
-
-.expression-add-btn:hover {
-  border-color: #8ab4f8;
-  background: rgba(138, 180, 248, 0.05);
-  transform: translateY(-1px);
-}
-
-.expression-add-btn:active {
-  transform: translateY(1px);
-}
-
-.btn-icon {
-  position: relative;
+.expression-add-trigger {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: rgba(138, 180, 248, 0.15);
-  color: #8ab4f8;
-  margin-right: 14px;
+  padding: 4px 8px;
+  min-height: 24px;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--n-text-color-3);
+  transition: color 0.2s, background-color 0.2s;
 }
 
-.plus-icon {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  background: #1e1e2d;
-  border-radius: 50%;
+.expression-add-trigger:hover {
+  background-color: var(--n-color-hover, rgba(255, 255, 255, 0.1));
+  color: var(--n-primary-color, #409eff);
 }
 
-.btn-info {
-  display: flex;
-  flex-direction: column;
+.placeholder-text {
+  font-size: 13px;
+  opacity: 0.6;
 }
 
-.btn-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #8ab4f8;
-  margin-bottom: 2px;
-}
-
-.btn-subtitle {
-  font-size: 11px;
-  color: #888;
+.add-icon {
+  opacity: 0.7;
 }
 
 .n-list-item-custom {

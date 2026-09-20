@@ -34,14 +34,19 @@ async function loadSavedCredentials() {
 	const tokens = JSON.parse(fs.readFileSync(API_LOCAL_MAIL_CREDENTIAL, "utf8"));
 	oAuth2Client.setCredentials(tokens);
 	try {
-		const { token } = await oAuth2Client.getAccessToken();
+		const tokenPromise = oAuth2Client.getAccessToken();
+		const timeoutPromise = new Promise((_, reject) =>
+			setTimeout(() => reject(new Error("Timeout ao conectar ao servidor de autenticação")), 5000)
+		);
+		const res = (await Promise.race([tokenPromise, timeoutPromise])) as any;
+		const token = typeof res === "string" ? res : res?.token;
 		if (!token) throw new Error("Token inválido");
 		accessToken = token;
 		refreshToken = tokens.refresh_token || refreshToken;
 		log.success("Serviço de email já autenticado!");
 		return true;
-	} catch (err) {
-		log.error("RefreshToken expirado ou revogado");
+	} catch (err: any) {
+		log.error("Erro ao verificar credenciais do serviço de e-mail:", err?.message || err);
 		return false;
 	}
 }
@@ -104,46 +109,116 @@ interface EmailParams {
 	[key: string]: any;
 }
 
-// Passo 3 – enviar email
-async function sendEmailService({
+interface QueuedEmail {
+	id: string;
+	params: EmailParams;
+	attempts: number;
+	createdAt: Date;
+}
+
+const emailQueue: QueuedEmail[] = [];
+let isQueueProcessing = false;
+let retryWorkerTimer: NodeJS.Timeout | null = null;
+
+// Envio direto do e-mail sem enfileirar
+async function sendEmailDirect({
 	template,
 	to,
 	subject,
 	...templateData
 }: EmailParams) {
-	if (!(await loadSavedCredentials()))
-		throw new Error("Serviço não autenticado");
+	const isAuth = await loadSavedCredentials();
+	if (!isAuth) {
+		throw new Error("Serviço de e-mail não autenticado ou sem conexão com a internet.");
+	}
 
-	try {
-		const transporter = nodemailer.createTransport({
-			service: "gmail",
-			auth: {
-				type: "OAuth2",
-				user: process.env.EMAIL_FROM,
-				clientId: client_id,
-				clientSecret: client_secret,
-				refreshToken,
+	const transporter = nodemailer.createTransport({
+		service: "gmail",
+		auth: {
+			type: "OAuth2",
+			user: process.env.EMAIL_FROM,
+			clientId: client_id,
+			clientSecret: client_secret,
+			refreshToken,
+		},
+		connectionTimeout: 5000,
+		greetingTimeout: 5000,
+		socketTimeout: 10000,
+	} as any);
+
+	const result = await transporter.sendMail({
+		from: process.env.EMAIL_FROM,
+		to,
+		subject,
+		html: loadTemplate(template, templateData),
+		attachments: [
+			{
+				filename: "bitmap.png",
+				path: path.join(API_TEMPLATES, "bitmap.png"),
+				cid: "unique@cid",
 			},
-		});
+		],
+	});
 
-		const result = await transporter.sendMail({
-			from: process.env.EMAIL_FROM,
-			to,
-			subject,
-			html: loadTemplate(template, templateData),
-			attachments: [
-				{
-					filename: "bitmap.png",
-					path: path.join(API_TEMPLATES, "bitmap.png"),
-					cid: "unique@cid",
-				},
-			],
-		});
+	return result;
+}
 
+// Processador da fila de e-mails em segundo plano
+async function processEmailQueue() {
+	if (isQueueProcessing || emailQueue.length === 0) return;
+	isQueueProcessing = true;
+
+	log.info(`[Email Queue Worker] Processando ${emailQueue.length} e-mail(s) pendente(s)...`);
+
+	for (let i = emailQueue.length - 1; i >= 0; i--) {
+		const item = emailQueue[i];
+		try {
+			await sendEmailDirect(item.params);
+			log.success(`[Email Queue Worker] E-mail enviado com sucesso para ${item.params.to}!`);
+			emailQueue.splice(i, 1);
+		} catch (err: any) {
+			item.attempts++;
+			log.warn(
+				`[Email Queue Worker] Falha no envio para ${item.params.to} (tentativa ${item.attempts}): ${err?.message || err}. Nova tentativa em 15s...`
+			);
+		}
+	}
+
+	isQueueProcessing = false;
+}
+
+// Inicia o worker de re-tentativas (roda a cada 15 segundos)
+function startRetryWorker() {
+	if (retryWorkerTimer) return;
+	retryWorkerTimer = setInterval(() => {
+		if (emailQueue.length > 0) {
+			processEmailQueue();
+		} else if (!accessToken) {
+			loadSavedCredentials();
+		}
+	}, 15000);
+}
+
+// Inicializa o worker imediatamente
+startRetryWorker();
+
+// Passo 3 – enviar email (com re-tentativa automatica se falhar)
+async function sendEmailService(params: EmailParams) {
+	try {
+		const result = await sendEmailDirect(params);
 		return { success: true, message: "E-mail enviado", result };
-	} catch (err) {
-		log.error("Erro ao enviar email: ", err);
-		throw err;
+	} catch (err: any) {
+		log.warn(
+			`Não foi possível enviar e-mail imediatamente para ${params.to}: ${err?.message || err}. Adicionado à fila de re-tentativas.`
+		);
+		emailQueue.push({
+			id: Math.random().toString(36).substring(2, 9),
+			params,
+			attempts: 1,
+			createdAt: new Date(),
+		});
+		processEmailQueue();
+		return { success: false, message: "E-mail adicionado à fila para re-tentativa", queued: true };
 	}
 }
 

@@ -4,6 +4,14 @@ import { ref, watch } from "vue";
 import { http } from "@/utils";
 import { useEditorStore } from "@/stores/editor";
 
+export interface Diagnostic {
+  rule: string;
+  severity: "error" | "warning" | "info";
+  message: string;
+  nodeId: string;
+  nodeLabel?: string;
+}
+
 export function useEditorPersistence() {
   const store = useEditorStore();
 
@@ -13,6 +21,7 @@ export function useEditorPersistence() {
   const compileError = ref<string>("");
   const isCompiling = ref(false);
   const isLoading = ref(false);
+  const diagnostics = ref<Diagnostic[]>([]);
 
   async function loadProject(id: number) {
     isLoading.value = true;
@@ -66,6 +75,7 @@ export function useEditorPersistence() {
   async function requestCompile() {
     isCompiling.value = true;
     compileError.value = "";
+    diagnostics.value = [];
     try {
       const payload = {
         info: JSON.parse(JSON.stringify(store.info)),
@@ -79,9 +89,11 @@ export function useEditorPersistence() {
       if (result.success !== false && result.code !== undefined) {
         compiledCode.value = result.code || "";
         compileError.value = "";
+        diagnostics.value = result.diagnostics || [];
       } else {
         compileError.value =
           result.error || result.message || "Erro na compilação";
+        diagnostics.value = result.diagnostics || [];
       }
     } catch (err: any) {
       compileError.value = err.message || "Erro na compilação";
@@ -110,5 +122,6 @@ export function useEditorPersistence() {
     isCompiling,
     isLoading,
     requestCompile,
+    diagnostics,
   };
 }

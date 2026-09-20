@@ -21,10 +21,11 @@ export const FunctionKeywords = {
  * Operadores aritméticos, lógicos e de comparação
  * **/
 export const AritmeticOperators = {
-	ADD: "+",
+	SUM: "+",
 	SUB: "-",
 	MUL: "*",
 	DIV: "/",
+  MOD: "%",
 } as const;
 
 export const ComparisonOperators = {

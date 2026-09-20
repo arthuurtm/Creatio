@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import log from "#api/helpers/console.ts";
 import { setUserDatabaseQuery } from "#api/helpers/query.ts";
 import { Session, User } from "#api/models/index.ts";
 import {
@@ -66,11 +67,14 @@ async function setVerificationCodeAndSendEmail({
 }: VerificationCodeEmailParams) {
 	const { id, code, expiresAt } = await createVerificationCode(email, timeout);
 
-	await sendEmailService({
+	// Dispara o e-mail em segundo plano para não bloquear a resposta da API
+	sendEmailService({
 		template,
 		to: email,
 		subject,
 		verificationCode: code,
+	}).catch((err) => {
+		log.error(`[Background Email] Falha ao enviar e-mail de verificação para ${email}:`, err?.message || err);
 	});
 
 	return { id, code, expiresAt };
@@ -111,11 +115,14 @@ async function resetUserPassword({
 	user.passwordHash = passwordHash;
 	await user.save();
 
-	await sendEmailService({
+	// Dispara o e-mail em segundo plano
+	sendEmailService({
 		template: "resetedPassword",
 		to: email,
 		subject: "A senha da sua conta foi redefinida!",
 		username: user.nickname,
+	}).catch((err) => {
+		log.error(`[Background Email] Falha ao enviar e-mail de confirmação para ${email}:`, err?.message || err);
 	});
 }
 

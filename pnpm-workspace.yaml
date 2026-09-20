@@ -5,4 +5,5 @@ allowBuilds:
   '@parcel/watcher': true
   bcrypt: true
   esbuild: true
+  rete: true
   vue-demi: true

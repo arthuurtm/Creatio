@@ -48,6 +48,7 @@ export default (ctx: EditorContext) => ({
             { key: 'arithmetic', label: 'Operadores Aritméticos', type: 'select', options: AritmeticOperators },
             { key: 'comparison', label: 'Operadores de Comparação', type: 'select', options: ComparisonOperators },
             { key: 'logical', label: 'Operadores Lógicos', type: 'select', options: LogicalOperators },
+            { key: 'number', label: 'Valor', type: 'number' },
           ],
           required: true,
         },

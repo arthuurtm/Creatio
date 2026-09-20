@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed } from "vue";
+import { useLocalStorage } from "@vueuse/core";
 import ComplexArrayBuilder from "./ComplexArrayBuilder.vue";
 
 interface InterfaceStyles {
@@ -37,7 +38,8 @@ const selectedParams = computed({
 	set: (val) => emit("update:modelValue", val),
 });
 
-const isAssistantActive = ref(props.enforceRules);
+// Variável global salva no navegador para o projeto
+const isAssistantActive = useLocalStorage('creatio_syntax_assistant_enabled', true);
 
 // Lógica inteligente de regras sintáticas JS
 const smartOptions = computed(() => {
