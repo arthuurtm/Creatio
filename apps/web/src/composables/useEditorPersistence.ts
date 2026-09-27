@@ -1,16 +1,10 @@
 import type { EditorState, RequestStatusValues } from "@projeto/types";
-import { debounce } from "lodash-es";
+import { useDebounceFn } from "@vueuse/core";
 import { ref, watch } from "vue";
 import { http } from "@/utils";
 import { useEditorStore } from "@/stores/editor";
-
-export interface Diagnostic {
-  rule: string;
-  severity: "error" | "warning" | "info";
-  message: string;
-  nodeId: string;
-  nodeLabel?: string;
-}
+import { ASTTranspiler, DiagnosticsAnalyzer } from "@projeto/compiler";
+import type { Diagnostic } from "@projeto/compiler";
 
 export function useEditorPersistence() {
   const store = useEditorStore();
@@ -51,7 +45,7 @@ export function useEditorPersistence() {
     }
   }
 
-  const slowSave = debounce(async () => {
+  const slowSave = useDebounceFn(async () => {
     if (!store.info.id) return;
     requestStatus.value = "SENDING";
     saveError.value = "";
@@ -77,24 +71,13 @@ export function useEditorPersistence() {
     compileError.value = "";
     diagnostics.value = [];
     try {
-      const payload = {
-        info: JSON.parse(JSON.stringify(store.info)),
-        nodes: JSON.parse(JSON.stringify(store.nodes)),
-        connections: JSON.parse(JSON.stringify(store.connections)),
-      };
-      const result = await http.post(
-        { type: "database", route: "compileProject" },
-        { state: payload },
-      );
-      if (result.success !== false && result.code !== undefined) {
-        compiledCode.value = result.code || "";
-        compileError.value = "";
-        diagnostics.value = result.diagnostics || [];
-      } else {
-        compileError.value =
-          result.error || result.message || "Erro na compilação";
-        diagnostics.value = result.diagnostics || [];
-      }
+      // Compilação local no navegador usando o compilador interno
+      const transpiler = new ASTTranspiler(store.nodes, store.connections);
+      const analyzer = new DiagnosticsAnalyzer(store.nodes, store.connections);
+      
+      compiledCode.value = transpiler.transpile() || "";
+      diagnostics.value = analyzer.analyze() || [];
+      compileError.value = "";
     } catch (err: any) {
       compileError.value = err.message || "Erro na compilação";
     } finally {

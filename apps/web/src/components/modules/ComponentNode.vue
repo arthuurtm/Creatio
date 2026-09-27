@@ -1,45 +1,66 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, computed, h } from "vue";
+import { ref, onMounted, onBeforeUnmount, h, computed } from "vue";
 import { NodeEditor, type GetSchemes, ClassicPreset } from "rete";
 import { AreaPlugin, AreaExtensions } from "rete-area-plugin";
 import { ConnectionPlugin, Presets as ConnectionPresets } from "rete-connection-plugin";
 import { VuePlugin, Presets, type VueArea2D } from "rete-vue-plugin";
 import { NDropdown, NIcon } from "naive-ui";
-import {
-  ContentCopyOutlined,
-  DeleteOutlined,
-  CodeOutlined,
-  ClearOutlined,
-} from "@vicons/material";
-
-import SDKNodeRenderer from "@/components/ui/Node.vue";
-import { cloneNode, deleteNode } from "@/composables/useNodeFunctions";
-import { useEditorStore } from "@/stores/editor";
+import { DeleteOutlined, AddOutlined } from "@vicons/material";
 import { useSettingsStore } from "@/stores/global";
+import { useEditorStore } from "@/stores/editor";
+import CustomNode from "./CustomNode.vue";
 
-import type { NodeConnection, SDKNode } from "@projeto/types";
+const dataSocket = new ClassicPreset.Socket("Data");
+const execSocket = new ClassicPreset.Socket("Execution");
 
-// Configuração Rete
-class CustomNode extends ClassicPreset.Node {
+class CreatioBlockNode extends ClassicPreset.Node {
+  width = 240;
+  height = 180;
   astData: any;
   nodeType: string;
-  width = 280;
-  height = 120;
+
   constructor(id: string, nodeType: string, astData: any) {
-    super(astData?.params?.name || 'Nó');
+    const title = astData?.params?.name || astData?.params?.funcName || astData?.category || "Bloco";
+    super(title);
     this.id = id;
     this.nodeType = nodeType;
     this.astData = astData;
+
+    // TODO bloco tem fluxo de execução básico
+    this.addInput("execIn", new ClassicPreset.Input(execSocket, "▶ Iniciar"));
+    this.addOutput("execOut", new ClassicPreset.Output(execSocket, "Próximo ▶"));
+
+    // Adiciona pinos dinâmicos baseados nos parâmetros do bloco
+    const params = astData?.params || {};
+    
+    // Se for um bloco condicional (IF/ELSE)
+    if (["IF_STATEMENT", "ELSEIF_STATEMENT", "WHILE_LOOP"].includes(astData?.category)) {
+      this.addInput("cond", new ClassicPreset.Input(dataSocket, "Condição (Verdadeiro/Falso)"));
+      this.addOutput("trueBody", new ClassicPreset.Output(execSocket, "Corpo (Faça)"));
+    }
+
+    // Cria pinos para argumentos (a, b, etc) em funções matemáticas ou lógicas
+    if (astData?.category === "MATHEMATICAL_OPERATION" || astData?.category === "LOGICAL_OPERATION") {
+      this.addInput("a", new ClassicPreset.Input(dataSocket, "Lado A"));
+      this.addInput("b", new ClassicPreset.Input(dataSocket, "Lado B"));
+      this.addOutput("result", new ClassicPreset.Output(dataSocket, "Resultado"));
+    }
+
+    // Se for variável, tem pino de valor
+    if (astData?.category === "VARIABLE_DECLARATION") {
+      this.addInput("val", new ClassicPreset.Input(dataSocket, "Valor Inicial"));
+      this.addOutput("ref", new ClassicPreset.Output(dataSocket, "Referência da Variável"));
+    }
   }
 }
-class CustomConnection extends ClassicPreset.Connection<CustomNode, CustomNode> {}
 
-type Schemes = GetSchemes<CustomNode, CustomConnection>;
+class Connection extends ClassicPreset.Connection<CreatioBlockNode, CreatioBlockNode> {}
+type Schemes = GetSchemes<CreatioBlockNode, Connection>;
 type AreaExtra = VueArea2D<Schemes>;
 
 const container = ref<HTMLElement | null>(null);
-const editorStore = useEditorStore();
 const settingsStore = useSettingsStore();
+const editorStore = useEditorStore();
 const isDark = computed(() => settingsStore.theme === "dark");
 
 let editor: NodeEditor<Schemes> | null = null;
@@ -65,29 +86,26 @@ onMounted(async () => {
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const render = new VuePlugin<Schemes, AreaExtra>();
 
-  AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
-    accumulating: AreaExtensions.accumulateOnCtrl(),
-  });
+  AreaExtensions.selectableNodes(area, AreaExtensions.selector(), { accumulating: AreaExtensions.accumulateOnCtrl() });
 
-  render.addPreset(
-    Presets.classic.setup({
-      customize: {
-        node(context) {
-          return SDKNodeRenderer;
-        },
-      },
-    })
-  );
-
+  render.addPreset(Presets.classic.setup({
+    customize: {
+      node(context) {
+        if (context.payload instanceof ClassicPreset.Node) {
+          return CustomNode;
+        }
+        return Presets.classic.Node;
+      }
+    }
+  }));
   connection.addPreset(ConnectionPresets.classic.setup());
 
   editor.use(area);
   area.use(connection);
   area.use(render);
-
   AreaExtensions.simpleNodesOrder(area);
 
-  // Integração com Drag and Drop da biblioteca de blocos
+  // === VOLTANDO O SUPORTE AOS SEUS BLOCOS DO SIDEBAR ===
   container.value.addEventListener("dragover", (e) => {
     e.preventDefault();
     if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
@@ -95,150 +113,62 @@ onMounted(async () => {
   
   container.value.addEventListener("drop", async (e) => {
     e.preventDefault();
-    const rawData = e.dataTransfer?.getData("application/vueflow");
+    const rawData = e.dataTransfer?.getData("application/rete");
     if (!rawData) return;
     try {
       const { def } = JSON.parse(rawData);
       if (!def || typeof def.execute !== "function") return;
-      const result = def.execute({});
+      
+      const result = def.execute({}); // Cria o nó no formato do Creatio
       
       const transform = area!.area.transform;
       const x = (e.clientX - transform.x) / transform.k;
       const y = (e.clientY - transform.y) / transform.k;
       
-      await editorStore.addNode(result, { x, y });
+      // Cria e adiciona o nó nativo do Rete mapeando a estrutura do Creatio
+      const reteNode = new CreatioBlockNode(result.id, result.type, result);
+      await editor!.addNode(reteNode);
+      await area!.translate(reteNode.id, { x, y });
     } catch (err) {
       console.error(err);
     }
   });
 
-  // Context Menu adaptado para o Rete
   area.addPipe((context) => {
     if (context.type === "contextmenu") {
       context.data.event.preventDefault();
       menuX.value = context.data.event.clientX;
       menuY.value = context.data.event.clientY;
 
-      if (context.data.context === "root") {
-        selectedNodeId.value = null;
-        menuOptions.value = [
-          { label: "Ver Código JavaScript", key: "view_code", icon: renderIcon(CodeOutlined) },
-          { type: "divider", key: "d1" },
-          { label: "Limpar Tela", key: "clear", icon: renderIcon(ClearOutlined) },
-        ];
-        showMenu.value = true;
-      } else if (context.data.context instanceof CustomNode) {
+      if (context.data.context instanceof ClassicPreset.Node) {
         selectedNodeId.value = context.data.context.id;
         menuOptions.value = [
-          { label: "Duplicar Nó", key: "clone", icon: renderIcon(ContentCopyOutlined) },
-          { type: "divider", key: "d1" },
           { label: "Excluir Nó", key: "delete", icon: renderIcon(DeleteOutlined) },
         ];
         showMenu.value = true;
       }
     } else if (context.type === "pointerdown") {
       showMenu.value = false;
-    } else if (context.type === "nodedragged") {
-      // Sincroniza posição do Rete de volta pro Pinia
-      const storeNode = editorStore.nodes.find(n => n.id === context.data.id);
-      if (storeNode) {
-        const view = area?.nodeViews.get(context.data.id);
-        if (view) {
-          storeNode.position = { x: view.position.x, y: view.position.y };
-        }
-      }
     }
     return context;
   });
-
-  // Sincronização Store -> Rete
-  await syncStoreToRete();
-  await syncConnectionsToRete();
-
-  // Watchers para atualizar o Rete quando a store for modificada
-  watch(() => editorStore.nodes.length, syncStoreToRete);
-  watch(() => editorStore.connections.length, syncConnectionsToRete);
 });
 
-async function syncStoreToRete() {
-  if (!editor || !area) return;
-
-  const currentReteNodes = editor.getNodes();
-  const storeNodes = editorStore.nodes;
-
-  for (const rNode of currentReteNodes) {
-    if (!storeNodes.find((n) => n.id === rNode.id)) {
-      await editor.removeNode(rNode.id);
-    }
-  }
-
-  for (const sNode of storeNodes) {
-    const existing = editor.getNode(sNode.id);
-    if (!existing) {
-      const newNode = new CustomNode(sNode.id, sNode.type, sNode.data);
-      const socket = new ClassicPreset.Socket("default");
-      newNode.addInput("in", new ClassicPreset.Input(socket));
-      newNode.addOutput("out", new ClassicPreset.Output(socket));
-      
-      await editor.addNode(newNode);
-      await area.translate(newNode.id, { x: sNode.position.x, y: sNode.position.y });
-    }
-  }
-}
-
-async function syncConnectionsToRete() {
-  if (!editor) return;
-  const currentReteConns = editor.getConnections();
-  const storeConns = editorStore.connections;
-
-  for (const rConn of currentReteConns) {
-    if (!storeConns.find((c) => c.source === rConn.source && c.target === rConn.target)) {
-      await editor.removeConnection(rConn.id);
-    }
-  }
-
-  for (const sConn of storeConns) {
-    const exists = currentReteConns.find((c) => c.source === sConn.source && c.target === sConn.target);
-    if (!exists) {
-      const sourceNode = editor.getNode(sConn.source);
-      const targetNode = editor.getNode(sConn.target);
-      if (sourceNode && targetNode) {
-        await editor.addConnection(new CustomConnection(sourceNode, "out", targetNode, "in"));
-      }
-    }
+async function handleMenuSelect(key: string) {
+  showMenu.value = false;
+  if (key === "delete" && selectedNodeId.value && editor) {
+    await editor.removeNode(selectedNodeId.value);
   }
 }
 
 onBeforeUnmount(() => {
   if (area) area.destroy();
 });
-
-function handleMenuSelect(key: string) {
-  showMenu.value = false;
-
-  if (key === "clone" && selectedNodeId.value) {
-    const node = editorStore.nodes.find(n => n.id === selectedNodeId.value);
-    if (node) cloneNode(node as any);
-  } else if (key === "delete" && selectedNodeId.value) {
-    deleteNode(selectedNodeId.value);
-  } else if (key === "view_code") {
-    emit("openCodePanel");
-  } else if (key === "clear") {
-    (window as any).$dialog?.warning({
-      title: "Limpar tela?",
-      content: "Todos os nós e conexões serão removidos.",
-      positiveText: "Limpar",
-      negativeText: "Cancelar",
-      onPositiveClick: () => {
-        editorStore.clearState();
-      },
-    });
-  }
-}
 </script>
 
 <template>
   <div class="canvas-wrapper" :class="isDark ? 'canvas-dark' : 'canvas-light'">
+    <slot name="header" />
     <div class="rete-container" ref="container"></div>
 
     <NDropdown
@@ -255,33 +185,9 @@ function handleMenuSelect(key: string) {
 </template>
 
 <style scoped>
-.canvas-wrapper {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.rete-container {
-  width: 100%;
-  height: 100%;
-  background-size: 22px 22px;
-  background-image: radial-gradient(circle, #00000020 1px, transparent 1.5px);
-}
-.canvas-dark .rete-container {
-  background-color: #0f1115;
-  background-image: radial-gradient(circle, #ffffff20 1px, transparent 1.5px);
-}
-.canvas-light .rete-container {
-  background-color: #f8fafc;
-}
-
-/* Conexões (Edges) do Rete estilizadas com a identidade do Creatio */
-:deep(.rete-connection) path {
-  stroke: #94a3b8;
-  stroke-width: 2.5px;
-}
-
-.canvas-dark :deep(.rete-connection) path {
-  stroke: #50545a;
-}
+.canvas-wrapper { width: 100%; height: 100%; position: relative; }
+.rete-container { width: 100%; height: 100%; background-size: 22px 22px; background-image: radial-gradient(circle, #00000020 1px, transparent 1.5px); }
+.canvas-dark .rete-container { background-color: #0f1115; background-image: radial-gradient(circle, #ffffff20 1px, transparent 1.5px); }
+.canvas-light .rete-container { background-color: #f8fafc; }
+:deep(.rete-connection) path { stroke: rgb(var(--v-theme-primary, 11, 87, 208)); stroke-width: 3px; }
 </style>

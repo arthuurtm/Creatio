@@ -124,7 +124,7 @@ function handleDragStart(
   if (!event.dataTransfer) return;
 
   event.dataTransfer.setData(
-    "application/vueflow",
+    "application/rete",
     JSON.stringify({
       key: blockKey,
       def: definition,

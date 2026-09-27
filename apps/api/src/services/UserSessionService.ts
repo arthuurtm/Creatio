@@ -4,7 +4,6 @@ import {
 	mapUAResultToDeviceData,
 } from "@projeto/types";
 import bcrypt from "bcrypt";
-import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import { Op } from "sequelize";
 import type { IResult } from "ua-parser-js";
@@ -24,15 +23,6 @@ async function createUserSession(userId: number, deviceRaw: IResult) {
 		userId,
 		deviceData,
 	});
-
-	if (deviceData) {
-		await Session.update(
-			{
-				deviceData,
-			},
-			{ where: { accessToken } },
-		);
-	}
 
 	return { accessToken, refreshToken };
 }
@@ -54,12 +44,10 @@ async function updateUserSession(oldRefreshToken: string) {
 	);
 
 	await Session.update(
-		{
-			accessToken: accessToken,
-			refreshToken: refreshToken,
-		},
+		{ accessToken, refreshToken },
 		{ where: { id: storedToken.id } },
 	);
+
 	return { accessToken, refreshToken };
 }
 
@@ -68,7 +56,7 @@ async function verifyAndRenewSession({ accessToken }: Partial<BackendUserAuth>) 
 
 	try {
 		jwt.verify(accessToken, env.ACCESS_TOKEN_SECRET);
-	} catch (err) {
+	} catch {
 		return null;
 	}
 
@@ -77,56 +65,46 @@ async function verifyAndRenewSession({ accessToken }: Partial<BackendUserAuth>) 
 		include: [{ model: User }],
 	});
 
-	if (!session || !session.User) return null;
+	if (!session?.User) return null;
 
-	return {
-		user: session.User,
-		newAccessToken: accessToken,
-		newRefreshToken: "",
-		renewNeeded: false,
-	};
+	return { user: session.User };
 }
 
 async function logoutAllSessions(userId: number, accessToken: string) {
-	const sessions = await Session.findAll({
+	await Session.destroy({
 		where: {
-			userId: userId,
+			userId,
 			accessToken: { [Op.ne]: accessToken },
 		},
 	});
-
-	await Promise.all(sessions.map((session) => session.destroy()));
 }
 
 async function getAnyUserSession(userId: number) {
-	if (!userId) throw Error("Identificação do usuário da sessão não informado");
+	if (!userId) throw new Error("Identificação do usuário não informada");
 	const sessions = await Session.findAll({ where: { userId } });
-	if (!sessions.length) {
-		throw new Error("Nenhuma sessão encontrada para o usuário");
-	}
-
+	if (!sessions.length) throw new Error("Nenhuma sessão encontrada para o usuário");
 	return sessions;
 }
 
 async function deleteUserSession(accessToken: string) {
-	const session = await Session.findOne({ where: { accessToken } });
-
-	if (!session) {
-		throw new Error("Sessão não encontrada");
-	}
-
-	await session.destroy();
+	const deleted = await Session.destroy({ where: { accessToken } });
+	if (!deleted) throw new Error("Sessão não encontrada");
 }
 
-async function handleLogin(
-	login: string,
-	password: string,
-	userAgent?: string,
-) {
+async function getUserIDFromSessionToken(accessToken: string) {
+	const session = await Session.findOne({
+		where: { accessToken },
+		attributes: ["userId"],
+	});
+	if (!session) throw new Error("Token inválido ou expirado");
+	return session.userId;
+}
+
+async function handleLogin(login: string, password: string, userAgent?: string) {
 	const parser = new UAParser(userAgent);
 	const device: IResult = parser.getResult();
 
-	const user: User | null = await User.scope("withPasswordHash").findOne({
+	const user = await User.scope("withPasswordHash").findOne({
 		where: setUserDatabaseQuery({ value: login }),
 	});
 	if (!user) throw new Error("Usuário não encontrado.");
@@ -134,27 +112,8 @@ async function handleLogin(
 	const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 	if (!isPasswordValid) throw new Error("Senha inválida.");
 
-	const { accessToken, refreshToken } = await createUserSession(
-		user.id,
-		device,
-	);
-	return { accessToken, refreshToken };
+	return createUserSession(user.id, device);
 }
-
-async function getUserIDFromSessionToken(accessToken: string) {
-	try {
-		const res = await Session.findOne({
-			where: { accessToken },
-		});
-		if (!res) throw new Error("Sessão não encontrada.");
-		return res.userId;
-	} catch (err) {
-		throw new Error("Token inválido ou expirado");
-	}
-}
-
-// lembrete: devo criar uma função que retorna o modelo de dados com base em accessToken
-// para parar de injetar dados em res que não é tipado e é chato de mexer
 
 export {
 	createUserSession,

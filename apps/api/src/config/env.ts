@@ -21,6 +21,7 @@ const envSchema = z.object({
 		.enum(["development", "test", "production"])
 		.default("development"),
 	EMAIL_FROM: z.email("Email inválido!"),
+	RESEND_API_KEY: z.string().min(1, "Resend API key is required"),
 	VITE_GCLIENT_LOGIN_ID: z.string().optional(),
 	PORT: z.string().default("3000").optional(),
 	MINIO_ENDPOINT: z.string().default("localhost"),

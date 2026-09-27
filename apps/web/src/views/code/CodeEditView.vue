@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CodeOutlined } from "@vicons/material";
-import { SunnyOutline, MoonOutline } from "@vicons/ionicons5";
+import { SunnyOutline, MoonOutline, HelpCircleOutline } from "@vicons/ionicons5";
 import { NButton, NIcon, NTooltip } from "naive-ui";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import CodeDrawer from "@/components/modules/CodeDrawer.vue";
@@ -11,6 +11,7 @@ import type RecentProjectsOverlay from "@/components/modules/RecentProjectsOverl
 import { useAutoCreateProject } from "@/composables/useAutoCreateProject";
 import { useEditorExplorer } from "@/composables/useEditorExplorer.ts";
 import { useEditorPersistence } from "@/composables/useEditorPersistence.ts";
+import { useEditorTour } from "@/composables/useEditorTour.ts";
 import { useSettingsStore } from "@/stores/global";
 
 const props = defineProps({ id: String });
@@ -19,6 +20,7 @@ const settingsStore = useSettingsStore();
 const { editorStore } = useEditorExplorer();
 const persistence = useEditorPersistence();
 useAutoCreateProject(editorStore, persistence);
+const { startTour } = useEditorTour();
 
 const canvasAreaRef = ref<HTMLElement | null>(null);
 const showCodeDrawer = ref(false);
@@ -44,10 +46,11 @@ onUnmounted(() => editorStore.clearState());
 
 <template>
   <div class="flex h-screen w-screen overflow-hidden relative">
-    <Properties />
+    <Properties id="tour-properties" />
 
     <div class="grow h-full relative" ref="canvasAreaRef">
       <ComponentNode
+        id="tour-canvas"
         v-model:nodes="flowNodes"
         v-model:edges="flowEdges"
         @open-code-panel="showCodeDrawer = true"
@@ -55,7 +58,7 @@ onUnmounted(() => editorStore.clearState());
         <template #header>
           <div class="absolute top-3 right-3 z-[100] pointer-events-none flex gap-2">
             <div class="pointer-events-auto flex items-center gap-2">
-              <NButton size="small" secondary round type="primary" @click="showCodeDrawer = true">
+              <NButton id="tour-btn-code" size="small" secondary round type="primary" @click="showCodeDrawer = true">
                 <template #icon><NIcon><CodeOutlined /></NIcon></template>
                 Código JS
               </NButton>
@@ -63,6 +66,7 @@ onUnmounted(() => editorStore.clearState());
               <NTooltip trigger="hover" placement="bottom">
                 <template #trigger>
                   <NButton
+                    id="tour-theme"
                     size="small"
                     secondary
                     circle
@@ -77,6 +81,21 @@ onUnmounted(() => editorStore.clearState());
                   </NButton>
                 </template>
                 {{ settingsStore.theme === 'dark' ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro' }}
+              </NTooltip>
+              <NTooltip trigger="hover" placement="bottom">
+                <template #trigger>
+                  <NButton
+                    size="small"
+                    secondary
+                    circle
+                    @click="startTour"
+                  >
+                    <template #icon>
+                      <NIcon size="16"><HelpCircleOutline /></NIcon>
+                    </template>
+                  </NButton>
+                </template>
+                Iniciar Tutorial
               </NTooltip>
             </div>
           </div>
