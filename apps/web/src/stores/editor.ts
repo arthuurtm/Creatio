@@ -1,136 +1,145 @@
-import type {
-  CategoryKey,
-  EditorState,
-  ExecuteResult,
-  AutoConnectIntent,
-  FileInfo,
-  NodeConnection,
-  SDKNode,
+import { jsAdapter } from "@projeto/compiler";
+import {
+	BaseNode,
+	deserialize,
+	type EditorState,
+	type LanguageSnippet,
+	type Schemes,
+	serialize,
 } from "@projeto/types";
 import { defineStore } from "pinia";
-import { computed, reactive, shallowReactive } from "vue";
+import type { NodeEditor } from "rete";
+import { reactive, ref, shallowRef, computed } from "vue";
 
-export const useEditorStore = defineStore("editor", () => {
-  const nodes = shallowReactive<SDKNode[]>([]);
-  const connections = shallowReactive<NodeConnection[]>([]);
-
-  const info = reactive<FileInfo>({
-    id: null,
-    title: "Untitled",
-    version: "1.0.0",
-    description: null,
-    updatedAt: null,
-  });
-
-  const variables = computed(() => nodes.filter((n) => n.type === "variables"));
-  const functions = computed(() => nodes.filter((n) => n.type === "functions"));
-  const logics    = computed(() => nodes.filter((n) => n.type === "logics"));
-
-  async function addNode(result: ExecuteResult, position = { x: 100, y: 100 }): Promise<SDKNode> {
-    const id = `${result.type}_${Math.random().toString(36).slice(2, 9)}`;
-    const { connectData, connectExecution, ...astData } = result;
-
-    const newNode: SDKNode = {
-      id,
-      type: result.type,
-      position,
-      data: astData,
-      ...(astData.parentId ? { parentNode: astData.parentId, expandParent: true } : {}),
-    };
-
-    nodes.push(newNode);
-
-    if (connectData) {
-      const targets = Array.isArray(connectData) ? connectData : [connectData];
-      targets.forEach(targetId => _createAutoEdge(id, { kind: 'data', targetId }));
-    }
-
-    if (connectExecution) {
-      const targets = Array.isArray(connectExecution) ? connectExecution : [connectExecution];
-      targets.forEach(targetId => _createAutoEdge(id, { kind: 'execution', targetId }));
-    }
-
-    return newNode;
-  }
-
-  function _createAutoEdge(newNodeId: string, intent: AutoConnectIntent) {
-  // Temporariamente: cria o edge sem validar
-  // (para isolar se o problema é na validação ou no targetId)
-  const [source, target] =
-    intent.kind === 'data'
-      ? [newNodeId, intent.targetId]
-      : [intent.targetId, newNodeId];
-
-  console.log('[autoConnect] criando edge', { source, target, nodes: nodes.map(n => n.id) });
-
-  connections.push({
-    id: `${source}→${target}`,
-    source,
-    target,
-    data: { type: intent.kind },
-  } as NodeConnection);
+export interface FileInfo {
+	id: number | null;
+	title: string;
+	version: string;
+	description: string | null;
+	updatedAt: Date | number | null;
 }
 
-  function setId(id: number) {
-    info.id = id;
-  }
+export const useEditorStore = defineStore("editor", () => {
+	// Instância ativa do editor nativo do Rete
+	const editor = shallowRef<NodeEditor<Schemes> | null>(null);
+	const nodesCount = ref(0);
 
-  function removeNode(id: string) {
-    const idx = nodes.findIndex((n) => n.id === id);
-    if (idx !== -1) nodes.splice(idx, 1);
-    // Remove edges órfãos
-    const toRemove = connections
-      .map((e, i) => (e.source === id || e.target === id ? i : -1))
-      .filter((i) => i !== -1)
-      .reverse();
-    toRemove.forEach((i) => connections.splice(i, 1));
-  }
+	// Metadados do arquivo/projeto
+	const info = reactive<FileInfo>({
+		id: null,
+		title: "Untitled",
+		version: "1.0.0",
+		description: null,
+		updatedAt: null,
+	});
 
-  function removeConnection(id: string) {
-    const idx = connections.findIndex((e) => e.id === id);
-    if (idx !== -1) connections.splice(idx, 1);
-  }
+	// Acesso aos nós e conexões do Rete
+	const nodes = computed(() => (editor.value ? editor.value.getNodes() : []));
+	const connections = computed(() => (editor.value ? editor.value.getConnections() : []));
 
-  function setState(newState: Partial<EditorState>) {
-    if (newState.info) Object.assign(info, newState.info);
+	// Snippets de código disponíveis para inserção
+	const snippets = ref<LanguageSnippet[]>([]);
 
-    if (newState.nodes) {
-      nodes.splice(0, nodes.length, ...newState.nodes);
-    }
-    if (newState.connections) {
-      connections.splice(0, connections.length, ...newState.connections);
-    }
-  }
+	// Carrega snippets nativos da linguagem
+	async function loadSnippets() {
+		snippets.value = await jsAdapter.getSnippets();
+	}
 
-  function clearState() {
-    nodes.splice(0, nodes.length);
-    connections.splice(0, connections.length);
-    Object.assign(info, {
-      id: null,
-      title: "Untitled",
-      version: "1.0.0",
-      description: null,
-      updatedAt: null,
-    });
-  }
+	// Registra a instância ativa criada no componente do Canvas
+	function setEditorInstance(instance: NodeEditor<Schemes>) {
+		editor.value = instance;
+		nodesCount.value = instance.getNodes().length;
+	}
 
-  return {
-    // Estado
-    nodes,
-    connections,
-    info,
+	// Adiciona um nó diretamente via classe nativa BaseNode do Rete Studio
+	async function addNode(
+		label: string,
+		type: "statement" | "expression" = "statement",
+		data: Record<string, any> = {},
+	) {
+		if (!editor.value) return null;
+		const node = new BaseNode(label);
+		node.type = type;
+		node.data = data;
+		await editor.value.addNode(node);
+		return node;
+	}
 
-    // Getters filtrados (para os models / ctx)
-    variables,
-    functions,
-    logics,
+	// Remove um nó nativamente
+	async function removeNode(nodeId: string) {
+		if (!editor.value) return;
+		await editor.value.removeNode(nodeId);
+	}
 
-    // Ações
-    addNode,
-    removeNode,
-    removeConnection,
-    setId,
-    setState,
-    clearState,
-  };
+	// Insere código convertendo em nós do Rete nativamente
+	async function insertSnippet(code: string) {
+		if (!editor.value) return;
+		const graphData = await jsAdapter.codeToGraph(code);
+		await deserialize(editor.value, graphData);
+	}
+
+	// Transpila os nós visuais atuais de volta para código JavaScript
+	async function compileToCode(): Promise<string> {
+		if (!editor.value) return "";
+		const state = serialize(editor.value);
+		return await jsAdapter.graphToCode(state);
+	}
+
+	// Exporta estado serializado
+	function getState(): EditorState | null {
+		if (!editor.value) return null;
+		return {
+			...serialize(editor.value),
+			info: { ...info },
+		};
+	}
+
+	// Restaura estado no editor
+	async function setState(state: EditorState) {
+		if (!editor.value) return;
+		await editor.value.clear();
+		await deserialize(editor.value, state);
+	}
+
+	// Limpa o canvas e o estado
+	async function clearState() {
+		if (editor.value) {
+			await editor.value.clear();
+		}
+		Object.assign(info, {
+			id: null,
+			title: "Untitled",
+			version: "1.0.0",
+			description: null,
+			updatedAt: null,
+		});
+	}
+
+	function setId(id: number) {
+		info.id = id;
+	}
+
+	return {
+		// Referências e estado
+		editor,
+		nodes,
+		connections,
+		nodesCount,
+		info,
+		snippets,
+
+		// Inicializadores
+		setEditorInstance,
+		loadSnippets,
+
+		// Ações nativas Rete
+		addNode,
+		removeNode,
+		insertSnippet,
+		compileToCode,
+		getState,
+		setState,
+		clearState,
+		setId,
+	};
 });

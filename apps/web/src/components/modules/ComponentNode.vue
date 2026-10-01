@@ -1,66 +1,29 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, h, computed } from "vue";
-import { NodeEditor, type GetSchemes, ClassicPreset } from "rete";
+import { NodeEditor } from "rete";
 import { AreaPlugin, AreaExtensions } from "rete-area-plugin";
 import { ConnectionPlugin, Presets as ConnectionPresets } from "rete-connection-plugin";
 import { VuePlugin, Presets, type VueArea2D } from "rete-vue-plugin";
 import { NDropdown, NIcon } from "naive-ui";
 import { DeleteOutlined, AddOutlined } from "@vicons/material";
 import { useSettingsStore } from "@/stores/global";
-import { useEditorStore } from "@/stores/editor";
+import { useEditor } from "@/composables/useEditor";
+import { jsAdapter } from "@projeto/compiler";
+import {
+  type Schemes,
+  BaseNode,
+  type LanguageSnippet,
+  applyInteraction,
+  deserialize,
+  serialize,
+} from "@projeto/types";
 import CustomNode from "./CustomNode.vue";
 
-const dataSocket = new ClassicPreset.Socket("Data");
-const execSocket = new ClassicPreset.Socket("Execution");
-
-class CreatioBlockNode extends ClassicPreset.Node {
-  width = 240;
-  height = 180;
-  astData: any;
-  nodeType: string;
-
-  constructor(id: string, nodeType: string, astData: any) {
-    const title = astData?.params?.name || astData?.params?.funcName || astData?.category || "Bloco";
-    super(title);
-    this.id = id;
-    this.nodeType = nodeType;
-    this.astData = astData;
-
-    // TODO bloco tem fluxo de execução básico
-    this.addInput("execIn", new ClassicPreset.Input(execSocket, "▶ Iniciar"));
-    this.addOutput("execOut", new ClassicPreset.Output(execSocket, "Próximo ▶"));
-
-    // Adiciona pinos dinâmicos baseados nos parâmetros do bloco
-    const params = astData?.params || {};
-    
-    // Se for um bloco condicional (IF/ELSE)
-    if (["IF_STATEMENT", "ELSEIF_STATEMENT", "WHILE_LOOP"].includes(astData?.category)) {
-      this.addInput("cond", new ClassicPreset.Input(dataSocket, "Condição (Verdadeiro/Falso)"));
-      this.addOutput("trueBody", new ClassicPreset.Output(execSocket, "Corpo (Faça)"));
-    }
-
-    // Cria pinos para argumentos (a, b, etc) em funções matemáticas ou lógicas
-    if (astData?.category === "MATHEMATICAL_OPERATION" || astData?.category === "LOGICAL_OPERATION") {
-      this.addInput("a", new ClassicPreset.Input(dataSocket, "Lado A"));
-      this.addInput("b", new ClassicPreset.Input(dataSocket, "Lado B"));
-      this.addOutput("result", new ClassicPreset.Output(dataSocket, "Resultado"));
-    }
-
-    // Se for variável, tem pino de valor
-    if (astData?.category === "VARIABLE_DECLARATION") {
-      this.addInput("val", new ClassicPreset.Input(dataSocket, "Valor Inicial"));
-      this.addOutput("ref", new ClassicPreset.Output(dataSocket, "Referência da Variável"));
-    }
-  }
-}
-
-class Connection extends ClassicPreset.Connection<CreatioBlockNode, CreatioBlockNode> {}
-type Schemes = GetSchemes<CreatioBlockNode, Connection>;
 type AreaExtra = VueArea2D<Schemes>;
 
 const container = ref<HTMLElement | null>(null);
 const settingsStore = useSettingsStore();
-const editorStore = useEditorStore();
+const editorState = useEditor();
 const isDark = computed(() => settingsStore.theme === "dark");
 
 let editor: NodeEditor<Schemes> | null = null;
@@ -78,6 +41,46 @@ function renderIcon(icon: any) {
   return () => h(NIcon, null, { default: () => h(icon) });
 }
 
+// ==========================================
+// 🚀 GERAÇÃO DE CÓDIGO DIRETA PELO RETE STUDIO
+// ==========================================
+const generateCode = async (): Promise<string> => {
+  if (!editor) return "";
+  const data = serialize(editor);
+  return await jsAdapter.graphToCode(data);
+};
+
+defineExpose({ generateCode });
+
+function getSnippetCode(snippet: LanguageSnippet): string {
+  if ("code" in snippet) {
+    return typeof snippet.code === "function" ? snippet.code() : snippet.code;
+  }
+  return "";
+}
+
+function formatSnippetsToMenu(snippets: LanguageSnippet[]): any[] {
+  return snippets.map((s) => {
+    if ("subitems" in s && s.subitems) {
+      return {
+        label: s.label,
+        key: `group_${s.label}`,
+        type: "group",
+        children: s.subitems.map((sub) => ({
+          label: sub.label,
+          key: `snippet_${getSnippetCode(sub)}`,
+          icon: renderIcon(AddOutlined),
+        })),
+      };
+    }
+    return {
+      label: s.label,
+      key: `snippet_${getSnippetCode(s)}`,
+      icon: renderIcon(AddOutlined),
+    };
+  });
+}
+
 onMounted(async () => {
   if (!container.value) return;
 
@@ -86,65 +89,78 @@ onMounted(async () => {
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const render = new VuePlugin<Schemes, AreaExtra>();
 
-  AreaExtensions.selectableNodes(area, AreaExtensions.selector(), { accumulating: AreaExtensions.accumulateOnCtrl() });
+  AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
+    accumulating: AreaExtensions.accumulateOnCtrl(),
+  });
 
-  render.addPreset(Presets.classic.setup({
-    customize: {
-      node(context) {
-        if (context.payload instanceof ClassicPreset.Node) {
-          return CustomNode;
-        }
-        return Presets.classic.Node;
-      }
-    }
-  }));
-  connection.addPreset(ConnectionPresets.classic.setup());
+  render.addPreset(
+    Presets.classic.setup({
+      customize: {
+        node(context) {
+          return CustomNode as any;
+        },
+      },
+    }) as any
+  );
+  connection.addPreset(ConnectionPresets.classic.setup() as any);
 
   editor.use(area);
   area.use(connection);
   area.use(render);
   AreaExtensions.simpleNodesOrder(area);
 
-  // === VOLTANDO O SUPORTE AOS SEUS BLOCOS DO SIDEBAR ===
+  // Registra a instância ativa na store global
+  editorState.setEditorInstance(editor);
+  await editorState.loadSnippets();
+
+  // Permite arrastar snippets do catálogo direto para o canvas
   container.value.addEventListener("dragover", (e) => {
     e.preventDefault();
     if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
   });
-  
+
   container.value.addEventListener("drop", async (e) => {
     e.preventDefault();
-    const rawData = e.dataTransfer?.getData("application/rete");
-    if (!rawData) return;
+    const snippetCode = e.dataTransfer?.getData("text/plain");
+    if (!snippetCode || !editor || !area) return;
+
     try {
-      const { def } = JSON.parse(rawData);
-      if (!def || typeof def.execute !== "function") return;
-      
-      const result = def.execute({}); // Cria o nó no formato do Creatio
-      
-      const transform = area!.area.transform;
+      const transform = area.area.transform;
       const x = (e.clientX - transform.x) / transform.k;
       const y = (e.clientY - transform.y) / transform.k;
-      
-      // Cria e adiciona o nó nativo do Rete mapeando a estrutura do Creatio
-      const reteNode = new CreatioBlockNode(result.id, result.type, result);
-      await editor!.addNode(reteNode);
-      await area!.translate(reteNode.id, { x, y });
+
+      const graphData = await jsAdapter.codeToGraph(snippetCode);
+      await deserialize(editor, graphData);
+      applyInteraction(editor, (id) => area?.update("node", id));
+
+      if (graphData.nodes?.length > 0) {
+        const lastNode = graphData.nodes[graphData.nodes.length - 1];
+        if (lastNode) await area.translate(lastNode.id, { x, y });
+      }
     } catch (err) {
-      console.error(err);
+      console.error("[Rete Studio] Erro ao soltar snippet:", err);
     }
   });
 
+  // ====================================================
+  // 💡 MENU DE CONTEXTO NATIVO (SNIPPETS DA LINGUAGEM JS)
+  // ====================================================
   area.addPipe((context) => {
     if (context.type === "contextmenu") {
       context.data.event.preventDefault();
       menuX.value = context.data.event.clientX;
       menuY.value = context.data.event.clientY;
 
-      if (context.data.context instanceof ClassicPreset.Node) {
-        selectedNodeId.value = context.data.context.id;
+      const selectedContext = context.data.context;
+      if (typeof selectedContext === "object" && "id" in selectedContext) {
+        selectedNodeId.value = String(selectedContext.id);
         menuOptions.value = [
           { label: "Excluir Nó", key: "delete", icon: renderIcon(DeleteOutlined) },
         ];
+        showMenu.value = true;
+      } else {
+        selectedNodeId.value = null;
+        menuOptions.value = formatSnippetsToMenu(editorState.snippets.value);
         showMenu.value = true;
       }
     } else if (context.type === "pointerdown") {
@@ -156,8 +172,32 @@ onMounted(async () => {
 
 async function handleMenuSelect(key: string) {
   showMenu.value = false;
+
+  // Ação de Excluir Nó
   if (key === "delete" && selectedNodeId.value && editor) {
     await editor.removeNode(selectedNodeId.value);
+    return;
+  }
+
+  // Ação de Adicionar Snippet nativo do Rete Studio
+  if (key.startsWith("snippet_") && editor && area) {
+    const code = key.replace("snippet_", "");
+    const transform = area.area.transform;
+    const x = (menuX.value - transform.x) / transform.k;
+    const y = (menuY.value - transform.y) / transform.k;
+
+    try {
+      const graphData = await jsAdapter.codeToGraph(code);
+      await deserialize(editor, graphData);
+      applyInteraction(editor, (id) => area?.update("node", id));
+
+      if (graphData.nodes?.length > 0) {
+        const lastNode = graphData.nodes[graphData.nodes.length - 1];
+        if (lastNode) await area.translate(lastNode.id, { x, y });
+      }
+    } catch (err) {
+      console.error("[Rete Studio] Erro ao instanciar snippet:", err);
+    }
   }
 }
 

@@ -9,39 +9,30 @@ import ConnectionStatusTag from "@/components/modules/ConnectionStatusTag.vue";
 import Properties from "@/components/modules/Properties.vue";
 import type RecentProjectsOverlay from "@/components/modules/RecentProjectsOverlay.vue";
 import { useAutoCreateProject } from "@/composables/useAutoCreateProject";
-import { useEditorExplorer } from "@/composables/useEditorExplorer.ts";
 import { useEditorPersistence } from "@/composables/useEditorPersistence.ts";
 import { useEditorTour } from "@/composables/useEditorTour.ts";
+import { useEditor } from "@/composables/useEditor";
 import { useSettingsStore } from "@/stores/global";
 
 const props = defineProps({ id: String });
 
 const settingsStore = useSettingsStore();
-const { editorStore } = useEditorExplorer();
+const editor = useEditor();
 const persistence = useEditorPersistence();
-useAutoCreateProject(editorStore, persistence);
+useAutoCreateProject(persistence);
 const { startTour } = useEditorTour();
 
 const canvasAreaRef = ref<HTMLElement | null>(null);
 const showCodeDrawer = ref(false);
 
-const flowNodes = computed<any>({
-  get: () => editorStore.nodes,
-  set: (val) => editorStore.setState({ nodes: val }),
-});
-const flowEdges = computed<any>({
-  get: () => editorStore.connections,
-  set: (val) => editorStore.setState({ connections: val }),
-});
-
 onMounted(async () => {
   if (props.id) {
-    editorStore.setId(Number(props.id));
+    editor.setId(Number(props.id));
     await persistence.loadProject(Number(props.id));
   }
 });
 
-onUnmounted(() => editorStore.clearState());
+onUnmounted(() => editor.clearState());
 </script>
 
 <template>
@@ -51,8 +42,6 @@ onUnmounted(() => editorStore.clearState());
     <div class="grow h-full relative" ref="canvasAreaRef">
       <ComponentNode
         id="tour-canvas"
-        v-model:nodes="flowNodes"
-        v-model:edges="flowEdges"
         @open-code-panel="showCodeDrawer = true"
       >
         <template #header>

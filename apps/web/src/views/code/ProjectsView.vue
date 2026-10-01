@@ -135,14 +135,13 @@ import { NInput } from "naive-ui";
 import { Add, Search } from "@vicons/ionicons5";
 import { SearchOffOutlined, TerminalOutlined } from "@vicons/material";
 import { useRouter } from "vue-router";
-import ComponentLoadSessions from "@/components/modules/ComponentLoadSessions.vue";
-import { useEditorExplorer } from "@/composables/useEditorExplorer.ts";
+import { useEditor } from "@/composables/useEditor";
 import { showToast } from "@/plugins/toast";
 import { useUserStore } from "@/stores";
 import { http } from "@/utils";
 
 const userStore = useUserStore();
-const { editorStore } = useEditorExplorer();
+const editor = useEditor();
 const router = useRouter();
 
 // ── Estado ──────────────────────────────────────────────────────────────────
@@ -254,9 +253,9 @@ async function criarNovoProjeto() {
 	try {
 		const result = await http.post(
 			{ type: "database", route: "setProject" },
-			{ state: editorStore.$state },
+			{ state: editor.getSnapshot() },
 		);
-		Object.assign(editorStore.info, { id: result.id, title: result.title });
+		editor.updateInfo({ id: result.id, title: result.title });
 		router.push({ name: "CodeEdit", params: { id: result.id } });
 	} catch (error) {
 		showToast({

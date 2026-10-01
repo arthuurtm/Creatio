@@ -8,14 +8,14 @@ import {
   NButton, NDrawer, NDrawerContent, NIcon, NSpace, NSpin, NBadge, NCollapse, NCollapseItem,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
-import { useEditorExplorer } from "@/composables/useEditorExplorer.ts";
+import { useEditor } from "@/composables/useEditor";
 import { useEditorPersistence } from "@/composables/useEditorPersistence.ts";
 import { showToast } from "@/plugins/toast";
 
 defineProps<{ to?: HTMLElement | null }>();
 const show = defineModel<boolean>("show", { required: true });
 
-const { editorStore } = useEditorExplorer();
+const editor = useEditor();
 const persistence = useEditorPersistence();
 
 const autoCompile = ref(true);
@@ -48,7 +48,7 @@ function compileNow() {
 }
 
 watch(
-  () => [editorStore.nodes, editorStore.connections],
+  () => [editor.nodes.value, editor.connections.value],
   () => {
     if (autoCompile.value && show.value) compileNow();
   },
@@ -64,7 +64,7 @@ function copyCodeToClipboard() {
 
 function downloadCodeFile() {
   if (!compiledCodeText.value) compileNow();
-  const title = editorStore.info.title || "algoritmo";
+  const title = editor.info.value.title || "algoritmo";
   const fileName = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.js`;
   const blob = new Blob([compiledCodeText.value], { type: "application/javascript;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -157,8 +157,9 @@ function downloadCodeFile() {
         </div>
 
         <div class="flex-1 min-h-0 bg-[#1e1e1e] text-[#d4d4d4] p-4 rounded-xl font-mono text-xs overflow-auto leading-relaxed select-text border border-white/10 relative">
-          <NSpin v-if="isCompiling" class="absolute inset-0 flex items-center justify-center bg-black/40 z-10" />
-          <pre class="m-0 whitespace-pre-wrap word-break-all">{{ compiledCodeText || '// Nenhum nó compilável no canvas' }}</pre>
+          <!-- <NSpin v-if="isCompiling" class="absolute inset-0 flex items-center justify-center bg-black/40 z-10" /> -->
+          <!-- <pre class="m-0 whitespace-pre-wrap word-break-all">{{ compiledCodeText || '// Nenhum nó compilável no canvas' }}</pre> -->
+          <pre class="m-0 whitespace-pre-wrap break-words">{{ compiledCodeText || '// Nenhum nó compilável no canvas' }}</pre>
         </div>
       </div>
     </NDrawerContent>

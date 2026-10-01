@@ -1,115 +1,238 @@
 <template>
-  <div class="custom-node" :class="{ selected: data.selected }" :style="{ width: data.width + 'px' }">
-    <div class="node-header">
-      {{ data.label }}
+  <div
+    class="rete-node-wrapper"
+    :class="{ selected: data.selected }"
+    :style="{
+      width: (data.width ? data.width + 'px' : 'auto'),
+      minWidth: '180px'
+    }"
+  >
+    <!-- Header com design nativo e compacto -->
+    <div class="rete-node-header">
+      <span class="rete-node-title">{{ data.label }}</span>
+      <NTag
+        size="tiny"
+        :bordered="false"
+        round
+        :type="data.type === 'statement' ? 'success' : 'warning'"
+      >
+        {{ data.type === 'statement' ? 'stmt' : 'expr' }}
+      </NTag>
     </div>
 
-    <!-- Outputs -->
-    <div class="sockets-container outputs">
-      <div class="socket-row" v-for="[key, output] in Object.entries(data.outputs)" :key="'out-'+key">
-        <div class="socket-title">{{ output.label }}</div>
-        <Ref class="socket" :emit="emit" :data="{ type: 'socket', side: 'output', key: key, nodeId: data.id, payload: output.socket }" />
+    <!-- Conteúdo com colunas organizadas (Inputs à esquerda, Outputs à direita) -->
+    <div class="rete-node-body">
+      <!-- Coluna da Esquerda: Inputs -->
+      <div class="rete-column inputs-column">
+        <div
+          v-for="[key, input] in Object.entries(data.inputs || {})"
+          :key="'in-' + key"
+          class="socket-row input-row"
+        >
+          <Ref
+            class="socket-circle socket-in"
+            :emit="emit"
+            :data="{ type: 'socket', side: 'input', key: key, nodeId: data.id, payload: input.socket }"
+          />
+          <span class="socket-label" v-if="!input.control || !input.showControl">
+            {{ input.label }}
+          </span>
+          <Ref
+            v-if="input.control && input.showControl"
+            class="inline-control"
+            :emit="emit"
+            :data="{ type: 'control', payload: input.control }"
+          />
+        </div>
+      </div>
+
+      <!-- Coluna da Direita: Outputs -->
+      <div class="rete-column outputs-column">
+        <div
+          v-for="[key, output] in Object.entries(data.outputs || {})"
+          :key="'out-' + key"
+          class="socket-row output-row"
+        >
+          <span class="socket-label">{{ output.label }}</span>
+          <Ref
+            class="socket-circle socket-out"
+            :emit="emit"
+            :data="{ type: 'socket', side: 'output', key: key, nodeId: data.id, payload: output.socket }"
+          />
+        </div>
       </div>
     </div>
 
-    <!-- Controls -->
-    <div class="controls-container">
-      <Ref class="control" v-for="[key, control] in Object.entries(data.controls)" :key="'ctrl-'+key" :emit="emit" :data="{ type: 'control', payload: control }" />
-    </div>
-
-    <!-- Inputs -->
-    <div class="sockets-container inputs">
-      <div class="socket-row" v-for="[key, input] in Object.entries(data.inputs)" :key="'in-'+key">
-        <Ref class="socket" :emit="emit" :data="{ type: 'socket', side: 'input', key: key, nodeId: data.id, payload: input.socket }" />
-        <div class="socket-title" v-show="!input.control || !input.showControl">{{ input.label }}</div>
-        <Ref class="input-control" v-show="input.control && input.showControl" :emit="emit" :data="{ type: 'control', payload: input.control }" />
+    <!-- Controles Centrais embutidos -->
+    <div v-if="Object.keys(data.controls || {}).length" class="rete-node-controls">
+      <div
+        v-for="[key, control] in Object.entries(data.controls || {})"
+        :key="'ctrl-' + key"
+        class="control-item"
+      >
+        <Ref :emit="emit" :data="{ type: 'control', payload: control }" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-import { Ref } from 'rete-vue-plugin'
+import { defineComponent, type PropType } from "vue";
+import { Ref } from "rete-vue-plugin";
+import { NTag } from "naive-ui";
+
+interface NodeSocket {
+  label?: string;
+  socket: unknown;
+  control?: unknown;
+  showControl?: boolean;
+}
+
+interface NodeViewData {
+  id: string;
+  label: string;
+  type: "statement" | "expression" | "unknown";
+  width?: number;
+  selected?: boolean;
+  inputs?: Record<string, NodeSocket>;
+  outputs?: Record<string, NodeSocket>;
+  controls?: Record<string, unknown>;
+}
 
 export default defineComponent({
   components: {
-    Ref
+    Ref,
+    NTag,
   },
   props: {
-    data: Object,
-    emit: Function
-  }
-})
+    data: {
+    type: Object as PropType<NodeViewData>,
+    required: true,
+  },
+  emit: {
+    type: Function as PropType<(...args: unknown[]) => unknown>,
+    required: true,
+  },
+  },
+});
 </script>
 
 <style scoped>
-.custom-node {
-  background-color: var(--n-card-color, #1a1b1e);
-  border: 1px solid var(--n-border-color, #33353b);
+.rete-node-wrapper {
+  background: var(--n-card-color, #1e1e24);
+  border: 1.5px solid var(--n-border-color, rgba(255, 255, 255, 0.12));
   border-radius: 12px;
-  color: var(--n-text-color-base, #e4e5e7);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  font-family: 'Inter', sans-serif;
-  min-width: 180px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font-family: inherit;
+  color: var(--n-text-color, #e2e8f0);
+  position: relative;
+  user-select: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.custom-node.selected {
+
+.rete-node-wrapper.selected {
   border-color: var(--n-primary-color, #3b82f6);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3), 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
-.node-header {
-  background-color: var(--n-color-embedded, #23252a);
-  padding: 12px 16px;
-  font-weight: 600;
-  font-size: 14px;
-  border-bottom: 1px solid var(--n-border-color, #33353b);
+
+.rete-node-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-.sockets-container {
-  padding: 12px 0;
-  display: flex;
-  flex-direction: column;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--n-border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 11px 11px 0 0;
   gap: 8px;
 }
+
+.rete-node-title {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: monospace;
+}
+
+.rete-node-body {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  gap: 12px;
+}
+
+.rete-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.inputs-column {
+  align-items: flex-start;
+}
+
+.outputs-column {
+  align-items: flex-end;
+}
+
 .socket-row {
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  gap: 12px;
-  position: relative;
+  gap: 6px;
+  min-height: 22px;
+  width: 100%;
 }
-.outputs .socket-row {
-  justify-content: flex-end;
-}
-.inputs .socket-row {
+
+.input-row {
   justify-content: flex-start;
 }
-.socket-title {
-  font-size: 13px;
-  font-weight: 500;
-  opacity: 0.85;
+
+.output-row {
+  justify-content: flex-end;
 }
-:deep(.socket) {
+
+.socket-label {
+  font-size: 11px;
+  opacity: 0.75;
+  white-space: nowrap;
+  padding: 0 6px;
+}
+
+/* Sockets perfeitamente alinhados na borda do nó */
+:deep(.socket-circle) {
   display: inline-block;
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background-color: var(--n-primary-color, #3b82f6);
-  border: 2px solid #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  background: var(--n-primary-color, #3b82f6);
+  border: 2px solid var(--n-card-color, #1e1e24);
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-:deep(.socket:hover) {
-  transform: scale(1.1);
-  transition: transform 0.1s;
+
+:deep(.socket-circle:hover) {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
 }
-.inputs :deep(.socket) {
-  margin-left: -24px;
+
+:deep(.socket-in) {
+  margin-left: -7px;
 }
-.outputs :deep(.socket) {
-  margin-right: -24px;
+
+:deep(.socket-out) {
+  margin-right: -7px;
+}
+
+.rete-node-controls {
+  padding: 6px 10px 8px;
+  border-top: 1px dashed var(--n-border-color, rgba(255, 255, 255, 0.06));
+}
+
+.control-item {
+  font-size: 12px;
 }
 </style>

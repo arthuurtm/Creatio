@@ -1,16 +1,20 @@
-import type { EditorState, RequestStatusValues } from "@projeto/types";
-import { useDebounceFn } from "@vueuse/core";
-import { ref, watch } from "vue";
+import type { EditorState } from "@projeto/types";
+import { ref } from "vue";
 import { http } from "@/utils";
-import { useEditorStore } from "@/stores/editor";
-import { ASTTranspiler, DiagnosticsAnalyzer } from "@projeto/compiler";
-import type { Diagnostic } from "@projeto/compiler";
+import { useEditor } from "@/composables/useEditor";
+export interface Diagnostic {
+  severity: "error" | "warning" | "info";
+  message: string;
+  nodeId?: string;
+  rule?: string;
+  nodeLabel?: string;
+}
 
 export function useEditorPersistence() {
-  const store = useEditorStore();
+  const editor = useEditor();
 
-  const requestStatus = ref<RequestStatusValues>("IDLE");
-  const saveError = ref<string>("");
+  const requestStatus = editor.requestStatus;
+  const saveError = editor.saveError;
   const compiledCode = ref<string>("");
   const compileError = ref<string>("");
   const isCompiling = ref(false);
@@ -33,7 +37,7 @@ export function useEditorPersistence() {
           remote.connections?.length > 0 ||
           remote.info?.id)
       ) {
-        store.setState(remote);
+        await editor.setState(remote);
       }
       requestStatus.value = "SUCCESS";
     } catch (err: any) {
@@ -45,59 +49,25 @@ export function useEditorPersistence() {
     }
   }
 
-  const slowSave = useDebounceFn(async () => {
-    if (!store.info.id) return;
-    requestStatus.value = "SENDING";
-    saveError.value = "";
-    try {
-      const payload = {
-        info: JSON.parse(JSON.stringify(store.info)),
-        nodes: JSON.parse(JSON.stringify(store.nodes)),
-        connections: JSON.parse(JSON.stringify(store.connections)),
-      };
-      await http.put(
-        { type: "database", route: "saveProjectState" },
-        { id: store.info.id, state: payload },
-      );
-      requestStatus.value = "SUCCESS";
-    } catch (err: any) {
-      requestStatus.value = "ERROR";
-      saveError.value = err.message || "Erro ao salvar projeto";
-    }
-  }, 600);
-
   async function requestCompile() {
     isCompiling.value = true;
     compileError.value = "";
     diagnostics.value = [];
     try {
-      // Compilação local no navegador usando o compilador interno
-      const transpiler = new ASTTranspiler(store.nodes, store.connections);
-      const analyzer = new DiagnosticsAnalyzer(store.nodes, store.connections);
-      
-      compiledCode.value = transpiler.transpile() || "";
-      diagnostics.value = analyzer.analyze() || [];
+      const code = await editor.compileToCode();
+      compiledCode.value = code || "/* Canvas vazio */";
+      diagnostics.value = [];
       compileError.value = "";
     } catch (err: any) {
-      compileError.value = err.message || "Erro na compilação";
+      compileError.value = err.message || "Erro na compilação do Rete";
     } finally {
       isCompiling.value = false;
     }
   }
 
-  watch(
-    () => [store.nodes, store.connections],
-    () => {
-      if (store.info.id) {
-        slowSave();
-      }
-    },
-    { deep: true, flush: "post" },
-  );
-
   return {
     loadProject,
-    saveState: slowSave,
+    saveState: editor.syncToCloud,
     requestStatus,
     saveError,
     compiledCode,

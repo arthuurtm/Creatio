@@ -46,3 +46,5 @@ jest.config.ts.snap
 .nyc_output/
 
 *.map
+
+*legacy
