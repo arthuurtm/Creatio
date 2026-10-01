@@ -13,7 +13,6 @@
 		"#api/*": "./src/*"
 	},
 	"dependencies": {
-		"@projeto/compiler": "workspace:*",
 		"@projeto/types": "workspace:*",
 		"@types/lodash-es": "^4.17.12",
 		"bcrypt": "^6.0.0",
