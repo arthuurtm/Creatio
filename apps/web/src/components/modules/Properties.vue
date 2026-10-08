@@ -1,5 +1,16 @@
 <script setup lang="ts">
-import { ChevronBack, SearchOutline } from "@vicons/ionicons5";
+import {
+  ChevronBack,
+  SearchOutline,
+  GitBranchOutline,
+  SyncOutline,
+  CubeOutline,
+  CodeSlashOutline,
+  AlertCircleOutline,
+  HardwareChipOutline,
+  FolderOutline,
+  FlashOutline
+} from "@vicons/ionicons5";
 import {
   NButton,
   NIcon,
@@ -92,13 +103,38 @@ async function insertDirectly(snippet: LanguageSnippet) {
     await editor.insertSnippet(code);
   }
 }
+
+function getSnippetStyle(label: string) {
+  const l = label.toLowerCase();
+  
+  if (l.includes('if') || l.includes('else') || l.includes('switch') || l.includes('case')) {
+    return { type: 'warning', icon: GitBranchOutline, desc: 'Controle de fluxo' };
+  }
+  if (l.includes('for') || l.includes('while') || l.includes('loop')) {
+    return { type: 'primary', icon: SyncOutline, desc: 'Laço de repetição' };
+  }
+  if (l.includes('const') || l.includes('let') || l.includes('var') || l.includes('vari')) {
+    return { type: 'info', icon: CubeOutline, desc: 'Memória / Variável' };
+  }
+  if (l.includes('function') || l.includes('return') || l.includes('função')) {
+    return { type: 'success', icon: CodeSlashOutline, desc: 'Bloco de execução' };
+  }
+  if (l.includes('try') || l.includes('catch') || l.includes('throw')) {
+    return { type: 'error', icon: AlertCircleOutline, desc: 'Tratamento de erro' };
+  }
+  if (l.includes('import') || l.includes('export')) {
+    return { type: 'primary', icon: HardwareChipOutline, desc: 'Módulo' };
+  }
+  
+  return { type: 'primary', icon: FlashOutline, desc: 'Comando de sintaxe' };
+}
 </script>
 
 <template>
   <aside
     class="h-full shrink-0 relative transition-all duration-300 ease-in-out border-r border-[var(--border-color)] bg-[var(--n-color)]"
     :class="{
-      'w-[310px]': !isRail && !isHidden,
+      'w-[340px]': !isRail && !isHidden,
       'w-[56px]': isRail && !isHidden,
       'w-0 opacity-0 pointer-events-none border-none': isHidden,
     }"
@@ -112,85 +148,126 @@ async function insertDirectly(snippet: LanguageSnippet) {
     />
 
     <!-- MODO EXPANDIDO -->
-    <div v-show="!isRail && !isHidden" class="h-full flex flex-col min-w-[310px]">
-      <!-- Header com NCard/NFlex do Naive -->
-      <div class="p-3 border-b border-[var(--border-color)]">
-        <NFlex justify="space-between" align="center" class="mb-2">
-          <NText strong class="text-sm">Blocos & Snippets</NText>
-          <NButton circle quaternary size="tiny" title="Recolher" @click="toggleState">
+    <div v-show="!isRail && !isHidden" class="h-full flex flex-col min-w-[340px]">
+      <!-- Header -->
+      <div class="p-4 border-b border-[var(--border-color)]">
+        <NFlex justify="space-between" align="center" class="mb-4">
+          <div class="flex items-center gap-2">
+            <NIcon size="20" class="text-[color:var(--n-primary-color)]"><HardwareChipOutline /></NIcon>
+            <NText strong class="text-[15px]">Catálogo de Blocos</NText>
+          </div>
+          <NButton circle quaternary size="small" title="Recolher" @click="toggleState">
             <template #icon>
-              <NIcon size="16"><ChevronBack /></NIcon>
+              <NIcon size="18"><ChevronBack /></NIcon>
             </template>
           </NButton>
         </NFlex>
 
         <NInput
           v-model:value="search"
-          placeholder="Buscar comandos (if, let...)"
-          size="small"
+          placeholder="Buscar comandos (ex: if, for, let)"
           clearable
           round
         >
           <template #prefix>
-            <NIcon :component="SearchOutline" />
+            <NIcon :component="SearchOutline" class="opacity-60" />
           </template>
         </NInput>
       </div>
 
-      <!-- Lista estilizada com Naive UI -->
-      <NScrollbar class="flex-grow p-3">
-        <div v-if="filteredSnippets.length === 0" class="py-12">
-          <NEmpty description="Nenhum bloco encontrado" />
+      <!-- Lista estilizada -->
+      <NScrollbar class="flex-grow p-4">
+        <div v-if="filteredSnippets.length === 0" class="py-12 text-center">
+          <NEmpty description="Nenhum bloco encontrado com essa busca" />
         </div>
 
-        <NFlex vertical :size="8" v-else>
+        <NFlex vertical :size="12" v-else>
           <template v-for="snippet in filteredSnippets" :key="snippet.label">
-            <!-- Grupo com sub-itens via NCollapse do Naive -->
+            
+            <!-- Grupo com sub-itens -->
             <NCollapse
               v-if="'subitems' in snippet && snippet.subitems"
               arrow-placement="right"
-              class="border border-[var(--border-color)] rounded-xl px-3 bg-neutral-500/5"
+              class="snippet-group-collapse border border-[color:var(--n-border-color)] rounded-2xl bg-[color:var(--n-action-color)] overflow-hidden"
             >
-              <NCollapseItem :title="snippet.label" :name="snippet.label">
-                <NFlex vertical :size="6" class="pb-2">
+              <NCollapseItem :name="snippet.label">
+                <template #header>
+                  <div class="flex items-center gap-2 py-1">
+                    <NIcon size="16" class="opacity-70"><FolderOutline /></NIcon>
+                    <NText strong class="text-[13px]">{{ snippet.label }}</NText>
+                    <NTag size="small" round :bordered="false" class="ml-2 font-mono text-[10px] opacity-70">
+                      {{ snippet.subitems.length }}
+                    </NTag>
+                  </div>
+                </template>
+                <div class="flex flex-col gap-2 p-2 pt-0">
                   <NCard
                     v-for="sub in snippet.subitems"
                     :key="sub.label"
-                    size="small"
                     hoverable
                     embedded
                     draggable="true"
                     @dragstart="onDragStart($event, sub)"
                     @click="insertDirectly(sub)"
-                    class="cursor-grab active:cursor-grabbing !rounded-lg"
+                    class="cursor-grab active:cursor-grabbing rounded-xl transition-all hover:border-[color:var(--n-primary-color)] snippet-card"
+                    content-style="padding: 10px 12px;"
                   >
-                    <NFlex justify="space-between" align="center">
-                      <NText code class="text-xs">{{ sub.label }}</NText>
-                      <NTag size="tiny" :bordered="false" round type="info">arraste</NTag>
-                    </NFlex>
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-[color:var(--n-tag-color)] shrink-0">
+                        <NIcon size="18" :component="getSnippetStyle(sub.label).icon" :style="`color: var(--n-${getSnippetStyle(sub.label).type}-color)`" />
+                      </div>
+                      <div class="flex flex-col min-w-0 flex-1">
+                        <NText strong class="text-xs truncate">{{ sub.label }}</NText>
+                        <NText class="text-[10px] opacity-60 truncate">{{ getSnippetStyle(sub.label).desc }}</NText>
+                      </div>
+                      <NIcon size="16" class="opacity-30 shrink-0"><ChevronBack class="rotate-180" /></NIcon>
+                    </div>
                   </NCard>
-                </NFlex>
+                </div>
               </NCollapseItem>
             </NCollapse>
 
-            <!-- Bloco único via NCard -->
+            <!-- Bloco único -->
             <NCard
               v-else
-              size="small"
               hoverable
               draggable="true"
               @dragstart="onDragStart($event, snippet)"
               @click="insertDirectly(snippet)"
-              class="cursor-grab active:cursor-grabbing !rounded-xl"
+              class="cursor-grab active:cursor-grabbing rounded-2xl transition-all hover:border-[color:var(--n-primary-color)] snippet-card border border-[color:var(--n-border-color)]"
+              content-style="padding: 12px 14px;"
             >
-              <NFlex justify="space-between" align="center">
-                <NText strong class="text-xs">{{ snippet.label }}</NText>
-                <NTag size="tiny" :bordered="false" round type="primary">adicionar</NTag>
-              </NFlex>
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-[color:var(--n-tag-color)] shrink-0 border border-[color:var(--n-border-color)]">
+                  <NIcon size="20" :component="getSnippetStyle(snippet.label).icon" :style="`color: var(--n-${getSnippetStyle(snippet.label).type}-color)`" />
+                </div>
+                <div class="flex flex-col min-w-0 flex-1">
+                  <NText strong class="text-[13px] truncate">{{ snippet.label }}</NText>
+                  <NText class="text-[11px] opacity-60 truncate">{{ getSnippetStyle(snippet.label).desc }}</NText>
+                </div>
+                <NTag size="small" :bordered="false" round type="primary" class="shrink-0 text-[10px]">
+                  adicionar
+                </NTag>
+              </div>
             </NCard>
+
           </template>
         </NFlex>
       </NScrollbar>
     </div>
   </aside>
 </template>
+
+<style scoped>
+.snippet-group-collapse :deep(.n-collapse-item__header) {
+  padding: 12px 16px !important;
+}
+.snippet-group-collapse :deep(.n-collapse-item__content-inner) {
+  padding: 0 !important;
+}
+
+.snippet-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+</style>

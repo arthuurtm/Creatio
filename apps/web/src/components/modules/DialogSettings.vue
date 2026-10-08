@@ -299,12 +299,12 @@ const editableFields = computed(() => [
 	{
 		key: "theme",
 		label: "Tema da interface",
-		displayValue: settingsStore.theme === "light" ? "☀️ Claro" : "🌙 Escuro",
+		displayValue: settingsStore.theme === "light" ? "Claro" : "Escuro",
 		currentValue: settingsStore.theme,
 		type: "select",
 		options: [
-			{ label: "☀️ Claro", value: "light" },
-			{ label: "🌙 Escuro", value: "dark" },
+			{ label: "Claro", value: "light" },
+			{ label: "Escuro", value: "dark" },
 		],
 		endpoint: "theme",
 	},

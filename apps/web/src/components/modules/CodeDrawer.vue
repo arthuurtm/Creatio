@@ -32,9 +32,9 @@ const hasIssues = computed(() => diagnostics.value.length > 0);
 
 // Ícone e cor por severidade
 function severityIcon(severity: string) {
-  if (severity === 'error') return '🔴';
-  if (severity === 'warning') return '🟡';
-  return '🔵';
+  if (severity === 'error') return 'error';
+  if (severity === 'warning') return 'warning';
+  return 'info';
 }
 
 function severityClass(severity: string) {
@@ -119,7 +119,7 @@ function downloadCodeFile() {
         </div>
 
         <div v-if="compileErrorText" class="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-xs font-mono">
-          ⚠️ {{ compileErrorText }}
+          {{ compileErrorText }}
         </div>
 
         <!-- Painel de Diagnósticos -->
@@ -140,7 +140,7 @@ function downloadCodeFile() {
                   :class="severityClass(diag.severity)"
                 >
                   <div class="diag-header">
-                    <span class="diag-icon">{{ severityIcon(diag.severity) }}</span>
+                    <span class="diag-icon-circle"></span>
                     <span class="diag-rule">{{ diag.rule }}</span>
                     <span v-if="diag.nodeLabel" class="diag-label">{{ diag.nodeLabel }}</span>
                   </div>
@@ -153,7 +153,7 @@ function downloadCodeFile() {
 
         <!-- Status de aprovação quando não há erros -->
         <div v-else-if="compiledCodeText && !isCompiling" class="p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-xs flex items-center gap-2">
-          ✅ Nenhum problema encontrado no seu código!
+          Nenhum problema encontrado no seu código!
         </div>
 
         <div class="flex-1 min-h-0 bg-[#1e1e1e] text-[#d4d4d4] p-4 rounded-xl font-mono text-xs overflow-auto leading-relaxed select-text border border-white/10 relative">
@@ -210,7 +210,7 @@ function downloadCodeFile() {
   margin-bottom: 3px;
 }
 
-.diag-icon {
+.diag-icon-circle { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; } .diag-error .diag-icon-circle { background-color: #ef4444; } .diag-warning .diag-icon-circle { background-color: #f59e0b; } .diag-info .diag-icon-circle { background-color: #3b82f6; } .old-diag-icon {
   font-size: 10px;
   flex-shrink: 0;
 }

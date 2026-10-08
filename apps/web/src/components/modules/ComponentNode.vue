@@ -42,7 +42,7 @@ function renderIcon(icon: any) {
 }
 
 // ==========================================
-// 🚀 GERAÇÃO DE CÓDIGO DIRETA PELO RETE STUDIO
+// GERAÇÃO DE CÓDIGO DIRETA PELO RETE STUDIO
 // ==========================================
 const generateCode = async (): Promise<string> => {
   if (!editor) return "";
@@ -143,7 +143,7 @@ onMounted(async () => {
   });
 
   // ====================================================
-  // 💡 MENU DE CONTEXTO NATIVO (SNIPPETS DA LINGUAGEM JS)
+  // MENU DE CONTEXTO NATIVO (SNIPPETS DA LINGUAGEM JS)
   // ====================================================
   area.addPipe((context) => {
     if (context.type === "contextmenu") {
