@@ -96,9 +96,9 @@ export function syncThemeCssVariables(theme: "light" | "dark") {
 		root.style.setProperty("--v-theme-primary", "168, 199, 250");
 		root.style.setProperty("--v-theme-on-primary", "6, 46, 111");
 		root.style.setProperty("--v-theme-secondary", "127, 207, 255");
-		root.style.setProperty("--v-theme-surface", "24, 24, 28");
-		root.style.setProperty("--v-theme-surface-variant", "68, 71, 70");
-		root.style.setProperty("--v-theme-background", "15, 15, 17");
+		root.style.setProperty("--v-theme-surface", "30, 30, 36");
+		root.style.setProperty("--v-theme-surface-variant", "58, 60, 64");
+		root.style.setProperty("--v-theme-background", "22, 22, 26");
 		root.style.setProperty("--v-theme-on-surface", "227, 227, 227");
 		root.style.setProperty("--v-theme-error", "242, 184, 181");
 	}
