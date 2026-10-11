@@ -14,6 +14,7 @@ export type {
 } from "rete-studio-core";
 export {
 	BaseNode,
+	Connection,
 	createAdapter,
 	deserialize,
 	serialize,
