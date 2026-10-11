@@ -1,33 +1,30 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, h, computed } from "vue";
-import { NodeEditor } from "rete";
-import { AreaPlugin, AreaExtensions } from "rete-area-plugin";
-import { ConnectionPlugin, Presets as ConnectionPresets } from "rete-connection-plugin";
-import { VuePlugin, Presets, type VueArea2D } from "rete-vue-plugin";
+import { createReteEditor, AreaExtensions, type ReteEditorInstance } from "@projeto/editor";
 import { NDropdown, NIcon } from "naive-ui";
-import { DeleteOutlined, AddOutlined } from "@vicons/material";
+import { DeleteOutlined, AddOutlined, ZoomInOutlined, ZoomOutOutlined, FitScreenOutlined, DeleteSweepOutlined, CenterFocusStrongOutlined } from "@vicons/material";
 import { useSettingsStore } from "@/stores/global";
 import { useEditor } from "@/composables/useEditor";
 import { jsAdapter } from "@projeto/compiler";
 import {
   type Schemes,
-  BaseNode,
   type LanguageSnippet,
   applyInteraction,
   deserialize,
   serialize,
 } from "@projeto/types";
 import CustomNode from "./CustomNode.vue";
-
-type AreaExtra = VueArea2D<Schemes>;
+import CustomControl from "./CustomControl.vue";
 
 const container = ref<HTMLElement | null>(null);
 const settingsStore = useSettingsStore();
 const editorState = useEditor();
 const isDark = computed(() => settingsStore.theme === "dark");
 
-let editor: NodeEditor<Schemes> | null = null;
-let area: AreaPlugin<Schemes, AreaExtra> | null = null;
+let instance: ReteEditorInstance | null = null;
+let editor: ReteEditorInstance["editor"] | null = null;
+let area: ReteEditorInstance["area"] | null = null;
+
 
 const emit = defineEmits<{ openCodePanel: [] }>();
 
@@ -84,30 +81,12 @@ function formatSnippetsToMenu(snippets: LanguageSnippet[]): any[] {
 onMounted(async () => {
   if (!container.value) return;
 
-  editor = new NodeEditor<Schemes>();
-  area = new AreaPlugin<Schemes, AreaExtra>(container.value);
-  const connection = new ConnectionPlugin<Schemes, AreaExtra>();
-  const render = new VuePlugin<Schemes, AreaExtra>();
-
-  AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
-    accumulating: AreaExtensions.accumulateOnCtrl(),
+  instance = await createReteEditor(container.value, {
+    customNode: CustomNode,
+    customControl: CustomControl,
   });
-
-  render.addPreset(
-    Presets.classic.setup({
-      customize: {
-        node(context) {
-          return CustomNode as any;
-        },
-      },
-    }) as any
-  );
-  connection.addPreset(ConnectionPresets.classic.setup() as any);
-
-  editor.use(area);
-  area.use(connection);
-  area.use(render);
-  AreaExtensions.simpleNodesOrder(area);
+  editor = instance.editor;
+  area = instance.area;
 
   // Registra a instância ativa na store global
   editorState.setEditorInstance(editor);
@@ -153,14 +132,51 @@ onMounted(async () => {
 
       const selectedContext = context.data.context;
       if (typeof selectedContext === "object" && "id" in selectedContext) {
+        // Clique com botão direito em cima de um nó
         selectedNodeId.value = String(selectedContext.id);
         menuOptions.value = [
-          { label: "Excluir Nó", key: "delete", icon: renderIcon(DeleteOutlined) },
+          { label: "Excluir nó", key: "delete", icon: renderIcon(DeleteOutlined) },
         ];
         showMenu.value = true;
       } else {
+        // Clique com botão direito na lousa vazia
         selectedNodeId.value = null;
-        menuOptions.value = formatSnippetsToMenu(editorState.snippets.value);
+        menuOptions.value = [
+          {
+            label: "Voltar",
+            key: "canvas_undo",
+            icon: renderIcon(CenterFocusStrongOutlined),
+            disabled: true,
+          },
+          {
+            label: "Avançar",
+            key: "canvas_redo",
+            icon: renderIcon(CenterFocusStrongOutlined),
+            disabled: true,
+          },
+          { type: "divider", key: "d1" },
+          {
+            label: "Zoom +",
+            key: "canvas_zoom_in",
+            icon: renderIcon(ZoomInOutlined),
+          },
+          {
+            label: "Zoom −",
+            key: "canvas_zoom_out",
+            icon: renderIcon(ZoomOutOutlined),
+          },
+          {
+            label: "Ajustar à tela",
+            key: "canvas_fit",
+            icon: renderIcon(FitScreenOutlined),
+          },
+          { type: "divider", key: "d2" },
+          {
+            label: "Limpar lousa",
+            key: "canvas_clear",
+            icon: renderIcon(DeleteSweepOutlined),
+          },
+        ];
         showMenu.value = true;
       }
     } else if (context.type === "pointerdown") {
@@ -176,6 +192,26 @@ async function handleMenuSelect(key: string) {
   // Ação de Excluir Nó
   if (key === "delete" && selectedNodeId.value && editor) {
     await editor.removeNode(selectedNodeId.value);
+    return;
+  }
+
+  // Ações de Canvas
+  if (key === "canvas_zoom_in" && area) {
+    const current = area.area.transform.k;
+    await area.area.zoom(Math.min(current * 1.3, 5));
+    return;
+  }
+  if (key === "canvas_zoom_out" && area) {
+    const current = area.area.transform.k;
+    await area.area.zoom(Math.max(current * 0.75, 0.1));
+    return;
+  }
+  if (key === "canvas_fit" && area && editor) {
+    await AreaExtensions.zoomAt(area, editor.getNodes());
+    return;
+  }
+  if (key === "canvas_clear" && editor) {
+    await editor.clear();
     return;
   }
 
@@ -202,16 +238,18 @@ async function handleMenuSelect(key: string) {
 }
 
 onBeforeUnmount(() => {
-  if (area) area.destroy();
+  instance?.destroy();
 });
+
 </script>
 
 <template>
   <div class="canvas-wrapper" :class="isDark ? 'canvas-dark' : 'canvas-light'">
-    <slot name="header" />
     <div class="rete-container" ref="container"></div>
+    <slot name="header" />
 
     <NDropdown
+      to="body"
       placement="bottom-start"
       trigger="manual"
       :x="menuX"
@@ -226,8 +264,29 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .canvas-wrapper { width: 100%; height: 100%; position: relative; }
+
+/* Tema Claro: variáveis dos nós */
+.canvas-light {
+  --node-bg: #ffffff;
+  --node-header-bg: #f1f5f9;
+  --node-border: #e2e8f0;
+  --node-text: #1f2937;
+  --node-text-muted: #6b7280;
+  --node-primary: #1778fb;
+}
+
+/* Tema Escuro: variáveis dos nós */
+.canvas-dark {
+  --node-bg: #1e1e24;
+  --node-header-bg: #16161a;
+  --node-border: rgba(255, 255, 255, 0.10);
+  --node-text: #f2f2f2;
+  --node-text-muted: #9ca3af;
+  --node-primary: #1778fb;
+}
+
 .rete-container { width: 100%; height: 100%; background-size: 22px 22px; background-image: radial-gradient(circle, #00000020 1px, transparent 1.5px); }
 .canvas-dark .rete-container { background-color: #0f1115; background-image: radial-gradient(circle, #ffffff20 1px, transparent 1.5px); }
 .canvas-light .rete-container { background-color: #f8fafc; }
-:deep(.rete-connection) path { stroke: rgb(var(--v-theme-primary, 11, 87, 208)); stroke-width: 3px; }
+:deep(.rete-connection) path { stroke: #1778fb; stroke-width: 3px; }
 </style>
