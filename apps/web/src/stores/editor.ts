@@ -1,15 +1,14 @@
 import { jsAdapter } from "@projeto/compiler";
+import { safeSerialize, type NodeEditor } from "@projeto/editor";
 import {
 	BaseNode,
 	deserialize,
 	type EditorState,
 	type LanguageSnippet,
 	type Schemes,
-	serialize,
 } from "@projeto/types";
 import { defineStore } from "pinia";
-import type { NodeEditor } from "rete";
-import { reactive, ref, shallowRef, computed } from "vue";
+import { computed, reactive, ref, shallowRef } from "vue";
 
 export interface FileInfo {
 	id: number | null;
@@ -35,7 +34,9 @@ export const useEditorStore = defineStore("editor", () => {
 
 	// Acesso aos nós e conexões do Rete
 	const nodes = computed(() => (editor.value ? editor.value.getNodes() : []));
-	const connections = computed(() => (editor.value ? editor.value.getConnections() : []));
+	const connections = computed(() =>
+		editor.value ? editor.value.getConnections() : [],
+	);
 
 	// Snippets de código disponíveis para inserção
 	const snippets = ref<LanguageSnippet[]>([]);
@@ -81,7 +82,7 @@ export const useEditorStore = defineStore("editor", () => {
 	// Transpila os nós visuais atuais de volta para código JavaScript
 	async function compileToCode(): Promise<string> {
 		if (!editor.value) return "";
-		const state = serialize(editor.value);
+		const state = safeSerialize(editor.value);
 		return await jsAdapter.graphToCode(state);
 	}
 
@@ -89,7 +90,7 @@ export const useEditorStore = defineStore("editor", () => {
 	function getState(): EditorState | null {
 		if (!editor.value) return null;
 		return {
-			...serialize(editor.value),
+			...safeSerialize(editor.value),
 			info: { ...info },
 		};
 	}
