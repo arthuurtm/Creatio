@@ -4,11 +4,89 @@
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Creatio</title>
+    <style>
+      /* Cores Padrão (Tema Claro do seu Naive UI) */
+      :root {
+        --bg-color: #f0f4f9;
+        --loader-track: #e2e8f0;
+        --loader-bar: #0b57d0;
+      }
+
+      /* Cores Tema Escuro (do seu darkThemeOverrides) */
+      [data-theme="dark"],
+      .dark {
+        --bg-color: #0f0f11;
+        --loader-track: #27272a;
+        --loader-bar: #a8c7fa;
+      }
+
+      body {
+        margin: 0;
+        background-color: var(--bg-color);
+        font-family: Inter, Roboto, Outfit, system-ui, -apple-system, sans-serif;
+        transition: background-color 0.2s ease;
+      }
+
+      .initial-loader {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      .loader-bar {
+        width: 160px;
+        height: 4px;
+        background-color: var(--loader-track);
+        border-radius: 9999px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .loader-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 40%;
+        background-color: var(--loader-bar);
+        border-radius: 9999px;
+        animation: loading 1.2s infinite ease-in-out;
+      }
+
+      @keyframes loading {
+        0% { left: -40%; }
+        100% { left: 100%; }
+      }
+    </style>
+
+    <!-- Script síncrono no head para evitar 'flicker' ao carregar -->
+    <script>
+      (function () {
+        const savedTheme = localStorage.getItem('theme'); // Ajuste a chave se usar outro nome no localStorage (ex: 'creatio-theme')
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Exibido enquanto o app não carrega -->
+      <div class="initial-loader">
+        <div class="loader-bar">
+          <div class="loader-progress"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="src/main.ts"></script>
   </body>
 </html>
