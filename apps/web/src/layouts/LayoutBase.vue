@@ -105,7 +105,7 @@ watchEffect(() => {
 <template>
   <div class="flex flex-col w-screen h-screen overflow-hidden relative bg-[color:var(--n-body-color)]">
 
-    <div class="relative flex items-center w-full p-2">
+    <div class="relative flex items-center w-full p-2 border-b">
 
       <div
         class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer z-10 transition-opacity hover:opacity-80"

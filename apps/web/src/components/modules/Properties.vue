@@ -107,32 +107,38 @@ async function insertDirectly(snippet: LanguageSnippet) {
 function getSnippetStyle(label: string) {
   const l = label.toLowerCase();
   
-  if (l.includes('if') || l.includes('else') || l.includes('switch') || l.includes('case')) {
-    return { type: 'warning', icon: GitBranchOutline, desc: 'Controle de fluxo' };
+  if (l.includes('if') || l.includes('else') || l.includes('switch') || l.includes('case') || l.includes('decisão') || l.includes('senão') || l.includes('escolha')) {
+    return { color: '#8b5cf6', icon: GitBranchOutline, desc: 'Controle de fluxo' };
   }
-  if (l.includes('for') || l.includes('while') || l.includes('loop')) {
-    return { type: 'primary', icon: SyncOutline, desc: 'Laço de repetição' };
+  if (l.includes('for') || l.includes('while') || l.includes('loop') || l.includes('repetição') || l.includes('repetir') || l.includes('faça') || l.includes('laço') || l.includes('item da lista')) {
+    return { color: '#8b5cf6', icon: SyncOutline, desc: 'Laço de repetição' };
   }
-  if (l.includes('const') || l.includes('let') || l.includes('var') || l.includes('vari')) {
-    return { type: 'info', icon: CubeOutline, desc: 'Memória / Variável' };
+  if (l.includes('const') || l.includes('let') || l.includes('var') || l.includes('vari') || l.includes('guardar') || l.includes('constante') || l.includes('número') || l.includes('texto') || l.includes('verdadeiro')) {
+    return { color: '#06b6d4', icon: CubeOutline, desc: 'Memória / Variável' };
   }
-  if (l.includes('function') || l.includes('return') || l.includes('função')) {
-    return { type: 'success', icon: CodeSlashOutline, desc: 'Bloco de execução' };
+  if (l.includes('function') || l.includes('return') || l.includes('função') || l.includes('criar uma função') || l.includes('parâmetro') || l.includes('chamar')) {
+    return { color: '#f59e0b', icon: CodeSlashOutline, desc: 'Bloco de execução' };
   }
-  if (l.includes('try') || l.includes('catch') || l.includes('throw')) {
-    return { type: 'error', icon: AlertCircleOutline, desc: 'Tratamento de erro' };
+  if (l.includes('try') || l.includes('catch') || l.includes('throw') || l.includes('erro') || l.includes('capturar') || l.includes('tentar')) {
+    return { color: '#8b5cf6', icon: AlertCircleOutline, desc: 'Tratamento de erro' };
   }
-  if (l.includes('import') || l.includes('export')) {
-    return { type: 'primary', icon: HardwareChipOutline, desc: 'Módulo' };
+  if (l.includes('import') || l.includes('export') || l.includes('módulo')) {
+    return { color: '#3b82f6', icon: HardwareChipOutline, desc: 'Módulo' };
+  }
+  if (l.includes('lista') || l.includes('array') || l.includes('adicionar') || l.includes('tamanho') || l.includes('índice') || l.includes('item')) {
+    return { color: '#3b82f6', icon: FolderOutline, desc: 'Lista / Array' };
+  }
+  if (l.includes('cálculo') || l.includes('somar') || l.includes('subtrair') || l.includes('multiplicar') || l.includes('dividir') || l.includes('resto') || l.includes('mostrar') || l.includes('escrever') || l.includes('console')) {
+    return { color: '#3b82f6', icon: FlashOutline, desc: 'Comando' };
   }
   
-  return { type: 'primary', icon: FlashOutline, desc: 'Comando de sintaxe' };
+  return { color: '#3b82f6', icon: FlashOutline, desc: 'Comando de sintaxe' };
 }
 </script>
 
 <template>
   <aside
-    class="h-full shrink-0 relative transition-all duration-300 ease-in-out border-r border-[var(--border-color)] bg-[var(--n-color)]"
+    class="h-full shrink-0 relative transition-all duration-300 ease-in-out border-r bg-[var(--n-color)]"
     :class="{
       'w-[340px]': !isRail && !isHidden,
       'w-[56px]': isRail && !isHidden,
@@ -148,9 +154,9 @@ function getSnippetStyle(label: string) {
     />
 
     <!-- MODO EXPANDIDO -->
-    <div v-show="!isRail && !isHidden" class="h-full flex flex-col min-w-[340px]">
+    <div v-show="!isRail && !isHidden" class="h-full flex flex-col min-w-[340px] overflow-hidden">
       <!-- Header -->
-      <div class="p-4 border-b border-[var(--border-color)]">
+      <div class="p-4 border-b">
         <NFlex justify="space-between" align="center" class="mb-4">
           <div class="flex items-center gap-2">
             <NIcon size="20" class="text-[color:var(--n-primary-color)]"><HardwareChipOutline /></NIcon>
@@ -176,83 +182,87 @@ function getSnippetStyle(label: string) {
       </div>
 
       <!-- Lista estilizada -->
-      <NScrollbar class="flex-grow p-4">
-        <div v-if="filteredSnippets.length === 0" class="py-12 text-center">
-          <NEmpty description="Nenhum bloco encontrado com essa busca" />
-        </div>
+      <NScrollbar class="flex-grow min-h-0">
+        <div class="p-4 pb-8">
+          <div v-if="filteredSnippets.length === 0" class="py-12 text-center">
+            <NEmpty description="Nenhum bloco encontrado com essa busca" />
+          </div>
 
-        <NFlex vertical :size="12" v-else>
-          <template v-for="snippet in filteredSnippets" :key="snippet.label">
-            
-            <!-- Grupo com sub-itens -->
-            <NCollapse
-              v-if="'subitems' in snippet && snippet.subitems"
-              arrow-placement="right"
-              class="snippet-group-collapse border border-[color:var(--n-border-color)] rounded-2xl bg-[color:var(--n-action-color)] overflow-hidden"
-            >
-              <NCollapseItem :name="snippet.label">
-                <template #header>
-                  <div class="flex items-center gap-2 py-1">
-                    <NIcon size="16" class="opacity-70"><FolderOutline /></NIcon>
-                    <NText strong class="text-[13px]">{{ snippet.label }}</NText>
-                    <NTag size="small" round :bordered="false" class="ml-2 font-mono text-[10px] opacity-70">
-                      {{ snippet.subitems.length }}
-                    </NTag>
-                  </div>
-                </template>
-                <div class="flex flex-col gap-2 p-2 pt-0">
-                  <NCard
-                    v-for="sub in snippet.subitems"
-                    :key="sub.label"
-                    hoverable
-                    embedded
-                    draggable="true"
-                    @dragstart="onDragStart($event, sub)"
-                    @click="insertDirectly(sub)"
-                    class="cursor-grab active:cursor-grabbing rounded-xl transition-all hover:border-[color:var(--n-primary-color)] snippet-card"
-                    content-style="padding: 10px 12px;"
-                  >
-                    <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-[color:var(--n-tag-color)] shrink-0">
-                        <NIcon size="18" :component="getSnippetStyle(sub.label).icon" :style="`color: var(--n-${getSnippetStyle(sub.label).type}-color)`" />
-                      </div>
-                      <div class="flex flex-col min-w-0 flex-1">
-                        <NText strong class="text-xs truncate">{{ sub.label }}</NText>
-                        <NText class="text-[10px] opacity-60 truncate">{{ getSnippetStyle(sub.label).desc }}</NText>
-                      </div>
-                      <NIcon size="16" class="opacity-30 shrink-0"><ChevronBack class="rotate-180" /></NIcon>
+          <NFlex vertical :size="12" v-else>
+            <template v-for="snippet in filteredSnippets" :key="snippet.label">
+              
+              <!-- Grupo com sub-itens -->
+              <NCollapse
+                v-if="'subitems' in snippet && snippet.subitems"
+                arrow-placement="right"
+                class="snippet-group-collapse border rounded-2xl overflow-hidden"
+                :class="(snippet as any).advanced ? 'bg-[color:var(--n-action-color)] opacity-70' : 'bg-[color:var(--n-action-color)]'"
+                :default-expanded-names="(snippet as any).advanced ? [] : [snippet.label]"
+              >
+                <NCollapseItem :name="snippet.label">
+                  <template #header>
+                    <div class="flex items-center gap-2 py-1">
+                      <NIcon size="16" class="opacity-70"><FolderOutline /></NIcon>
+                      <NText strong class="text-[13px]">{{ snippet.label }}</NText>
+                      <NTag size="small" round :bordered="false" class="ml-2 font-mono text-[10px] opacity-70">
+                        {{ snippet.subitems.length }}
+                      </NTag>
                     </div>
-                  </NCard>
-                </div>
-              </NCollapseItem>
-            </NCollapse>
+                  </template>
+                  <div class="flex flex-col gap-2 p-2 pt-0">
+                    <NCard
+                      v-for="sub in snippet.subitems"
+                      :key="sub.label"
+                      hoverable
+                      embedded
+                      draggable="true"
+                      @dragstart="onDragStart($event, sub)"
+                      @click="insertDirectly(sub)"
+                      class="cursor-grab active:cursor-grabbing rounded-xl transition-all hover:border-[color:var(--n-primary-color)] snippet-card"
+                      content-style="padding: 10px 12px;"
+                    >
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-[color:var(--n-tag-color)] shrink-0">
+                          <NIcon size="18" :component="getSnippetStyle(sub.label).icon" :style="`color: ${getSnippetStyle(sub.label).color}`" />
+                        </div>
+                        <div class="flex flex-col min-w-0 flex-1">
+                          <NText strong class="text-xs truncate">{{ sub.label }}</NText>
+                          <NText class="text-[10px] opacity-60 truncate">{{ getSnippetStyle(sub.label).desc }}</NText>
+                        </div>
+                        <NIcon size="16" class="opacity-30 shrink-0"><ChevronBack class="rotate-180" /></NIcon>
+                      </div>
+                    </NCard>
+                  </div>
+                </NCollapseItem>
+              </NCollapse>
 
-            <!-- Bloco único -->
-            <NCard
-              v-else
-              hoverable
-              draggable="true"
-              @dragstart="onDragStart($event, snippet)"
-              @click="insertDirectly(snippet)"
-              class="cursor-grab active:cursor-grabbing rounded-2xl transition-all hover:border-[color:var(--n-primary-color)] snippet-card border border-[color:var(--n-border-color)]"
-              content-style="padding: 12px 14px;"
-            >
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-[color:var(--n-tag-color)] shrink-0 border border-[color:var(--n-border-color)]">
-                  <NIcon size="20" :component="getSnippetStyle(snippet.label).icon" :style="`color: var(--n-${getSnippetStyle(snippet.label).type}-color)`" />
+              <!-- Bloco único -->
+              <NCard
+                v-else
+                hoverable
+                draggable="true"
+                @dragstart="onDragStart($event, snippet)"
+                @click="insertDirectly(snippet)"
+                class="cursor-grab active:cursor-grabbing rounded-2xl transition-all hover:border-[color:var(--n-primary-color)] snippet-card border"
+                content-style="padding: 12px 14px;"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-[color:var(--n-tag-color)] shrink-0 border">
+                    <NIcon size="20" :component="getSnippetStyle(snippet.label).icon" :style="`color: ${getSnippetStyle(snippet.label).color}`" />
+                  </div>
+                  <div class="flex flex-col min-w-0 flex-1">
+                    <NText strong class="text-[13px] truncate">{{ snippet.label }}</NText>
+                    <NText class="text-[11px] opacity-60 truncate">{{ getSnippetStyle(snippet.label).desc }}</NText>
+                  </div>
+                  <NTag size="small" :bordered="false" round type="primary" class="shrink-0 text-[10px]">
+                    adicionar
+                  </NTag>
                 </div>
-                <div class="flex flex-col min-w-0 flex-1">
-                  <NText strong class="text-[13px] truncate">{{ snippet.label }}</NText>
-                  <NText class="text-[11px] opacity-60 truncate">{{ getSnippetStyle(snippet.label).desc }}</NText>
-                </div>
-                <NTag size="small" :bordered="false" round type="primary" class="shrink-0 text-[10px]">
-                  adicionar
-                </NTag>
-              </div>
-            </NCard>
+              </NCard>
 
-          </template>
-        </NFlex>
+            </template>
+          </NFlex>
+        </div>
       </NScrollbar>
     </div>
   </aside>

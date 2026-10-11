@@ -36,7 +36,7 @@ onUnmounted(() => editor.clearState());
 </script>
 
 <template>
-  <div class="flex h-screen w-screen overflow-hidden relative">
+  <div class="flex h-full w-full overflow-hidden relative">
     <Properties id="tour-properties" />
 
     <div class="grow h-full relative" ref="canvasAreaRef">
@@ -45,7 +45,7 @@ onUnmounted(() => editor.clearState());
         @open-code-panel="showCodeDrawer = true"
       >
         <template #header>
-          <div class="absolute top-3 right-3 z-[100] pointer-events-none flex gap-2">
+          <div class="absolute top-3 right-3 pointer-events-none flex gap-2 z-0">
             <div class="pointer-events-auto flex items-center gap-2">
               <NButton id="tour-btn-code" size="small" secondary round type="primary" @click="showCodeDrawer = true">
                 <template #icon><NIcon><CodeOutlined /></NIcon></template>
@@ -90,9 +90,9 @@ onUnmounted(() => editor.clearState());
           </div>
         </template>
       </ComponentNode>
-
-      <CodeDrawer v-model:show="showCodeDrawer" :to="canvasAreaRef" />
     </div>
+
+    <CodeDrawer v-model:show="showCodeDrawer" />
 
     <RecentProjectsOverlay v-if="!id" ref="overlayRef" />
   </div>
