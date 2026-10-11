@@ -20,15 +20,21 @@ const envSchema = z.object({
 	NODE_ENV: z
 		.enum(["development", "test", "production"])
 		.default("development"),
-	EMAIL_FROM: z.email("Email inválido!"),
-	RESEND_API_KEY: z.string().min(1, "Resend API key is required"),
+	EMAIL_USER: z.email("Email inválido!"),
+  EMAIL_FROM: z.string().optional(),
+	EMAIL_PASS: z.string().min(1, "Email app password is required"),
 	VITE_GCLIENT_LOGIN_ID: z.string().optional(),
 	PORT: z.string().default("3000").optional(),
 	MINIO_ENDPOINT: z.string().default("localhost"),
 	MINIO_USER: z.string().min(1, "Minio user is required"),
 	MINIO_PASSWORD: z.string().min(1, "Minio password is required"),
 	MINIO_PORT: z.coerce.number().int().default(9000).optional(),
-});
+}).transform((data) => ({
+  ...data,
+  EMAIL_FROM: data.EMAIL_FROM && data.EMAIL_FROM.trim() !== ""
+    ? data.EMAIL_FROM
+    : data.EMAIL_USER,
+}));
 
 // valida o process.env contra o Schema
 const _env = envSchema.safeParse(process.env);
