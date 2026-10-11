@@ -59,7 +59,14 @@ export function useEditorPersistence() {
       diagnostics.value = [];
       compileError.value = "";
     } catch (err: any) {
-      compileError.value = err.message || "Erro na compilação do Rete";
+      let msg = err.message || "Erro na compilação do Rete";
+      
+      // Traduz e explica o erro clássico de controle de fluxo (statement nodes desconectados)
+      if (msg.includes("Multiple roots")) {
+        msg = "Há blocos de execução soltos no quadro! Você precisa conectá-los usando a linha de fluxo (setas laterais) para que o sistema saiba a ordem exata em que devem ser executados.";
+      }
+      
+      compileError.value = msg;
     } finally {
       isCompiling.value = false;
     }
