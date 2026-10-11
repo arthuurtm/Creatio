@@ -35,7 +35,7 @@ export default defineConfig({
 		}),
 		Vue(),
 		svgLoader(),
-		vueDevTools(),
+		// vueDevTools(),
 	],
 	optimizeDeps: {
 		exclude: ["vue-router"],
@@ -48,7 +48,7 @@ export default defineConfig({
 		extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"],
 	},
 	server: {
-		allowedHosts: ["lead-twiki-dad-min.trycloudflare.com"],
+		allowedHosts: [".loca.lt"],
 		proxy: {
 			"/api": {
 				target: "http://localhost:3000",
