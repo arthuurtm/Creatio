@@ -13,7 +13,12 @@ const originalAdapter = createAdapter(javascriptLang);
 
 /**
  * Snippets amigáveis em português para iniciantes.
- * Ficam no topo do catálogo como blocos padrão.
+ *
+ * Regras seguidas para o conversor código → grafo do rete-studio aceitar:
+ *   1. Sem comentários dentro do código (viram nós no AST e podem quebrar a conversão).
+ *   2. Todo identificador usado é declarado no próprio snippet.
+ *   3. Apenas construções que existem nos snippets nativos do rete-studio
+ *      (variáveis, if, for, while, function, return, array, try/catch, console.log).
  */
 const beginnerSnippets = [
   {
@@ -46,7 +51,7 @@ const beginnerSnippets = [
       },
       {
         label: "Mostrar uma variável",
-        code: "console.log(variavel);",
+        code: "let variavel = 42;\nconsole.log(variavel);",
       },
     ],
   },
@@ -55,15 +60,11 @@ const beginnerSnippets = [
     subitems: [
       {
         label: "Se (simples)",
-        code: "if (condicao) {\n  // faça algo\n}",
+        code: 'let condicao = true;\nif (condicao) {\n  console.log("verdadeiro");\n}',
       },
       {
         label: "Se / Senão",
-        code: "if (condicao) {\n  // faça algo\n} else {\n  // senão, faça outro\n}",
-      },
-      {
-        label: "Escolha um caso",
-        code: "switch (valor) {\n  case 1:\n    // caso 1\n    break;\n  case 2:\n    // caso 2\n    break;\n  default:\n    // padrão\n    break;\n}",
+        code: 'let condicao = true;\nif (condicao) {\n  console.log("verdadeiro");\n} else {\n  console.log("falso");\n}',
       },
     ],
   },
@@ -72,19 +73,15 @@ const beginnerSnippets = [
     subitems: [
       {
         label: "Repetir N vezes (for)",
-        code: "for (let i = 0; i < 10; i++) {\n  // repita algo\n}",
+        code: "for (let i = 0; i < 10; i++) {\n  console.log(i);\n}",
       },
       {
         label: "Repetir enquanto (while)",
-        code: "while (condicao) {\n  // repita enquanto verdadeiro\n}",
-      },
-      {
-        label: "Faça ao menos uma vez (do while)",
-        code: "do {\n  // executa ao menos uma vez\n} while (condicao);",
+        code: "let contador = 3;\nwhile (contador > 0) {\n  console.log(contador);\n  contador--;\n}",
       },
       {
         label: "Para cada item da lista",
-        code: "for (let item of lista) {\n  console.log(item);\n}",
+        code: "let lista = [1, 2, 3];\nfor (let i = 0; i < lista.length; i++) {\n  console.log(lista[i]);\n}",
       },
     ],
   },
@@ -93,15 +90,15 @@ const beginnerSnippets = [
     subitems: [
       {
         label: "Criar uma função",
-        code: "function minhaFuncao() {\n  // faça algo\n}",
+        code: 'function minhaFuncao() {\n  console.log("Olá!");\n}',
       },
       {
         label: "Função com parâmetro",
         code: "function somar(a, b) {\n  return a + b;\n}",
       },
       {
-        label: "Chamar uma função",
-        code: "minhaFuncao();",
+        label: "Criar e chamar uma função",
+        code: 'function minhaFuncao() {\n  console.log("Olá!");\n}\nminhaFuncao();',
       },
     ],
   },
@@ -114,15 +111,15 @@ const beginnerSnippets = [
       },
       {
         label: "Adicionar item à lista",
-        code: "lista.push(novoItem);",
+        code: "let lista = [1, 2, 3];\nlista.push(4);",
       },
       {
         label: "Pegar o tamanho da lista",
-        code: "let tamanho = lista.length;",
+        code: "let lista = [1, 2, 3];\nlet tamanho = lista.length;",
       },
       {
         label: "Pegar um item pelo índice",
-        code: "let primeiro = lista[0];",
+        code: "let lista = [1, 2, 3];\nlet primeiro = lista[0];",
       },
     ],
   },
@@ -131,23 +128,23 @@ const beginnerSnippets = [
     subitems: [
       {
         label: "Somar",
-        code: "let resultado = a + b;",
+        code: "let a = 10;\nlet b = 5;\nlet resultado = a + b;",
       },
       {
         label: "Subtrair",
-        code: "let resultado = a - b;",
+        code: "let a = 10;\nlet b = 5;\nlet resultado = a - b;",
       },
       {
         label: "Multiplicar",
-        code: "let resultado = a * b;",
+        code: "let a = 10;\nlet b = 5;\nlet resultado = a * b;",
       },
       {
         label: "Dividir",
-        code: "let resultado = a / b;",
+        code: "let a = 10;\nlet b = 5;\nlet resultado = a / b;",
       },
       {
         label: "Resto da divisão",
-        code: "let resto = a % b;",
+        code: "let a = 10;\nlet b = 3;\nlet resto = a % b;",
       },
     ],
   },
@@ -156,11 +153,22 @@ const beginnerSnippets = [
     subitems: [
       {
         label: "Tentar / Capturar erro",
-        code: "try {\n  // código que pode dar erro\n} catch (erro) {\n  console.log(erro);\n}",
+        code: 'try {\n  console.log("tentando...");\n} catch (erro) {\n  console.log(erro);\n}',
       },
     ],
   },
 ];
+
+/**
+ * Snippets que NÃO existem entre os nativos do rete-studio e que podem não ter
+ * conversor para grafo. Ficam fora do catálogo até serem testados com
+ * `testBeginnerSnippets()`. Para ativar, mova o item para `beginnerSnippets`.
+ */
+// const experimentalSnippets = [
+//   { label: "Escolha um caso (switch)", code: 'let valor = 1;\nswitch (valor) {\n  case 1:\n    console.log("um");\n    break;\n  default:\n    console.log("outro");\n    break;\n}' },
+//   { label: "Faça ao menos uma vez (do while)", code: "let i = 0;\ndo {\n  i++;\n} while (i < 3);" },
+//   { label: "Para cada item (for of)", code: "let lista = [1, 2, 3];\nfor (let item of lista) {\n  console.log(item);\n}" },
+// ];
 
 export const jsAdapter = {
   ...originalAdapter,
@@ -180,3 +188,4 @@ export const jsAdapter = {
 };
 
 export type { LanguageAdapter, LanguageSnippet } from 'rete-studio-core';
+export * from './controls';
