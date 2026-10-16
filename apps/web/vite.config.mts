@@ -35,7 +35,7 @@ export default defineConfig({
 		}),
 		Vue(),
 		svgLoader(),
-		// vueDevTools(),
+		vueDevTools(),
 	],
 	optimizeDeps: {
 		exclude: ["vue-router"],
