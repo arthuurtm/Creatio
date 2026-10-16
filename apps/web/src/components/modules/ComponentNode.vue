@@ -26,7 +26,7 @@ let editor: ReteEditorInstance["editor"] | null = null;
 let area: ReteEditorInstance["area"] | null = null;
 
 
-const emit = defineEmits<{ openCodePanel: [] }>();
+const emit = defineEmits<{ openCodePanel: []; editorReady: [] }>();
 
 const showMenu = ref(false);
 const menuX = ref(0);
@@ -85,11 +85,48 @@ onMounted(async () => {
     customNode: CustomNode,
     customControl: CustomControl,
   });
+
   editor = instance.editor;
   area = instance.area;
 
-  // Registra a instância ativa na store global
   editorState.setEditorInstance(editor);
+  emit("editorReady");
+
+  // Alterações estruturais do grafo.
+  const editorChangeEvents = new Set([
+    "nodecreated",
+    "noderemoved",
+    "connectioncreated",
+    "connectionremoved",
+    "nodeupdated",
+    "cleared",
+  ]);
+
+  editor.addPipe((context) => {
+    if (context.type === "nodecreated") {
+      applyInteraction(editor, (id) => area?.update("node", id));
+    }
+
+    if (editorChangeEvents.has(context.type)) {
+      void editorState.syncToCloud();
+    }
+
+    return context;
+  });
+
+  // Alterações de posição e tamanho na área de edição.
+  const areaChangeEvents = new Set([
+    "nodetranslated",
+    "noderesized",
+  ]);
+
+  area.addPipe((context) => {
+    if (areaChangeEvents.has(context.type)) {
+      void editorState.syncToCloud();
+    }
+
+    return context;
+  });
   await editorState.loadSnippets();
 
   // Permite arrastar snippets do catálogo direto para o canvas

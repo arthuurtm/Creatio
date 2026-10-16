@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   NInput,
   NInputNumber,
@@ -9,73 +9,72 @@ import {
   NSlider,
   NColorPicker
 } from 'naive-ui';
-
-type Kind =
-  | 'text' | 'number' | 'textarea' | 'boolean'
-  | 'slider' | 'color' | 'label'
-  | 'select' | 'insert' | 'unknown';
+import { useEditor } from '@/composables/useEditor';
+import { detectControlKind } from '@projeto/compiler';
 
 const props = defineProps<{
   data: any;
 }>();
 
-// Identifica o tipo pela forma do objeto (duck typing evita problemas de instanceof entre bundles)
-const kind = computed<Kind>(() => {
-  const d = props.data;
-  if (!d) return 'unknown';
+const editor = useEditor();
 
-  if (Array.isArray(d.options)) return 'select';
+const kind = computed(() => detectControlKind(props.data));
 
-  switch (d.options?.type) {
-    case 'text':
-    case 'string':
-      return 'text';
-    case 'number':
-      return 'number';
-    case 'textarea':
-      return 'textarea';
-    case 'boolean':
-    case 'checkbox':
-    case 'switch':
-      return 'boolean';
-    case 'range':
-    case 'slider':
-      return 'slider';
-    case 'color':
-      return 'color';
-    case 'label':
-      return 'label';
-  }
+// Valor local reativo para permitir digitação fluida sem perder o foco ou sofrer com lag de classes não-reativas
+const localValue = ref<any>(props.data?.value ?? props.data?.options?.initial ?? '');
 
-  if (typeof d.onClick === 'function') return 'insert';
-  return 'unknown';
-});
+watch(
+  () => [props.data?.value, props.data?.options?.initial],
+  ([v, init]) => {
+    const val = v ?? init ?? '';
+    if (val !== localValue.value) {
+      localValue.value = val;
+    }
+  },
+  { immediate: true }
+);
 
 function commit(val: unknown) {
-  if (typeof props.data.setValue === 'function') props.data.setValue(val);
-  else if (typeof props.data.change === 'function') props.data.change(val);
+  localValue.value = val;
+  if (typeof props.data?.setValue === 'function') {
+    props.data.setValue(val);
+  } else if (typeof props.data?.change === 'function') {
+    props.data.change(val);
+  }
+  // Dispara sincronização em nuvem e notifica store
+  editor.syncToCloud();
 }
 
-const value = computed({
-  get: () => props.data.value ?? props.data.options?.initial,
-  set: (val) => commit(val)
+const textValue = computed({
+  get: () => String(localValue.value ?? ''),
+  set: (val: string) => commit(val)
 });
 
 const numberValue = computed<number | null>({
   get: () => {
-    const v = value.value;
+    const v = localValue.value;
     return v === null || v === undefined || v === '' ? null : Number(v);
   },
   set: (val) => commit(val)
 });
 
 const sliderValue = computed<number>({
-  get: () => Number(value.value ?? props.data.options?.min ?? 0),
+  get: () => Number(localValue.value ?? props.data?.options?.min ?? 0),
+  set: (val) => commit(val)
+});
+
+const booleanValue = computed<boolean>({
+  get: () => Boolean(localValue.value),
+  set: (val) => commit(val)
+});
+
+const selectValue = computed({
+  get: () => localValue.value,
   set: (val) => commit(val)
 });
 
 const selectOptions = computed(() =>
-  (Array.isArray(props.data.options) ? props.data.options : []).map((o: any) => ({
+  (Array.isArray(props.data?.options) ? props.data.options : []).map((o: any) => ({
     label: o.label,
     value: o.value
   }))
@@ -84,22 +83,25 @@ const selectOptions = computed(() =>
 const opts = computed(() => (Array.isArray(props.data?.options) ? {} : props.data?.options ?? {}));
 
 function handleInsert() {
-  props.data.onClick?.(props.data);
+  props.data?.onClick?.(props.data);
 }
 </script>
 
 <template>
-  <div class="custom-control-wrapper w-full max-w-[160px]">
+  <!-- Controles não suportados não são exibidos: o nó mostra só o rótulo do campo -->
+  <div v-if="kind !== 'unknown'" class="custom-control-wrapper w-full">
 
-    <!-- Text -->
+    <!-- Text / Identifier -->
     <NInput
       v-if="kind === 'text'"
-      v-model:value="value"
+      v-model:value="textValue"
       :readonly="opts.readonly"
       size="tiny"
-      class="text-xs font-mono !rounded-md"
-      placeholder="..."
+      class="text-xs font-mono"
+      placeholder="digite aqui"
       @pointerdown.stop
+      @mousedown.stop
+      @click.stop
       @keydown.stop
     />
 
@@ -113,38 +115,57 @@ function handleInsert() {
       :step="opts.step ?? 1"
       :show-button="false"
       size="tiny"
-      class="text-xs font-mono !rounded-md"
+      class="text-xs font-mono"
       placeholder="0"
       @pointerdown.stop
+      @mousedown.stop
+      @click.stop
       @keydown.stop
     />
 
     <!-- Textarea -->
     <NInput
       v-else-if="kind === 'textarea'"
-      v-model:value="value"
+      v-model:value="textValue"
       type="textarea"
       :readonly="opts.readonly"
       :autosize="{ minRows: 1, maxRows: 4 }"
       size="tiny"
-      class="text-xs font-mono !rounded-md"
-      placeholder="..."
+      class="text-xs font-mono"
+      placeholder="digite aqui"
       @pointerdown.stop
+      @mousedown.stop
+      @click.stop
       @keydown.stop
       @wheel.stop
     />
 
-    <!-- Boolean / Switch -->
-    <NSwitch
+    <!-- Boolean / Switch: o texto ao lado deixa claro o estado atual -->
+    <div
       v-else-if="kind === 'boolean'"
-      v-model:value="value"
-      :disabled="opts.readonly"
-      size="small"
+      class="flex items-center gap-2"
       @pointerdown.stop
-    />
+      @mousedown.stop
+      @click.stop
+    >
+      <NSwitch
+        v-model:value="booleanValue"
+        :disabled="opts.readonly"
+        size="small"
+      />
+      <span class="text-[11px] font-mono opacity-80">
+        {{ booleanValue ? 'Verdadeiro' : 'Falso' }}
+      </span>
+    </div>
 
     <!-- Slider -->
-    <div v-else-if="kind === 'slider'" class="flex items-center gap-2" @pointerdown.stop>
+    <div
+      v-else-if="kind === 'slider'"
+      class="flex items-center gap-2"
+      @pointerdown.stop
+      @mousedown.stop
+      @click.stop
+    >
       <NSlider
         v-model:value="sliderValue"
         :min="opts.min ?? 0"
@@ -161,12 +182,14 @@ function handleInsert() {
     <!-- Color -->
     <NColorPicker
       v-else-if="kind === 'color'"
-      v-model:value="value"
+      v-model:value="textValue"
       :show-alpha="opts.alpha ?? false"
       :modes="['hex']"
       :disabled="opts.readonly"
       size="small"
       @pointerdown.stop
+      @mousedown.stop
+      @click.stop
     />
 
     <!-- Label (somente leitura) -->
@@ -181,11 +204,13 @@ function handleInsert() {
     <!-- Select -->
     <NSelect
       v-else-if="kind === 'select'"
-      v-model:value="value"
+      v-model:value="selectValue"
       :options="selectOptions"
       size="tiny"
-      class="text-xs !rounded-md"
+      class="text-xs"
       @pointerdown.stop
+      @mousedown.stop
+      @click.stop
     />
 
     <!-- Insert -->
@@ -195,15 +220,13 @@ function handleInsert() {
       type="primary"
       secondary
       block
-      class="text-xs !rounded-md font-bold uppercase tracking-wider"
+      class="text-xs font-bold uppercase tracking-wider"
       @click.stop="handleInsert"
       @pointerdown.stop
+      @mousedown.stop
     >
       Adicionar
     </NButton>
-
-    <!-- Fallback -->
-    <div v-else class="text-[9px] opacity-50 italic">Controle não suportado</div>
   </div>
 </template>
 
@@ -211,9 +234,14 @@ function handleInsert() {
 .custom-control-wrapper {
   margin: 2px 0;
   pointer-events: auto;
+  user-select: text;
+}
+:deep(.n-input) {
+  user-select: text;
 }
 :deep(.n-input__input-el),
 :deep(.n-input__textarea-el) {
   font-size: 11px !important;
+  user-select: text !important;
 }
 </style>
