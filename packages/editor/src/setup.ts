@@ -2,6 +2,8 @@ import { NodeEditor } from 'rete';
 import { AreaPlugin, AreaExtensions } from 'rete-area-plugin';
 import { ConnectionPlugin, Presets as ConnectionPresets } from 'rete-connection-plugin';
 import { VuePlugin, Presets, type VueArea2D } from 'rete-vue-plugin';
+import { AutoArrangePlugin, Presets as ArrangePresets } from 'rete-auto-arrange-plugin';
+import { ScopesPlugin, Presets as ScopesPresets } from 'rete-scopes-plugin';
 import { Connection } from '@projeto/types';
 import type { Schemes } from '@projeto/types';
 import type { Component } from 'vue';
@@ -11,6 +13,8 @@ type AreaExtra = VueArea2D<Schemes>;
 export interface ReteEditorInstance {
   editor: NodeEditor<Schemes>;
   area: AreaPlugin<Schemes, VueArea2D<Schemes>>;
+  /** Organiza os nós automaticamente (respeita nós aninhados via campo `parent`) */
+  arrange: AutoArrangePlugin<Schemes>;
   destroy: () => void;
 }
 
@@ -23,11 +27,11 @@ export interface CreateReteEditorOptions {
 
 /**
  * Cria e configura uma instância completa do editor Rete com os plugins de área,
- * conexão e renderização Vue. Encapsula o setup que antes ficava no ComponentNode.vue.
+ * conexão, renderização Vue, escopos (nós aninhados) e organização automática.
  *
  * @param container - O elemento HTML onde o canvas do editor será montado
  * @param options - Componentes Vue customizados para nós e controles
- * @returns A instância do editor, area plugin e função de destruição
+ * @returns A instância do editor, area plugin, arrange plugin e função de destruição
  */
 export async function createReteEditor(
   container: HTMLElement,
@@ -39,6 +43,13 @@ export async function createReteEditor(
   const area = new AreaPlugin<Schemes, AreaExtra>(container);
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const render = new VuePlugin<Schemes, AreaExtra>();
+
+  // Precisam ser criados DEPOIS da `area` (antes estavam no topo do módulo)
+  const arrange = new AutoArrangePlugin<Schemes>();
+  arrange.addPreset(ArrangePresets.classic.setup());
+
+  const scopes = new ScopesPlugin<Schemes>();
+  scopes.addPreset(ScopesPresets.classic.setup());
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -61,7 +72,10 @@ export async function createReteEditor(
   editor.use(area);
   area.use(connection);
   area.use(render);
-  AreaExtensions.simpleNodesOrder(area);
+  area.use(arrange);
+  area.use(scopes);
+  // Sem AreaExtensions.simpleNodesOrder(area): o ScopesPlugin traz a própria
+  // ordenação, em que o pai não cobre os filhos.
 
   // Garante que conexões criadas pela UI usem o Connection do rete-studio-core
   // (que tem o método serialize()), em vez do ClassicPreset.Connection padrão do Rete.
@@ -84,6 +98,7 @@ export async function createReteEditor(
   return {
     editor,
     area,
+    arrange,
     destroy: () => area.destroy(),
   };
 }

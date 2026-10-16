@@ -223,6 +223,35 @@ onMounted(async () => {
   });
 });
 
+async function insertSnippet(code: string, clientX: number, clientY: number) {
+  if (!editor || !area) return;
+
+  const before = new Set(editor.getNodes().map((n) => n.id));
+  const graphData = await jsAdapter.codeToGraph(code);
+  await deserialize(editor, graphData);
+  applyInteraction(editor, (id) => area?.update("node", id));
+
+  await instance?.arrange?.layout(); // só se o seu createReteEditor expuser o arrange
+
+  // move só os nós novos de nível raiz (os filhos acompanham o pai via ScopesPlugin)
+  const fresh = editor
+    .getNodes()
+    .filter((n: any) => !before.has(n.id) && !n.parent);
+  const views = fresh.map((n) => area!.nodeViews.get(n.id)!);
+  if (!views.length) return;
+
+  const { x: tx, y: ty, k } = area.area.transform;
+  const targetX = (clientX - tx) / k;
+  const targetY = (clientY - ty) / k;
+  const minX = Math.min(...views.map((v) => v.position.x));
+  const minY = Math.min(...views.map((v) => v.position.y));
+
+  for (const n of fresh) {
+    const p = area.nodeViews.get(n.id)!.position;
+    await area.translate(n.id, { x: p.x - minX + targetX, y: p.y - minY + targetY });
+  }
+}
+
 async function handleMenuSelect(key: string) {
   showMenu.value = false;
 

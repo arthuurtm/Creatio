@@ -1,11 +1,12 @@
 <template>
   <NCard
     class="rete-node"
-    :class="{ selected: data.selected }"
+    :class="{ selected: data.selected, 'is-scope': isContainer }"
     :style="[
       cssVars,
       {
         width: data.width ? data.width + 'px' : 'auto',
+        height: isContainer && data.height ? data.height + 'px' : undefined,
         minWidth: '220px'
       }
     ]"
@@ -144,11 +145,15 @@ interface NodeViewData {
   label: string;
   type: "statement" | "expression" | "unknown";
   width?: number;
+  height?: number;
   selected?: boolean;
   inputs?: Record<string, NodeSocket>;
   outputs?: Record<string, NodeSocket>;
   controls?: Record<string, unknown>;
 }
+
+// Nós que contêm outros nós (escopos). Ajuste conforme os tipos do seu editor.
+const SCOPE_LABELS = new Set(["Function"]);
 
 export default defineComponent({
   components: {
@@ -186,6 +191,12 @@ export default defineComponent({
     return { cssVars };
   },
   computed: {
+    // Contêiner: os nós filhos são desenhados por cima dele pelo ScopesPlugin.
+    // Aceita uma flag explícita no nó (isScope / hasChildren) ou o rótulo da lista acima.
+    isContainer(): boolean {
+      const d = this.data as any;
+      return !!(d.isScope ?? d.hasChildren ?? SCOPE_LABELS.has(d.label));
+    },
     visibleControls(): { key: string; control: any; label: string; showLabel: boolean }[] {
       return Object.entries(this.data.controls || {})
         .filter(([, control]) => isRenderableControl(control))
@@ -229,6 +240,19 @@ export default defineComponent({
 .rete-node.selected {
   border-color: var(--node-primary);
   box-shadow: 0 0 0 1px var(--node-primary) !important;
+}
+
+/* Nó-contêiner (ex.: Function): tamanho vem do ScopesPlugin e os filhos
+   aparecem sobre ele, então o fundo é translúcido e a borda tracejada */
+.rete-node.is-scope {
+  display: flex;
+  flex-direction: column;
+  border-style: dashed;
+  background-color: color-mix(in srgb, var(--n-color) 55%, transparent);
+}
+
+.rete-node.is-scope :deep(.n-card__content) {
+  flex: 1;
 }
 
 .node-title {
