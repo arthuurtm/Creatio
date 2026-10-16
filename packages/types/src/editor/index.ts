@@ -11,7 +11,4 @@ export interface FileInfo {
 	updatedAt: Date | number | null;
 }
 
-export type EditorState = JSONEditorData & {
-	info: FileInfo;
-  [key: string]: any;
-};
+export type EditorState = JSONEditorData;
