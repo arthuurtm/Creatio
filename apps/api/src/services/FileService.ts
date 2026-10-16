@@ -80,29 +80,36 @@ async function getDisk(name: DiskName) {
 	}
 }
 
-const _debouncedSave = debounce(
-	async (bucket: DiskName, filepath: string, payload: any) => {
-		try {
-			let data: Buffer;
-			if (
-				typeof payload === "object" &&
-				!Buffer.isBuffer(payload) &&
-				!(payload as any).pipe
-			) {
-				data = Buffer.from(JSON.stringify(payload));
-			} else if (typeof payload === "string") {
-				data = Buffer.from(payload);
-			} else {
-				data = payload as Buffer;
-			}
-			await storage.putObject(bucket, filepath, data, data.length);
-			log.success(`Arquivo salvo: ${filepath}`);
-		} catch (err) {
-			log.error(`Erro ao salvar ${filepath}:`, err);
-		}
-	},
-	1000,
-);
+const _saveDebouncers = new Map<string, ReturnType<typeof debounce>>();
+
+function _getDebouncedSave(filepath: string) {
+	if (!_saveDebouncers.has(filepath)) {
+		_saveDebouncers.set(
+			filepath,
+			debounce(async (bucket: DiskName, fp: string, payload: any) => {
+				try {
+					let data: Buffer;
+					if (
+						typeof payload === "object" &&
+						!Buffer.isBuffer(payload) &&
+						!(payload as any).pipe
+					) {
+						data = Buffer.from(JSON.stringify(payload));
+					} else if (typeof payload === "string") {
+						data = Buffer.from(payload);
+					} else {
+						data = payload as Buffer;
+					}
+					await storage.putObject(bucket, fp, data, data.length);
+					log.success(`Arquivo salvo: ${fp}`);
+				} catch (err) {
+					log.error(`Erro ao salvar ${fp}:`, err);
+				}
+			}, 1000),
+		);
+	}
+	return _saveDebouncers.get(filepath)!;
+}
 
 const write = {
 	/**
@@ -110,7 +117,7 @@ const write = {
 	 */
 	queueSave: async ({ bucket, filepath, payload }: SaveParams) => {
 		if (!(await getDisk(bucket))) throw new Error("Parâmetros inválidos");
-		return _debouncedSave(bucket, filepath, payload);
+		return _getDebouncedSave(filepath)(bucket, filepath, payload);
 	},
 };
 

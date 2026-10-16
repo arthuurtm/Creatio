@@ -33,12 +33,12 @@ async function setProjectOnDatabaseController(
 		const accessToken = req.cookies.accessToken;
 		const userId = await getUserIDFromSessionToken(accessToken);
 		const result = await setProjectOnDatabase({
-			title: state?.info?.title || "Novo Projeto",
-			description: state?.info?.description || null,
+			title: "Novo Projeto",
+			description: null,
 			userId,
 			accessToken,
 			state,
-			version: state?.info?.version || "0.1.0",
+			version: "0.0.0",
 		});
 		res.json(result);
 	} catch (err) {
@@ -161,10 +161,10 @@ async function saveProjectStateController(
 		const { id, state } = req.body;
 		if (!id) throw new Error("ID do projeto não fornecido");
 
-		await validateProjectOwnership(Number(id), accessToken);
+		const info = await validateProjectOwnership(Number(id), accessToken);
 		const objectName = await EditorService.saveState({
 			id: Number(id),
-			version: state?.info?.version || "0.1.0",
+			version: info.version,
 			state,
 			accessToken,
 		});
