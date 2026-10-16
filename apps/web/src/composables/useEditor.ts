@@ -23,11 +23,18 @@ function getCloudSync(store: ReturnType<typeof useEditorStore>): EditorCloudSync
 	let isApplyingRemoteState = false;
 	let lastSyncedSnapshot = "";
 
+	/**
+	 * Serializa o estado completo do editor via store.getState() (safeSerialize),
+	 * garantindo que os controles passem pelo .serialize() nativo do rete-studio-core
+	 * e incluam os flags isInputControl/isSelectControl/isInsertControl necessários
+	 * para deserialização correta.
+	 */
 	function createCloudState() {
+		const serialized = store.getState();
 		return {
 			info: JSON.parse(JSON.stringify(store.info)),
-			nodes: JSON.parse(JSON.stringify(store.nodes)),
-			connections: JSON.parse(JSON.stringify(store.connections)),
+			nodes: serialized?.nodes ?? [],
+			connections: serialized?.connections ?? [],
 		};
 	}
 
@@ -54,12 +61,12 @@ function getCloudSync(store: ReturnType<typeof useEditorStore>): EditorCloudSync
 	}, 600);
 
 	watch(
-		() => [store.info, store.nodes, store.connections],
-		() => {
-			if (!isApplyingRemoteState && store.info.id) void syncToCloud();
-		},
-		{ deep: true, flush: "post" },
-	);
+    () => store.revision,
+    () => {
+      if (!isApplyingRemoteState && store.info.id) void syncToCloud();
+    },
+    { flush: "post" },
+  );
 
 	const setState: EditorCloudSync["setState"] = async (state) => {
 		isApplyingRemoteState = true;
@@ -68,6 +75,12 @@ function getCloudSync(store: ReturnType<typeof useEditorStore>): EditorCloudSync
 			await store.setState(state);
 			await nextTick();
 			lastSyncedSnapshot = JSON.stringify(createCloudState());
+		} catch (err) {
+			// Aguarda o próximo tick para que o watcher (flush: "post") dispare
+			// enquanto isApplyingRemoteState ainda é true — evitando sincronizar o
+			// canvas vazio que ficou após editor.clear() quando o deserialize falha.
+			await nextTick();
+			throw err;
 		} finally {
 			isApplyingRemoteState = false;
 		}

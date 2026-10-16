@@ -3,12 +3,13 @@ import { safeSerialize, type NodeEditor } from "@projeto/editor";
 import {
 	BaseNode,
 	deserialize,
+	applyInteraction,
 	type EditorState,
 	type LanguageSnippet,
 	type Schemes,
 } from "@projeto/types";
 import { defineStore } from "pinia";
-import { computed, reactive, ref, shallowRef } from "vue";
+import { computed, ref, shallowRef } from "vue";
 
 export interface FileInfo {
 	id: number | null;
@@ -21,10 +22,12 @@ export interface FileInfo {
 export const useEditorStore = defineStore("editor", () => {
 	// Instância ativa do editor nativo do Rete
 	const editor = shallowRef<NodeEditor<Schemes> | null>(null);
-	const nodesCount = ref(0);
+	const revision = ref(0);
+  let pipeRegistered = false;
+
 
 	// Metadados do arquivo/projeto
-	const info = reactive<FileInfo>({
+	const info = shallowRef<FileInfo>({
 		id: null,
 		title: "Untitled",
 		version: "1.0.0",
@@ -33,10 +36,15 @@ export const useEditorStore = defineStore("editor", () => {
 	});
 
 	// Acesso aos nós e conexões do Rete
-	const nodes = computed(() => (editor.value ? editor.value.getNodes() : []));
-	const connections = computed(() =>
-		editor.value ? editor.value.getConnections() : [],
-	);
+	const nodes = computed(() => {
+    revision.value;
+    return editor.value ? editor.value.getNodes() : [];
+  });
+
+  const connections = computed(() => {
+    revision.value;
+    return editor.value ? editor.value.getConnections() : [];
+  });
 
 	// Snippets de código disponíveis para inserção
 	const snippets = ref<LanguageSnippet[]>([]);
@@ -46,11 +54,29 @@ export const useEditorStore = defineStore("editor", () => {
 		snippets.value = await jsAdapter.getSnippets();
 	}
 
-	// Registra a instância ativa criada no componente do Canvas
-	function setEditorInstance(instance: NodeEditor<Schemes>) {
-		editor.value = instance;
-		nodesCount.value = instance.getNodes().length;
-	}
+	// contador para fins de reatividade, pois o Rete não é reativo por padrão
+  const nodesCount = computed(() => nodes.value.length);
+
+  function setEditorInstance(instance: NodeEditor<Schemes>) {
+    editor.value = instance;
+    if (!pipeRegistered) {
+      instance.addPipe((context) => {
+        const t = (context as any).type;
+        if (
+          t === "nodecreated" ||
+          t === "noderemoved" ||
+          t === "connectioncreated" ||
+          t === "connectionremoved" ||
+          t === "cleared"
+        ) {
+          revision.value++;
+        }
+        return context;
+      });
+      pipeRegistered = true;
+    }
+    revision.value++;
+  }
 
 	// Adiciona um nó diretamente via classe nativa BaseNode do Rete Studio
 	async function addNode(
@@ -89,10 +115,7 @@ export const useEditorStore = defineStore("editor", () => {
 	// Exporta estado serializado
 	function getState(): EditorState | null {
 		if (!editor.value) return null;
-		return {
-			...safeSerialize(editor.value),
-			info: { ...info },
-		};
+		return safeSerialize(editor.value)
 	}
 
 	// Restaura estado no editor
@@ -100,6 +123,7 @@ export const useEditorStore = defineStore("editor", () => {
 		if (!editor.value) return;
 		await editor.value.clear();
 		await deserialize(editor.value, state);
+		applyInteraction(editor.value, () => {});
 	}
 
 	// Limpa o canvas e o estado
@@ -107,17 +131,10 @@ export const useEditorStore = defineStore("editor", () => {
 		if (editor.value) {
 			await editor.value.clear();
 		}
-		Object.assign(info, {
-			id: null,
-			title: "Untitled",
-			version: "1.0.0",
-			description: null,
-			updatedAt: null,
-		});
 	}
 
 	function setId(id: number) {
-		info.id = id;
+		info.value.id = id;
 	}
 
 	return {
@@ -128,6 +145,7 @@ export const useEditorStore = defineStore("editor", () => {
 		nodesCount,
 		info,
 		snippets,
+    revision,
 
 		// Inicializadores
 		setEditorInstance,
