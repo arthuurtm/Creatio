@@ -2,7 +2,7 @@
 import { CodeOutlined } from "@vicons/material";
 import { SunnyOutline, MoonOutline, HelpCircleOutline } from "@vicons/ionicons5";
 import { NButton, NIcon, NTooltip } from "naive-ui";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 import CodeDrawer from "@/components/modules/CodeDrawer.vue";
 import ComponentNode from "@/components/modules/ComponentNode.vue";
 import ConnectionStatusTag from "@/components/modules/ConnectionStatusTag.vue";
@@ -25,12 +25,12 @@ const { startTour } = useEditorTour();
 const canvasAreaRef = ref<HTMLElement | null>(null);
 const showCodeDrawer = ref(false);
 
-onMounted(async () => {
+async function onEditorReady() {
   if (props.id) {
     editor.setId(Number(props.id));
     await persistence.loadProject(Number(props.id));
   }
-});
+}
 
 onUnmounted(() => editor.clearState());
 </script>
@@ -42,6 +42,7 @@ onUnmounted(() => editor.clearState());
     <div class="grow h-full relative" ref="canvasAreaRef">
       <ComponentNode
         id="tour-canvas"
+        @editor-ready="onEditorReady"
         @open-code-panel="showCodeDrawer = true"
       >
         <template #header>
