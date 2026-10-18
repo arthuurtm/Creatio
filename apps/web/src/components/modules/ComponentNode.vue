@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount, h, computed } from "vue";
 import { createReteEditor, AreaExtensions, type ReteEditorInstance } from "@projeto/editor";
 import { NDropdown, NIcon } from "naive-ui";
-import { DeleteOutlined, AddOutlined, ZoomInOutlined, ZoomOutOutlined, FitScreenOutlined, DeleteSweepOutlined, CenterFocusStrongOutlined } from "@vicons/material";
+import { DeleteOutlined, AddOutlined, ZoomInOutlined, ZoomOutOutlined, FitScreenOutlined, DeleteSweepOutlined, CenterFocusStrongOutlined, AutoFixHighOutlined } from "@vicons/material";
 import { useSettingsStore } from "@/stores/global";
 import { useEditor } from "@/composables/useEditor";
 import { jsAdapter } from "@projeto/compiler";
@@ -207,6 +207,11 @@ onMounted(async () => {
             key: "canvas_fit",
             icon: renderIcon(FitScreenOutlined),
           },
+          {
+            label: "Organizar automaticamente",
+            key: "canvas_arrange",
+            icon: renderIcon(AutoFixHighOutlined),
+          },
           { type: "divider", key: "d2" },
           {
             label: "Limpar lousa",
@@ -273,6 +278,11 @@ async function handleMenuSelect(key: string) {
     return;
   }
   if (key === "canvas_fit" && area && editor) {
+    await AreaExtensions.zoomAt(area, editor.getNodes());
+    return;
+  }
+  if (key === "canvas_arrange" && instance?.arrange && area && editor) {
+    await instance.arrange.layout();
     await AreaExtensions.zoomAt(area, editor.getNodes());
     return;
   }
