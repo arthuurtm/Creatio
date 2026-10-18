@@ -1,12 +1,32 @@
 <script setup lang="ts">
-import { ChevronBack } from "@vicons/ionicons5";
-import { NButton, NButtonGroup, NIcon } from "naive-ui";
-import { computed, ref } from "vue";
-import { useEditorExplorer } from "@/composables/useEditorExplorer";
-import { getIconComponent } from "@/utils/icons.ts";
-import BlockCatalog from "./BlockCatalog.vue";
-import CreateObjectDialog from "./CreateObjectDialog.vue";
-import ExplorerPanel from "./ExplorerPanel.vue";
+import {
+  ChevronBack,
+  SearchOutline,
+  GitBranchOutline,
+  SyncOutline,
+  CubeOutline,
+  CodeSlashOutline,
+  AlertCircleOutline,
+  HardwareChipOutline,
+  FolderOutline,
+  FlashOutline
+} from "@vicons/ionicons5";
+import {
+  NButton,
+  NIcon,
+  NInput,
+  NScrollbar,
+  NCollapse,
+  NCollapseItem,
+  NEmpty,
+  NCard,
+  NTag,
+  NText,
+  NFlex,
+} from "naive-ui";
+import { computed, ref, onMounted } from "vue";
+import { useEditor } from "@/composables/useEditor";
+import type { LanguageSnippet } from "@projeto/types";
 import ExplorerRail from "./ExplorerRail.vue";
 
 type DrawerState = "open" | "rail" | "hidden";
@@ -14,135 +34,250 @@ type DrawerState = "open" | "rail" | "hidden";
 const props = defineProps<{ state?: DrawerState }>();
 const emit = defineEmits<{ "update:state": [value: DrawerState] }>();
 
+const editor = useEditor();
 const internalState = ref<DrawerState>("open");
+
 const drawerState = computed({
-	get: () => props.state ?? internalState.value,
-	set: (value: DrawerState) => {
-		internalState.value = value;
-		emit("update:state", value);
-	},
+  get: () => props.state ?? internalState.value,
+  set: (value: DrawerState) => {
+    internalState.value = value;
+    emit("update:state", value);
+  },
 });
 const isRail = computed(() => drawerState.value === "rail");
 const isHidden = computed(() => drawerState.value === "hidden");
 
-const activeView = ref<"explorer" | "catalog">("explorer");
+const search = ref("");
 
 function toggleState() {
-	drawerState.value = isRail.value ? "open" : "rail";
+  drawerState.value = isRail.value ? "open" : "rail";
 }
 
-const {
-	editorStore,
-	activeCategory,
-	activeCategoryConfig,
-	activeDefinitions,
-	sidebarItems,
-	allExpanded,
-	isDialogOpen,
-	formParams,
-	addButtonHandler,
-	handleCreate,
-} = useEditorExplorer();
-
-function handleRailViewClick(view: "explorer" | "catalog") {
-	activeView.value = view;
-	drawerState.value = "open";
-}
-
-// activeNodes é derivado aqui no pai, onde temos acesso à store,
-// e passado como prop simples para ExplorerPanel.
-// editorStore.variables/functions/logics são computed reativos —
-// ao passar como prop, o Vue mantém a reatividade via getter.
-const activeNodes = computed(() => {
-	if (!activeCategory.value) return [];
-	return editorStore[activeCategory.value] ?? [];
+onMounted(async () => {
+  if (editor.snippets.value.length === 0) {
+    await editor.loadSnippets();
+  }
 });
+
+const filteredSnippets = computed(() => {
+  const query = search.value.toLowerCase().trim();
+  if (!query) return editor.snippets.value;
+
+  function filterItem(item: LanguageSnippet): LanguageSnippet | null {
+    if ("subitems" in item && item.subitems) {
+      const matchingSubs = item.subitems.filter((sub) =>
+        sub.label.toLowerCase().includes(query)
+      );
+      if (matchingSubs.length > 0) {
+        return { ...item, subitems: matchingSubs };
+      }
+    }
+    if (item.label.toLowerCase().includes(query)) {
+      return item;
+    }
+    return null;
+  }
+
+  return editor.snippets.value
+    .map(filterItem)
+    .filter((i): i is LanguageSnippet => i !== null);
+});
+
+function getSnippetCode(snippet: LanguageSnippet): string {
+  if ("code" in snippet) {
+    return typeof snippet.code === "function" ? snippet.code() : snippet.code;
+  }
+  return "";
+}
+
+function onDragStart(e: DragEvent, snippet: LanguageSnippet) {
+  if (!e.dataTransfer) return;
+  const code = getSnippetCode(snippet);
+  e.dataTransfer.setData("text/plain", code);
+  e.dataTransfer.effectAllowed = "move";
+}
+
+async function insertDirectly(snippet: LanguageSnippet) {
+  const code = getSnippetCode(snippet);
+  if (code) {
+    await editor.insertSnippet(code);
+  }
+}
+
+function getSnippetStyle(label: string) {
+  const l = label.toLowerCase();
+  
+  if (l.includes('if') || l.includes('else') || l.includes('switch') || l.includes('case') || l.includes('decisão') || l.includes('senão') || l.includes('escolha')) {
+    return { color: '#8b5cf6', icon: GitBranchOutline, desc: 'Controle de fluxo' };
+  }
+  if (l.includes('for') || l.includes('while') || l.includes('loop') || l.includes('repetição') || l.includes('repetir') || l.includes('faça') || l.includes('laço') || l.includes('item da lista')) {
+    return { color: '#8b5cf6', icon: SyncOutline, desc: 'Laço de repetição' };
+  }
+  if (l.includes('const') || l.includes('let') || l.includes('var') || l.includes('vari') || l.includes('guardar') || l.includes('constante') || l.includes('número') || l.includes('texto') || l.includes('verdadeiro')) {
+    return { color: '#06b6d4', icon: CubeOutline, desc: 'Memória / Variável' };
+  }
+  if (l.includes('function') || l.includes('return') || l.includes('função') || l.includes('criar uma função') || l.includes('parâmetro') || l.includes('chamar')) {
+    return { color: '#f59e0b', icon: CodeSlashOutline, desc: 'Bloco de execução' };
+  }
+  if (l.includes('try') || l.includes('catch') || l.includes('throw') || l.includes('erro') || l.includes('capturar') || l.includes('tentar')) {
+    return { color: '#8b5cf6', icon: AlertCircleOutline, desc: 'Tratamento de erro' };
+  }
+  if (l.includes('import') || l.includes('export') || l.includes('módulo')) {
+    return { color: '#3b82f6', icon: HardwareChipOutline, desc: 'Módulo' };
+  }
+  if (l.includes('lista') || l.includes('array') || l.includes('adicionar') || l.includes('tamanho') || l.includes('índice') || l.includes('item')) {
+    return { color: '#3b82f6', icon: FolderOutline, desc: 'Lista / Array' };
+  }
+  if (l.includes('cálculo') || l.includes('somar') || l.includes('subtrair') || l.includes('multiplicar') || l.includes('dividir') || l.includes('resto') || l.includes('mostrar') || l.includes('escrever') || l.includes('console')) {
+    return { color: '#3b82f6', icon: FlashOutline, desc: 'Comando' };
+  }
+  
+  return { color: '#3b82f6', icon: FlashOutline, desc: 'Comando de sintaxe' };
+}
 </script>
 
 <template>
-  <div
-    v-if="!isHidden"
-    :class="[
-      'h-full shrink-0 z-10 overflow-hidden flex flex-col',
-      isRail
-        ? 'w'
-        : 'w-[340px]'
-    ]"
+  <aside
+    class="h-full shrink-0 relative transition-all duration-300 ease-in-out border-r bg-[var(--n-color)]"
+    :class="{
+      'w-[340px]': !isRail && !isHidden,
+      'w-[56px]': isRail && !isHidden,
+      'w-0 opacity-0 pointer-events-none border-none': isHidden,
+    }"
   >
+    <!-- MODO RECOLHIDO (Rail) -->
     <ExplorerRail
       v-if="isRail"
-      :active-view="activeView"
-      @select-view="handleRailViewClick"
-      @expand="toggleState"
+      active-view="catalog"
+      @expand="drawerState = 'open'"
+      @select-view="drawerState = 'open'"
     />
 
-    <div v-else class="flex flex-col h-full overflow-hidden">
-      <!-- Cabeçalho unificado com alternador de abas e botão de minimizar -->
-      <div class="px-4 py-3 shrink-0 flex items-center justify-between">
-        <NButtonGroup size="medium" class="w-[230px]">
-          <NButton
-            :type="activeView === 'explorer' ? 'primary' : 'default'"
-            :secondary="activeView === 'explorer'"
-            class="flex-1 font-bold"
-            style="border-top-left-radius: 9999px; border-bottom-left-radius: 9999px;"
-            @click="activeView = 'explorer'"
-          >
+    <!-- MODO EXPANDIDO -->
+    <div v-show="!isRail && !isHidden" class="h-full flex flex-col min-w-[340px] overflow-hidden">
+      <!-- Header -->
+      <div class="p-4 border-b">
+        <NFlex justify="space-between" align="center" class="mb-4">
+          <div class="flex items-center gap-2">
+            <NIcon size="20" class="text-[color:var(--n-primary-color)]"><HardwareChipOutline /></NIcon>
+            <NText strong class="text-[15px]">Catálogo de Blocos</NText>
+          </div>
+          <NButton circle quaternary size="small" title="Recolher" @click="toggleState">
             <template #icon>
-              <NIcon size="16">
-                <component :is="getIconComponent('grid_view')" />
-              </NIcon>
+              <NIcon size="18"><ChevronBack /></NIcon>
             </template>
-            Estruturas
           </NButton>
-          <NButton
-            :type="activeView === 'catalog' ? 'primary' : 'default'"
-            :secondary="activeView === 'catalog'"
-            class="flex-1 font-bold"
-            style="border-top-right-radius: 9999px; border-bottom-right-radius: 9999px;"
-            @click="activeView = 'catalog'"
-          >
-            <template #icon>
-              <NIcon size="16">
-                <component :is="getIconComponent('interests')" />
-              </NIcon>
-            </template>
-            Catálogo
-          </NButton>
-        </NButtonGroup>
+        </NFlex>
 
-        <NButton
-          circle
-          quaternary
-          size="small"
-          title="Minimizar"
-          @click="toggleState"
+        <NInput
+          v-model:value="search"
+          placeholder="Buscar comandos (ex: if, for, let)"
+          clearable
+          round
         >
-          <template #icon>
-            <NIcon size="18"><ChevronBack /></NIcon>
+          <template #prefix>
+            <NIcon :component="SearchOutline" class="opacity-60" />
           </template>
-        </NButton>
+        </NInput>
       </div>
 
-      <!-- Conteúdo dinâmico com transição fade suave -->
-      <div class="flex-grow overflow-hidden relative">
-        <transition name="fastFade" mode="out-in">
-          <ExplorerPanel
-            v-if="activeView === 'explorer'"
-            @add-item="addButtonHandler"
-          />
-          <BlockCatalog
-            v-else
-            @add-item="addButtonHandler"
-          />
-        </transition>
-      </div>
+      <!-- Lista estilizada -->
+      <NScrollbar class="flex-grow min-h-0">
+        <div class="p-4 pb-8">
+          <div v-if="filteredSnippets.length === 0" class="py-12 text-center">
+            <NEmpty description="Nenhum bloco encontrado com essa busca" />
+          </div>
+
+          <NFlex vertical :size="12" v-else>
+            <template v-for="snippet in filteredSnippets" :key="snippet.label">
+              
+              <!-- Grupo com sub-itens -->
+              <NCollapse
+                v-if="'subitems' in snippet && snippet.subitems"
+                arrow-placement="right"
+                class="snippet-group-collapse border rounded-2xl overflow-hidden"
+                :class="(snippet as any).advanced ? 'bg-[color:var(--n-action-color)] opacity-70' : 'bg-[color:var(--n-action-color)]'"
+                :default-expanded-names="(snippet as any).advanced ? [] : [snippet.label]"
+              >
+                <NCollapseItem :name="snippet.label">
+                  <template #header>
+                    <div class="flex items-center gap-2 py-1">
+                      <NIcon size="16" class="opacity-70"><FolderOutline /></NIcon>
+                      <NText strong class="text-[13px]">{{ snippet.label }}</NText>
+                      <NTag size="small" round :bordered="false" class="ml-2 font-mono text-[10px] opacity-70">
+                        {{ snippet.subitems.length }}
+                      </NTag>
+                    </div>
+                  </template>
+                  <div class="flex flex-col gap-2 p-2 pt-0">
+                    <NCard
+                      v-for="sub in snippet.subitems"
+                      :key="sub.label"
+                      hoverable
+                      embedded
+                      draggable="true"
+                      @dragstart="onDragStart($event, sub)"
+                      @click="insertDirectly(sub)"
+                      class="cursor-grab active:cursor-grabbing rounded-xl transition-all hover:border-[color:var(--n-primary-color)] snippet-card"
+                      content-style="padding: 10px 12px;"
+                    >
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-[color:var(--n-tag-color)] shrink-0">
+                          <NIcon size="18" :component="getSnippetStyle(sub.label).icon" :style="`color: ${getSnippetStyle(sub.label).color}`" />
+                        </div>
+                        <div class="flex flex-col min-w-0 flex-1">
+                          <NText strong class="text-xs truncate">{{ sub.label }}</NText>
+                          <NText class="text-[10px] opacity-60 truncate">{{ getSnippetStyle(sub.label).desc }}</NText>
+                        </div>
+                        <NIcon size="16" class="opacity-30 shrink-0"><ChevronBack class="rotate-180" /></NIcon>
+                      </div>
+                    </NCard>
+                  </div>
+                </NCollapseItem>
+              </NCollapse>
+
+              <!-- Bloco único -->
+              <NCard
+                v-else
+                hoverable
+                draggable="true"
+                @dragstart="onDragStart($event, snippet)"
+                @click="insertDirectly(snippet)"
+                class="cursor-grab active:cursor-grabbing rounded-2xl transition-all hover:border-[color:var(--n-primary-color)] snippet-card border"
+                content-style="padding: 12px 14px;"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-[color:var(--n-tag-color)] shrink-0 border">
+                    <NIcon size="20" :component="getSnippetStyle(snippet.label).icon" :style="`color: ${getSnippetStyle(snippet.label).color}`" />
+                  </div>
+                  <div class="flex flex-col min-w-0 flex-1">
+                    <NText strong class="text-[13px] truncate">{{ snippet.label }}</NText>
+                    <NText class="text-[11px] opacity-60 truncate">{{ getSnippetStyle(snippet.label).desc }}</NText>
+                  </div>
+                  <NTag size="small" :bordered="false" round type="primary" class="shrink-0 text-[10px]">
+                    adicionar
+                  </NTag>
+                </div>
+              </NCard>
+
+            </template>
+          </NFlex>
+        </div>
+      </NScrollbar>
     </div>
-  </div>
-
-  <CreateObjectDialog
-    v-slot:default
-    v-model="isDialogOpen"
-    :form-params="formParams"
-    @create="handleCreate"
-  />
+  </aside>
 </template>
+
+<style scoped>
+.snippet-group-collapse :deep(.n-collapse-item__header) {
+  padding: 12px 16px !important;
+}
+.snippet-group-collapse :deep(.n-collapse-item__content-inner) {
+  padding: 0 !important;
+}
+
+.snippet-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+</style>

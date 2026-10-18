@@ -1,51 +1,32 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, computed, h } from "vue";
-import { NodeEditor, type GetSchemes, ClassicPreset } from "rete";
-import { AreaPlugin, AreaExtensions } from "rete-area-plugin";
-import { ConnectionPlugin, Presets as ConnectionPresets } from "rete-connection-plugin";
-import { VuePlugin, Presets, type VueArea2D } from "rete-vue-plugin";
+import { ref, onMounted, onBeforeUnmount, h, computed } from "vue";
+import { createReteEditor, AreaExtensions, type ReteEditorInstance } from "@projeto/editor";
 import { NDropdown, NIcon } from "naive-ui";
-import {
-  ContentCopyOutlined,
-  DeleteOutlined,
-  CodeOutlined,
-  ClearOutlined,
-} from "@vicons/material";
-
-import SDKNodeRenderer from "@/components/ui/Node.vue";
-import { cloneNode, deleteNode } from "@/composables/useNodeFunctions";
-import { useEditorStore } from "@/stores/editor";
+import { DeleteOutlined, AddOutlined, ZoomInOutlined, ZoomOutOutlined, FitScreenOutlined, DeleteSweepOutlined, CenterFocusStrongOutlined, AutoFixHighOutlined } from "@vicons/material";
 import { useSettingsStore } from "@/stores/global";
-
-import type { NodeConnection, SDKNode } from "@projeto/types";
-
-// Configuração Rete
-class CustomNode extends ClassicPreset.Node {
-  astData: any;
-  nodeType: string;
-  width = 280;
-  height = 120;
-  constructor(id: string, nodeType: string, astData: any) {
-    super(astData?.params?.name || 'Nó');
-    this.id = id;
-    this.nodeType = nodeType;
-    this.astData = astData;
-  }
-}
-class CustomConnection extends ClassicPreset.Connection<CustomNode, CustomNode> {}
-
-type Schemes = GetSchemes<CustomNode, CustomConnection>;
-type AreaExtra = VueArea2D<Schemes>;
+import { useEditor } from "@/composables/useEditor";
+import { jsAdapter } from "@projeto/compiler";
+import {
+  type Schemes,
+  type LanguageSnippet,
+  applyInteraction,
+  deserialize,
+  serialize,
+} from "@projeto/types";
+import CustomNode from "./CustomNode.vue";
+import CustomControl from "./CustomControl.vue";
 
 const container = ref<HTMLElement | null>(null);
-const editorStore = useEditorStore();
 const settingsStore = useSettingsStore();
+const editorState = useEditor();
 const isDark = computed(() => settingsStore.theme === "dark");
 
-let editor: NodeEditor<Schemes> | null = null;
-let area: AreaPlugin<Schemes, AreaExtra> | null = null;
+let instance: ReteEditorInstance | null = null;
+let editor: ReteEditorInstance["editor"] | null = null;
+let area: ReteEditorInstance["area"] | null = null;
 
-const emit = defineEmits<{ openCodePanel: [] }>();
+
+const emit = defineEmits<{ openCodePanel: []; editorReady: [] }>();
 
 const showMenu = ref(false);
 const menuX = ref(0);
@@ -57,191 +38,294 @@ function renderIcon(icon: any) {
   return () => h(NIcon, null, { default: () => h(icon) });
 }
 
+// ==========================================
+// GERAÇÃO DE CÓDIGO DIRETA PELO RETE STUDIO
+// ==========================================
+const generateCode = async (): Promise<string> => {
+  if (!editor) return "";
+  const data = serialize(editor);
+  return await jsAdapter.graphToCode(data);
+};
+
+defineExpose({ generateCode });
+
+function getSnippetCode(snippet: LanguageSnippet): string {
+  if ("code" in snippet) {
+    return typeof snippet.code === "function" ? snippet.code() : snippet.code;
+  }
+  return "";
+}
+
+function formatSnippetsToMenu(snippets: LanguageSnippet[]): any[] {
+  return snippets.map((s) => {
+    if ("subitems" in s && s.subitems) {
+      return {
+        label: s.label,
+        key: `group_${s.label}`,
+        type: "group",
+        children: s.subitems.map((sub) => ({
+          label: sub.label,
+          key: `snippet_${getSnippetCode(sub)}`,
+          icon: renderIcon(AddOutlined),
+        })),
+      };
+    }
+    return {
+      label: s.label,
+      key: `snippet_${getSnippetCode(s)}`,
+      icon: renderIcon(AddOutlined),
+    };
+  });
+}
+
 onMounted(async () => {
   if (!container.value) return;
 
-  editor = new NodeEditor<Schemes>();
-  area = new AreaPlugin<Schemes, AreaExtra>(container.value);
-  const connection = new ConnectionPlugin<Schemes, AreaExtra>();
-  const render = new VuePlugin<Schemes, AreaExtra>();
-
-  AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
-    accumulating: AreaExtensions.accumulateOnCtrl(),
+  instance = await createReteEditor(container.value, {
+    customNode: CustomNode,
+    customControl: CustomControl,
   });
 
-  render.addPreset(
-    Presets.classic.setup({
-      customize: {
-        node(context) {
-          return SDKNodeRenderer;
-        },
-      },
-    })
-  );
+  editor = instance.editor;
+  area = instance.area;
 
-  connection.addPreset(ConnectionPresets.classic.setup());
+  editorState.setEditorInstance(editor);
+  emit("editorReady");
 
-  editor.use(area);
-  area.use(connection);
-  area.use(render);
+  // Alterações estruturais do grafo.
+  const editorChangeEvents = new Set([
+    "nodecreated",
+    "noderemoved",
+    "connectioncreated",
+    "connectionremoved",
+    "nodeupdated",
+    "cleared",
+  ]);
 
-  AreaExtensions.simpleNodesOrder(area);
+  editor.addPipe((context) => {
+    if (context.type === "nodecreated") {
+      applyInteraction(editor, (id) => area?.update("node", id));
+    }
 
-  // Integração com Drag and Drop da biblioteca de blocos
+    if (editorChangeEvents.has(context.type)) {
+      void editorState.syncToCloud();
+    }
+
+    return context;
+  });
+
+  // Alterações de posição e tamanho na área de edição.
+  const areaChangeEvents = new Set([
+    "nodetranslated",
+    "noderesized",
+  ]);
+
+  area.addPipe((context) => {
+    if (areaChangeEvents.has(context.type)) {
+      void editorState.syncToCloud();
+    }
+
+    return context;
+  });
+  await editorState.loadSnippets();
+
+  // Permite arrastar snippets do catálogo direto para o canvas
   container.value.addEventListener("dragover", (e) => {
     e.preventDefault();
     if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
   });
-  
+
   container.value.addEventListener("drop", async (e) => {
     e.preventDefault();
-    const rawData = e.dataTransfer?.getData("application/vueflow");
-    if (!rawData) return;
+    const snippetCode = e.dataTransfer?.getData("text/plain");
+    if (!snippetCode || !editor || !area) return;
+
     try {
-      const { def } = JSON.parse(rawData);
-      if (!def || typeof def.execute !== "function") return;
-      const result = def.execute({});
-      
-      const transform = area!.area.transform;
+      const transform = area.area.transform;
       const x = (e.clientX - transform.x) / transform.k;
       const y = (e.clientY - transform.y) / transform.k;
-      
-      await editorStore.addNode(result, { x, y });
+
+      const graphData = await jsAdapter.codeToGraph(snippetCode);
+      await deserialize(editor, graphData);
+      applyInteraction(editor, (id) => area?.update("node", id));
+
+      if (graphData.nodes?.length > 0) {
+        const lastNode = graphData.nodes[graphData.nodes.length - 1];
+        if (lastNode) await area.translate(lastNode.id, { x, y });
+      }
     } catch (err) {
-      console.error(err);
+      console.error("[Rete Studio] Erro ao soltar snippet:", err);
     }
   });
 
-  // Context Menu adaptado para o Rete
+  // ====================================================
+  // MENU DE CONTEXTO NATIVO (SNIPPETS DA LINGUAGEM JS)
+  // ====================================================
   area.addPipe((context) => {
     if (context.type === "contextmenu") {
       context.data.event.preventDefault();
       menuX.value = context.data.event.clientX;
       menuY.value = context.data.event.clientY;
 
-      if (context.data.context === "root") {
-        selectedNodeId.value = null;
+      const selectedContext = context.data.context;
+      if (typeof selectedContext === "object" && "id" in selectedContext) {
+        // Clique com botão direito em cima de um nó
+        selectedNodeId.value = String(selectedContext.id);
         menuOptions.value = [
-          { label: "Ver Código JavaScript", key: "view_code", icon: renderIcon(CodeOutlined) },
-          { type: "divider", key: "d1" },
-          { label: "Limpar Tela", key: "clear", icon: renderIcon(ClearOutlined) },
+          { label: "Excluir nó", key: "delete", icon: renderIcon(DeleteOutlined) },
         ];
         showMenu.value = true;
-      } else if (context.data.context instanceof CustomNode) {
-        selectedNodeId.value = context.data.context.id;
+      } else {
+        // Clique com botão direito na lousa vazia
+        selectedNodeId.value = null;
         menuOptions.value = [
-          { label: "Duplicar Nó", key: "clone", icon: renderIcon(ContentCopyOutlined) },
+          {
+            label: "Voltar",
+            key: "canvas_undo",
+            icon: renderIcon(CenterFocusStrongOutlined),
+            disabled: true,
+          },
+          {
+            label: "Avançar",
+            key: "canvas_redo",
+            icon: renderIcon(CenterFocusStrongOutlined),
+            disabled: true,
+          },
           { type: "divider", key: "d1" },
-          { label: "Excluir Nó", key: "delete", icon: renderIcon(DeleteOutlined) },
+          {
+            label: "Zoom +",
+            key: "canvas_zoom_in",
+            icon: renderIcon(ZoomInOutlined),
+          },
+          {
+            label: "Zoom −",
+            key: "canvas_zoom_out",
+            icon: renderIcon(ZoomOutOutlined),
+          },
+          {
+            label: "Ajustar à tela",
+            key: "canvas_fit",
+            icon: renderIcon(FitScreenOutlined),
+          },
+          {
+            label: "Organizar automaticamente",
+            key: "canvas_arrange",
+            icon: renderIcon(AutoFixHighOutlined),
+          },
+          { type: "divider", key: "d2" },
+          {
+            label: "Limpar lousa",
+            key: "canvas_clear",
+            icon: renderIcon(DeleteSweepOutlined),
+          },
         ];
         showMenu.value = true;
       }
     } else if (context.type === "pointerdown") {
       showMenu.value = false;
-    } else if (context.type === "nodedragged") {
-      // Sincroniza posição do Rete de volta pro Pinia
-      const storeNode = editorStore.nodes.find(n => n.id === context.data.id);
-      if (storeNode) {
-        const view = area?.nodeViews.get(context.data.id);
-        if (view) {
-          storeNode.position = { x: view.position.x, y: view.position.y };
-        }
-      }
     }
     return context;
   });
-
-  // Sincronização Store -> Rete
-  await syncStoreToRete();
-  await syncConnectionsToRete();
-
-  // Watchers para atualizar o Rete quando a store for modificada
-  watch(() => editorStore.nodes.length, syncStoreToRete);
-  watch(() => editorStore.connections.length, syncConnectionsToRete);
 });
 
-async function syncStoreToRete() {
+async function insertSnippet(code: string, clientX: number, clientY: number) {
   if (!editor || !area) return;
 
-  const currentReteNodes = editor.getNodes();
-  const storeNodes = editorStore.nodes;
+  const before = new Set(editor.getNodes().map((n) => n.id));
+  const graphData = await jsAdapter.codeToGraph(code);
+  await deserialize(editor, graphData);
+  applyInteraction(editor, (id) => area?.update("node", id));
 
-  for (const rNode of currentReteNodes) {
-    if (!storeNodes.find((n) => n.id === rNode.id)) {
-      await editor.removeNode(rNode.id);
-    }
-  }
+  await instance?.arrange?.layout(); // só se o seu createReteEditor expuser o arrange
 
-  for (const sNode of storeNodes) {
-    const existing = editor.getNode(sNode.id);
-    if (!existing) {
-      const newNode = new CustomNode(sNode.id, sNode.type, sNode.data);
-      const socket = new ClassicPreset.Socket("default");
-      newNode.addInput("in", new ClassicPreset.Input(socket));
-      newNode.addOutput("out", new ClassicPreset.Output(socket));
-      
-      await editor.addNode(newNode);
-      await area.translate(newNode.id, { x: sNode.position.x, y: sNode.position.y });
-    }
+  // move só os nós novos de nível raiz (os filhos acompanham o pai via ScopesPlugin)
+  const fresh = editor
+    .getNodes()
+    .filter((n: any) => !before.has(n.id) && !n.parent);
+  const views = fresh.map((n) => area!.nodeViews.get(n.id)!);
+  if (!views.length) return;
+
+  const { x: tx, y: ty, k } = area.area.transform;
+  const targetX = (clientX - tx) / k;
+  const targetY = (clientY - ty) / k;
+  const minX = Math.min(...views.map((v) => v.position.x));
+  const minY = Math.min(...views.map((v) => v.position.y));
+
+  for (const n of fresh) {
+    const p = area.nodeViews.get(n.id)!.position;
+    await area.translate(n.id, { x: p.x - minX + targetX, y: p.y - minY + targetY });
   }
 }
 
-async function syncConnectionsToRete() {
-  if (!editor) return;
-  const currentReteConns = editor.getConnections();
-  const storeConns = editorStore.connections;
+async function handleMenuSelect(key: string) {
+  showMenu.value = false;
 
-  for (const rConn of currentReteConns) {
-    if (!storeConns.find((c) => c.source === rConn.source && c.target === rConn.target)) {
-      await editor.removeConnection(rConn.id);
-    }
+  // Ação de Excluir Nó
+  if (key === "delete" && selectedNodeId.value && editor) {
+    await editor.removeNode(selectedNodeId.value);
+    return;
   }
 
-  for (const sConn of storeConns) {
-    const exists = currentReteConns.find((c) => c.source === sConn.source && c.target === sConn.target);
-    if (!exists) {
-      const sourceNode = editor.getNode(sConn.source);
-      const targetNode = editor.getNode(sConn.target);
-      if (sourceNode && targetNode) {
-        await editor.addConnection(new CustomConnection(sourceNode, "out", targetNode, "in"));
+  // Ações de Canvas
+  if (key === "canvas_zoom_in" && area) {
+    const current = area.area.transform.k;
+    await area.area.zoom(Math.min(current * 1.3, 5));
+    return;
+  }
+  if (key === "canvas_zoom_out" && area) {
+    const current = area.area.transform.k;
+    await area.area.zoom(Math.max(current * 0.75, 0.1));
+    return;
+  }
+  if (key === "canvas_fit" && area && editor) {
+    await AreaExtensions.zoomAt(area, editor.getNodes());
+    return;
+  }
+  if (key === "canvas_arrange" && instance?.arrange && area && editor) {
+    await instance.arrange.layout();
+    await AreaExtensions.zoomAt(area, editor.getNodes());
+    return;
+  }
+  if (key === "canvas_clear" && editor) {
+    await editor.clear();
+    return;
+  }
+
+  // Ação de Adicionar Snippet nativo do Rete Studio
+  if (key.startsWith("snippet_") && editor && area) {
+    const code = key.replace("snippet_", "");
+    const transform = area.area.transform;
+    const x = (menuX.value - transform.x) / transform.k;
+    const y = (menuY.value - transform.y) / transform.k;
+
+    try {
+      const graphData = await jsAdapter.codeToGraph(code);
+      await deserialize(editor, graphData);
+      applyInteraction(editor, (id) => area?.update("node", id));
+
+      if (graphData.nodes?.length > 0) {
+        const lastNode = graphData.nodes[graphData.nodes.length - 1];
+        if (lastNode) await area.translate(lastNode.id, { x, y });
       }
+    } catch (err) {
+      console.error("[Rete Studio] Erro ao instanciar snippet:", err);
     }
   }
 }
 
 onBeforeUnmount(() => {
-  if (area) area.destroy();
+  instance?.destroy();
 });
 
-function handleMenuSelect(key: string) {
-  showMenu.value = false;
-
-  if (key === "clone" && selectedNodeId.value) {
-    const node = editorStore.nodes.find(n => n.id === selectedNodeId.value);
-    if (node) cloneNode(node as any);
-  } else if (key === "delete" && selectedNodeId.value) {
-    deleteNode(selectedNodeId.value);
-  } else if (key === "view_code") {
-    emit("openCodePanel");
-  } else if (key === "clear") {
-    (window as any).$dialog?.warning({
-      title: "Limpar tela?",
-      content: "Todos os nós e conexões serão removidos.",
-      positiveText: "Limpar",
-      negativeText: "Cancelar",
-      onPositiveClick: () => {
-        editorStore.clearState();
-      },
-    });
-  }
-}
 </script>
 
 <template>
   <div class="canvas-wrapper" :class="isDark ? 'canvas-dark' : 'canvas-light'">
     <div class="rete-container" ref="container"></div>
+    <slot name="header" />
 
     <NDropdown
+      to="body"
       placement="bottom-start"
       trigger="manual"
       :x="menuX"
@@ -255,33 +339,30 @@ function handleMenuSelect(key: string) {
 </template>
 
 <style scoped>
-.canvas-wrapper {
-  width: 100%;
-  height: 100%;
-  position: relative;
+.canvas-wrapper { width: 100%; height: 100%; position: relative; }
+
+/* Tema Claro: variáveis dos nós */
+.canvas-light {
+  --node-bg: #ffffff;
+  --node-header-bg: #f1f5f9;
+  --node-border: #e2e8f0;
+  --node-text: #1f2937;
+  --node-text-muted: #6b7280;
+  --node-primary: #1778fb;
 }
 
-.rete-container {
-  width: 100%;
-  height: 100%;
-  background-size: 22px 22px;
-  background-image: radial-gradient(circle, #00000020 1px, transparent 1.5px);
-}
-.canvas-dark .rete-container {
-  background-color: #0f1115;
-  background-image: radial-gradient(circle, #ffffff20 1px, transparent 1.5px);
-}
-.canvas-light .rete-container {
-  background-color: #f8fafc;
+/* Tema Escuro: variáveis dos nós */
+.canvas-dark {
+  --node-bg: #1e1e24;
+  --node-header-bg: #16161a;
+  --node-border: rgba(255, 255, 255, 0.10);
+  --node-text: #f2f2f2;
+  --node-text-muted: #9ca3af;
+  --node-primary: #1778fb;
 }
 
-/* Conexões (Edges) do Rete estilizadas com a identidade do Creatio */
-:deep(.rete-connection) path {
-  stroke: #94a3b8;
-  stroke-width: 2.5px;
-}
-
-.canvas-dark :deep(.rete-connection) path {
-  stroke: #50545a;
-}
+.rete-container { width: 100%; height: 100%; background-size: 22px 22px; background-image: radial-gradient(circle, #00000020 1px, transparent 1.5px); }
+.canvas-dark .rete-container { background-color: #0f1115; background-image: radial-gradient(circle, #ffffff20 1px, transparent 1.5px); }
+.canvas-light .rete-container { background-color: #f8fafc; }
+:deep(.rete-connection) path { stroke: #1778fb; stroke-width: 3px; }
 </style>

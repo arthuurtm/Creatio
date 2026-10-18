@@ -70,7 +70,7 @@ export const lightThemeOverrides: GlobalThemeOverrides = {
     buttonColor2Hover: 'rgba(90, 90, 90, 0.16)',
     buttonColor2Pressed: 'rgba(90, 90, 90, 0.22)',
 
-    borderColor: '#9ca3aa',
+    borderColor: '#e1e3e6',
 
     dividerColor: 'rgba(70, 75, 80, 0.22)',
 
@@ -221,23 +221,23 @@ export const darkThemeOverrides: GlobalThemeOverrides = {
     iconColorPressed: 'rgba(242, 242, 242, 0.82)',
     iconColorDisabled: 'rgba(242, 242, 242, 0.25)',
 
-    bodyColor: '#0e0e0e',
+    bodyColor: '#16161a',
 
-    cardColor: '#151619',
-    modalColor: '#18191c',
-    popoverColor: '#18191c',
+    cardColor: '#1e1e24',
+    modalColor: '#2a2b32',
+    popoverColor: '#2a2b32',
 
-    tableColor: '#111214',
+    tableColor: '#1e1e24',
 
     tableColorHover: 'rgba(19, 109, 194, 0.10)',
     hoverColor: 'rgba(19, 109, 194, 0.12)',
 
-    tagColor: '#18191c',
+    tagColor: '#2a2b32',
 
-    inputColor: '#1b1d20',
+    inputColor: '#27282f',
     inputColorDisabled: 'rgba(27, 29, 32, 0.65)',
 
-    actionColor: '#151619',
+    actionColor: '#22232a',
 
     closeColorHover: 'rgba(255, 255, 255, 0.10)',
     closeColorPressed: 'rgba(255, 255, 255, 0.15)',
@@ -246,7 +246,7 @@ export const darkThemeOverrides: GlobalThemeOverrides = {
     buttonColor2Hover: 'rgba(255, 255, 255, 0.13)',
     buttonColor2Pressed: 'rgba(255, 255, 255, 0.18)',
 
-    borderColor: '#3a3c40',
+    borderColor: '#303236',
 
     dividerColor: 'rgba(255, 255, 255, 0.12)',
 

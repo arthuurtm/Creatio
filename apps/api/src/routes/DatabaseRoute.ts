@@ -1,7 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
 import {
-	compileProjectStateController,
 	deleteProjectController,
 	duplicateProjectController,
 	getAnyProjectController,
@@ -65,7 +64,6 @@ router.delete("/deleteProfilePic", isAuthenticated, deleteProfilePicController);
 // editor
 router.get("/getProjectState", isAuthenticated, getProjectStateController);
 router.put("/saveProjectState", isAuthenticated, saveProjectStateController);
-router.post("/compileProject", isAuthenticated, compileProjectStateController);
 router.put("/updateProject", isAuthenticated, updateProjectController);
 router.post("/duplicateProject", isAuthenticated, duplicateProjectController);
 

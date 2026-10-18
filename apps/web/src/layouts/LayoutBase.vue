@@ -12,13 +12,13 @@ import DialogSettings from "@/components/modules/DialogSettings.vue";
 import type GlobalSearch from "@/components/modules/GlobalSearch.vue";
 import Logo from "@/components/ui/Logo.vue";
 import { useUserStore } from "@/stores";
-import { useEditorStore } from "@/stores/editor";
+import { useEditor } from "@/composables/useEditor";
 import { http } from "@/utils/index.ts";
 
 const route = useRoute();
 const router = useRouter();
 const user = useUserStore();
-const editorStore = useEditorStore();
+const editor = useEditor();
 
 const settingsDialog = ref(false);
 const searchRef = ref<InstanceType<typeof GlobalSearch> | null>(null);
@@ -33,7 +33,7 @@ const breadcrumbs = computed(() => {
 	];
 
 	if (route.name === "CodeEdit") {
-		const title = editorStore.info.title || "Sem título";
+    const title = editor.info.value.title || "Sem título";
 		crumbs.push({ label: title, to: null, disabled: true });
 	} else if (route.name === "CodeNew") {
 		crumbs.push({
@@ -105,7 +105,7 @@ watchEffect(() => {
 <template>
   <div class="flex flex-col w-screen h-screen overflow-hidden relative bg-[color:var(--n-body-color)]">
 
-    <div class="relative flex items-center w-full p-2">
+    <div class="relative flex items-center w-full p-2 border-b">
 
       <div
         class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer z-10 transition-opacity hover:opacity-80"

@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: rgb(var(--v-theme-primary));
+  --color-on-primary: rgb(var(--v-theme-on-primary));
+  --color-secondary: rgb(var(--v-theme-secondary));
+  --color-background: rgb(var(--v-theme-background));
+  --color-surface: rgb(var(--v-theme-surface));
+  --color-surface-variant: rgb(var(--v-theme-surface-variant));
+  --color-on-surface: rgb(var(--v-theme-on-surface));
+  --color-error: rgb(var(--v-theme-error));
+  --color-border: var(--n-border-color);
+}
+
+
 /* Settings */
 body {
 	font-family:
@@ -244,3 +257,4 @@ body {
 .page-fade-leave-to {
 	opacity: 0;
 }
+@layer base { *, ::before, ::after { border-color: var(--n-border-color, #e5e7eb); } }

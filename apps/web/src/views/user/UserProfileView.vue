@@ -46,7 +46,7 @@
             <!-- Avatar -->
             <n-avatar
               :size="88"
-              class="rounded-2xl border-2 border-[color:var(--n-border-color)] shrink-0 text-white text-3xl font-bold"
+              class="rounded-2xl border-2 shrink-0 text-white text-3xl font-bold"
               :style="{ backgroundColor: 'var(--n-primary-color)' }"
             >
               <img
@@ -171,7 +171,7 @@
               {{ project.description || 'Sem descrição informada.' }}
             </p>
 
-            <div class="flex items-center justify-between pt-3 border-t border-[color:var(--n-border-color)] text-[11px] text-[color:var(--n-text-color-3)] mt-auto">
+            <div class="flex items-center justify-between pt-3 border-t text-[11px] text-[color:var(--n-text-color-3)] mt-auto">
               <span class="flex items-center gap-1">
                 <n-icon size="13"><TimeOutline /></n-icon>
                 {{ formatDate(project.updatedAt || project.createdAt) }}

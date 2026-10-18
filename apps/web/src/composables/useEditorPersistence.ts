@@ -1,22 +1,20 @@
-import type { EditorState, RequestStatusValues } from "@projeto/types";
-import { debounce } from "lodash-es";
-import { ref, watch } from "vue";
+import type { EditorState } from "@projeto/types";
+import { ref } from "vue";
 import { http } from "@/utils";
-import { useEditorStore } from "@/stores/editor";
-
+import { useEditor } from "@/composables/useEditor";
 export interface Diagnostic {
-  rule: string;
   severity: "error" | "warning" | "info";
   message: string;
-  nodeId: string;
+  nodeId?: string;
+  rule?: string;
   nodeLabel?: string;
 }
 
 export function useEditorPersistence() {
-  const store = useEditorStore();
+  const editor = useEditor();
 
-  const requestStatus = ref<RequestStatusValues>("IDLE");
-  const saveError = ref<string>("");
+  const requestStatus = editor.requestStatus;
+  const saveError = editor.saveError;
   const compiledCode = ref<string>("");
   const compileError = ref<string>("");
   const isCompiling = ref(false);
@@ -31,7 +29,7 @@ export function useEditorPersistence() {
         type: "database",
         route: "getProjectState",
         querys: { id },
-      })) as EditorState;
+      }));
 
       if (
         remote &&
@@ -39,7 +37,7 @@ export function useEditorPersistence() {
           remote.connections?.length > 0 ||
           remote.info?.id)
       ) {
-        store.setState(remote);
+        await editor.setState(remote);
       }
       requestStatus.value = "SUCCESS";
     } catch (err: any) {
@@ -51,70 +49,32 @@ export function useEditorPersistence() {
     }
   }
 
-  const slowSave = debounce(async () => {
-    if (!store.info.id) return;
-    requestStatus.value = "SENDING";
-    saveError.value = "";
-    try {
-      const payload = {
-        info: JSON.parse(JSON.stringify(store.info)),
-        nodes: JSON.parse(JSON.stringify(store.nodes)),
-        connections: JSON.parse(JSON.stringify(store.connections)),
-      };
-      await http.put(
-        { type: "database", route: "saveProjectState" },
-        { id: store.info.id, state: payload },
-      );
-      requestStatus.value = "SUCCESS";
-    } catch (err: any) {
-      requestStatus.value = "ERROR";
-      saveError.value = err.message || "Erro ao salvar projeto";
-    }
-  }, 600);
-
   async function requestCompile() {
     isCompiling.value = true;
     compileError.value = "";
     diagnostics.value = [];
     try {
-      const payload = {
-        info: JSON.parse(JSON.stringify(store.info)),
-        nodes: JSON.parse(JSON.stringify(store.nodes)),
-        connections: JSON.parse(JSON.stringify(store.connections)),
-      };
-      const result = await http.post(
-        { type: "database", route: "compileProject" },
-        { state: payload },
-      );
-      if (result.success !== false && result.code !== undefined) {
-        compiledCode.value = result.code || "";
-        compileError.value = "";
-        diagnostics.value = result.diagnostics || [];
-      } else {
-        compileError.value =
-          result.error || result.message || "Erro na compilação";
-        diagnostics.value = result.diagnostics || [];
-      }
+      const code = await editor.compileToCode();
+      compiledCode.value = code || "/* Canvas vazio */";
+      diagnostics.value = [];
+      compileError.value = "";
     } catch (err: any) {
-      compileError.value = err.message || "Erro na compilação";
+      let msg = err.message || "Erro na compilação do Rete";
+
+      // Traduz e explica o erro clássico de controle de fluxo (statement nodes desconectados)
+      if (msg.includes("Multiple roots")) {
+        msg = "Há blocos de execução soltos no quadro! Você precisa conectá-los usando a linha de fluxo (setas laterais) para que o sistema saiba a ordem exata em que devem ser executados.";
+      }
+
+      compileError.value = msg;
     } finally {
       isCompiling.value = false;
     }
   }
 
-  watch(
-    () => [store.nodes, store.connections],
-    () => {
-      if (store.info.id) {
-        slowSave();
-      }
-    },
-    { deep: true, flush: "post" },
-  );
-
   return {
     loadProject,
-    saveState: slowSave,
+    saveState: editor.syncToCloud,
     requestStatus,
     saveError,
     compiledCode,

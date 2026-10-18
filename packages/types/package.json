@@ -9,7 +9,9 @@
     },
     "dependencies": {
         "express": "^5.2.1",
-        "ua-parser-js": "^2.0.7"
+        "ua-parser-js": "^2.0.7",
+        "rete-studio-core": "file:../vendor/rete-studio-core-0.0.0.tgz",
+        "rete-studio-javascript-lang": "file:../vendor/rete-studio-javascript-lang-0.0.0.tgz"
     },
     "devDependencies": {
         "@types/express": "^5.0.6",

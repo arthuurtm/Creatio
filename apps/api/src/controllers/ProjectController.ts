@@ -8,7 +8,6 @@ import {
 } from "#api/services/ProjectService.ts";
 import { getUserIDFromSessionToken } from "#api/services/UserSessionService.ts";
 import EditorService from "#api/services/EditorService.ts";
-import { compileProjectState } from "#api/services/CompilerService.ts";
 
 async function getAnyProjectController(
 	req: Request,
@@ -34,12 +33,12 @@ async function setProjectOnDatabaseController(
 		const accessToken = req.cookies.accessToken;
 		const userId = await getUserIDFromSessionToken(accessToken);
 		const result = await setProjectOnDatabase({
-			title: state?.info?.title || "Novo Projeto",
-			description: state?.info?.description || null,
+			title: "Novo Projeto",
+			description: null,
 			userId,
 			accessToken,
 			state,
-			version: state?.info?.version || "0.1.0",
+			version: "0.0.0",
 		});
 		res.json(result);
 	} catch (err) {
@@ -74,7 +73,7 @@ async function updateProjectController(
 		if (!id) throw new Error("ID do projeto não fornecido");
 		const accessToken = req.cookies.accessToken;
 		if (!accessToken) throw new Error("Usuário não autenticado");
-		
+
 		const updatedProject = await updateProject(Number(id), { title, description }, accessToken);
 		res.json(updatedProject);
 	} catch (err) {
@@ -93,14 +92,14 @@ async function duplicateProjectController(
 		const accessToken = req.cookies.accessToken;
 		if (!accessToken) throw new Error("Usuário não autenticado");
 		const userId = await getUserIDFromSessionToken(accessToken);
-		
+
 		const originalProject = await validateProjectOwnership(Number(id), accessToken);
 		const originalState = await EditorService.getState({
 			id: Number(id),
 			version: originalProject.version ?? "0.1.0",
 			accessToken,
 		});
-		
+
 		const newProject = await setProjectOnDatabase({
 			title: `${originalProject.title} (cópia)`,
 			description: originalProject.description,
@@ -109,7 +108,7 @@ async function duplicateProjectController(
 			state: originalState as EditorState,
 			version: "0.1.0",
 		});
-		
+
 		res.json(newProject);
 	} catch (err) {
 		next(err);
@@ -162,34 +161,14 @@ async function saveProjectStateController(
 		const { id, state } = req.body;
 		if (!id) throw new Error("ID do projeto não fornecido");
 
-		await validateProjectOwnership(Number(id), accessToken);
+		const info = await validateProjectOwnership(Number(id), accessToken);
 		const objectName = await EditorService.saveState({
 			id: Number(id),
-			version: state?.info?.version || "0.1.0",
+			version: info.version,
 			state,
 			accessToken,
 		});
 		res.json({ objectName });
-	} catch (err) {
-		next(err);
-	}
-}
-
-async function compileProjectStateController(
-	req: Request,
-	res: Response,
-	next: NextFunction,
-) {
-	try {
-		const { state } = req.body;
-		if (!state) throw new Error("Estado do projeto não fornecido");
-		const accessToken = req.cookies.accessToken;
-		if (!accessToken) throw new Error("Usuário não autenticado");
-		if (state.info?.id) {
-			await validateProjectOwnership(Number(state.info.id), accessToken);
-		}
-		const result = await compileProjectState({ state });
-		res.json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -203,6 +182,5 @@ export {
 	duplicateProjectController,
 	getProjectStateController,
 	saveProjectStateController,
-	compileProjectStateController,
 };
 

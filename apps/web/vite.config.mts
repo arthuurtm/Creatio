@@ -45,10 +45,10 @@ export default defineConfig({
 		alias: {
 			"@": fileURLToPath(new URL("src", import.meta.url)),
 		},
-		extensions: [".ts", ".json", ".jsx", ".mjs", ".ts", ".tsx", ".vue"],
+		extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"],
 	},
 	server: {
-		allowedHosts: ["lead-twiki-dad-min.trycloudflare.com"],
+		allowedHosts: [".loca.lt"],
 		proxy: {
 			"/api": {
 				target: "http://localhost:3000",

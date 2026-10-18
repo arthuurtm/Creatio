@@ -77,6 +77,10 @@ defineProps({
   padding: 24px 16px;
 }
 
+.app-form-wrapper { background-size: 22px 22px; background-image: radial-gradient(circle, #00000020 1px, transparent 1.5px); }
+.canvas-dark .app-form-wrapper { background-color: #0f1115; background-image: radial-gradient(circle, #ffffff20 1px, transparent 1.5px); }
+.canvas-light .app-form-wrapper { background-color: #f8fafc; }
+
 .header-actions {
   position: absolute;
   top: 16px;
@@ -92,7 +96,6 @@ defineProps({
 /* Elegant, flat card with a subtle border and standard shadow */
 .auth-card {
   border-radius: 12px !important;
-  background-color: var(--n-card-color) !important;
   border: 1px solid var(--n-border-color) !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01) !important;
 }

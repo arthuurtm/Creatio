@@ -2,7 +2,7 @@
   <div class="flex w-full min-h-[460px]">
 
     <!-- ── Sidebar ────────────────────────────────────────────────── -->
-    <div class="w-[200px] shrink-0 border-r border-[color:var(--n-border-color)] p-2.5">
+    <div class="w-[200px] shrink-0 border-r p-2.5">
       <n-list hoverable :bordered="false" class="bg-transparent">
         <n-list-item
           v-for="btn in navItems"
@@ -299,12 +299,12 @@ const editableFields = computed(() => [
 	{
 		key: "theme",
 		label: "Tema da interface",
-		displayValue: settingsStore.theme === "light" ? "☀️ Claro" : "🌙 Escuro",
+		displayValue: settingsStore.theme === "light" ? "Claro" : "Escuro",
 		currentValue: settingsStore.theme,
 		type: "select",
 		options: [
-			{ label: "☀️ Claro", value: "light" },
-			{ label: "🌙 Escuro", value: "dark" },
+			{ label: "Claro", value: "light" },
+			{ label: "Escuro", value: "dark" },
 		],
 		endpoint: "theme",
 	},

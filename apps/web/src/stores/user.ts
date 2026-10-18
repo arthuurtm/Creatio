@@ -12,7 +12,7 @@ interface UserState {
 
 function models(): UserState {
 	return {
-		id: 0,
+		id: -1,
 		name: "",
 		username: "",
 		email: "",

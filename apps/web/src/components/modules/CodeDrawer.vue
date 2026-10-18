@@ -3,21 +3,24 @@ import {
   ContentCopyOutlined,
   DownloadOutlined,
   RefreshOutlined,
+  CodeOutlined,
 } from "@vicons/material";
+import { ChevronForward, ExpandOutline, ContractOutline, CheckmarkOutline } from "@vicons/ionicons5";
 import {
-  NButton, NDrawer, NDrawerContent, NIcon, NSpace, NSpin, NBadge, NCollapse, NCollapseItem,
+  NButton, NIcon, NSpace, NBadge, NCollapse, NCollapseItem,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
-import { useEditorExplorer } from "@/composables/useEditorExplorer.ts";
+import { useEditor } from "@/composables/useEditor";
 import { useEditorPersistence } from "@/composables/useEditorPersistence.ts";
 import { showToast } from "@/plugins/toast";
 
 defineProps<{ to?: HTMLElement | null }>();
 const show = defineModel<boolean>("show", { required: true });
 
-const { editorStore } = useEditorExplorer();
+const editor = useEditor();
 const persistence = useEditorPersistence();
 
+const isFullscreen = ref(false);
 const autoCompile = ref(true);
 const compiledCodeText = computed(() => persistence.compiledCode.value);
 const compileErrorText = computed(() => persistence.compileError.value);
@@ -30,11 +33,13 @@ const warningCount = computed(() => diagnostics.value.filter(d => d.severity ===
 const infoCount = computed(() => diagnostics.value.filter(d => d.severity === 'info').length);
 const hasIssues = computed(() => diagnostics.value.length > 0);
 
+const editableCode = ref("");
+
 // Ícone e cor por severidade
 function severityIcon(severity: string) {
-  if (severity === 'error') return '🔴';
-  if (severity === 'warning') return '🟡';
-  return '🔵';
+  if (severity === 'error') return 'error';
+  if (severity === 'warning') return 'warning';
+  return 'info';
 }
 
 function severityClass(severity: string) {
@@ -47,26 +52,37 @@ function compileNow() {
   persistence.requestCompile();
 }
 
+// Sincroniza editableCode sempre que o código compilado mudar (após o compile terminar)
+watch(compiledCodeText, (code) => {
+  editableCode.value = code;
+});
+
 watch(
-  () => [editorStore.nodes, editorStore.connections],
+  () => [editor.nodes.value, editor.connections.value],
   () => {
-    if (autoCompile.value && show.value) compileNow();
+    if (autoCompile.value && show.value) {
+      compileNow();
+    }
   },
   { deep: true },
 );
 
-watch(show, (open) => open && compileNow());
+watch(show, (open) => {
+  if (open) {
+    compileNow();
+  }
+});
 
 function copyCodeToClipboard() {
-  navigator.clipboard.writeText(compiledCodeText.value || "");
+  navigator.clipboard.writeText(editableCode.value || "");
   showToast({ type: "success", message: "Código copiado para a área de transferência!" });
 }
 
 function downloadCodeFile() {
-  if (!compiledCodeText.value) compileNow();
-  const title = editorStore.info.title || "algoritmo";
+  if (!editableCode.value) compileNow();
+  const title = editor.info.value.title || "algoritmo";
   const fileName = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.js`;
-  const blob = new Blob([compiledCodeText.value], { type: "application/javascript;charset=utf-8" });
+  const blob = new Blob([editableCode.value], { type: "application/javascript;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -77,49 +93,78 @@ function downloadCodeFile() {
   URL.revokeObjectURL(url);
   showToast({ type: "success", message: `Arquivo "${fileName}" baixado!` });
 }
+
+const isApplying = ref(false);
+async function applyCodeToCanvas() {
+  try {
+    isApplying.value = true;
+    await editor.clearState();
+    if (editableCode.value.trim()) {
+      await editor.insertSnippet(editableCode.value);
+    }
+    showToast({ type: "success", message: "Canvas atualizado a partir do código!" });
+  } catch (err: any) {
+    showToast({ type: "error", message: "Erro ao gerar blocos: " + err.message });
+  } finally {
+    isApplying.value = false;
+  }
+}
 </script>
 
 <template>
-  <NDrawer
-    v-model:show="show"
-    :width="540"
-    placement="right"
-    resizable
-    :show-mask="false"
-    :to="to ?? undefined"
+  <aside
+    class="shrink-0 transition-all duration-300 ease-in-out border-l bg-[var(--n-color)] z-[100]"
+    :class="{
+      'h-full relative': !isFullscreen,
+      'inset-0 w-full ': isFullscreen,
+      'w-[540px]': show && !isFullscreen,
+      'w-0 opacity-0 pointer-events-none border-none': !show,
+    }"
   >
-    <NDrawerContent closable>
-      <template #header>
-        <div class="flex items-center justify-between w-full pr-4">
-          <div class="flex items-center gap-2">
-            <span>Código Javascript</span>
-            <NBadge v-if="errorCount > 0" :value="errorCount" type="error" />
-            <NBadge v-if="warningCount > 0" :value="warningCount" type="warning" />
-            <NBadge v-if="infoCount > 0" :value="infoCount" type="info" />
-          </div>
+    <div v-show="show" class="h-full flex flex-col overflow-hidden" :class="isFullscreen ? 'w-full' : 'min-w-[540px]'">
+      <!-- Header -->
+      <div class="p-4 border-b flex items-center justify-between w-full">
+        <div class="flex items-center gap-2">
+          <NButton circle quaternary size="small" title="Fechar" @click="show = false; isFullscreen = false">
+            <template #icon>
+              <NIcon size="18"><ChevronForward /></NIcon>
+            </template>
+          </NButton>
+          <NIcon size="20" class="text-[color:var(--n-primary-color)]"><CodeOutlined /></NIcon>
+          <span class="font-bold text-[15px]">Código Javascript</span>
+          <NBadge v-if="errorCount > 0" :value="errorCount" type="error" />
+          <NBadge v-if="warningCount > 0" :value="warningCount" type="warning" />
+          <NBadge v-if="infoCount > 0" :value="infoCount" type="info" />
         </div>
-      </template>
 
-      <div class="flex flex-col h-full gap-3">
-        <div class="flex justify-between items-center bg-[var(--n-color-embedded)] p-2 rounded-lg">
-          <NSpace :size="6">
-            <NButton size="small" ghost round :loading="isCompiling" @click="compileNow">
-              <template #icon><NIcon><RefreshOutlined /></NIcon></template>
-              Recompilar
-            </NButton>
-            <NButton size="small" ghost round @click="copyCodeToClipboard">
-              <template #icon><NIcon><ContentCopyOutlined /></NIcon></template>
-              Copiar
-            </NButton>
-          </NSpace>
-          <NButton type="primary" size="small" round @click="downloadCodeFile">
+        <div class="flex items-center gap-2">
+          <NButton size="small" type="primary" ghost round :loading="isApplying" @click="applyCodeToCanvas" title="Aplicar no Canvas">
+            <template #icon><NIcon><CheckmarkOutline /></NIcon></template>
+          </NButton>
+          <NButton size="small" ghost round :loading="isCompiling" @click="compileNow" title="Recompilar">
+            <template #icon><NIcon><RefreshOutlined /></NIcon></template>
+          </NButton>
+          <NButton size="small" ghost round @click="copyCodeToClipboard" title="Copiar">
+            <template #icon><NIcon><ContentCopyOutlined /></NIcon></template>
+          </NButton>
+          <NButton type="primary" size="small" round @click="downloadCodeFile" title="Baixar .js">
             <template #icon><NIcon><DownloadOutlined /></NIcon></template>
-            Baixar .js
+          </NButton>
+
+          <NButton circle quaternary size="small" class="ml-2" :title="isFullscreen ? 'Restaurar' : 'Tela Inteira'" @click="isFullscreen = !isFullscreen">
+            <template #icon>
+              <NIcon size="18">
+                <ExpandOutline v-if="!isFullscreen" />
+                <ContractOutline v-else />
+              </NIcon>
+            </template>
           </NButton>
         </div>
+      </div>
 
-        <div v-if="compileErrorText" class="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-xs font-mono">
-          ⚠️ {{ compileErrorText }}
+      <div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
+        <div v-if="compileErrorText" class="p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono">
+          {{ compileErrorText }}
         </div>
 
         <!-- Painel de Diagnósticos -->
@@ -140,7 +185,7 @@ function downloadCodeFile() {
                   :class="severityClass(diag.severity)"
                 >
                   <div class="diag-header">
-                    <span class="diag-icon">{{ severityIcon(diag.severity) }}</span>
+                    <span class="diag-icon-circle"></span>
                     <span class="diag-rule">{{ diag.rule }}</span>
                     <span v-if="diag.nodeLabel" class="diag-label">{{ diag.nodeLabel }}</span>
                   </div>
@@ -151,18 +196,17 @@ function downloadCodeFile() {
           </NCollapse>
         </div>
 
-        <!-- Status de aprovação quando não há erros -->
-        <div v-else-if="compiledCodeText && !isCompiling" class="p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-xs flex items-center gap-2">
-          ✅ Nenhum problema encontrado no seu código!
-        </div>
-
-        <div class="flex-1 min-h-0 bg-[#1e1e1e] text-[#d4d4d4] p-4 rounded-xl font-mono text-xs overflow-auto leading-relaxed select-text border border-white/10 relative">
-          <NSpin v-if="isCompiling" class="absolute inset-0 flex items-center justify-center bg-black/40 z-10" />
-          <pre class="m-0 whitespace-pre-wrap word-break-all">{{ compiledCodeText || '// Nenhum nó compilável no canvas' }}</pre>
+        <div class="flex-1 min-h-0 p-4 font-mono text-xs overflow-hidden relative flex flex-col">
+          <textarea
+            v-model="editableCode"
+            class="w-full h-full bg-transparent text-inherit font-mono outline-none resize-none m-0 whitespace-pre-wrap break-words"
+            spellcheck="false"
+            placeholder="// Nenhum nó compilável no canvas"
+          ></textarea>
         </div>
       </div>
-    </NDrawerContent>
-  </NDrawer>
+    </div>
+  </aside>
 </template>
 
 <style scoped>
@@ -209,7 +253,7 @@ function downloadCodeFile() {
   margin-bottom: 3px;
 }
 
-.diag-icon {
+.diag-icon-circle { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; } .diag-error .diag-icon-circle { background-color: #ef4444; } .diag-warning .diag-icon-circle { background-color: #f59e0b; } .diag-info .diag-icon-circle { background-color: #3b82f6; } .old-diag-icon {
   font-size: 10px;
   flex-shrink: 0;
 }

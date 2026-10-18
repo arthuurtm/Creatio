@@ -16,7 +16,7 @@ import {
   translateField,
   formatFieldValue,
 } from "@/utils/nodeTranslations";
-import { cloneNode, deleteNode } from "@/composables/useNodeFunctions";
+import { useEditor } from "@/composables/useEditor";
 import { useSettingsStore } from "@/stores/global";
 import { showToast } from "@/plugins/toast";
 
@@ -32,6 +32,7 @@ const props = defineProps({
 });
 
 const settingsStore = useSettingsStore();
+const editor = useEditor();
 const isDark = computed(() => settingsStore.theme === "dark");
 
 // Acesso aos dados originais (embutidos no nó do Rete)
@@ -105,15 +106,16 @@ const scopeHintText = computed(() => {
 });
 
 function handleClone() {
-  cloneNode({
-    id: rawId.value,
-    type: nodeType.value,
-    data: astData.value,
-  } as any);
+  const type = nodeType.value === "expression" ? "expression" : "statement";
+  void editor.addNode(label.value, type, astData.value).then((node) => {
+    if (node) showToast({ type: "success", message: "Nó duplicado com sucesso!" });
+  });
 }
 
 function handleDelete() {
-  deleteNode(rawId.value);
+  void editor.removeNode(rawId.value).then(() => {
+    showToast({ type: "info", message: "Nó removido com sucesso." });
+  });
 }
 
 const isCopied = ref(false);
