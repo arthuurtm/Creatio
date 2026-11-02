@@ -2,6 +2,7 @@ export { createReteEditor } from './setup';
 export { safeSerialize } from './serialize';
 export type { ReteEditorInstance, CreateReteEditorOptions } from './setup';
 export type { NodeEditor } from 'rete';
+export type { AreaPlugin } from 'rete-area-plugin';
 
 // Re-exporta AreaExtensions para que consumidores (ex: ComponentNode.vue) possam
 // usar zoomAt e demais utilitários sem importar rete-area-plugin diretamente.

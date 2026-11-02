@@ -1,5 +1,5 @@
 import { jsAdapter } from "@projeto/compiler";
-import { safeSerialize, type NodeEditor } from "@projeto/editor";
+import { safeSerialize, type NodeEditor, type AreaPlugin } from "@projeto/editor";
 import {
 	BaseNode,
 	deserialize,
@@ -20,8 +20,9 @@ export interface FileInfo {
 }
 
 export const useEditorStore = defineStore("editor", () => {
-	// Instância ativa do editor nativo do Rete
+	// Instâncias ativas do editor nativo do Rete e da Área
 	const editor = shallowRef<NodeEditor<Schemes> | null>(null);
+	const area = shallowRef<AreaPlugin<Schemes, any> | null>(null);
 	const revision = ref(0);
   let pipeRegistered = false;
 
@@ -57,8 +58,14 @@ export const useEditorStore = defineStore("editor", () => {
 	// contador para fins de reatividade, pois o Rete não é reativo por padrão
   const nodesCount = computed(() => nodes.value.length);
 
-  function setEditorInstance(instance: NodeEditor<Schemes>) {
+  function setEditorInstance(
+    instance: NodeEditor<Schemes>,
+    areaInstance?: AreaPlugin<Schemes, any> | null,
+  ) {
     editor.value = instance;
+    if (areaInstance !== undefined) {
+      area.value = areaInstance;
+    }
     if (!pipeRegistered) {
       instance.addPipe((context) => {
         const t = (context as any).type;
@@ -108,22 +115,38 @@ export const useEditorStore = defineStore("editor", () => {
 	// Transpila os nós visuais atuais de volta para código JavaScript
 	async function compileToCode(): Promise<string> {
 		if (!editor.value) return "";
-		const state = safeSerialize(editor.value);
+		const state = safeSerialize(editor.value, area.value);
 		return await jsAdapter.graphToCode(state);
 	}
 
-	// Exporta estado serializado
+	// Exporta estado serializado com coordenadas da lousa
 	function getState(): EditorState | null {
 		if (!editor.value) return null;
-		return safeSerialize(editor.value)
+		return safeSerialize(editor.value, area.value) as EditorState;
 	}
 
-	// Restaura estado no editor
+	// Restaura estado no editor e reposiciona os nós na lousa
 	async function setState(state: EditorState) {
 		if (!editor.value) return;
 		await editor.value.clear();
 		await deserialize(editor.value, state);
 		applyInteraction(editor.value, () => {});
+
+		if (area.value && state.nodes?.length) {
+			const rootNodes = state.nodes.filter((n) => !n.parent);
+			const childNodes = state.nodes.filter((n) => !!n.parent);
+
+			for (const node of rootNodes) {
+				if (node.position) {
+					await area.value.translate(node.id, node.position);
+				}
+			}
+			for (const node of childNodes) {
+				if (node.position) {
+					await area.value.translate(node.id, node.position);
+				}
+			}
+		}
 	}
 
 	// Limpa o canvas e o estado
@@ -140,6 +163,7 @@ export const useEditorStore = defineStore("editor", () => {
 	return {
 		// Referências e estado
 		editor,
+		area,
 		nodes,
 		connections,
 		nodesCount,

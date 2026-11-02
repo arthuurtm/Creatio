@@ -1,7 +1,9 @@
 // Tipos principais do editor — tudo vem do rete-studio-core
 export type {
 	InputType,
+	JSONBaseNode,
 	JSONBaseNode as SDKNode,
+	JSONConnection,
 	JSONConnection as NodeConnection,
 	JSONControl,
 	JSONEditorData,
