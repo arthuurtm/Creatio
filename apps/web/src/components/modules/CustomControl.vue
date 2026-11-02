@@ -7,9 +7,13 @@ import {
   NButton,
   NSwitch,
   NSlider,
-  NColorPicker
+  NColorPicker,
+  NConfigProvider,
+  darkTheme,
 } from 'naive-ui';
 import { useEditor } from '@/composables/useEditor';
+import { useSettingsStore } from '@/stores/global';
+import { lightThemeOverrides, darkThemeOverrides } from '@/plugins/naive';
 import { detectControlKind } from '@projeto/compiler';
 
 const props = defineProps<{
@@ -17,6 +21,15 @@ const props = defineProps<{
 }>();
 
 const editor = useEditor();
+const settingsStore = useSettingsStore();
+
+const activeTheme = computed(() =>
+  settingsStore.theme === "dark" ? darkTheme : null
+);
+
+const themeOverrides = computed(() =>
+  settingsStore.theme === "dark" ? darkThemeOverrides : lightThemeOverrides
+);
 
 const kind = computed(() => detectControlKind(props.data));
 
@@ -88,8 +101,9 @@ function handleInsert() {
 </script>
 
 <template>
-  <!-- Controles não suportados não são exibidos: o nó mostra só o rótulo do campo -->
-  <div v-if="kind !== 'unknown'" class="custom-control-wrapper w-full">
+  <NConfigProvider :theme="activeTheme" :theme-overrides="themeOverrides" abstract>
+    <!-- Controles não suportados não são exibidos: o nó mostra só o rótulo do campo -->
+    <div v-if="kind !== 'unknown'" class="custom-control-wrapper w-full">
 
     <!-- Text / Identifier -->
     <NInput
@@ -97,7 +111,7 @@ function handleInsert() {
       v-model:value="textValue"
       :readonly="opts.readonly"
       size="tiny"
-      class="text-xs font-mono"
+      class="control-input"
       placeholder="digite aqui"
       @pointerdown.stop
       @mousedown.stop
@@ -115,7 +129,7 @@ function handleInsert() {
       :step="opts.step ?? 1"
       :show-button="false"
       size="tiny"
-      class="text-xs font-mono"
+      class="control-input"
       placeholder="0"
       @pointerdown.stop
       @mousedown.stop
@@ -131,7 +145,7 @@ function handleInsert() {
       :readonly="opts.readonly"
       :autosize="{ minRows: 1, maxRows: 4 }"
       size="tiny"
-      class="text-xs font-mono"
+      class="control-input"
       placeholder="digite aqui"
       @pointerdown.stop
       @mousedown.stop
@@ -153,7 +167,7 @@ function handleInsert() {
         :disabled="opts.readonly"
         size="small"
       />
-      <span class="text-[11px] font-mono opacity-80">
+      <span class="control-switch-label">
         {{ booleanValue ? 'Verdadeiro' : 'Falso' }}
       </span>
     </div>
@@ -174,7 +188,7 @@ function handleInsert() {
         :disabled="opts.readonly"
         :tooltip="false"
       />
-      <span class="text-[10px] font-mono opacity-70 min-w-[24px] text-right">
+      <span class="control-slider-val min-w-[24px] text-right">
         {{ sliderValue }}
       </span>
     </div>
@@ -195,7 +209,7 @@ function handleInsert() {
     <!-- Label (somente leitura) -->
     <div
       v-else-if="kind === 'label'"
-      class="text-[11px] font-mono opacity-80 truncate"
+      class="control-label truncate"
       :title="String(data.value ?? opts.label ?? '')"
     >
       {{ data.value ?? opts.label }}
@@ -207,7 +221,7 @@ function handleInsert() {
       v-model:value="selectValue"
       :options="selectOptions"
       size="tiny"
-      class="text-xs"
+      class="control-select"
       @pointerdown.stop
       @mousedown.stop
       @click.stop
@@ -220,7 +234,7 @@ function handleInsert() {
       type="primary"
       secondary
       block
-      class="text-xs font-bold uppercase tracking-wider"
+      class="control-insert-btn"
       @click.stop="handleInsert"
       @pointerdown.stop
       @mousedown.stop
@@ -228,6 +242,7 @@ function handleInsert() {
       Adicionar
     </NButton>
   </div>
+  </NConfigProvider>
 </template>
 
 <style scoped>
@@ -235,6 +250,34 @@ function handleInsert() {
   margin: 2px 0;
   pointer-events: auto;
   user-select: text;
+}
+.control-input {
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+.control-switch-label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  opacity: 0.8;
+}
+.control-slider-val {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  opacity: 0.7;
+}
+.control-label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  opacity: 0.8;
+}
+.control-select {
+  font-size: 12px;
+}
+.control-insert-btn {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 :deep(.n-input) {
   user-select: text;

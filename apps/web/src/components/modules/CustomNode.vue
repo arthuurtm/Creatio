@@ -1,132 +1,137 @@
 <template>
-  <NCard
-    class="rete-node"
-    :class="{ selected: data.selected, 'is-scope': isContainer }"
-    :style="[
-      cssVars,
-      {
-        width: data.width ? data.width + 'px' : 'auto',
-        height: isContainer && data.height ? data.height + 'px' : undefined,
-        minWidth: '220px'
-      }
-    ]"
-    size="small"
-    hoverable
-    :segmented="{ content: true }"
-    content-style="padding: 8px 0;"
-  >
-    <!-- Cabeçalho: título + tipo, usando o layout nativo do NCard -->
-    <template #header>
-      <NText strong class="node-title">{{ data.label }}</NText>
-    </template>
-    <template #header-extra>
-      <NTag
-        size="small"
-        :bordered="false"
-        :type="data.type === 'statement' ? 'success' : 'warning'"
-      >
-        {{ data.type === 'statement' ? 'comando' : 'valor' }}
-      </NTag>
-    </template>
-
-    <!-- Conteúdo com colunas organizadas (Inputs à esquerda, Outputs à direita) -->
-    <div class="rete-node-body">
-      <!-- Coluna da Esquerda: Inputs -->
-      <div class="rete-column inputs-column">
-        <div
-          v-for="[key, input] in Object.entries(data.inputs || {})"
-          :key="'in-' + key"
-          class="socket-row input-row"
-        >
-          <Ref
-            class="socket-circle socket-in"
-            :class="{
-              'is-control': input.socket?.isControl,
-              'is-ref': input.socket?.isRef,
-              'is-value': !input.socket?.isControl && !input.socket?.isRef
-            }"
-            :emit="emit"
-            :data="{ type: 'socket', side: 'input', key: key, nodeId: data.id, payload: input.socket }"
-          />
-
-          <!-- Campo editável: NFormItem dá o rótulo nativo do Naive -->
-          <NFormItem
-            v-if="hasControl(input)"
-            class="field"
-            :label="needsLabel(input.control) ? labelOf(key, input.label) : undefined"
-            label-placement="top"
-            size="small"
-            :show-feedback="false"
-          >
-            <Ref :emit="emit" :data="{ type: 'control', payload: input.control }" />
-          </NFormItem>
-
-          <!-- Sem controle (ou controle não suportado): só o rótulo -->
-          <NText v-else depth="3" class="socket-label">
-            {{ labelOf(key, input.label) }}
-          </NText>
-        </div>
-      </div>
-
-      <!-- Coluna da Direita: Outputs -->
-      <div class="rete-column outputs-column">
-        <div
-          v-for="[key, output] in Object.entries(data.outputs || {})"
-          :key="'out-' + key"
-          class="socket-row output-row"
-        >
-          <NFormItem
-            v-if="hasControl(output)"
-            class="field field-right"
-            :label="needsLabel(output.control) ? labelOf(key, output.label) : undefined"
-            label-placement="top"
-            label-align="right"
-            size="small"
-            :show-feedback="false"
-          >
-            <Ref :emit="emit" :data="{ type: 'control', payload: output.control }" />
-          </NFormItem>
-          <NText v-else-if="output.label || key" depth="3" class="socket-label">
-            {{ labelOf(key, output.label) }}
-          </NText>
-
-          <Ref
-            class="socket-circle socket-out"
-            :class="{
-              'is-control': output.socket?.isControl,
-              'is-ref': output.socket?.isRef,
-              'is-value': !output.socket?.isControl && !output.socket?.isRef
-            }"
-            :emit="emit"
-            :data="{ type: 'socket', side: 'output', key: key, nodeId: data.id, payload: output.socket }"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Controles centrais embutidos (os não suportados ficam de fora) -->
-    <template v-if="visibleControls.length">
-      <NDivider class="node-divider" />
-      <div class="rete-node-controls">
-        <NFormItem
-          v-for="item in visibleControls"
-          :key="'ctrl-' + item.key"
-          :label="item.showLabel ? item.label : undefined"
-          label-placement="top"
+  <NConfigProvider :theme="activeTheme" :theme-overrides="themeOverrides" abstract>
+    <NCard
+      class="rete-node"
+      :class="{ selected: data.selected, 'is-scope': isContainer }"
+      :style="[
+        cssVars,
+        {
+          width: data.width ? data.width + 'px' : 'auto',
+          height: isContainer && data.height ? data.height + 'px' : undefined,
+          minWidth: '220px',
+          cursor: data.selected ? 'move' : 'default'
+        }
+      ]"
+      size="small"
+      hoverable
+      :segmented="{ content: true }"
+      content-style="padding: 8px 0;"
+    >
+      <!-- Cabeçalho: título + tipo, usando o layout nativo do NCard -->
+      <template #header>
+        <NText strong class="node-title">{{ data.label }}</NText>
+      </template>
+      <template #header-extra>
+        <NTag
           size="small"
-          :show-feedback="false"
+          :bordered="false"
+          :type="data.type === 'statement' ? 'success' : 'warning'"
         >
-          <Ref :emit="emit" :data="{ type: 'control', payload: item.control }" />
-        </NFormItem>
+          {{ data.type === 'statement' ? 'comando' : 'valor' }}
+        </NTag>
+      </template>
+
+      <!-- Conteúdo com colunas organizadas (Inputs à esquerda, Outputs à direita) -->
+      <div class="rete-node-body">
+        <!-- Coluna da Esquerda: Inputs -->
+        <div class="rete-column inputs-column">
+          <div
+            v-for="[key, input] in Object.entries(data.inputs || {})"
+            :key="'in-' + key"
+            class="socket-row input-row"
+          >
+            <Ref
+              class="socket-circle socket-in"
+              :class="{
+                'is-control': input.socket?.isControl,
+                'is-ref': input.socket?.isRef,
+                'is-value': !input.socket?.isControl && !input.socket?.isRef
+              }"
+              :emit="emit"
+              :data="{ type: 'socket', side: 'input', key: key, nodeId: data.id, payload: input.socket }"
+            />
+
+            <!-- Campo editável: NFormItem dá o rótulo nativo do Naive -->
+            <NFormItem
+              v-if="hasControl(input)"
+              class="field"
+              :label="needsLabel(input.control) ? labelOf(key, input.label) : undefined"
+              label-placement="top"
+              size="small"
+              :show-feedback="false"
+            >
+              <Ref :emit="emit" :data="{ type: 'control', payload: input.control }" />
+            </NFormItem>
+
+            <!-- Sem controle (ou controle não suportado): só o rótulo -->
+            <NText v-else depth="3" class="socket-label">
+              {{ labelOf(key, input.label) }}
+            </NText>
+          </div>
+        </div>
+
+        <!-- Coluna da Direita: Outputs -->
+        <div class="rete-column outputs-column">
+          <div
+            v-for="[key, output] in Object.entries(data.outputs || {})"
+            :key="'out-' + key"
+            class="socket-row output-row"
+          >
+            <NFormItem
+              v-if="hasControl(output)"
+              class="field field-right"
+              :label="needsLabel(output.control) ? labelOf(key, output.label) : undefined"
+              label-placement="top"
+              label-align="right"
+              size="small"
+              :show-feedback="false"
+            >
+              <Ref :emit="emit" :data="{ type: 'control', payload: output.control }" />
+            </NFormItem>
+            <NText v-else-if="output.label || key" depth="3" class="socket-label">
+              {{ labelOf(key, output.label) }}
+            </NText>
+
+            <Ref
+              class="socket-circle socket-out"
+              :class="{
+                'is-control': output.socket?.isControl,
+                'is-ref': output.socket?.isRef,
+                'is-value': !output.socket?.isControl && !output.socket?.isRef
+              }"
+              :emit="emit"
+              :data="{ type: 'socket', side: 'output', key: key, nodeId: data.id, payload: output.socket }"
+            />
+          </div>
+        </div>
       </div>
-    </template>
-  </NCard>
+
+      <!-- Controles centrais embutidos (os não suportados ficam de fora) -->
+      <template v-if="visibleControls.length">
+        <NDivider class="node-divider" />
+        <div class="rete-node-controls">
+          <NFormItem
+            v-for="item in visibleControls"
+            :key="'ctrl-' + item.key"
+            :label="item.showLabel ? item.label : undefined"
+            label-placement="top"
+            size="small"
+            :show-feedback="false"
+          >
+            <Ref :emit="emit" :data="{ type: 'control', payload: item.control }" />
+          </NFormItem>
+        </div>
+      </template>
+    </NCard>
+  </NConfigProvider>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, type PropType } from "vue";
 import { Ref } from "rete-vue-plugin";
-import { NCard, NDivider, NFormItem, NTag, NText, useThemeVars } from "naive-ui";
+import { NCard, NDivider, NFormItem, NTag, NText, NConfigProvider, darkTheme } from "naive-ui";
+import { useSettingsStore } from "@/stores/global";
+import { lightThemeOverrides, darkThemeOverrides } from "@/plugins/naive";
 import {
   fieldLabel,
   isRenderableControl,
@@ -163,6 +168,7 @@ export default defineComponent({
     NFormItem,
     NTag,
     NText,
+    NConfigProvider,
   },
   props: {
     data: {
@@ -175,20 +181,29 @@ export default defineComponent({
     },
   },
   setup() {
-    // Só o que o Naive não cobre: cores dos sockets e destaque de seleção
-    const themeVars = useThemeVars();
+    const settingsStore = useSettingsStore();
 
-    const cssVars = computed(() => {
-      const t = themeVars.value;
-      return {
-        "--node-primary": t.primaryColor,
-        "--node-control": t.warningColor,
-        "--node-ref": t.infoColor,
-        "--node-value": t.successColor,
-      };
-    });
+    const activeTheme = computed(() =>
+      settingsStore.theme === "dark" ? darkTheme : null
+    );
 
-    return { cssVars };
+    const themeOverrides = computed(() =>
+      settingsStore.theme === "dark" ? darkThemeOverrides : lightThemeOverrides
+    );
+
+    const cssVars = computed(() => ({
+      "--node-primary": "var(--color-primary)",
+      "--node-control": "var(--color-warning)",
+      "--node-ref":     "var(--color-info)",
+      "--node-value":   "var(--color-success)",
+      "--node-bg":      "var(--color-surface)",
+      "--node-header-bg": "var(--color-surface-action)",
+      "--node-border":  "var(--color-border)",
+      "--node-text":    "var(--color-text)",
+      "--node-text-muted": "var(--color-text-3)",
+    }));
+
+    return { cssVars, activeTheme, themeOverrides };
   },
   computed: {
     // Contêiner: os nós filhos são desenhados por cima dele pelo ScopesPlugin.
@@ -235,11 +250,24 @@ export default defineComponent({
   user-select: none;
   /* sockets ficam sobre a borda do card */
   overflow: visible;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-1) !important;
+  border: 1px solid var(--color-border) !important;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+    background-color: var(--color-bg);
+}
+
+.rete-node:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2) !important;
 }
 
 .rete-node.selected {
-  border-color: var(--node-primary);
-  box-shadow: 0 0 0 1px var(--node-primary) !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px var(--color-primary), var(--shadow-3) !important;
 }
 
 /* Nó-contêiner (ex.: Function): tamanho vem do ScopesPlugin e os filhos
@@ -247,8 +275,8 @@ export default defineComponent({
 .rete-node.is-scope {
   display: flex;
   flex-direction: column;
-  border-style: dashed;
-  background-color: color-mix(in srgb, var(--n-color) 55%, transparent);
+  border-style: dashed !important;
+  background-color: color-mix(in srgb, var(--color-surface) 55%, transparent) !important;
 }
 
 .rete-node.is-scope :deep(.n-card__content) {
