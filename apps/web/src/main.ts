@@ -14,7 +14,6 @@ import App from "./App.vue";
 import { registerPlugins } from "./plugins";
 import pinia from "./plugins/pinia";
 
-import "@/styles/tailwind.css";
 
 // function resolveGLobalComponents(instance: VueApp<Element>) {
 // 	instance.use(Antd);

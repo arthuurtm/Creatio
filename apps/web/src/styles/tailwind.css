@@ -1,34 +1,17 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
-@theme {
-  --color-primary: rgb(var(--v-theme-primary));
-  --color-on-primary: rgb(var(--v-theme-on-primary));
-  --color-secondary: rgb(var(--v-theme-secondary));
-  --color-background: rgb(var(--v-theme-background));
-  --color-surface: rgb(var(--v-theme-surface));
-  --color-surface-variant: rgb(var(--v-theme-surface-variant));
-  --color-on-surface: rgb(var(--v-theme-on-surface));
-  --color-error: rgb(var(--v-theme-error));
-  --color-border: var(--n-border-color);
-}
-
-
-/* Settings */
+/* ── Global: Fonte base ───────────────────────────────────────────────────── */
 body {
-	font-family:
-		"Inter", "Roboto", "Outfit", "Google Sans", -apple-system,
-		BlinkMacSystemFont, "Segoe UI", Ubuntu, sans-serif;
+	font-family: var(--font-sans);
+	transition:
+		background-color var(--transition-slow),
+		color var(--transition-slow);
 }
 
-/* Global */
+/* ── Global: Scroll ───────────────────────────────────────────────────────── */
 html {
 	overflow-y: auto !important;
-}
-
-body {
-	transition:
-		background-color 0.3s,
-		color 0.3s;
 }
 
 ::-webkit-scrollbar {
@@ -39,78 +22,55 @@ body {
 	background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-	background: rgba(var(--v-theme-on-surface), 0.15);
+	background: color-mix(in srgb, var(--color-text) 15%, transparent);
 	border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-	background: rgba(var(--v-theme-on-surface), 0.25);
+	background: color-mix(in srgb, var(--color-text) 25%, transparent);
 }
 
+/* ── Utilitários globais ──────────────────────────────────────────────────── */
 .skeleton-card {
-	border-radius: 16px !important;
+	border-radius: var(--radius-lg) !important;
 	overflow: hidden;
 }
 
-/* Keyframes & Animations */
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
 @keyframes appear {
-	from {
-		transform: scale(0.5);
-		opacity: 0;
-	}
-	to {
-		transform: scale(1);
-		opacity: 1;
-	}
+	from { transform: scale(0.5); opacity: 0; }
+	to   { transform: scale(1);   opacity: 1; }
 }
 
 @keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(8px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+	from { opacity: 0; transform: translateY(8px); }
+	to   { opacity: 1; transform: translateY(0);   }
 }
 
 @keyframes fadeInBlur {
-	from {
-		opacity: 0;
-		filter: blur(5px);
-	}
-	to {
-		opacity: 1;
-		filter: blur(0);
-	}
+	from { opacity: 0; filter: blur(5px); }
+	to   { opacity: 1; filter: blur(0);   }
 }
 
 @keyframes moveToLeft {
-	from {
-		transform: translateX(100%);
-	}
-	to {
-		transform: translateX(0);
-	}
+	from { transform: translateX(100%); }
+	to   { transform: translateX(0);    }
 }
 
 @keyframes moveToBottom {
-	from {
-		transform: translateY(-100%);
-	}
-
-	to {
-		transform: translateY(0);
-	}
+	from { transform: translateY(-100%); }
+	to   { transform: translateY(0);     }
 }
 
 @keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
+	to { transform: rotate(360deg); }
 }
 
-/* Transições globais do vuejs */
+@keyframes dialogBounce {
+	0%   { opacity: 0; transform: scale(0.92) translateY(16px); }
+	100% { opacity: 1; transform: scale(1)    translateY(0);     }
+}
+
+/* ── Transições Vue ───────────────────────────────────────────────────────── */
 .blur-enter-active,
 .blur-leave-active {
 	transition: filter 0.5s ease-in-out;
@@ -123,8 +83,8 @@ body {
 .fade-enter-active,
 .fade-leave-active {
 	transition:
-		opacity 0.3s ease-in-out,
-		visibility 0.3s ease;
+		opacity     0.3s ease-in-out,
+		visibility  0.3s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
@@ -140,7 +100,7 @@ body {
 .fastFade-enter-active,
 .fastFade-leave-active {
 	transition:
-		opacity 0.1s ease,
+		opacity    0.1s ease,
 		visibility 0.1s ease;
 }
 .fastFade-enter-from,
@@ -158,7 +118,7 @@ body {
 .slide-left-leave-active {
 	transition:
 		transform 0.22s cubic-bezier(0.25, 1, 0.5, 1),
-		opacity 0.18s ease-in-out;
+		opacity   0.18s ease-in-out;
 }
 .slide-left-enter-from {
 	transform: translateX(30px);
@@ -181,7 +141,7 @@ body {
 .slide-left-and-back-leave-active {
 	transition:
 		transform 0.22s cubic-bezier(0.25, 1, 0.5, 1),
-		opacity 0.18s ease-in-out;
+		opacity   0.18s ease-in-out;
 }
 .slide-left-and-back-enter-from {
 	transform: translateX(30px);
@@ -204,7 +164,7 @@ body {
 .slide-top-leave-active {
 	transition:
 		transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1),
-		opacity 0.15s ease-in-out;
+		opacity   0.15s ease-in-out;
 }
 .slide-top-enter-from {
 	transform: translateY(-10px);
@@ -223,21 +183,10 @@ body {
 	opacity: 0;
 }
 
-@keyframes dialogBounce {
-	0% {
-		opacity: 0;
-		transform: scale(0.92) translateY(16px);
-	}
-	100% {
-		opacity: 1;
-		transform: scale(1) translateY(0);
-	}
-}
-
-/* Transição de rota entre páginas */
+/* ── Transição de rota entre páginas ─────────────────────────────────────── */
 .page-fade-enter-active {
 	transition:
-		opacity 0.2s ease,
+		opacity   0.2s ease,
 		transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .page-fade-leave-active {
@@ -257,4 +206,3 @@ body {
 .page-fade-leave-to {
 	opacity: 0;
 }
-@layer base { *, ::before, ::after { border-color: var(--n-border-color, #e5e7eb); } }

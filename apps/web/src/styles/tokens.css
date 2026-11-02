@@ -1,0 +1,87 @@
+
+/**
+ * Design Tokens — Creatio
+ *
+ * Fonte única da verdade:
+ * - Naive UI fornece os tokens de tema.
+ * - Theme synchronizer exporta os tokens para CSS variables.
+ * - Este arquivo define os tokens exclusivos do Creatio.
+ *
+ * Não redefina aqui cores, sombras, tipografia ou dimensões
+ * que já são sincronizadas pelo useThemeVars().
+ */
+
+:root {
+  /* -------------------------------------------------------------------------
+   * Spacing — escala de 4px
+   * ------------------------------------------------------------------------- */
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* -------------------------------------------------------------------------
+   * Custom radii
+   *
+   * radius-sm e radius-md são fornecidos pelo sincronizador.
+   * ------------------------------------------------------------------------- */
+
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* -------------------------------------------------------------------------
+   * Typography aliases
+   *
+   * Os valores originais vêm do Naive UI.
+   * ------------------------------------------------------------------------- */
+
+  --font-sans: var(--font-family, Inter, Roboto, Outfit, system-ui, sans-serif);
+
+  --font-mono: var(
+    --font-family-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace
+  );
+
+  /* -------------------------------------------------------------------------
+   * Canvas — editor de nodes
+   * ------------------------------------------------------------------------- */
+
+  --canvas-dot-size: 22px;
+
+  /* -------------------------------------------------------------------------
+   * Transitions
+   *
+   * As curvas de easing são fornecidas pelo sincronizador.
+   * ------------------------------------------------------------------------- */
+
+  --transition-fast: 0.12s var(--ease-out);
+  --transition-base: 0.2s var(--ease-out);
+  --transition-slow: 0.3s var(--ease-in-out);
+  --transition-layout: 0.25s var(--ease-in-out);
+}
+
+/* ---------------------------------------------------------------------------
+ * Accessibility — reduced motion
+ * --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0.01ms;
+    --transition-base: 0.01ms;
+    --transition-slow: 0.01ms;
+    --transition-layout: 0.01ms;
+  }
+}

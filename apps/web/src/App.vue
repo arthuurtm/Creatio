@@ -1,40 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed } from "vue";
 import { darkTheme } from "naive-ui";
 import DiscreteSetup from "@/components/ui/DiscreteSetup.vue";
 import { useSettingsStore } from "@/stores/global";
 import {
 	lightThemeOverrides,
 	darkThemeOverrides,
-} from "@/styles/theme";
-import {
-	syncThemeCssVariables,
 } from "@/plugins/naive";
 
 const settingsStore = useSettingsStore();
 
-// Computed properties for active theme and overrides
-const activeTheme = computed(() => {
-	return settingsStore.theme === "dark" ? darkTheme : null;
-});
-
-const themeOverrides = computed(() => {
-	return settingsStore.theme === "dark"
-		? darkThemeOverrides
-		: lightThemeOverrides;
-});
-
-// Watch theme changes to sync custom theme CSS variables
-watch(
-	() => settingsStore.theme,
-	(newTheme) => {
-		syncThemeCssVariables(newTheme);
-	},
+const activeTheme = computed(() =>
+	settingsStore.theme === "dark" ? darkTheme : null
 );
 
-onMounted(() => {
-	syncThemeCssVariables(settingsStore.theme);
-});
+const themeOverrides = computed(() =>
+	settingsStore.theme === "dark" ? darkThemeOverrides : lightThemeOverrides
+);
 </script>
 
 <template>
@@ -55,3 +37,7 @@ onMounted(() => {
     </n-loading-bar-provider>
   </n-config-provider>
 </template>
+
+<style>
+@import "@/styles/tailwind.css";
+</style>

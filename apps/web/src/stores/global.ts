@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { syncThemeCssVariables } from "@/plugins/naive";
 
 function getInitialTheme(): "light" | "dark" {
   if (typeof window !== "undefined") {
@@ -36,11 +35,9 @@ export const useSettingsStore = defineStore("settings", {
   actions: {
     toggleTheme() {
       this.theme = this.theme === "dark" ? "light" : "dark";
-      syncThemeCssVariables(this.theme);
     },
     setTheme(newTheme: "light" | "dark") {
       this.theme = newTheme;
-      syncThemeCssVariables(this.theme);
     },
   },
   persist: {
