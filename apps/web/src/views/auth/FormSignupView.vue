@@ -13,9 +13,9 @@
     <template #form>
       <!-- Step 1: Dados da conta -->
       <div v-if="currentStep === 1" class="flex flex-col w-full gap-1">
-        <div class="text-center mb-2">
-          <h3 class="text-base font-semibold m-0 mb-1">Informações básicas</h3>
-          <p class="text-[13px] opacity-70 m-0">
+        <div class="step-header text-center mb-2">
+          <h3 class="step-title m-0 mb-1">Informações básicas</h3>
+          <p class="step-subtitle m-0">
             Informe seus dados para criar sua conta.
           </p>
         </div>
@@ -34,7 +34,7 @@
             @input="formData.nickname.err = false; formData.nickname.errVal = ''"
           >
             <template #prefix>
-              <n-icon size="18" class="opacity-50 mr-1.5"><PersonOutline /></n-icon>
+              <n-icon size="18" depth="3" class="mr-1.5"><PersonOutline /></n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -53,7 +53,7 @@
             @input="formData.username.err = false; formData.username.errVal = ''"
           >
             <template #prefix>
-              <n-icon size="18" class="opacity-50 mr-1.5"><AtOutline /></n-icon>
+              <n-icon size="18" depth="3" class="mr-1.5"><AtOutline /></n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -73,7 +73,7 @@
             @input="formData.email.err = false; formData.email.errVal = ''"
           >
             <template #prefix>
-              <n-icon size="18" class="opacity-50 mr-1.5"><MailOutline /></n-icon>
+              <n-icon size="18" depth="3" class="mr-1.5"><MailOutline /></n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -81,9 +81,9 @@
 
       <!-- Step 2: Verificação de e-mail (Código) -->
       <div v-if="currentStep === 2" class="flex flex-col gap-4 w-full">
-        <div class="text-center">
-          <h3 class="text-base font-semibold m-0 mb-1">Verificação de e-mail</h3>
-          <p class="text-[13px] opacity-70 m-0">
+        <div class="step-header text-center">
+          <h3 class="step-title m-0 mb-1">Verificação de e-mail</h3>
+          <p class="step-subtitle m-0">
             Código de verificação enviado para <strong>{{ formData.email.val }}</strong>
           </p>
         </div>
@@ -98,13 +98,13 @@
             <n-input-otp
               v-model:value="formData.verifyCode.val"
               size="large"
-              class="text-center text-xl tracking-[4px]"
+              class="otp-input text-center"
             />
           </n-form-item>
         </div>
 
         <div class="text-center mb-1">
-          <span class="text-[13px] opacity-70">
+          <span class="step-subtitle">
             Não recebeu o código?
           </span>
           <n-button
@@ -122,9 +122,9 @@
 
       <!-- Step 3: Definição de senha -->
       <div v-if="currentStep === 3" class="flex flex-col w-full gap-1">
-        <div class="text-center mb-2">
-          <h3 class="text-base font-semibold m-0 mb-1">Defina sua senha</h3>
-          <p class="text-[13px] opacity-70 m-0">
+        <div class="step-header text-center mb-2">
+          <h3 class="step-title m-0 mb-1">Defina sua senha</h3>
+          <p class="step-subtitle m-0">
             Crie uma senha segura para proteger seu acesso.
           </p>
         </div>
@@ -145,7 +145,7 @@
             @input="formData.passwd1.err = false; formData.passwd1.errVal = ''"
           >
             <template #prefix>
-              <n-icon size="18" class="opacity-50 mr-1.5"><LockClosedOutline /></n-icon>
+              <n-icon size="18" depth="3" class="mr-1.5"><LockClosedOutline /></n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -166,7 +166,7 @@
             @input="formData.passwd2.err = false; formData.passwd2.errVal = ''"
           >
             <template #prefix>
-              <n-icon size="18" class="opacity-50 mr-1.5"><LockClosedOutline /></n-icon>
+              <n-icon size="18" depth="3" class="mr-1.5"><LockClosedOutline /></n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -179,22 +179,22 @@
       >
         <n-avatar
           :size="96"
-          :style="{ backgroundColor: 'var(--n-action-color)' }"
+          :style="{ backgroundColor: 'var(--color-surface-action)' }"
         >
           <n-icon
             size="56"
-            color="var(--n-primary-color)"
+            color="var(--color-primary)"
           >
             <CheckmarkCircleOutline />
           </n-icon>
         </n-avatar>
 
         <div>
-          <h2 class="text-xl font-bold m-0 mb-2">
+          <h2 class="success-title m-0 mb-2">
             Conta criada com sucesso!
           </h2>
 
-          <p class="text-sm opacity-70 m-0">
+          <p class="success-subtitle m-0">
             Sua conta foi criada com sucesso.
             Agora você pode fazer login utilizando seu e-mail e senha.
           </p>
@@ -237,9 +237,9 @@
     </template>
 
     <template #formInfo>
-      <span class="text-sm opacity-80">
+      <span class="form-info-text">
         Já tem uma conta?
-        <a href="#" class="text-[color:var(--n-primary-color)] font-bold ml-1 no-underline" @click.prevent="router.push({ name: 'Login' })">
+        <a href="#" class="form-link ml-1" @click.prevent="router.push({ name: 'Login' })">
           Fazer login
         </a>
       </span>
@@ -483,3 +483,35 @@ const handleStep3Submit = async () => {
 	}
 };
 </script>
+
+<style scoped>
+.step-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.step-subtitle {
+  font-size: 13px;
+  opacity: 0.7;
+}
+.otp-input {
+  font-size: 20px;
+  letter-spacing: 4px;
+}
+.success-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+.success-subtitle {
+  font-size: 14px;
+  opacity: 0.7;
+}
+.form-info-text {
+  font-size: 14px;
+  opacity: 0.8;
+}
+.form-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+</style>

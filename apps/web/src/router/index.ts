@@ -1,3 +1,4 @@
+
 import {
 	createRouter,
 	createWebHistory,
@@ -8,6 +9,14 @@ import { http } from "@/utils/";
 declare module "vue-router" {
 	interface RouteMeta {
 		requiresAuth?: boolean;
+		publicOnly?: boolean;
+		friendlyName?: string;
+		breadcrumbs?: {
+			label: string;
+			to?: string | { name: string };
+			disabled?: boolean;
+			muted?: boolean;
+		}[];
 		layout?: {
 			hideNavigator?: boolean;
 			fullscreen?: boolean;
@@ -22,16 +31,24 @@ const routes: RouteRecordRaw[] = [
 		path: "/",
 		component: LayoutBase,
 		meta: { requiresAuth: true },
-    redirect: { name: "CodeNew" },
+		redirect: { name: "CodeNew" },
 		children: [
 			{
 				path: "users/:username",
 				name: "UserProfile",
 				component: () => import("@/views/user/UserProfileView.vue"),
 				props: true,
+				meta: {
+					friendlyName: "Perfil",
+					breadcrumbs: [],
+				},
 			},
 			{
 				path: "code",
+				meta: {
+					friendlyName: "Código",
+					breadcrumbs: [],
+				},
 				children: [
 					{
 						path: "",
@@ -41,98 +58,143 @@ const routes: RouteRecordRaw[] = [
 						path: "projects",
 						name: "CodeProjects",
 						component: () => import("@/views/code/ProjectsView.vue"),
+						meta: {
+							friendlyName: "Projetos",
+							breadcrumbs: [],
+						},
 					},
-					// Editor sem projeto (canvas em branco + overlay de recentes)
 					{
 						path: "new",
 						name: "CodeNew",
 						component: () => import("@/views/code/CodeEditView.vue"),
-						meta: { layout: { fullscreen: true, hideNavigator: false } },
+						meta: {
+							friendlyName: "Novo projeto",
+							breadcrumbs: [
+								{
+									label: "Projetos",
+									to: { name: "CodeProjects" },
+								},
+							],
+							layout: {
+								fullscreen: true,
+								hideNavigator: false,
+							},
+						},
 					},
-					// Editor com projeto existente
 					{
 						path: ":id/edit",
 						name: "CodeEdit",
 						component: () => import("@/views/code/CodeEditView.vue"),
 						props: true,
-						meta: { layout: { fullscreen: true, hideNavigator: false } },
+						meta: {
+							friendlyName: "Editor",
+							breadcrumbs: [
+								{
+									label: "Projetos",
+									to: { name: "CodeProjects" },
+								},
+							],
+							layout: {
+								fullscreen: true,
+								hideNavigator: false,
+							},
+						},
 					},
 				],
 			},
 		],
 	},
-  {
-    path: "/login",
-    name: "Login",
-    component: () => import("@/views/auth/FormLoginView.vue"),
-    meta: { publicOnly: true },
-  },
-  {
-    path: "/signup",
-    name: "Signup",
-    component: () => import("@/views/auth/FormSignupView.vue"),
-    meta: { publicOnly: true },
-  },
-  {
-    path: "/rescue",
-    name: "PasswordRescue",
-    component: () => import("@/views/auth/FormPasswordRescueView.vue"),
-    meta: {  requiresAuth: false },
-  },
-  {
-    path: "/:pathMatch(.*)*",
-    name: "NotFound",
-    component: () => import("@/views/err/NotFoundView.vue"),
-  },
-  {
-    path: "/home",
-    name: "Home",
-    redirect: { name: "CodeNew" },
-  },
-  {
-    path: "/about",
-    name: "About",
-    redirect: { name: "CodeNew" },
-  },
+	{
+		path: "/login",
+		name: "Login",
+		component: () => import("@/views/auth/FormLoginView.vue"),
+		meta: {
+			publicOnly: true,
+			friendlyName: "Fazer login",
+		},
+	},
+	{
+		path: "/signup",
+		name: "Signup",
+		component: () => import("@/views/auth/FormSignupView.vue"),
+		meta: {
+			publicOnly: true,
+			friendlyName: "Criar conta",
+		},
+	},
+	{
+		path: "/rescue",
+		name: "PasswordRescue",
+		component: () => import("@/views/auth/FormPasswordRescueView.vue"),
+		meta: {
+			requiresAuth: false,
+			publicOnly: true,
+			friendlyName: "Recuperar senha",
+		},
+	},
+	{
+		path: "/:pathMatch(.*)*",
+		name: "NotFound",
+		component: () => import("@/views/err/NotFoundView.vue"),
+		meta: {
+			friendlyName: "Página não encontrada",
+		},
+	},
+	{
+		path: "/home",
+		name: "Home",
+		redirect: { name: "CodeNew" },
+		meta: {
+			friendlyName: "Início",
+			breadcrumbs: [],
+		},
+	},
+	{
+		path: "/about",
+		name: "About",
+		redirect: { name: "CodeNew" },
+		meta: {
+			friendlyName: "Sobre",
+			breadcrumbs: [],
+		},
+	},
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes,
+	history: createWebHistory(import.meta.env.BASE_URL),
+	routes,
 });
 
 // Estado de inicialização — fetch do servidor só acontece uma vez
 let appInitialized = false;
 
 router.beforeEach(async (to, from, next) => {
-  const userStore = (await import("@/stores/user")).useUserStore();
+	const userStore = (await import("@/stores/user")).useUserStore();
 
-  if (!appInitialized) {
-    if (!userStore.checkAuth()) {
-      try {
-        await http.auth.isAuthenticated();
-      } catch {
-        // Servidor inacessível ou sessão expirada
-      }
-    }
-    appInitialized = true;
-  }
+	if (!appInitialized) {
+		if (!userStore.checkAuth()) {
+			try {
+				await http.auth.isAuthenticated();
+			} catch {
+				// Servidor inacessível ou sessão expirada
+			}
+		}
+		appInitialized = true;
+	}
 
-  const isLoggedIn = userStore.checkAuth();
+	const isLoggedIn = userStore.checkAuth();
 
-  if (to.meta.requiresAuth && !to.meta.publicOnly && !isLoggedIn) {
-    next({ name: "Login", query: { redirect: to.fullPath } });
-  } else if (
-    (to.name === "Login" || to.name === "Signup") &&
-    isLoggedIn
-  ) {
-    // Telas de autenticação continuam bloqueadas pra quem já está logado
-    next({ name: "CodeNew" });
-  } else {
-    next();
-  }
+	if (to.meta.requiresAuth && !to.meta.publicOnly && !isLoggedIn) {
+		next({ name: "Login", query: { redirect: to.fullPath } });
+	} else if (
+		(to.name === "Login" || to.name === "Signup") &&
+		isLoggedIn
+	) {
+		next({ name: "CodeNew" });
+	} else {
+		next();
+	}
 });
-
 
 router.onError((err, to) => {
 	if (

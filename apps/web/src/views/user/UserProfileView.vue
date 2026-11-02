@@ -2,7 +2,7 @@
   <div class="user-profile-view py-8 px-4 sm:px-6 max-w-5xl mx-auto min-h-full">
     <!-- SKELETON LOADERS -->
     <div v-if="loadingUser" class="flex flex-col gap-6">
-      <n-card class="rounded-2xl p-4">
+      <n-card class="card-rounded p-4">
         <div class="flex items-center gap-6">
           <n-skeleton circle class="!h-24 !w-24 shrink-0" />
           <div class="flex flex-col gap-3 grow">
@@ -13,11 +13,11 @@
         </div>
       </n-card>
 
-      <n-card class="rounded-2xl p-6">
+      <n-card class="card-rounded p-6">
         <n-skeleton text style="width: 25%; height: 22px; margin-bottom: 24px;" />
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <n-skeleton height="120px" class="rounded-xl" />
-          <n-skeleton height="120px" class="rounded-xl" />
+          <n-skeleton height="120px" class="skeleton-rounded" />
+          <n-skeleton height="120px" class="skeleton-rounded" />
         </div>
       </n-card>
     </div>
@@ -40,20 +40,20 @@
     <!-- MAIN PROFILE VIEW -->
     <div v-else class="flex flex-col gap-6">
       <!-- Profile Header Card -->
-      <n-card class="rounded-2xl" :bordered="true">
+      <n-card class="card-rounded" :bordered="true">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div class="flex items-center gap-5">
             <!-- Avatar -->
             <n-avatar
               :size="88"
-              class="rounded-2xl border-2 shrink-0 text-white text-3xl font-bold"
-              :style="{ backgroundColor: 'var(--n-primary-color)' }"
+              class="profile-avatar shrink-0"
+              :style="{ backgroundColor: 'var(--color-primary)' }"
             >
               <img
                 v-if="avatarUrl"
                 :src="avatarUrl"
                 :alt="profileUser.nickname || profileUser.username"
-                class="object-cover w-full h-full rounded-2xl"
+                class="profile-avatar-img w-full h-full"
               />
               <span v-else>
                 {{ (profileUser.nickname || profileUser.username)?.charAt(0).toUpperCase() }}
@@ -62,15 +62,15 @@
 
             <!-- User Info -->
             <div class="flex flex-col">
-              <h1 class="text-2xl sm:text-3xl font-bold m-0 leading-tight text-[color:var(--n-title-text-color)]">
+              <h1 class="profile-name m-0">
                 {{ profileUser.nickname || profileUser.username }}
               </h1>
-              <span class="text-sm font-medium text-[color:var(--n-primary-color)] mt-1">
+              <span class="profile-handle mt-1">
                 @{{ profileUser.username }}
               </span>
 
               <!-- Estatísticas reais vindas das rotas -->
-              <div class="flex items-center gap-4 mt-3 text-xs text-[color:var(--n-text-color-3)]">
+              <div class="profile-stats flex items-center gap-4 mt-3">
                 <span class="flex items-center gap-1.5">
                   <n-icon size="15"><CodeOutline /></n-icon>
                   <strong>{{ projects.length }}</strong> {{ projects.length === 1 ? 'projeto' : 'projetos' }}
@@ -101,10 +101,10 @@
       </n-card>
 
       <!-- Projects Section -->
-      <n-card class="rounded-2xl" :bordered="true" content-style="padding: 24px;">
+      <n-card class="card-rounded" :bordered="true" content-style="padding: 24px;">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div class="flex items-center gap-2">
-            <h2 class="text-lg font-bold m-0 text-[color:var(--n-title-text-color)]">Projetos públicos</h2>
+            <h2 class="section-title m-0">Projetos públicos</h2>
             <n-tag size="small" round :bordered="false" type="primary">
               {{ filteredProjects.length }}
             </n-tag>
@@ -120,7 +120,7 @@
               round
             >
               <template #prefix>
-                <n-icon size="14" class="opacity-50"><SearchOutline /></n-icon>
+                <n-icon size="14" depth="3"><SearchOutline /></n-icon>
               </template>
             </n-input>
           </div>
@@ -128,8 +128,8 @@
 
         <!-- Skeletons de carregamento dos projetos -->
         <div v-if="loadingProjects" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <n-skeleton height="130px" class="rounded-xl" />
-          <n-skeleton height="130px" class="rounded-xl" />
+          <n-skeleton height="130px" class="skeleton-rounded" />
+          <n-skeleton height="130px" class="skeleton-rounded" />
         </div>
 
         <!-- Estado vazio -->
@@ -140,7 +140,7 @@
           class="py-12"
         >
           <template #icon>
-            <n-icon size="48" class="opacity-40"><FolderOpenOutline /></n-icon>
+            <n-icon size="48" depth="3"><FolderOpenOutline /></n-icon>
           </template>
           <template #extra v-if="isOwner && !searchQuery">
             <n-button type="primary" round size="small" @click="router.push({ name: 'CodeNew' })">
@@ -155,29 +155,29 @@
             v-for="project in filteredProjects"
             :key="project.id"
             class="project-item-card"
-            :class="{ 'cursor-pointer hover:border-[color:var(--n-primary-color)]': isOwner }"
+            :class="{ 'is-clickable': isOwner }"
             @click="isOwner ? router.push({ name: 'CodeEdit', params: { id: project.id } }) : undefined"
           >
             <div class="flex items-start justify-between gap-3 mb-2">
-              <h3 class="text-base font-bold m-0 truncate text-[color:var(--n-title-text-color)] grow">
+              <h3 class="project-card-title m-0 grow">
                 {{ project.title }}
               </h3>
-              <n-tag size="small" round type="primary" :bordered="false" class="shrink-0 font-mono text-[11px]">
+              <n-tag size="small" round type="primary" :bordered="false" class="project-card-version shrink-0">
                 v{{ project.version || '0.1.0' }}
               </n-tag>
             </div>
 
-            <p class="text-xs text-[color:var(--n-text-color-3)] m-0 mb-4 line-clamp-2 leading-relaxed grow">
+            <p class="project-card-desc m-0 mb-4 grow">
               {{ project.description || 'Sem descrição informada.' }}
             </p>
 
-            <div class="flex items-center justify-between pt-3 border-t text-[11px] text-[color:var(--n-text-color-3)] mt-auto">
+            <div class="project-card-footer flex items-center justify-between pt-3 mt-auto">
               <span class="flex items-center gap-1">
                 <n-icon size="13"><TimeOutline /></n-icon>
                 {{ formatDate(project.updatedAt || project.createdAt) }}
               </span>
 
-              <span v-if="isOwner" class="text-[color:var(--n-primary-color)] font-medium text-xs flex items-center gap-1">
+              <span v-if="isOwner" class="project-card-action flex items-center gap-1">
                 Editar
               </span>
             </div>
@@ -348,11 +348,85 @@ watch(
 </script>
 
 <style scoped>
+.card-rounded {
+  border-radius: 16px;
+}
+.skeleton-rounded {
+  border-radius: 12px;
+}
+.profile-avatar {
+  border-radius: 16px;
+  border: 2px solid var(--color-border);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 700;
+}
+.profile-avatar-img {
+  object-fit: cover;
+  border-radius: 16px;
+}
+.profile-name {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-text);
+}
+@media (min-width: 640px) {
+  .profile-name {
+    font-size: 30px;
+  }
+}
+.profile-handle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+.profile-stats {
+  font-size: 12px;
+  color: var(--color-text-3);
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.project-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-card-version {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+}
+.project-card-desc {
+  font-size: 12px;
+  color: var(--color-text-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.6;
+}
+.project-card-footer {
+  border-top: 1px solid var(--color-border);
+  font-size: 11px;
+  color: var(--color-text-3);
+}
+.project-card-action {
+  color: var(--color-primary);
+  font-weight: 500;
+  font-size: 12px;
+}
+
 .project-item-card {
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid var(--n-border-color);
-  background-color: var(--n-card-color);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
   display: flex;
   flex-direction: column;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
@@ -361,5 +435,12 @@ watch(
 .project-item-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.project-item-card.is-clickable {
+  cursor: pointer;
+}
+.project-item-card.is-clickable:hover {
+  border-color: var(--color-primary);
 }
 </style>

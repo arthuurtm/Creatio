@@ -2,22 +2,22 @@
   <div class="flex w-full min-h-[460px]">
 
     <!-- ── Sidebar ────────────────────────────────────────────────── -->
-    <div class="w-[200px] shrink-0 border-r p-2.5">
-      <n-list hoverable :bordered="false" class="bg-transparent">
+    <div class="settings-sidebar w-[200px] shrink-0 p-2.5">
+      <n-list hoverable :bordered="false" class="nav-list">
         <n-list-item
           v-for="btn in navItems"
           :key="btn.id"
           @click="activeTab = btn.id"
-          class="cursor-pointer rounded-lg px-3 py-2.5 mb-0.5"
+          class="nav-item px-3 py-2.5 mb-0.5"
           :style="{
-            backgroundColor: activeTab === btn.id ? 'var(--n-action-color)' : 'transparent',
+            backgroundColor: activeTab === btn.id ? 'var(--color-surface-action)' : 'transparent',
           }"
         >
           <n-space align="center" :size="10">
-            <n-icon size="18" :color="activeTab === btn.id ? 'var(--n-primary-color)' : undefined">
+            <n-icon size="18" :color="activeTab === btn.id ? 'var(--color-primary)' : undefined">
               <component :is="getIconComponent(btn.icon)" />
             </n-icon>
-            <span class="text-sm" :style="{ fontWeight: activeTab === btn.id ? '600' : 'normal' }">{{ btn.text }}</span>
+            <span class="nav-item-text" :style="{ fontWeight: activeTab === btn.id ? '600' : 'normal' }">{{ btn.text }}</span>
           </n-space>
         </n-list-item>
       </n-list>
@@ -28,57 +28,57 @@
 
         <!-- Page title -->
         <div class="mb-6">
-          <h2 class="text-xl m-0 mb-1 font-semibold">{{ currentTabTitle }}</h2>
-          <p class="text-[13px] opacity-60 m-0">{{ currentTabDescription }}</p>
+          <h2 class="tab-title m-0 mb-1">{{ currentTabTitle }}</h2>
+          <p class="tab-desc m-0">{{ currentTabDescription }}</p>
         </div>
 
         <!-- ══ TAB: Informações pessoais ═══════════════════════════════ -->
         <div v-if="activeTab === 'personal'">
 
           <!-- Avatar picker -->
-          <n-card :bordered="true" class="rounded-xl mb-4" content-style="padding: 0;">
+          <n-card :bordered="true" class="settings-card mb-4" content-style="padding: 0;">
             <div
               @click="triggerFileInput"
-              class="px-5 py-4 cursor-pointer flex items-center justify-between transition-colors duration-150 settings-row"
+              class="settings-row px-5 py-4 flex items-center justify-between"
             >
               <div class="flex flex-col gap-0.5">
-                <span class="text-sm font-medium">Foto do perfil</span>
-                <span class="text-xs opacity-55">Clique para alterar sua foto</span>
+                <span class="row-label">Foto do perfil</span>
+                <span class="row-sublabel">Clique para alterar sua foto</span>
               </div>
               <div class="flex items-center gap-3">
-                <n-avatar round :size="52" :style="{ backgroundColor: 'var(--n-primary-color)' }">
+                <n-avatar round :size="52" :style="{ backgroundColor: 'var(--color-primary)' }">
                   <img v-if="localProfilePic || user.getProfilePicture" :src="localProfilePic || user.getProfilePicture" class="object-cover w-full h-full" />
-                  <span v-else class="text-lg text-white">{{ user.getUsername?.charAt(0)?.toUpperCase() }}</span>
+                  <span v-else class="avatar-placeholder">{{ user.getUsername?.charAt(0)?.toUpperCase() }}</span>
                 </n-avatar>
-                <n-icon size="16" class="opacity-40"><ChevronForward /></n-icon>
+                <n-icon size="16" depth="3"><ChevronForward /></n-icon>
               </div>
               <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="onFileChange">
             </div>
           </n-card>
 
           <!-- Editable fields -->
-          <n-card :bordered="true" class="rounded-xl" content-style="padding: 0;">
+          <n-card :bordered="true" class="settings-card" content-style="padding: 0;">
             <template v-for="(field, index) in editableFields" :key="field.key">
 
               <!-- Viewing mode -->
               <div
                 v-if="editingKey !== field.key"
                 @click="startEdit(field)"
-                class="px-5 py-4 cursor-pointer flex items-center justify-between transition-colors duration-150 settings-row"
+                class="settings-row px-5 py-4 flex items-center justify-between"
               >
                 <div class="flex-1 min-w-0">
-                  <div class="text-xs opacity-55 mb-0.5 font-medium uppercase tracking-[0.4px]">{{ field.label }}</div>
-                  <div class="text-sm font-medium truncate">
+                  <div class="field-label mb-0.5">{{ field.label }}</div>
+                  <div class="field-value truncate">
                     <template v-if="field.displayValue">{{ field.displayValue }}</template>
-                    <span v-else class="opacity-40 italic font-normal">Não definido</span>
+                    <span v-else class="field-empty">Não definido</span>
                   </div>
                 </div>
-                <n-icon size="16" class="opacity-35 ml-3 shrink-0"><CreateOutline /></n-icon>
+                <n-icon size="16" depth="3" class="ml-3 shrink-0"><CreateOutline /></n-icon>
               </div>
 
               <!-- Editing mode -->
-              <div v-else class="px-5 py-4 bg-[color:var(--n-action-color)]">
-                <div class="text-xs opacity-55 mb-2 font-medium uppercase tracking-[0.4px]">{{ field.label }}</div>
+              <div v-else class="field-editing px-5 py-4">
+                <div class="field-label mb-2">{{ field.label }}</div>
                 <n-input
                   v-if="field.type !== 'select'"
                   v-model:value="editValue"
@@ -118,40 +118,40 @@
         <div v-if="activeTab === 'security'" class="flex flex-col gap-4">
 
           <!-- Senha -->
-          <n-card class="rounded-xl" content-style="padding: 0;">
+          <n-card class="settings-card" content-style="padding: 0;">
             <div class="p-5 flex items-center gap-3.5">
-              <n-avatar round :style="{ backgroundColor: 'var(--n-action-color)' }">
-                <n-icon color="var(--n-primary-color)"><LockClosedOutline /></n-icon>
+              <n-avatar round :style="{ backgroundColor: 'var(--color-surface-action)' }">
+                <n-icon color="var(--color-primary)"><LockClosedOutline /></n-icon>
               </n-avatar>
               <div>
-                <h3 class="text-[15px] m-0 font-semibold">Senha e autenticação</h3>
-                <p class="text-xs opacity-60 mt-1">Gerencie como você entra na sua conta</p>
+                <h3 class="card-section-title m-0">Senha e autenticação</h3>
+                <p class="card-section-desc mt-1">Gerencie como você entra na sua conta</p>
               </div>
             </div>
             <n-divider class="m-0" />
             <n-list hoverable :bordered="false">
-              <n-list-item @click="router.push({ name: 'PasswordRescue' })" class="cursor-pointer px-5 py-3.5">
+              <n-list-item @click="router.push({ name: 'PasswordRescue' })" class="clickable-row px-5 py-3.5">
                 <div class="flex justify-between items-center">
                   <div>
-                    <div class="text-sm font-medium">Alterar senha</div>
-                    <div class="text-xs opacity-55 mt-0.5">Recomendamos uma senha forte e única</div>
+                    <div class="row-label">Alterar senha</div>
+                    <div class="row-sublabel mt-0.5">Recomendamos uma senha forte e única</div>
                   </div>
-                  <n-icon size="16" class="opacity-40"><ChevronForward /></n-icon>
+                  <n-icon size="16" depth="3"><ChevronForward /></n-icon>
                 </div>
               </n-list-item>
             </n-list>
           </n-card>
 
           <!-- Dispositivos conectados -->
-          <n-card class="rounded-xl" content-style="padding: 0;">
+          <n-card class="settings-card" content-style="padding: 0;">
             <div class="p-5 flex items-center justify-between">
               <div class="flex items-center gap-3.5">
-                <n-avatar round :style="{ backgroundColor: 'var(--n-action-color)' }">
+                <n-avatar round :style="{ backgroundColor: 'var(--color-surface-action)' }">
                   <n-icon color="rgb(var(--v-theme-primary))"><LaptopOutline /></n-icon>
                 </n-avatar>
                 <div>
-                  <h3 class="text-[15px] m-0 font-semibold">Seus dispositivos</h3>
-                  <p class="text-xs opacity-60 mt-1">Sessões ativas no momento</p>
+                  <h3 class="card-section-title m-0">Seus dispositivos</h3>
+                  <p class="card-section-desc mt-1">Sessões ativas no momento</p>
                 </div>
               </div>
               <n-spin v-if="devicesLoading" size="small" />
@@ -175,14 +175,14 @@
                 <n-list-item class="px-5 py-3">
                   <div class="flex items-center justify-between w-full">
                     <div class="flex items-center gap-3">
-                      <n-avatar round size="small" :style="{ backgroundColor: 'var(--n-action-color)' }">
+                      <n-avatar round size="small" :style="{ backgroundColor: 'var(--color-surface-action)' }">
                         <n-icon size="16">
                           <component :is="getIconComponent(getDeviceIcon(session.deviceData))" />
                         </n-icon>
                       </n-avatar>
                       <div class="flex flex-col">
-                        <span class="text-[13px] font-medium">{{ session.deviceData.browser }} · {{ session.deviceData.os }}</span>
-                        <span class="text-[11px] opacity-55">{{ formatDate(session.updatedAt) }}</span>
+                        <span class="device-name">{{ session.deviceData.browser }} · {{ session.deviceData.os }}</span>
+                        <span class="device-date">{{ formatDate(session.updatedAt) }}</span>
                       </div>
                     </div>
                     <n-button @click="disconnectDevice(session.id)" type="error" text size="small">
@@ -195,7 +195,7 @@
               </template>
             </n-list>
 
-            <div v-else class="p-6 text-center opacity-50 text-[13px]">
+            <div v-else class="empty-notice p-6 text-center">
               Nenhum dispositivo encontrado
             </div>
 
@@ -491,7 +491,89 @@ const getDeviceIcon = (d: DeviceData) =>
 </script>
 
 <style scoped>
+.settings-sidebar {
+  border-right: 1px solid var(--color-border);
+}
+.nav-list {
+  background: transparent;
+}
+.nav-item {
+  cursor: pointer;
+  border-radius: 8px;
+}
+.nav-item-text {
+  font-size: 14px;
+}
+.tab-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+.tab-desc {
+  font-size: 13px;
+  opacity: 0.6;
+}
+.settings-card {
+  border-radius: 12px;
+}
+.settings-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
 .settings-row:hover {
-  background-color: var(--n-action-color);
+  background-color: var(--color-surface-action);
+}
+.row-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+.row-sublabel {
+  font-size: 12px;
+  opacity: 0.55;
+}
+.avatar-placeholder {
+  font-size: 18px;
+  color: #fff;
+}
+.field-label {
+  font-size: 12px;
+  opacity: 0.55;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.field-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+.field-empty {
+  opacity: 0.4;
+  font-style: italic;
+  font-weight: normal;
+}
+.field-editing {
+  background-color: var(--color-surface-action);
+}
+.card-section-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+.card-section-desc {
+  font-size: 12px;
+  opacity: 0.6;
+}
+.clickable-row {
+  cursor: pointer;
+}
+.device-name {
+  font-size: 13px;
+  font-weight: 500;
+}
+.device-date {
+  font-size: 11px;
+  opacity: 0.55;
+}
+.empty-notice {
+  opacity: 0.5;
+  font-size: 13px;
 }
 </style>

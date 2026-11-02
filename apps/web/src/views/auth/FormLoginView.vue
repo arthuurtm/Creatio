@@ -22,7 +22,7 @@
             @input="formData.login.err = false; formData.login.errVal = ''"
           >
             <template #prefix>
-              <n-icon size="18" class="opacity-50 mr-1.5"><AtOutline /></n-icon>
+              <n-icon size="18" depth="3" class="mr-1.5"><AtOutline /></n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -43,7 +43,7 @@
             @input="formData.password.err = false; formData.password.errVal = ''"
           >
             <template #prefix>
-              <n-icon size="18" class="opacity-50 mr-1.5"><LockClosedOutline /></n-icon>
+              <n-icon size="18" depth="3" class="mr-1.5"><LockClosedOutline /></n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -52,7 +52,7 @@
           text
           type="primary"
           size="small"
-          class="self-end font-medium -mt-1 mb-2"
+          class="forgot-pwd-btn self-end -mt-1 mb-2"
           @click="$router.push({ name: 'PasswordRescue' })"
         >
           Esqueceu sua senha?
@@ -75,9 +75,9 @@
     </template>
 
     <template #formInfo>
-      <span class="text-sm opacity-80">
+      <span class="form-info-text">
         Novo por aqui?
-        <a href="#" class="text-[color:var(--n-primary-color)] font-bold ml-1 no-underline" @click.prevent="$router.push({ name: 'Signup' })">
+        <a href="#" class="form-link ml-1" @click.prevent="$router.push({ name: 'Signup' })">
           Criar conta
         </a>
       </span>
@@ -152,3 +152,18 @@ const handleLogin = async () => {
 	}
 };
 </script>
+
+<style scoped>
+.forgot-pwd-btn {
+  font-weight: 500;
+}
+.form-info-text {
+  font-size: 14px;
+  opacity: 0.8;
+}
+.form-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+</style>

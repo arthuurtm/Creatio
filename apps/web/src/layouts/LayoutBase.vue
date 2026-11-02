@@ -12,40 +12,29 @@ import DialogSettings from "@/components/modules/DialogSettings.vue";
 import type GlobalSearch from "@/components/modules/GlobalSearch.vue";
 import Logo from "@/components/ui/Logo.vue";
 import { useUserStore } from "@/stores";
-import { useEditor } from "@/composables/useEditor";
 import { http } from "@/utils/index.ts";
 
 const route = useRoute();
 const router = useRouter();
 const user = useUserStore();
-const editor = useEditor();
 
 const settingsDialog = ref(false);
 const searchRef = ref<InstanceType<typeof GlobalSearch> | null>(null);
 
-const breadcrumbs = computed(() => {
-	const crumbs: any[] = [
-		{
-			label: "Projetos",
-			to: { name: "CodeProjects" },
-			disabled: route.name === "CodeProjects",
-		},
-	];
+const breadcrumbs = computed(() => [
+	{
+		label: "Início",
+		to: { name: "CodeNew" },
+		muted: true,
+		disabled: route.name === "CodeNew",
+	},
+	...(route.meta.breadcrumbs ?? []),
+	{
+		label: route.meta.friendlyName || String(route.name || "Página"),
+		disabled: true,
+	},
+]);
 
-	if (route.name === "CodeEdit") {
-    const title = editor.info.value.title || "Sem título";
-		crumbs.push({ label: title, to: null, disabled: true });
-	} else if (route.name === "CodeNew") {
-		crumbs.push({
-			label: "Novo projeto",
-			to: null,
-			disabled: true,
-			muted: true,
-		});
-	}
-
-	return crumbs;
-});
 
 const dropdownOptions = computed(() => [
 	{
@@ -103,64 +92,75 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="flex flex-col w-screen h-screen overflow-hidden relative bg-[color:var(--n-body-color)]">
+  <div class="layout-base flex flex-col w-screen h-screen overflow-hidden relative">
 
-    <div class="relative flex items-center w-full p-2 border-b">
+    <div class="layout-header flex items-center w-full gap-4 px-4 py-3">
 
       <div
-        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer z-10 transition-opacity hover:opacity-80"
-        @click="router.push({ name: 'CodeProjects' })"
+        class="layout-logo flex items-center justify-center shrink-0 cursor-pointer"
+        @click="router.push({ name: 'Home' })"
       >
         <Logo height="30" />
       </div>
 
-      <n-page-header class="w-full">
+      <div class="flex-1 min-w-0">
+        <div class="path-bar flex items-center min-w-0 h-10 px-3 rounded-xl">
+          <n-icon size="17" class="shrink-0 mr-2" depth="3">
+            <HomeOutlined />
+          </n-icon>
 
-        <template #title>
-          <div class="flex items-center h-full ml-1 pt-[2px]">
-            <n-breadcrumb>
-              <n-breadcrumb-item
-                v-for="(crumb, i) in breadcrumbs"
-                :key="i"
-                @click="!crumb.disabled && crumb.to ? router.push(crumb.to) : null"
-              >
-                <span :style="{ opacity: crumb.muted ? 0.5 : 1, cursor: crumb.disabled ? 'default' : 'pointer' }">
-                  {{ crumb.label }}
-                </span>
-              </n-breadcrumb-item>
-            </n-breadcrumb>
-          </div>
-        </template>
-
-        <template #extra>
-          <div class="flex items-center gap-3">
-            <n-button circle quaternary @click="searchRef?.open()">
-              <template #icon>
-                <n-icon size="20"><Search /></n-icon>
-              </template>
-            </n-button>
-
-            <n-dropdown
-              trigger="click"
-              placement="bottom-end"
-              :options="dropdownOptions"
-              @select="handleDropdownSelect"
+          <n-breadcrumb separator="›">
+            <n-breadcrumb-item
+              v-for="(crumb, i) in breadcrumbs"
+              :key="i"
+              @click="!crumb.disabled && crumb.to && router.push(crumb.to)"
             >
-              <n-button circle quaternary class="p-0">
-                <n-avatar
-                  round
-                  class="text-xs text-white"
-                  :style="{ backgroundColor: 'var(--n-primary-color)' }"
-                >
-                  <img v-if="user.profilePicture" :src="user.profilePicture" class="object-cover w-full h-full" />
-                  <span v-else>{{ (user.name || user.username || '?').charAt(0).toUpperCase() }}</span>
-                </n-avatar>
-              </n-button>
-            </n-dropdown>
-          </div>
-        </template>
+              <span
+                class="path-segment"
+                :class="{
+                  'path-segment-muted': crumb.muted || crumb.disabled,
+                  'path-segment-clickable': !crumb.disabled && !!crumb.to,
+                  'path-current': i === breadcrumbs.length - 1
+                }"
+              >
+                {{ crumb.label }}
+              </span>
+            </n-breadcrumb-item>
+          </n-breadcrumb>
+        </div>
+      </div>
 
-      </n-page-header>
+      <div class="flex items-center gap-2 shrink-0">
+        <n-button circle quaternary @click="searchRef?.open()">
+          <template #icon>
+            <n-icon size="19"><Search /></n-icon>
+          </template>
+        </n-button>
+
+        <n-dropdown
+          trigger="click"
+          placement="bottom-end"
+          :options="dropdownOptions"
+          @select="handleDropdownSelect"
+        >
+          <n-button circle quaternary class="p-0">
+            <n-avatar
+              round
+              class="avatar-text"
+              :style="{ backgroundColor: 'var(--color-primary)' }"
+            >
+              <img
+                v-if="user.profilePicture"
+                :src="user.profilePicture"
+                class="object-cover w-full h-full"
+              />
+              <span v-else>
+                {{ (user.name || user.username || '?').charAt(0).toUpperCase() }}
+              </span>
+            </n-avatar>
+          </n-button>
+        </n-dropdown>
+      </div>
     </div>
 
     <!-- Restante do conteúdo -->
@@ -181,10 +181,66 @@ watchEffect(() => {
       title="Configurações"
       :bordered="false"
       content-style="padding: 0; overflow: hidden; border-radius: 0 0 16px 16px;"
-      header-style="padding: 16px 24px; border-bottom: 1px solid var(--n-border-color);"
+      header-style="padding: 16px 24px; border-bottom: 1px solid var(--color-border);"
       transform-origin="center"
     >
       <DialogSettings />
     </n-modal>
   </div>
 </template>
+
+<style scoped>
+.path-bar {
+  background: var(--card-color, var(--n-color));
+  border: 1px solid var(--border-color, var(--n-border-color));
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.path-segment {
+  color: var(--text-color-3);
+  font-size: 13px;
+  font-weight: 450;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.path-segment-clickable {
+  cursor: pointer;
+}
+
+.path-segment-clickable:hover {
+  color: var(--primary-color);
+}
+
+.path-segment-muted {
+  opacity: 0.55;
+}
+
+.path-current {
+  color: var(--text-color-1);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.layout-base {
+  min-height: 58px;
+  background-color: var(--color-bg);
+}
+.layout-header {
+  border-bottom: 1px solid var(--color-border);
+}
+.layout-logo {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.layout-logo:hover {
+  opacity: 0.8;
+}
+.avatar-text {
+  font-size: 12px;
+  color: #fff;
+}
+</style>

@@ -90,7 +90,7 @@
             @input="formData.passwd1.err = false; formData.passwd1.errVal = ''"
           >
             <template #prefix>
-              <n-icon size="18" class="opacity-50 mr-1.5"><LockClosedOutline /></n-icon>
+              <n-icon size="18" depth="3" class="mr-1.5"><LockClosedOutline /></n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -111,7 +111,7 @@
             @input="formData.passwd2.err = false; formData.passwd2.errVal = ''"
           >
             <template #prefix>
-              <n-icon size="18" class="opacity-50 mr-1.5"><LockClosedOutline /></n-icon>
+              <n-icon size="18" depth="3" class="mr-1.5"><LockClosedOutline /></n-icon>
             </template>
           </n-input>
         </n-form-item>

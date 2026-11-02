@@ -24,7 +24,10 @@
             v-for="step in totalSteps"
             :key="step"
             class="step-pill"
-            :class="{ 'step-pill--active': step === currentStep, 'step-pill--done': step < (currentStep ?? 1) }"
+            :class="{
+              'step-pill--active': step === currentStep,
+              'step-pill--done': step < (currentStep ?? 1),
+            }"
           />
         </div>
 
@@ -53,57 +56,57 @@
 </template>
 
 <script setup lang="ts">
-import Logo from '@/components/ui/Logo.vue';
+import Logo from "@/components/ui/Logo.vue";
 
 defineProps({
   title: String,
   subTitle: String,
   currentStep: Number,
   totalSteps: Number,
-})
+});
 </script>
 
 <style scoped>
-/* Wrapper filling full page */
+/* Wrapper de página inteira com fundo pontilhado — identidade visual do produto */
 .app-form-wrapper {
   width: 100%;
   min-height: 100vh;
   position: relative;
-  background-color: var(--n-body-color);
+  background-color: var(--color-surface);
+  background-size: var(--canvas-dot-size) var(--canvas-dot-size);
+  background-image: radial-gradient(circle, var(--canvas-dot-color) 2px, transparent 1.5px);
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding: 24px 16px;
+  padding: var(--space-6) var(--space-4);
 }
-
-.app-form-wrapper { background-size: 22px 22px; background-image: radial-gradient(circle, #00000020 1px, transparent 1.5px); }
-.canvas-dark .app-form-wrapper { background-color: #0f1115; background-image: radial-gradient(circle, #ffffff20 1px, transparent 1.5px); }
-.canvas-light .app-form-wrapper { background-color: #f8fafc; }
 
 .header-actions {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: var(--space-4);
+  right: var(--space-4);
   z-index: 10;
 }
 
 .card-container {
   width: 100%;
   max-width: 420px;
+
 }
 
-/* Elegant, flat card with a subtle border and standard shadow */
 .auth-card {
-  border-radius: 12px !important;
-  border: 1px solid var(--n-border-color) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01) !important;
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-1) !important;
+  background-color: transparent !important;
+  background-color: var(--color-bg) !important;
 }
 
 .logo-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .logo-container :deep(img),
@@ -116,32 +119,32 @@ defineProps({
 .step-dots-container {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  margin-bottom: 24px;
+  gap: var(--space-1);
+  margin-bottom: var(--space-6);
 }
 
 .step-pill {
   height: 4px;
   width: 8px;
   border-radius: 2px;
-  background-color: var(--n-border-color);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--color-border);
+  transition: all var(--transition-slow);
 }
 
 .step-pill--done {
-  background-color: var(--n-primary-color);
+  background-color: var(--color-primary);
   opacity: 0.4;
 }
 
 .step-pill--active {
-  background-color: var(--n-primary-color);
+  background-color: var(--color-primary);
   width: 20px;
 }
 
-/* Titles and sub-titles styling */
+/* Títulos */
 .title-section {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: var(--space-8);
 }
 
 .card-title {
@@ -149,8 +152,8 @@ defineProps({
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.015em;
-  margin: 0 0 6px 0;
-  color: var(--n-title-text-color);
+  margin: 0 0 var(--space-1) 0;
+  color: var(--color-text);
 }
 
 .card-subtitle {
@@ -158,7 +161,7 @@ defineProps({
   line-height: 1.4;
   opacity: 0.7;
   margin: 0;
-  color: var(--n-text-color-3);
+  color: var(--color-text-3);
 }
 
 .form-content-slot {
@@ -168,9 +171,9 @@ defineProps({
 .card-footer {
   font-size: 13px;
   opacity: 0.8;
-  margin-top: 24px;
+  margin-top: var(--space-6);
   text-align: center;
-  color: var(--n-text-color-3);
+  color: var(--color-text-3);
 }
 
 @media (max-width: 480px) {
@@ -193,7 +196,7 @@ defineProps({
     flex-direction: column;
     justify-content: center;
     width: 100%;
-    background-color: var(--n-body-color) !important;
+    background-color: var(--color-bg) !important;
   }
 }
 </style>
