@@ -11,6 +11,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppEmptyState: typeof import('./src/components/ui/AppEmptyState.vue')['default']
+    AppIcon: typeof import('./src/components/ui/AppIcon.vue')['default']
+    AppIconBtn: typeof import('./src/components/ui/AppIconBtn.vue')['default']
+    AppPageHeader: typeof import('./src/components/ui/AppPageHeader.vue')['default']
     CodeDrawer: typeof import('./src/components/modules/CodeDrawer.vue')['default']
     ComponentFormWrapper: typeof import('./src/components/modules/ComponentFormWrapper.vue')['default']
     ComponentLoadSessions: typeof import('./src/components/modules/ComponentLoadSessions.vue')['default']
@@ -31,8 +35,6 @@ declare module 'vue' {
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
     NDialogProvider: typeof import('naive-ui')['NDialogProvider']
     NDivider: typeof import('naive-ui')['NDivider']
-    NDrawer: typeof import('naive-ui')['NDrawer']
-    NDrawerContent: typeof import('naive-ui')['NDrawerContent']
     NDropdown: typeof import('naive-ui')['NDropdown']
     NEmpty: typeof import('naive-ui')['NEmpty']
     NFormItem: typeof import('naive-ui')['NFormItem']
@@ -60,5 +62,6 @@ declare module 'vue' {
     RecentProjectsOverlay: typeof import('./src/components/modules/RecentProjectsOverlay.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    StructureTree: typeof import('./src/components/modules/StructureTree.vue')['default']
   }
 }
