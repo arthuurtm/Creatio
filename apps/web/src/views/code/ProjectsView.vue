@@ -2,17 +2,7 @@
   <div class="max-w-[860px] mx-auto p-6">
 
     <!-- ══ CABEÇALHO ══════════════════════════════════════════════════════ -->
-    <n-space justify="space-between" align="start" class="mb-6">
-      <div>
-        <h1 class="text-xl font-bold m-0">Meus Projetos</h1>
-        <p class="text-[13px] opacity-70 mt-1 mb-0">
-          {{ allCreations.length }} projeto{{ allCreations.length !== 1 ? 's' : '' }}
-          <template v-if="!loading && allCreations.length">
-            · última atividade {{ lastUpdatedLabel }}
-          </template>
-        </p>
-      </div>
-
+    <AppPageHeader :title="`Meus Projetos`" :subtitle="headerSubtitle">
       <n-button
         type="primary"
         ghost
@@ -25,7 +15,7 @@
         </template>
         Novo projeto
       </n-button>
-    </n-space>
+    </AppPageHeader>
 
     <!-- ══ FILTROS ═════════════════════════════════════════════════════════ -->
     <n-space align="center" :size="8" wrap class="mb-4">
@@ -76,26 +66,14 @@
     </n-space>
 
     <!-- ══ ESTADO VAZIO ════════════════════════════════════════════════════ -->
-    <div
+    <AppEmptyState
       v-if="!loading && filteredCreations.length === 0"
-      class="flex flex-col items-center text-center py-16 gap-3"
+      :icon="allCreations.length ? 'search_off' : 'terminal'"
+      :title="allCreations.length ? 'Nada encontrado' : 'Nenhum projeto ainda'"
+      :subtitle="allCreations.length
+        ? 'Tente ajustar sua busca ou limpar os filtros.'
+        : 'Crie seu primeiro projeto para começar.'"
     >
-      <n-icon size="80" color="rgb(var(--v-theme-primary))" class="opacity-35">
-        <SearchOffOutlined v-if="allCreations.length" />
-        <TerminalOutlined v-else />
-      </n-icon>
-      <div>
-        <p class="text-lg font-bold m-0">
-          {{ allCreations.length ? 'Nada encontrado' : 'Nenhum projeto ainda' }}
-        </p>
-        <p class="text-[13px] opacity-70 mt-1 mb-0">
-          {{
-            allCreations.length
-              ? 'Tente ajustar sua busca ou limpar os filtros.'
-              : 'Crie seu primeiro projeto para começar.'
-          }}
-        </p>
-      </div>
       <n-button
         v-if="!allCreations.length"
         type="primary"
@@ -103,15 +81,13 @@
         round
         @click="criarNovoProjeto"
       >
-        <template #icon>
-          <n-icon><Add /></n-icon>
-        </template>
+        <template #icon><n-icon><Add /></n-icon></template>
         Criar primeiro projeto
       </n-button>
       <n-button v-else text @click="clearFilters">
         Limpar filtros
       </n-button>
-    </div>
+    </AppEmptyState>
 
     <!-- ══ LISTA DE PROJETOS ═══════════════════════════════════════════════ -->
     <component-load-sessions
@@ -123,8 +99,6 @@
       @delete="handleDelete"
     />
 
-
-
   </div>
 </template>
 
@@ -133,12 +107,13 @@ import type { ProjectAttributes as Project } from "@projeto/types";
 import { computed, h, ref, watch } from "vue";
 import { NInput } from "naive-ui";
 import { Add, Search } from "@vicons/ionicons5";
-import { SearchOffOutlined, TerminalOutlined } from "@vicons/material";
 import { useRouter } from "vue-router";
 import { useEditor } from "@/composables/useEditor";
 import { showToast } from "@/plugins/toast";
 import { useUserStore } from "@/stores";
 import { http } from "@/utils";
+import AppPageHeader from "@/components/ui/AppPageHeader.vue";
+import AppEmptyState from "@/components/ui/AppEmptyState.vue";
 
 const userStore = useUserStore();
 const editor = useEditor();
@@ -153,8 +128,6 @@ const createLoading = ref(false);
 const searchQuery = ref("");
 const sort = ref("recent");
 const filterStatus = ref<string | null>(null);
-
-
 
 // ── Opções ───────────────────────────────────────────────────────────────────
 const sortOptions = [
@@ -183,6 +156,13 @@ const lastUpdatedLabel = computed(() => {
 		day: "2-digit",
 		month: "short",
 	}).format(new Date(latest));
+});
+
+const headerSubtitle = computed(() => {
+	const count = allCreations.value.length;
+	const base = `${count} projeto${count !== 1 ? "s" : ""}`;
+	if (!loading.value && count) return `${base} · última atividade ${lastUpdatedLabel.value}`;
+	return base;
 });
 
 const filteredCreations = computed(() => {
@@ -363,7 +343,7 @@ function handleDelete(item: Project) {
 			} finally {
 				d.loading = false;
 			}
-		}
+		},
 	});
 }
 

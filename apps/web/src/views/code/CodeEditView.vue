@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { CodeOutlined } from "@vicons/material";
 import { SunnyOutline, MoonOutline, HelpCircleOutline } from "@vicons/ionicons5";
 import { NButton, NIcon, NTooltip } from "naive-ui";
-import { computed, onUnmounted, ref } from "vue";
+import { onUnmounted, ref } from "vue";
 import CodeDrawer from "@/components/modules/CodeDrawer.vue";
 import ComponentNode from "@/components/modules/ComponentNode.vue";
 import ConnectionStatusTag from "@/components/modules/ConnectionStatusTag.vue";
@@ -36,7 +35,7 @@ onUnmounted(() => editor.clearState());
 </script>
 
 <template>
-  <div class="flex h-full w-full overflow-hidden relative">
+  <div class="flex h-screen w-full overflow-hidden relative">
     <Properties id="tour-properties" />
 
     <div class="grow h-full relative" ref="canvasAreaRef">
@@ -48,10 +47,6 @@ onUnmounted(() => editor.clearState());
         <template #header>
           <div class="absolute top-3 right-3 pointer-events-none flex gap-2 z-0">
             <div class="pointer-events-auto flex items-center gap-2">
-              <NButton id="tour-btn-code" size="small" secondary round type="primary" @click="showCodeDrawer = true">
-                <template #icon><NIcon><CodeOutlined /></NIcon></template>
-                Código JS
-              </NButton>
               <ConnectionStatusTag />
               <NTooltip trigger="hover" placement="bottom">
                 <template #trigger>
@@ -70,16 +65,11 @@ onUnmounted(() => editor.clearState());
                     </template>
                   </NButton>
                 </template>
-                {{ settingsStore.theme === 'dark' ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro' }}
+                {{ settingsStore.theme === 'dark' ? 'Modo Claro' : 'Modo Escuro' }}
               </NTooltip>
               <NTooltip trigger="hover" placement="bottom">
                 <template #trigger>
-                  <NButton
-                    size="small"
-                    secondary
-                    circle
-                    @click="startTour"
-                  >
+                  <NButton size="small" secondary circle @click="startTour">
                     <template #icon>
                       <NIcon size="16"><HelpCircleOutline /></NIcon>
                     </template>
@@ -98,3 +88,13 @@ onUnmounted(() => editor.clearState());
     <RecentProjectsOverlay v-if="!id" ref="overlayRef" />
   </div>
 </template>
+
+<style scoped>
+.code-icon {
+  font-family: 'Fira Mono', 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+</style>

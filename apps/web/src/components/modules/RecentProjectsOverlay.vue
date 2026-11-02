@@ -8,7 +8,7 @@
   >
     <!-- Loading -->
     <div v-if="loading" class="flex flex-col gap-2 py-2">
-      <n-card v-for="n in 4" :key="n" class="rounded-xl p-3">
+      <n-card v-for="n in 4" :key="n" class="recent-card p-3">
         <n-space align="center" :size="12">
           <n-skeleton circle class="h-[38px] w-[38px]" />
           <n-space vertical :size="6">
@@ -25,16 +25,16 @@
         v-for="project in projects"
         :key="project.id"
         @click="openProject(project)"
-        class="cursor-pointer p-3 rounded-xl"
+        class="recent-item p-3"
       >
         <div class="flex items-center justify-between w-full">
           <div class="flex items-center gap-3">
-            <n-avatar round :style="{ backgroundColor: 'var(--n-primary-color)', color: 'white' }">
+            <n-avatar round :style="{ backgroundColor: 'var(--color-primary)', color: 'white' }">
               <n-icon size="18"><TerminalOutline /></n-icon>
             </n-avatar>
             <div class="flex flex-col">
-              <span class="text-sm font-bold">{{ project.title }}</span>
-              <span class="text-xs opacity-60">{{ formatDate(project.updatedAt || project.createdAt) }}</span>
+              <span class="recent-title">{{ project.title }}</span>
+              <span class="recent-date">{{ formatDate(project.updatedAt || project.createdAt) }}</span>
             </div>
           </div>
           <n-icon size="16"><ChevronForward /></n-icon>
@@ -44,10 +44,10 @@
 
     <!-- Estado vazio -->
     <div v-else class="flex flex-col items-center text-center py-8 px-4 gap-3">
-      <n-icon size="48" class="opacity-30"><TerminalOutline /></n-icon>
+      <n-icon size="48" depth="3"><TerminalOutline /></n-icon>
       <div>
-        <p class="text-base font-bold m-0">Nenhum projeto ainda</p>
-        <p class="text-[13px] opacity-70 mt-1 mb-0">
+        <p class="empty-title m-0">Nenhum projeto ainda</p>
+        <p class="empty-desc mt-1 mb-0">
           Comece a adicionar elementos no canvas para criar seu primeiro projeto.
         </p>
       </div>
@@ -154,3 +154,29 @@ watch(
 
 defineExpose({ open });
 </script>
+
+<style scoped>
+.recent-card {
+  border-radius: 12px;
+}
+.recent-item {
+  cursor: pointer;
+  border-radius: 12px;
+}
+.recent-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.recent-date {
+  font-size: 12px;
+  opacity: 0.6;
+}
+.empty-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+.empty-desc {
+  font-size: 13px;
+  opacity: 0.7;
+}
+</style>

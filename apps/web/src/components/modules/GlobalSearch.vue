@@ -58,7 +58,7 @@
             >
               <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                  <n-avatar round size="small" style="background-color: var(--n-primary-color); color: white;">
+                  <n-avatar round size="small" style="background-color: var(--color-primary); color: white;">
                     <img v-if="user.profilePicture" :src="user.profilePicture" style="object-fit: cover; width: 100%; height: 100%;" />
                     <span v-else>{{ user.username.charAt(0).toUpperCase() }}</span>
                   </n-avatar>
